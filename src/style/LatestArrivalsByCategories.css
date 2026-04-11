@@ -1,0 +1,101 @@
+.latest-arrivals-section {
+    padding: 0 0 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.latest-arrivals-section .container {
+    max-width: none;
+    position: relative;
+    z-index: 2;
+    padding: 0;
+}
+
+.latest-arrivals-section .latest-arrivals-header {
+    background-image: url('../assets/images/transprantbg2.png');
+    background-position: center bottom;
+    background-size: contain;
+    padding: 0;
+    text-align: center;
+    position: relative;
+    min-height: 300px;
+    margin: 0;
+}
+
+.latest-arrivals-section .title {
+    padding: 110px 0 0 0;
+    font-size: 46px;
+    font-weight: 700;
+    font-family: "Judson", "Playfair Display", serif;
+    color: #000;
+}
+
+.latest-arrivals-section .subtitle {
+    font-family: "Poppins", sans-serif;
+    color: #8A8A8A;
+    margin-bottom: 60px;
+    font-size: 16px;
+    max-width: 700px;
+    margin: auto;
+}
+
+.grid-container {
+    padding: 50px 100px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .grid-container {
+        padding: 40px 60px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .grid-container {
+        padding: 40px;
+    }
+
+    .latest-arrivals-section .title {
+        font-size: 38px;
+        padding-top: 80px;
+    }
+
+    .latest-arrivals-section .latest-arrivals-header {
+        min-height: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .grid-container {
+        padding: 30px 20px;
+    }
+
+    .latest-arrivals-section .title {
+        font-size: 30px;
+        padding-top: 60px;
+    }
+
+    .latest-arrivals-section .subtitle {
+        font-size: 14px;
+        padding: 0 15px;
+    }
+
+    .latest-arrivals-section .latest-arrivals-header {
+        min-height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid-container {
+        padding: 20px 15px;
+    }
+
+    .latest-arrivals-section .title {
+        font-size: 26px;
+    }
+
+    .latest-arrivals-section .latest-arrivals-header {
+        background-size: cover;
+    }
+}

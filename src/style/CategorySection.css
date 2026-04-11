@@ -1,0 +1,188 @@
+.category-section {
+    padding: 0 0 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url(/src/assets/images/transprantbg1.png);
+    background-repeat: repeat-x;
+    background-position: top center;
+    background-size: contain;
+    filter: grayscale(1);
+    opacity: 0.3;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.category-section>* {
+    position: relative;
+    z-index: 1;
+}
+
+.category-section .container {
+    max-width: none;
+    /* margin: 0 auto; */
+    position: relative;
+    z-index: 2;
+    padding: 0;
+}
+
+.category-section .category-header {
+    padding: 50px 20px 30px;
+}
+
+.category-section .title {
+    font-size: 46px;
+    font-weight: 700;
+    font-family: "Judson", "Playfair Display", serif;
+    color: #000;
+}
+
+@media (max-width: 768px) {
+    .category-section .title {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 480px) {
+    .category-section .title {
+        font-size: 22px;
+    }
+}
+
+.category-section .subtitle {
+    font-family: "Poppins", sans-serif;
+    color: #8A8A8A;
+    margin-bottom: 60px;
+    font-size: 16px;
+    max-width: 700px;
+    margin: auto;
+}
+
+.category-section .category-grid {
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+}
+
+.category-section .category-card {
+    position: relative;
+    width: 260px;
+    height: 320px;
+    overflow: hidden;
+}
+
+/* Frame */
+.frame-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+/* Model */
+.model-img {
+    position: absolute;
+    top: 40px;
+    /* 🔥 Adjust to align inside frame */
+    left: 50%;
+    transform: translateX(-50%);
+    height: 420px;
+    /* 🔥 Bigger than frame (overflow) */
+    z-index: 2;
+}
+
+/* Active center card background */
+.category-card.active .frame-img {
+    filter: hue-rotate(140deg) saturate(1.5);
+}
+
+.category-bottom-container {
+    margin-top: 60px;
+    padding: 0 40px 40px;
+    position: relative;
+}
+
+.bottom-swiper {
+    padding-bottom: 40px !important;
+}
+
+.bottom-img-wrapper {
+    width: 100%;
+    height: 480px;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.bottom-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.bottom-img-wrapper {
+    position: relative;
+}
+
+.category-name-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px 10px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+    color: #fff;
+    font-family: "Poppins", sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.3s ease;
+    z-index: 3;
+}
+
+.bottom-img-wrapper:hover .category-name-overlay {
+    padding-bottom: 30px;
+}
+
+/* Swiper pagination custom color */
+.bottom-swiper .swiper-pagination-bullet-active {
+    background: #000 !important;
+}
+
+@media (max-width: 1100px) {
+    .category-section .category-grid {
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 1024px) {
+    .bottom-img-wrapper {
+        height: 380px;
+    }
+}
+
+@media (max-width: 768px) {
+    .category-bottom-container {
+        padding: 0 20px 30px;
+    }
+
+    .bottom-img-wrapper {
+        height: 320px;
+    }
+}
+
+@media (max-width: 480px) {
+    .bottom-img-wrapper {
+        height: 280px;
+    }
+}
