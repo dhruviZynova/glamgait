@@ -11,9 +11,8 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
-import toast from "react-hot-toast";
 import ProductModal from "./ProductModel";
-import { ApiURL } from "../../Variable";
+import { ApiURL, showToaster } from "../../Variable";
 import axiosInstance from "../../Axios/axios";
 
 const ProductDetail = () => {
@@ -27,7 +26,7 @@ const ProductDetail = () => {
 
   const fetchProduct = async () => {
     try {
-      const response = await axiosInstance.post(
+      const response = await axiosInstance.get(
         `${ApiURL}/getproductbyid/${p_id}`
       );
       const productData = response.data.data;
@@ -93,18 +92,12 @@ const ProductDetail = () => {
 
       setProduct(enhancedProduct);
 
-      // Auto-select first available color
-      const firstAvailableColor = enhancedColors.find((c) => c.has_stock);
-      if (firstAvailableColor) {
-        setSelectedColor(firstAvailableColor);
-        const firstImage = firstAvailableColor.productimages?.[0]?.image_url;
-        setMainMedia(
-          firstImage ? `${ApiURL}/assets/Products/${firstImage}` : ""
-        );
+      // Auto-select first color (regardless of stock)
+      if (enhancedColors.length > 0) {
+        setSelectedColor(enhancedColors[0]);
       }
     } catch (error) {
-      console.error("Error fetching product:", error);
-      toast.error("Failed to load product");
+      showToaster(0, error?.response?.data?.description || "Error fetching product");
       navigate("/admin/product");
     }
   };
@@ -112,6 +105,16 @@ const ProductDetail = () => {
   useEffect(() => {
     if (p_id) fetchProduct();
   }, [p_id]);
+
+  useEffect(() => {
+    if (selectedColor?.productimages?.length > 0) {
+      setMainMedia(
+        `${ApiURL}/assets/Products/${selectedColor.productimages[0].image_url}`
+      );
+    } else {
+      setMainMedia(null);
+    }
+  }, [selectedColor, ApiURL]);
 
   const handleColorChange = (color) => {
     setSelectedColor(color);
@@ -127,10 +130,10 @@ const ProductDetail = () => {
     if (window.confirm("Delete this product permanently?")) {
       try {
         await axiosInstance.delete(`${ApiURL}/deleteproduct/${p_id}`);
-        toast.success("Product deleted");
+        showToaster(1, "Product deleted");
         navigate("/admin/product");
       } catch (error) {
-        console.log("Failed to delete", error);
+        showToaster(0, error?.response?.data?.description || "Error deleting product");
       }
     }
   };
@@ -178,6 +181,7 @@ const ProductDetail = () => {
             {mainMedia ? (
               (() => {
                 const isVideo = /\.(mp4|webm|mov|avi)$/i.test(mainMedia);
+                const imageUrl = selectedColor?.productimages?.[0]?.image_url;
 
                 return isVideo ? (
                   <div className="relative">
@@ -186,8 +190,8 @@ const ProductDetail = () => {
                       controls
                       className="w-full aspect-[3/4] object-cover"
                       poster={
-                        selectedColor?.productimages?.[0]?.image_url
-                          ? `${ApiURL}/assets/Products/${selectedColor.productimages[0].image_url}`
+                        imageUrl
+                          ? `${ApiURL}/assets/Products/${imageUrl}`
                           : undefined
                       }
                     >
@@ -224,50 +228,51 @@ const ProductDetail = () => {
           </div>
 
           {/* Thumbnails */}
-          {/* Thumbnails */}
-          {selectedColor?.productimages?.length > 1 && (
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {selectedColor.productimages.map((img) => {
-                const mediaUrl = `${ApiURL}/assets/Products/${img.image_url}`;
-                const isVideo = /\.(mp4|webm|mov|avi)$/i.test(img.image_url);
+          {selectedColor?.productimages?.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {selectedColor.productimages.map((img) => {
+                  const mediaUrl = `${ApiURL}/assets/Products/${img.image_url}`;
+                  const isVideo = /\.(mp4|webm|mov|avi)$/i.test(img.image_url);
 
-                return (
-                  <button
-                    key={img.image_id}
-                    onClick={() => handleThumbnailClick(img.image_url)}
-                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all relative ${mainMedia === mediaUrl
-                      ? "border-black"
-                      : "border-gray-300"
-                      }`}
-                  >
-                    {isVideo ? (
-                      <div className="relative w-full h-full">
-                        <video
-                          src={mediaUrl}
-                          className="w-full h-full object-cover"
-                          muted
-                        />
-                        {/* Play icon on thumbnail */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                          <svg
-                            className="w-6 h-6 text-white"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
+                  return (
+                    <button
+                      key={img.image_id}
+                      onClick={() => handleThumbnailClick(img.image_url)}
+                      className={`w-20 h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all relative ${mainMedia === mediaUrl
+                        ? "border-black"
+                        : "border-gray-300"
+                        }`}
+                    >
+                      {isVideo ? (
+                        <div className="relative w-full h-full">
+                          <video
+                            src={mediaUrl}
+                            className="w-full h-full object-cover"
+                            muted
+                          />
+                          {/* Play icon on thumbnail */}
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <svg
+                              className="w-6 h-6 text-white"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <img
-                        src={mediaUrl}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </button>
-                );
-              })}
+                      ) : (
+                        <img
+                          src={mediaUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -286,16 +291,17 @@ const ProductDetail = () => {
                     key={color.pcolor_id}
                     onClick={() => handleColorChange(color)}
                     disabled={outOfStock}
-                    className={`px-5 py-3 rounded-xl font-medium transition-all relative ${isSelected
-                      ? "bg-black text-white"
-                      : outOfStock
-                        ? "bg-gray-100 text-gray-400 line-through"
-                        : "bg-gray-100 hover:bg-gray-200"
-                      }`}
+                    className={`relative w-12 h-12 rounded-full transition-all ${isSelected
+                      ? "ring-2 ring-offset-1 ring-black"
+                      : "ring-1 ring-offset-1 ring-gray-300 hover:ring-black"
+                      } ${outOfStock ? "cursor-not-allowed" : ""}`}
+                    style={{ backgroundColor: color.color?.color_code || color.color_code || "#ccc" }}
+                    title={color.color?.color_name}
                   >
-                    {color.color?.color_name}
-                    {outOfStock && (
-                      <span className="ml-2 text-xs">(Out of Stock)</span>
+                    {isSelected && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-3 h-3 bg-white rounded-full border-2 border-black" />
+                      </div>
                     )}
                   </button>
                 );
@@ -352,7 +358,7 @@ const ProductDetail = () => {
                 {selectedColor.sizes.length > 1 ||
                   selectedColor.sizes[0]?.psize_id ? (
                   // Multiple sizes or real sizes
-                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-3 sm:grid-cols-3 gap-3">
                     {selectedColor.sizes.map((size) => {
                       const qty = size.remaining_qty;
                       return (
@@ -371,7 +377,7 @@ const ProductDetail = () => {
                           <div className="text-xs mt-1">
                             {qty > 0
                               ? qty <= 5
-                                ? `Only ${qty} left!`
+                                ? `Only ${qty} left`
                                 : `${qty} in stock`
                               : "Out of Stock"}
                           </div>

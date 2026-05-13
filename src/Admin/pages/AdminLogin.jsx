@@ -39,12 +39,9 @@ const AdminLogin = () => {
                         ...userData
                     };
                     
-                    localStorage.setItem("GlamGait", JSON.stringify(userSessionData));
+                    localStorage.setItem("GlamGaitAdmin", JSON.stringify(userSessionData));
                     toast.success("Login Successful");
-                    
-                    setTimeout(() => {
-                        window.location.href = "/admin";
-                    }, 1000);
+                    navigate("/admin");
                 } else {
                     toast.error("Access denied. Admin privileges required.");
                 }
@@ -218,14 +215,6 @@ const AdminLogin = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Additional Visual Elements */}
-                <div className="mt-8 text-center">
-                    <div className="inline-flex items-center space-x-2 text-xs text-gray-400">
-                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                        <span>System Status: Online</span>
                     </div>
                 </div>
             </div>

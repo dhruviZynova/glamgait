@@ -6,11 +6,12 @@ import {
 } from "@heroicons/react/24/outline";
 import { Trash2 } from "lucide-react";
 import axiosInstance from "../../Axios/axios";
-import { ApiURL, showToaster } from "../../Variable";
+import { ApiURL, showToaster, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import { Toaster } from "react-hot-toast";
 
 const Colors = () => {
+  const adminData = adminInfo();
   const [isEdit, setIsEdit] = useState(false);
   const [colorData, setColorData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,7 +29,11 @@ const Colors = () => {
 
   const fetchColors = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcolor`);
+      const response = await axiosInstance.get(`${ApiURL}/getcolor`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       if (response?.data?.status) {
         setColorData(response?.data?.data);
       } else {
@@ -56,13 +61,23 @@ const Colors = () => {
       if (isEdit) {
         const response = await axiosInstance.put(
           `${ApiURL}/updatecolor`,
-          payload
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+            },
+          }
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
         const response = await axiosInstance.post(
           `${ApiURL}/addcolor`,
-          payload
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+            },
+          }
         );
         showToaster(response?.data?.status, response?.data?.description);
       }
@@ -83,7 +98,12 @@ const Colors = () => {
   const confirmDelete = async () => {
     try {
       const response = await axiosInstance.delete(
-        `${ApiURL}/deletecolor/${deleteModal.color_id}`
+        `${ApiURL}/deletecolor/${deleteModal.color_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        }
       );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status) fetchColors();

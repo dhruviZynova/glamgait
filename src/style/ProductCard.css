@@ -20,9 +20,9 @@
     cursor: pointer;
 }
 
-.arrival-card:hover {
+/* .arrival-card:hover {
     transform: translateY(-8px);
-}
+} */
 
 .card-image-wrapper {
     position: relative;
@@ -91,6 +91,7 @@
 
 .info-header {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     align-items: flex-start;
     gap: 8px;
@@ -103,9 +104,10 @@
     color: #1A1A1A;
     margin: 0;
     flex: 1;
+    text-transform: capitalize;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;

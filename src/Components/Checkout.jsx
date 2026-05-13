@@ -96,7 +96,7 @@ const Checkout = () => {
         (acc, item) => acc + item.price * item.quantity,
         0
     );
-    const shipping = 100; // Hardcoded as per UI design
+    const shipping = location.state?.shippingCharge || 0;
     const total = subtotal + shipping;
 
     const steps = [
@@ -407,24 +407,57 @@ const Checkout = () => {
         }
     };
 
-    const handlePlaceOrder = () => {
+    const handlePlaceOrder = async () => {
         // Validate form data before redirecting
-        if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || 
+        if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone ||
             !formData.streetAddress || !formData.townCity || !formData.postcodeZip) {
             toast.error("Please fill all required fields");
             return;
         }
 
-        // Navigate to SelectAddressPage with cart items and form data
-        navigate("/selectaddress", {
-            state: {
-                cartItems: cartItems,
-                formData: formData
+        if (!selectedAddressId) {
+            toast.error("Please select or save an address first.");
+            return;
+        }
+
+        setIsProcessing(true);
+        try {
+            const orderItems = cartItems.map((item) => ({
+                p_id: item.p_id,
+                pcolor_id: item.pcolor_id,
+                psize_id: item.psize_id || null,
+                quantity: item.quantity,
+                price: item.price,
+            }));
+
+            const orderData = {
+                u_id: u_id || null,
+                guest_id: u_id ? null : guestId,
+                cart_items: orderItems,
+                subtotal,
+                shipping: shipping,
+                total: total,
+                address_id: selectedAddressId,
+                add_id: selectedAddressId,
+                payment_method: formData.paymentMethod.toLowerCase(),
+            };
+
+            const res = await axiosInstance.post(`/createorder`, orderData);
+
+            if (res.data.status !== 1) {
+                throw new Error(res.data.message || "Order failed");
             }
-        });
+
+            // Show success modal upon successful order placement
+            setShowSuccessModal(true);
+        } catch (err) {
+            console.error(err);
+            toast.error(err.message || "Failed to place order");
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
-    
     return (
         <>
             <div className="min-h-screen pt-12 pb-12 px-4 md:px-10 lg:px-20">
@@ -497,7 +530,7 @@ const Checkout = () => {
                                                     {item.quantity < 10 ? `0${item.quantity}` : item.quantity}
                                                 </span>
                                                 <span className="w-1/4 text-right">
-                                                    ${(item.price * item.quantity).toFixed(0)}
+                                                    ₹{(item.price * item.quantity).toFixed(0)}
                                                 </span>
                                             </div>
                                         ))}
@@ -509,21 +542,21 @@ const Checkout = () => {
                                     <div className="">
                                         <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6">
                                             <span className="text-md font-medium text-[#3D3D3D] uppercase tracking-wide">SUBTOTAL</span>
-                                            <span className="text-[#767676] text-lg">${subtotal.toFixed(0)}</span>
+                                            <span className="text-[#767676] text-lg">₹{subtotal.toFixed(0)}</span>
                                         </div>
 
                                         <div className="border-b border-dashed border-[#d7d4d4]"></div>
 
                                         <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6">
                                             <span className="text-md font-medium text-[#3D3D3D] uppercase tracking-wide">SHIPPING</span>
-                                            <span className="text-[#767676] text-lg">${shipping.toFixed(0)}</span>
+                                            <span className="text-[#767676] text-lg">{shipping > 0 ? `₹${shipping.toFixed(0)}` : "Free"}</span>
                                         </div>
 
                                         <div className="border-b border-dashed border-[#d7d4d4]"></div>
 
                                         <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6">
                                             <span className="text-md font-medium text-[#3D3D3D] tracking-wide">Total</span>
-                                            <span className="text-[#767676] text-2xl font-semibold">${total.toFixed(0)}</span>
+                                            <span className="text-[#767676] text-2xl font-semibold">₹{total.toFixed(0)}</span>
                                         </div>
                                     </div>
                                 </div>

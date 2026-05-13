@@ -10,7 +10,7 @@ import {
 import { Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import axiosInstance from "../../Axios/axios";
-import { ApiURL, userInfo } from "../../Variable";
+import { ApiURL, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Users = () => {
@@ -25,12 +25,14 @@ const Users = () => {
     first_name: "",
   });
 
-  const userData = userInfo();
+  const userData = adminInfo();
   const token = userData?.token;
 
   const fetchUsers = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getallusers`);
+      const response = await axiosInstance.get(`${ApiURL}/getallusers`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (response?.data?.status) {
         setUsers(response?.data?.data || []);
         setTotalPages(Math.ceil((response?.data?.data?.length || 0) / itemsPerPage));

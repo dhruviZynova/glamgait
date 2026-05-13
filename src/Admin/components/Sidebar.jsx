@@ -18,10 +18,10 @@ import {
   Ruler,
 } from "lucide-react";
 import logo from "../../assets/logo.svg";
-import { userInfo } from "../../Variable";
+import { adminInfo } from "../../Variable";
 
 const Sidebar = ({ onClose }) => {
-  const userData = userInfo();
+  const userData = adminInfo();
   const adminName = userData?.first_name;
   const adminLastName = userData?.last_name;
   const adminEmail = userData?.email;

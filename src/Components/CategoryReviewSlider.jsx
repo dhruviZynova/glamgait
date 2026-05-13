@@ -13,9 +13,6 @@ const CategoryReviewSlider = ({
   const scrollerRef = useRef(null);
   const [start, setStart] = useState(false);
 
-  console.log(reviews, 'reviews');
-
-
   useEffect(() => {
     if (reviews.length === 0) return;
     addAnimation();

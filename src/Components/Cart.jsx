@@ -18,10 +18,18 @@ const Cart = () => {
 
   const fetchCart = async () => {
     try {
-      const identifier = user?.u_id || getGuestId();
-      const query = user?.u_id
-        ? `u_id=${identifier}`
-        : `guest_id=${identifier}`;
+      if (!isLoggedIn) {
+        const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
+        const mappedLocalCart = localCart.map((item, index) => ({
+          ...item,
+          cart_id: `local-${index}`
+        }));
+        setCartItems(mappedLocalCart);
+        setLoading(false);
+        return;
+      }
+      const identifier = user.u_id;
+      const query = `u_id=${identifier}`;
       const res = await axiosInstance.get(`${ApiURL}/getcart?${query}`);
 
       if (res.data.status === 1) {
@@ -42,6 +50,18 @@ const Cart = () => {
   }, []);
 
   const updateCartQty = async (cart_id, quantity) => {
+    if (!isLoggedIn && typeof cart_id === 'string' && cart_id.startsWith('local-')) {
+      const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
+      const index = parseInt(cart_id.split('-')[1]);
+      if (localCart[index]) {
+        localCart[index].quantity = quantity;
+        localStorage.setItem('localCart', JSON.stringify(localCart));
+        window.dispatchEvent(new Event('cartUpdated'));
+        fetchCart();
+      }
+      return;
+    }
+
     try {
       const res = await axiosInstance.post(`${ApiURL}/updatecart`, {
         cart_id,
@@ -49,6 +69,7 @@ const Cart = () => {
       });
 
       if (res.data.status === 1) {
+        window.dispatchEvent(new Event('cartUpdated'));
         fetchCart();
       } else {
         toast.error(res.data.description || "Not enough stock");
@@ -59,10 +80,22 @@ const Cart = () => {
   };
 
   const handleRemove = async (cart_id) => {
+    if (!isLoggedIn && typeof cart_id === 'string' && cart_id.startsWith('local-')) {
+      const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
+      const index = parseInt(cart_id.split('-')[1]);
+      localCart.splice(index, 1);
+      localStorage.setItem('localCart', JSON.stringify(localCart));
+      window.dispatchEvent(new Event('cartUpdated'));
+      fetchCart();
+      toast.success("Removed from cart");
+      return;
+    }
+
     try {
       const res = await axiosInstance.post(`${ApiURL}/removecart`, { cart_id });
       if (res.data.status === 1) {
         setCartItems((prev) => prev.filter((item) => item.cart_id !== cart_id));
+        window.dispatchEvent(new Event('cartUpdated'));
         toast.success("Removed from cart");
       }
     } catch (error) {
@@ -90,11 +123,17 @@ const Cart = () => {
       return;
     }
 
+    if (!isLoggedIn) {
+      toast.error("Please login to proceed to checkout");
+      navigate("/login");
+      return;
+    }
+
     navigate("/checkout", {
       state: {
         cartItems,
-        isGuest: !isLoggedIn,
-        guestId: !isLoggedIn ? getGuestId() : null,
+        isGuest: false,
+        guestId: null,
       },
     });
   };
@@ -257,9 +296,6 @@ const Cart = () => {
                               src={`${ApiURL}/assets/Products/${item.image_url}`}
                               alt={item.product_name}
                               className="w-20 h-24 object-cover rounded"
-                              onError={(e) => {
-                                e.target.src = "https://via.placeholder.com/300?text=No+Image";
-                              }}
                             />
                             <div className="flex flex-col">
                               <span className="font-medium text-[#3D3D3D] font-[Oxygen] font-400 font-[18px]">{item.product_name}</span>
@@ -271,7 +307,7 @@ const Cart = () => {
                           </div>
                         </td>
                         <td className="py-8 px-6 text-center">
-                          <span className="text-[#949494] font-[Oxygen] font-400 font-[18px]">${item.price.toFixed(0)}</span>
+                          <span className="text-[#949494] font-[Oxygen] font-400 font-[18px]">₹{item.price.toFixed(0)}</span>
                         </td>
                         <td className="py-8 px-6">
                           <div className="flex items-center justify-center">
@@ -300,7 +336,7 @@ const Cart = () => {
                         </td>
                         <td className="py-8 px-6 text-right">
                           <span className="text-[#949494] font-[Oxygen] font-400 font-[18px]">
-                            ${(item.price * item.quantity).toFixed(0)}
+                            ₹{(item.price * item.quantity).toFixed(0)}
                           </span>
                         </td>
                       </tr>
@@ -332,7 +368,7 @@ const Cart = () => {
                         </p>
 
                         <div className="flex items-center justify-between border-t border-gray-100 pt-4">
-                          <span className="text-gray-600 font-medium">${item.price.toFixed(0)}</span>
+                          <span className="text-gray-600 font-medium">₹{item.price.toFixed(0)}</span>
 
                           <div className="flex items-center border border-gray-200 rounded-full py-1 px-3">
                             <button onClick={() => decreaseQty(item.cart_id, item.quantity)} className="text-gray-400"><Minus size={14} /></button>
@@ -340,7 +376,7 @@ const Cart = () => {
                             <button onClick={() => increaseQty(item.cart_id, item.quantity, item.available_stock)} className="text-gray-400"><Plus size={14} /></button>
                           </div>
 
-                          <span className="font-semibold">${(item.price * item.quantity).toFixed(0)}</span>
+                          <span className="font-semibold">₹{(item.price * item.quantity).toFixed(0)}</span>
                         </div>
                       </div>
                     </div>
@@ -359,7 +395,7 @@ const Cart = () => {
                 <div className="flex flex-col">
                   <div className="flex justify-between items-center py-6 px-6">
                     <span className="uppercase tracking-wider text-sm font-medium text-[#4A4A4A] font-[Oxygen] font-400 font-[16px]">SUBTOTAL</span>
-                    <span className="text-[#949494] font-[Oxygen] font-400 font-[16px]">${subtotal.toFixed(0)}</span>
+                    <span className="text-[#949494] font-[Oxygen] font-400 font-[16px]">₹{subtotal.toFixed(0)}</span>
                   </div>
 
                   <div className="border-t border-gray-200 flex justify-between items-center py-6 px-6">
@@ -369,7 +405,7 @@ const Cart = () => {
 
                   <div className="border-t border-gray-200 flex justify-between items-center py-6 px-6">
                     <span className="uppercase tracking-wider text-sm font-medium text-[#4A4A4A] font-[Oxygen] font-400 font-[16px]">TOTAL</span>
-                    <span className="text-[#949494] font-[Oxygen] font-400 font-[16px]">${grandTotal.toFixed(0)}</span>
+                    <span className="text-[#949494] font-[Oxygen] font-400 font-[16px]">₹{grandTotal.toFixed(0)}</span>
                   </div>
 
                   <div className="">
@@ -415,10 +451,10 @@ const Cart = () => {
                       </h3>
                       <div className="flex items-center gap-2">
                         <span className="text-[12px] text-[#A1A1A1] line-through font-[Oxygen]">
-                          ${product.original_price}
+                          ₹{product.original_price}
                         </span>
                         <span className="text-[13px] md:text-[15px] font-bold text-[#1A1A1A] font-[Oxygen]">
-                          ${product.price}
+                          ₹{product.price}
                         </span>
                       </div>
                     </div>

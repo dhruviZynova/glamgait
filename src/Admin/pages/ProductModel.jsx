@@ -1267,11 +1267,12 @@
 
 import { useState, useEffect } from "react";
 import { PlusCircle, Trash2, X } from "lucide-react";
-import { ApiURL } from "../../Variable";
+import { ApiURL, adminInfo } from "../../Variable";
 import toast from "react-hot-toast";
 import axiosInstance from "../../Axios/axios";
 
 const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
+  const adminData = adminInfo();
   const [formData, setFormData] = useState({
     name: "",
     cate_id: "",
@@ -1401,7 +1402,6 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
       product.productvariants &&
       product.productsizes.length > 0
     ) {
-      console.log(product.productsizes, product.productvariants, "productss");
 
       const matrix = {};
       const adjustments = {};
@@ -1425,7 +1425,6 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
       setOriginalStock(matrix);
       setStockAdjustments(adjustments);
     } else if (product?.productvariants) {
-      console.log("enter");
       const qtyMap = {};
       const colorAdj = {};
 
@@ -1628,15 +1627,25 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
         ? `${ApiURL}/updateproduct/${product.p_id}`
         : `${ApiURL}/insertproduct`;
 
-      const res = await axiosInstance.post(url, data);
+      const res = await axiosInstance.post(url, data, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       if (res.data.status !== 1)
         throw new Error(res.data.description || "Failed");
 
       const p_id = product?.p_id || res.data.data.p_id;
 
       // Refetch full product to get pcolor_id & psize_id
-      const fullRes = await axiosInstance.post(
+      const fullRes = await axiosInstance.get(
         `${ApiURL}/getproductbyid/${p_id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        },
       );
       const fullProduct = fullRes.data.data;
 
@@ -1673,7 +1682,9 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
                   pcolor_id,
                   psize_id,
                   qty_to_add: adjustment.add,
-                }),
+                }
+                  , { headers: { Authorization: `Bearer ${adminData?.token || adminData?.auth_token}` } }
+                ),
               );
             }
 
@@ -1704,7 +1715,9 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
                   pcolor_id,
                   psize_id: null,
                   qty_to_add: adjustment.add,
-                }),
+                }
+                  , { headers: { Authorization: `Bearer ${adminData?.token || adminData?.auth_token}` } }
+                ),
               );
             }
 
@@ -1737,7 +1750,9 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
                   pcolor_id,
                   psize_id,
                   qty_to_add: qty,
-                }),
+                }
+                  , { headers: { Authorization: `Bearer ${adminData?.token || adminData?.auth_token}` } }
+                ),
               );
             }
           }
@@ -1753,7 +1768,9 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
                   pcolor_id,
                   psize_id: null,
                   qty_to_add: qty,
-                }),
+                }
+                  , { headers: { Authorization: `Bearer ${adminData?.token || adminData?.auth_token}` } }
+                ),
               );
             }
           }

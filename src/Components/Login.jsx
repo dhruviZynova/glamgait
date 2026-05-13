@@ -23,41 +23,66 @@ const Login = () => {
         password,
       });
 
-      console.log("Full API response:", response);
-
       if (response.data.status === 1) {
         const userData = response.data.data;
-        
+
         // Extract specific user data to store in localStorage
         const userSessionData = {
           ...userData
         };
-        
+
         try {
           localStorage.setItem("GlamGait", JSON.stringify(userSessionData));
-          
+
         } catch (error) {
           console.error("Error storing data in localStorage:", error);
         }
-        
-        toast.success(response.data.description);
-        const guest_id = localStorage.getItem("guest_id");
 
-        if (guest_id) {
+        toast.success(response.data.description);
+        const localCart = JSON.parse(localStorage.getItem("localCart") || "[]");
+        const localWishlist = JSON.parse(localStorage.getItem("localWishlist") || "[]");
+
+        if (localCart.length > 0) {
           try {
-            await Promise.all([
-              axiosInstance.post(`${ApiURL}/merge-cart`, {
-                u_id: userData.u_id,
-                guest_id,
-              }),
-              axiosInstance.post(`${ApiURL}/merge-wishlist`, {
-                u_id: userData.u_id,
-                guest_id,
-              }),
-            ]);
-            localStorage.removeItem("guest_id");
+            await Promise.all(localCart.map(item =>
+              axiosInstance.post(
+                `${ApiURL}/createcart`,
+                {
+                  p_id: item.p_id,
+                  pcolor_id: item.pcolor_id,
+                  psize_id: item.psize_id || null,
+                  quantity: item.quantity || 1,
+                  u_id: userData.u_id,
+                  guest_id: null
+                },
+                { headers: { Authorization: `Bearer ${userData.auth_token}` } }
+              )
+            ));
+            localStorage.removeItem("localCart");
           } catch (error) {
-            console.error("Merge failed:", error);
+            console.error("Local cart sync failed:", error);
+          }
+        }
+
+        if (localWishlist.length > 0) {
+          try {
+            await Promise.all(localWishlist.map(item =>
+              axiosInstance.post(
+                `${ApiURL}/addtowishlist`,
+                {
+                  p_id: item.p_id,
+                  sc_id: item.sc_id || null,
+                  pcolor_id: item.pcolor_id,
+                  psize_id: item.psize_id || null,
+                  u_id: userData.u_id,
+                  guest_id: null
+                },
+                { headers: { Authorization: `Bearer ${userData.auth_token}` } }
+              )
+            ));
+            localStorage.removeItem("localWishlist");
+          } catch (error) {
+            console.error("Local wishlist sync failed:", error);
           }
         }
 
@@ -72,19 +97,17 @@ const Login = () => {
         setEmail("");
         setPassword("");
       } else {
-        console.log("Login failed, response:", response.data);
-        toast.error(response?.data?.description || "Login failed");
+        toast.error("Invalid email or password");
       }
     } catch (err) {
       console.error("Login error:", err);
-      console.error("Error response:", err.response);
-      toast.error("Something went wrong");
+      toast.error("Invalid email or password");
     }
   };
 
   return (
     <>
-      <div className="min-h-screen w-full pt-20 pb-16 px-6 md:px-12 lg:px-20 flex items-center justify-center overflow-hidden font-sans">
+      <div className="w-full pt-20 pb-16 px-6 md:px-12 lg:px-20 flex items-center justify-center overflow-hidden font-sans">
         {/* Login Card */}
         <div className="relative z-20 w-full max-w-5xl mx-4 rounded-xl flex flex-col md:flex-row min-h-[500px]">
           {/* Left Side: Login Form */}

@@ -12,7 +12,7 @@ const ReletedProduct = ({ cate_name, currentProductId, cate_id }) => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axiosInstance.post(
+      const response = await axiosInstance.get(
         `/productbycategory/${cate_name}`,
         { limit: 5, cate_id }
       );

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ApiURL, showToaster } from "../../Variable";
+import { ApiURL, showToaster, adminInfo } from "../../Variable";
 import axiosInstance from "../../Axios/axios";
 import {
   PlusIcon,
@@ -10,6 +10,7 @@ import {
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Styles = () => {
+  const adminData = adminInfo();
   const [isEdit, setIsEdit] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,7 +30,11 @@ const Styles = () => {
   // Fetch Styles
   const fetchStyles = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getstyles`);
+      const response = await axiosInstance.get(`${ApiURL}/getstyles`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       if (response?.data?.status) setStyleData(response?.data?.data);
       else setStyleData([]);
     } catch (error) {
@@ -41,7 +46,11 @@ const Styles = () => {
   // Fetch Categories
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`);
+      const response = await axiosInstance.get(`${ApiURL}/getcategory`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       setCategoryData(response?.data?.data || []);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -61,13 +70,23 @@ const Styles = () => {
       if (isEdit) {
         const response = await axiosInstance.put(
           `${ApiURL}/updatestyle`,
-          formData
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+            },
+          }
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
         const response = await axiosInstance.post(
           `${ApiURL}/addstyle`,
-          formData
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+            },
+          }
         );
         showToaster(response?.data?.status, response?.data?.description);
       }
@@ -88,9 +107,17 @@ const Styles = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/deletestyle`, {
-        style_id: deleteModal.style_id,
-      });
+      const response = await axiosInstance.post(
+        `${ApiURL}/deletestyle`,
+        {
+          style_id: deleteModal.style_id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        }
+      );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status) fetchStyles();
     } catch (error) {

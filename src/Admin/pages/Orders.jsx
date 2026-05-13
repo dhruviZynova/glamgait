@@ -607,10 +607,11 @@ import {
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import axiosInstance from "../../Axios/axios";
-import { ApiURL } from "../../Variable";
+import { ApiURL, adminInfo } from "../../Variable";
 import TrackingSection from "./TrackingSection";
- 
+
 const AdminOrders = () => {
+  const adminData = adminInfo();
   const [orders, setOrders] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
@@ -681,6 +682,10 @@ const AdminOrders = () => {
         page,
         limit,
         search,
+      }, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
       });
       if (response?.data?.status === 1) {
         setOrders(response.data.data.orders || []);
@@ -715,6 +720,12 @@ const AdminOrders = () => {
       setLoadingLogistics(true);
       const res = await axiosInstance.post(
         `${ApiURL}/get-logistics/${expressflyOrderId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        },
       );
       if (res.data.status === 1) {
         setLogistics(Object.values(res.data.data));
@@ -737,6 +748,10 @@ const AdminOrders = () => {
       const res = await axiosInstance.post(`${ApiURL}/ship-order`, {
         expressfly_order_id: order.expressfly_order_id,
         logistic_id: selectedLogistic.logistic_id,
+      }, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
       });
 
       toast.dismiss("ship");
@@ -773,6 +788,10 @@ const AdminOrders = () => {
     try {
       const res = await axiosInstance.put(`${ApiURL}/cancelorder`, {
         order_id: orderId,
+      }, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
       });
       if (res.data.status === 1) {
         toast.success("Order cancelled");

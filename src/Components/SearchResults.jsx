@@ -19,7 +19,7 @@ const SearchResults = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [wishlistMap, setWishlistMap] = useState({});
-      const [reviewsSummary, setReviewsSummary] = useState({}); 
+  const [reviewsSummary, setReviewsSummary] = useState({});
 
 
   useEffect(() => {
@@ -32,10 +32,12 @@ const SearchResults = () => {
     const fetchSearchResults = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstance.post("/getallproducts", {
-          search: query,
-          page: currentPage,
-          perPage: 20, // or 12, 24 as you prefer
+        const response = await axiosInstance.get("/getallproducts", {
+          params: {
+            search: query,
+            page: currentPage,
+            perPage: 20, // or 12, 24 as you prefer
+          },
         });
 
         if (response.data.status === 1) {
@@ -120,43 +122,43 @@ const SearchResults = () => {
     }
   };
 
-    useEffect(() => {
-  const fetchAllReviewsSummary = async () => {
-    if (products.length === 0) return;
+  useEffect(() => {
+    const fetchAllReviewsSummary = async () => {
+      if (products.length === 0) return;
 
-    const productIds = products.map(p => p.p_id);
+      const productIds = products.map(p => p.p_id);
 
-    // Call your existing API for each product — but in parallel
-    try {
-      const reviewPromises = productIds.map(p_id =>
-        axiosInstance.post("/getuserreviews", { p_id })
-      );
+      // Call your existing API for each product — but in parallel
+      try {
+        const reviewPromises = productIds.map(p_id =>
+          axiosInstance.post("/getuserreviews", { p_id })
+        );
 
-      const responses = await Promise.all(reviewPromises);
+        const responses = await Promise.all(reviewPromises);
 
-      const summary = {};
-      responses.forEach((res, index) => {
-        const p_id = productIds[index];
-        if (res.data.status === 1 && res.data.data.length > 0) {
-          const reviews = res.data.data;
-          const avg = (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1);
-          summary[p_id] = {
-            rating: parseFloat(avg),
-            count: reviews.length
-          };
-        } else {
-          summary[p_id] = { rating: null, count: 0 };
-        }
-      });
+        const summary = {};
+        responses.forEach((res, index) => {
+          const p_id = productIds[index];
+          if (res.data.status === 1 && res.data.data.length > 0) {
+            const reviews = res.data.data;
+            const avg = (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1);
+            summary[p_id] = {
+              rating: parseFloat(avg),
+              count: reviews.length
+            };
+          } else {
+            summary[p_id] = { rating: null, count: 0 };
+          }
+        });
 
-      setReviewsSummary(summary);
-    } catch (err) {
-      console.error("Bulk reviews fetch failed", err);
-    }
-  };
+        setReviewsSummary(summary);
+      } catch (err) {
+        console.error("Bulk reviews fetch failed", err);
+      }
+    };
 
-  fetchAllReviewsSummary();
-}, [products]);
+    fetchAllReviewsSummary();
+  }, [products]);
 
   if (!query) {
     return (
@@ -218,11 +220,10 @@ const SearchResults = () => {
                   <button
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
-                    className={`px-4 py-2 rounded-lg ${
-                      currentPage === i + 1
+                    className={`px-4 py-2 rounded-lg ${currentPage === i + 1
                         ? "bg-black text-white"
                         : "bg-gray-200 hover:bg-gray-300"
-                    }`}
+                      }`}
                   >
                     {i + 1}
                   </button>

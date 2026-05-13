@@ -1,8 +1,6 @@
 // Test script to verify localStorage functionality
 // This can be run in the browser console to test the implementation
 
-console.log('=== Testing localStorage user data storage ===');
-
 // Simulate the data structure that would be stored after login
 const mockUserData = {
   name: 'Test User',
@@ -19,17 +17,9 @@ localStorage.setItem('GlamGait', JSON.stringify(mockUserData));
 // Retrieve the data (simulating what userInfo() does)
 const storedData = JSON.parse(localStorage.getItem('GlamGait'));
 
-console.log('Stored data:', storedData);
-
 // Verify the required fields are present
 const requiredFields = ['name', 'email', 'token', 'role'];
 const hasAllFields = requiredFields.every(field => storedData[field] !== undefined);
-
-console.log('Has all required fields:', hasAllFields);
-console.log('Name:', storedData.name);
-console.log('Email:', storedData.email);
-console.log('Token:', storedData.token);
-console.log('Role:', storedData.role);
 
 if (hasAllFields) {
   console.log('✅ localStorage implementation is working correctly!');
@@ -39,4 +29,3 @@ if (hasAllFields) {
 
 // Cleanup
 localStorage.removeItem('GlamGait');
-console.log('Test completed and cleaned up.');

@@ -22,7 +22,6 @@ const CategorySection = () => {
     const fetchCategories = async () => {
         try {
             const response = await axiosInstance.get(`${ApiURL}/getcategory`);
-            console.log("category response", response.data);
             if (response?.data?.status) {
                 setCategoryData(response?.data?.data);
             }
@@ -74,7 +73,7 @@ const CategorySection = () => {
                             <SwiperSlide key={category?.cate_id || index}>
                                 <div className="bottom-img-wrapper">
                                     <img
-                                        src={`${ApiURL}/assets/Category/${category?.cate_image}`}
+                                        src={`${category?.cate_image}`}
                                         alt={category?.cate_name}
                                         className="bottom-img"
                                     />

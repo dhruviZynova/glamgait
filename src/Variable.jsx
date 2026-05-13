@@ -13,7 +13,7 @@ export const userInfo = () => {
     const userData = localStorage.getItem("GlamGait");
     if (userData) {
       const parsedData = JSON.parse(userData);
-      
+
       // Return the structured user data with the specific fields
       return {
         name: parsedData.first_name && parsedData.last_name
@@ -36,6 +36,34 @@ export const userInfo = () => {
   }
 };
 
+export const adminInfo = () => {
+  try {
+    const adminData = localStorage.getItem("GlamGaitAdmin");
+    if (adminData) {
+      const parsedData = JSON.parse(adminData);
+
+      // Return the structured admin data with the specific fields
+      return {
+        name: parsedData.first_name && parsedData.last_name
+          ? `${parsedData.first_name} ${parsedData.last_name}`
+          : parsedData.name || parsedData.u_name || '',
+        email: parsedData.email || '',
+        auth_token: parsedData.token || parsedData.auth_token || '',
+        token: parsedData.token || parsedData.auth_token || '',
+        role: parsedData.role || '',
+        u_id: parsedData.u_id || '',
+        phone: parsedData.phone || '',
+        // Include any other fields for backward compatibility
+        ...parsedData
+      };
+    }
+    return null;
+  } catch (error) {
+    console.log(error, "Error parsing AdminData from Localstorage");
+    return null;
+  }
+};
+
 export const orderInfo = () => {
   try {
     const orderData = localStorage.getItem("OrderData");
@@ -51,9 +79,9 @@ export const orderInfo = () => {
 
 export const showToaster = (status, description) => {
   if (status === 1) {
-    toast.success(description, { autoClose: 3000 });
+    toast.success(description, { autoClose: 5000 });
   } else {
-    console.log(description, { autoClose: 3000 });
+    toast.error(description, { autoClose: 5000 });
   }
 };
 

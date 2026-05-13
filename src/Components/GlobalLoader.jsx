@@ -9,19 +9,39 @@ export default function GlobalLoader() {
   const location = useLocation();
   const navTimerRef = useRef(null);
   const countIntervalRef = useRef(null);
+  const safetyTimerRef = useRef(null);
   const [count, setCount] = useState(0);
   const [visible, setVisible] = useState(false);
   const [fading, setFading] = useState(false);
 
   // Flash the loader briefly on every route change.
+  // Disabled to prevent blur overlay from getting stuck
+  // useEffect(() => {
+  //   show();
+  //   if (navTimerRef.current) clearTimeout(navTimerRef.current);
+  //   navTimerRef.current = setTimeout(hide, NAV_FLASH_MS);
+  //   return () => {
+  //     if (navTimerRef.current) clearTimeout(navTimerRef.current);
+  //   };
+  // }, [location.pathname]);
+
+  // Safety timeout to ensure loader always fades out
   useEffect(() => {
-    show();
-    if (navTimerRef.current) clearTimeout(navTimerRef.current);
-    navTimerRef.current = setTimeout(hide, NAV_FLASH_MS);
+    if (visible) {
+      if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
+      safetyTimerRef.current = setTimeout(() => {
+        setFading(true);
+        setTimeout(() => {
+          setVisible(false);
+          setFading(false);
+          setCount(0);
+        }, 700);
+      }, 5000); // Force fade out after 5 seconds
+    }
     return () => {
-      if (navTimerRef.current) clearTimeout(navTimerRef.current);
+      if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
     };
-  }, [location.pathname]);
+  }, [visible]);
 
   useEffect(() => {
     const clearCount = () => {

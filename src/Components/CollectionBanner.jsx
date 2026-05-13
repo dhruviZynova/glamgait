@@ -30,23 +30,23 @@ const cards = [
     rotateY: '8deg',
     scale: 0.95,
     translateY: '12px',
-    translateX: '12px', // Pull towards center to close middle gap
+    translateX: '10px', // Pull towards center to close middle gap
     z: 2
   },
   {
     src: img3,
-    alt: 'Casual Modesty',
-    label: 'Prayer Wear',
+    alt: 'Traditional Charm',
+    label: 'Designer Sarees',
     rotateY: '-8deg',
     scale: 0.95,
     translateY: '12px',
-    translateX: '-12px', // Pull towards center to close middle gap
+    translateX: '-10px', // Pull towards center to close middle gap
     z: 3
   },
   {
     src: img4,
-    alt: 'Luxury Edit',
-    label: 'Luxury Niqabs',
+    alt: 'Ethnic Luxury',
+    label: 'Lehengas & Kurtis',
     rotateY: '-25deg',
     scale: 1.05,
     translateY: '10px',

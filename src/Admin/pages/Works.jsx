@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ApiURL, showToaster } from "../../Variable";
+import { ApiURL, showToaster, adminInfo } from "../../Variable";
 import axiosInstance from "../../Axios/axios";
 import {
   PlusIcon,
@@ -10,6 +10,7 @@ import {
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Works = () => {
+  const adminData = adminInfo();
   const [isEdit, setIsEdit] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,7 +31,11 @@ const Works = () => {
 
   const fetchWorks = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getworks`);
+      const response = await axiosInstance.get(`${ApiURL}/getworks`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       if (response?.data?.status) setWorkData(response?.data?.data);
       else setWorkData([]);
     } catch (error) {
@@ -40,7 +45,11 @@ const Works = () => {
   };
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`);
+      const response = await axiosInstance.get(`${ApiURL}/getcategory`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       setCategoryData(response?.data?.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -59,13 +68,23 @@ const Works = () => {
       if (isEdit) {
         const response = await axiosInstance.put(
           `${ApiURL}/updatework`,
-          formData
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+            },
+          }
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
         const response = await axiosInstance.post(
           `${ApiURL}/addwork`,
-          formData
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+            },
+          }
         );
         showToaster(response?.data?.status, response?.data?.description);
       }
@@ -74,8 +93,7 @@ const Works = () => {
       setFormData({ name: "", work_id: null, cate_id: "" });
       setIsEdit(false);
     } catch (error) {
-      console.log(error);
-      showToaster(0, "Error saving work");
+      showToaster(0, error?.response?.data?.description || "Error saving work");
     }
   };
 
@@ -85,9 +103,17 @@ const Works = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/deletework`, {
-        work_id: deleteModal.work_id,
-      });
+      const response = await axiosInstance.post(
+        `${ApiURL}/deletework`,
+        {
+          work_id: deleteModal.work_id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        }
+      );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status) fetchWorks();
     } catch (error) {

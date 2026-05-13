@@ -10,13 +10,14 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
-import { ApiURL } from "../../Variable";
+import { ApiURL, adminInfo } from "../../Variable";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import axiosInstance from "../../Axios/axios";
 import ProductModal from "./ProductModel";
 
 const Product = () => {
+  const adminData = adminInfo();
   const [products, setProducts] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
@@ -27,22 +28,24 @@ const Product = () => {
 
   const fetchProducts = async (page = 1, search = "") => {
     try {
-      const res = await axiosInstance.post(`${ApiURL}/getallproducts`, {
+      const res = await axiosInstance.get(`${ApiURL}/getallproducts`, {
         page,
         perPage: itemsPerPage,
         search,
-      });
+      }, { headers: { Authorization: `Bearer ${adminData?.token || adminData?.auth_token}` } });
 
       const { productData, totalCount } = res.data.data || {};
       const enhancedProducts = (productData || []).map((p) => {
         // Calculate total stock
         const totalStock =
-          p.productvariants?.reduce(
-            (sum, v) => sum + (v.remaining_qty || 0),
-            0
-          ) || 0;
+          p.total_stock !== undefined
+            ? p.total_stock
+            : p.productvariants?.reduce(
+              (sum, v) => sum + (v.remaining_qty || 0),
+              0
+            ) || 0;
         const hasStock = totalStock > 0;
-        const lowStock = hasStock && totalStock <= 5;
+        const lowStock = totalStock > 0 && totalStock <= 5;
 
         // Get first image
         const firstImage = p.productcolors?.[0]?.productimages?.[0]?.image_url;
@@ -53,7 +56,7 @@ const Product = () => {
           has_stock: hasStock,
           low_stock: lowStock,
           thumbnail: firstImage
-            ? `${ApiURL}/assets/Products/${firstImage}`
+            ? `${firstImage}`
             : null,
         };
       });
@@ -77,7 +80,7 @@ const Product = () => {
       await axiosInstance.post(`${ApiURL}/changeproductstatus`, {
         p_id: product.p_id,
         p_status: newStatus,
-      });
+      }, { headers: { Authorization: `Bearer ${adminData?.token || adminData?.auth_token}` } });
       toast.success(`Product ${newStatus === 1 ? "activated" : "deactivated"}`);
       fetchProducts(currentPage, searchTerm);
     } catch (error) {
@@ -136,62 +139,58 @@ const Product = () => {
           >
             <Link to={`/admin/product/${product.p_id}`} className="block">
               <div className="relative aspect-square overflow-hidden bg-gray-50">
-                {product.thumbnail ? (
-                  (() => {
-                    const mediaUrl = product.thumbnail;
-                    const isVideo = mediaUrl.match(/\.(mp4|webm|mov|avi)$/i);
+                {(() => {
+                  // API returns colors[].images[].image_url as a full URL
+                  const mediaUrl =
+                    product.colors?.[0]?.images?.[0]?.image_url || null;
 
-                    return isVideo ? (
-                      <div className="relative w-full h-full">
-                        <video
-                          src={mediaUrl}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          muted
-                          loop
-                          playsInline
-                        >
-                          <source src={mediaUrl} />
-                        </video>
-                        {/* Play icon overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                          <div className="bg-white/80 rounded-full p-3 shadow-lg">
-                            <svg
-                              className="w-8 h-8 text-black"
-                              fill="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </div>
+                  if (!mediaUrl) {
+                    return (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm font-medium bg-gray-100">
+                        No Media
+                      </div>
+                    );
+                  }
+
+                  const isVideo = mediaUrl.match(/\.(mp4|webm|mov|avi)$/i);
+
+                  return isVideo ? (
+                    <div className="relative w-full h-full">
+                      <video
+                        src={mediaUrl}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        muted
+                        loop
+                        playsInline
+                      >
+                        <source src={mediaUrl} />
+                      </video>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="bg-white/80 rounded-full p-3 shadow-lg">
+                          <svg className="w-8 h-8 text-black" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
                         </div>
                       </div>
-                    ) : (
-                      <img
-                        src={mediaUrl}
-                        alt={product.name}
-                        loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                    );
-                  })()
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm font-medium bg-gray-100">
-                    No Media
-                  </div>
-                )}
+                    </div>
+                  ) : (
+                    <img
+                      src={mediaUrl}
+                      alt={product.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  );
+                })()}
 
                 {/* Stock Badge - Top Left */}
                 <div className="absolute top-2 left-2 z-10">
                   {product.has_stock ? (
                     product.low_stock ? (
                       <span className="bg-orange-500 text-white px-2.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-                        <AlertCircle size={13} /> Only {product.total_stock}
+                        <AlertCircle size={13} /> Low Stock ({product.total_stock})
                       </span>
-                    ) : (
-                      <span className="bg-green-600 text-white px-2.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-                        <CheckCircle size={13} /> In Stock
-                      </span>
-                    )
+                    ) : null
                   ) : (
                     <span className="bg-red-600 text-white px-2.5 py-1.5 rounded-full text-xs font-bold shadow-lg">
                       Out of Stock

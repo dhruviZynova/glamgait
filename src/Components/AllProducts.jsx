@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { SlidersHorizontal, ChevronUp, ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronRight } from "lucide-react";
 import HomePageBanner from "../Components/HomePageBanner";
 import singlebanner from "../assets/singlebanner.jpg";
 import { useNavigate, useParams } from "react-router-dom";
@@ -59,7 +59,9 @@ const Allproducts = () => {
     occasions: [],
     styles: [],
     sizes: [],
+    categories: [],
   });
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState([]);
   const [selectedFabrics, setSelectedFabrics] = useState([]);
   const [selectedWorks, setSelectedWorks] = useState([]);
@@ -194,17 +196,23 @@ const Allproducts = () => {
 
   useEffect(() => {
     const fetchCategoryFilters = async () => {
-      if (!cateId) return;
       try {
+        // Fetch categories (no category ID needed)
+        const categoryRes = await axiosInstance.get(`/getcategory`);
+
+        // Fetch other filters using category ID if available, otherwise use default (2)
+        const categoryId = cateId || 2;
+
         const [subRes, fabricRes, workRes, occRes, styleRes, sizeRes] =
           await Promise.all([
-            axiosInstance.get(`/getsubcategory/${cateId}`),
-            axiosInstance.get(`/getfabrics/${cateId}`),
-            axiosInstance.get(`/getworks/${cateId}`),
-            axiosInstance.get(`/getoccasions/${cateId}`),
-            axiosInstance.get(`/getstyles/${cateId}`),
-            axiosInstance.get(`/getsize/${cateId}`),
+            cateId ? axiosInstance.get(`/getsubcategory/${categoryId}`) : Promise.resolve({ data: { data: [] } }),
+            axiosInstance.get(`/getfabrics/${categoryId}`),
+            axiosInstance.get(`/getworks/${categoryId}`),
+            axiosInstance.get(`/getoccasions/${categoryId}`),
+            axiosInstance.get(`/getstyles/${categoryId}`),
+            axiosInstance.get(`/getsize/${categoryId}`),
           ]);
+
         setFilters({
           subcategories: subRes.data.data || [],
           fabrics: fabricRes.data.data || [],
@@ -212,12 +220,22 @@ const Allproducts = () => {
           occasions: occRes.data.data || [],
           styles: styleRes.data.data || [],
           sizes: sizeRes.data.data || [],
+          categories: categoryRes.data.data || [],
         });
       } catch (error) {
         console.error("Error fetching category filters:", error);
       }
     };
     fetchCategoryFilters();
+  }, [cateId]);
+
+  // Sync URL category with sidebar selection
+  useEffect(() => {
+    if (cateId) {
+      setSelectedCategories([cateId]);
+    } else {
+      setSelectedCategories([]);
+    }
   }, [cateId]);
 
   useEffect(() => {
@@ -235,29 +253,27 @@ const Allproducts = () => {
     fetchAllColors();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
-      console.log("Searching for:", debouncedSearchTerm);
+      const isSearch = !!debouncedSearchTerm;
+      const isAllProductsPage = !cate_name || cate_name === "All Products";
 
-      // If there's a search term, use the general products endpoint
-      // Otherwise use the category-specific endpoint
-      const endpoint = debouncedSearchTerm ? "/getallproducts" : `/productbycategory/${cate_name}`;
+      // Use global endpoint if searching, filtering by multiple categories, or on a generic page
+      const useGlobalEndpoint = isSearch || selectedCategories.length > 1 || isAllProductsPage;
+      const endpoint = useGlobalEndpoint ? "/getallproducts" : `/productbycategory/${cate_name}`;
 
-      const payload = debouncedSearchTerm ? {
-        search: debouncedSearchTerm,
+      // Build parameters
+      const params = {
         page: currentPage,
+        limit: limit,
         perPage: limit,
-        cate_id: cateId, // Include category filter if available
-      } : {
-        cate_id: cateId,
-        cate_name,
-        subcategories: selectedSubcategories,
-        fabrics: selectedFabrics,
-        works: selectedWorks,
-        occasions: selectedOccasions,
-        styles: selectedStyles,
-        colors: selectedColors,
-        sizes: selectedSizes,
+        search: debouncedSearchTerm,
+        // Pass selected categories as a comma-separated string if filtering,
+        // otherwise fallback to the URL-based cateId
+        cate_id: selectedCategories.length > 0
+          ? selectedCategories.join(",")
+          : (useGlobalEndpoint ? undefined : cateId),
+        cate_name: useGlobalEndpoint ? undefined : cate_name,
         price_min: priceRange[0],
         price_max: priceRange[1],
         sort_by:
@@ -268,42 +284,79 @@ const Allproducts = () => {
               : sortBy === "low-high"
                 ? "price_asc"
                 : "price_desc",
-        page: currentPage,
-        limit: limit,
       };
 
-      const response = await axiosInstance.post(endpoint, payload);
-      console.log("API Response:", response.data);
-      if (response.data.status === 1) {
-        let products, pagination;
+      // Add filter arrays, converting them to comma-separated strings if they have values
+      const filterMappings = {
+        categories: selectedCategories,
+        subcategories: selectedSubcategories,
+        fabrics: selectedFabrics,
+        works: selectedWorks,
+        occasions: selectedOccasions,
+        styles: selectedStyles,
+        colors: selectedColors,
+        sizes: selectedSizes,
+      };
 
-        if (debouncedSearchTerm) {
-          // Handle search endpoint response structure
-          products = response.data.data?.productData || [];
+      Object.keys(filterMappings).forEach((key) => {
+        const val = filterMappings[key];
+        if (Array.isArray(val) && val.length > 0) {
+          params[key] = val.join(",");
+        }
+      });
+
+      const response = await axiosInstance.get(endpoint, { params });
+
+      if (response.data.status === 1) {
+        let fetchedProducts, pagination;
+
+        if (useGlobalEndpoint) {
+          // Handle global endpoint (/getallproducts) response structure
+          fetchedProducts = response.data.data?.productData || [];
           pagination = response.data.data?.pagination || {
             totalCount: response.data.data?.totalCount || 0,
             totalPages: response.data.data?.totalPages || 0,
-            page: response.data.data?.currentPage || currentPage
+            page: response.data.data?.currentPage || currentPage,
           };
         } else {
-          // Handle category endpoint response structure
-          products = response.data.data?.products || [];
+          // Handle category-specific endpoint (/productbycategory) response structure
+          fetchedProducts = response.data.data?.products || [];
           pagination = response.data.data?.pagination || {
-            totalCount: 0,
-            totalPages: 0,
-            page: currentPage
+            totalCount: response.data.data?.totalCount || 0,
+            totalPages: response.data.data?.totalPages || 0,
+            page: currentPage,
           };
         }
 
-        console.log("Products found:", products);
-        console.log("Pagination:", pagination);
+        if (currentPage === 1) {
+          setProducts(fetchedProducts);
+        } else {
+          setProducts((prev) => {
+            const existingIds = new Set(prev.map((p) => p.p_id));
+            const uniqueNew = (fetchedProducts || []).filter(
+              (p) => !existingIds.has(p.p_id)
+            );
+            return [...prev, ...uniqueNew];
+          });
+        }
 
-        setProducts(products || []);
+        // Calculate max price from products and round up to nearest 1000 (only on initial load)
+        if (
+          fetchedProducts &&
+          fetchedProducts.length > 0 &&
+          priceRange[1] === 100000
+        ) {
+          const maxPrice = Math.max(...fetchedProducts.map((p) => p.price || 0));
+          const roundedMaxPrice = Math.ceil(maxPrice / 1000) * 1000;
+          setPriceRange([0, roundedMaxPrice]);
+        }
+
         setTotalProducts(pagination?.totalCount || 0);
         setTotalPages(pagination?.totalPages || 0);
-        // Optional: sync page if backend returned different page
-        if (pagination?.page !== currentPage) {
-          setCurrentPage(pagination?.page || 1);
+
+        if (pagination?.page && pagination.page !== currentPage) {
+          // Only sync if necessary
+          // setCurrentPage(pagination.page); 
         }
       } else {
         setProducts([]);
@@ -313,12 +366,29 @@ const Allproducts = () => {
     } catch (error) {
       console.error("Error fetching products:", error);
     }
-  };
+  }, [
+    cate_name,
+    cateId,
+    selectedCategories,
+    selectedSubcategories,
+    selectedFabrics,
+    selectedWorks,
+    selectedOccasions,
+    selectedStyles,
+    selectedColors,
+    selectedSizes,
+    priceRange,
+    sortBy,
+    currentPage,
+    debouncedSearchTerm,
+    limit,
+  ]);
 
   useEffect(() => {
     if (cate_name) fetchProducts();
   }, [
     cate_name,
+    selectedCategories,
     selectedSubcategories,
     selectedFabrics,
     selectedWorks,
@@ -326,41 +396,63 @@ const Allproducts = () => {
     selectedStyles,
     selectedSizes,
     selectedColors,
-    priceRange,
     sortBy,
     currentPage,
     debouncedSearchTerm,
+    fetchProducts,
   ]);
 
+  // Separate effect for price range changes (debounced to avoid infinite loops)
+  useEffect(() => {
+    if (cate_name && priceRange[1] !== 100000) {
+      const timer = setTimeout(() => {
+        fetchProducts();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [priceRange, cate_name, fetchProducts]);
+
+  const toggleCategory = (val) => {
+    setSelectedCategories((prev) =>
+      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
+    );
+    setCurrentPage(1);
+  };
   const toggleSubcategory = (val) => {
     setSelectedSubcategories((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
+    setCurrentPage(1);
   };
   const toggleFabric = (val) => {
     setSelectedFabrics((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
+    setCurrentPage(1);
   };
   const toggleWork = (val) => {
     setSelectedWorks((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
+    setCurrentPage(1);
   };
   const toggleOccasion = (val) => {
     setSelectedOccasions((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
+    setCurrentPage(1);
   };
   const toggleStyle = (val) => {
     setSelectedStyles((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
+    setCurrentPage(1);
   };
   const toggleSizeNew = (val) => {
     setSelectedSizes((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
+    setCurrentPage(1);
   };
 
   const toggleColor = (colorId) => {
@@ -370,8 +462,10 @@ const Allproducts = () => {
           ? prev.filter((id) => id !== colorId) // remove if already selected
           : [...prev, colorId] // add if not selected
     );
+    setCurrentPage(1);
   };
   const clearAllFilters = () => {
+    setSelectedCategories([]);
     setSelectedSubcategories([]);
     setSelectedFabrics([]);
     setSelectedWorks([]);
@@ -380,6 +474,7 @@ const Allproducts = () => {
     setSelectedSizes([]);
     setSelectedColors([]);
     setPriceRange([0, 100000]);
+    setCurrentPage(1);
   };
 
   useEffect(() => {
@@ -480,7 +575,6 @@ const Allproducts = () => {
 
       if (response.data.status === 1) {
         const fetchedReviews = response.data.data.reviews || [];
-        console.log("Fetched category reviews:", fetchedReviews);
 
         // Optional: Format dates or add any client-side processing
         const formatted = fetchedReviews.map((review) => ({
@@ -547,11 +641,11 @@ const Allproducts = () => {
          This allows the page to grow naturally and the main browser scrollbar to appear.
          This fixes the "cut section" issue.
       */}
-      <div className="min-h-screen bg-[#f3f0ed] relative">
+      <div className="bg-[#f3f0ed] relative">
 
         <div className="w-full py-8 px-2 md:px-8 xl:px-24">
 
-          <div className="flex flex-col lg:flex-row sm:gap-8 gap-2">
+          <div className="flex flex-col lg:flex-row sm:gap-8 gap-2 items-start">
 
             {/* Mobile Filter Button */}
             <button
@@ -564,17 +658,70 @@ const Allproducts = () => {
 
             <aside
               className={`${mobileFilterOpen ? "block" : "hidden"
-                } lg:block w-full lg:w-72 flex-shrink-0 self-start lg:sticky lg:top-24`}
+                } lg:block w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-28 h-fit`}
             >
-              <div className="bg-[#D0BB9E33] rounded-lg p-4 overflow-y-auto max-h-[calc(100vh-160px)] flex flex-col gap-8 scrollbar-hide shadow-sm">
+              <div className="bg-[#f3f0ed] border border-gray-200 rounded-lg shadow-sm mb-8">
                 {/* --- CATEGORIES SECTION --- */}
                 <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between p-2">
-                    <h2 className="text-xl font-400 text-[#2D2D2D] font-[Oxygen] border-l-4 pl-2">Categories</h2>
+                  <div className="flex items-center justify-between sm:p-4 p-2 border-b border-gray-200">
+                    <h2 className="text-xl font-400 text-[#2D2D2D] font-[Oxygen] border-l-4 pl-2">Filters</h2>
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-xs font-400 text-gray-500 hover:text-[#5a2063] underline cursor-pointer transition-colors"
+                    >
+                      Clear All
+                    </button>
                   </div>
 
                   {/* Filters Content */}
-                  <div className="flex flex-col gap-2 px-2">
+                  <div className="flex flex-col gap-4 px-4">
+                    {/* Categories */}
+                    {filters?.categories?.length > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">
+                            All Categories
+                          </span>
+                          <div
+                            onClick={() => setCollectionsExpanded(!collectionsExpanded)}
+                            className="cursor-pointer p-1 rounded transition-colors"
+                          >
+                            {collectionsExpanded ? (
+                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                            )}
+                          </div>
+                        </div>
+                        {collectionsExpanded && (
+                          <div className="space-y-1">
+                            {filters?.categories?.map((val) => (
+                              <div
+                                key={val.cate_id}
+                                onClick={() => navigate(`/collections/${val.cate_name}`)}
+                                className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedCategories.includes(val.cate_id)}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      toggleCategory(val.cate_id);
+                                    }}
+                                    className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                  />
+                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">
+                                    {val?.cate_name}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* Subcategory / Collections */}
                     {filters?.subcategories?.length > 0 && (
                       <div>
@@ -587,9 +734,9 @@ const Allproducts = () => {
                             className="cursor-pointer p-1 rounded transition-colors"
                           >
                             {collectionsExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
+                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
                             ) : (
-                              <ChevronDown className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
+                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
                             )}
                           </div>
                         </div>
@@ -607,7 +754,7 @@ const Allproducts = () => {
                                     onChange={() => toggleSubcategory(val.sc_id)}
                                     className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
                                   />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">
+                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">
                                     {val?.name}
                                   </span>
                                   {val.count && (
@@ -631,9 +778,9 @@ const Allproducts = () => {
                             className="cursor-pointer p-1 rounded transition-colors"
                           >
                             {fabricExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
+                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
                             ) : (
-                              <ChevronDown className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
+                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
                             )}
                           </div>
                         </div>
@@ -651,7 +798,7 @@ const Allproducts = () => {
                                     onChange={() => toggleFabric(val.f_id)}
                                     className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
                                   />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.name}</span>
+                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
                                 </div>
                               </label>
                             ))}
@@ -670,9 +817,9 @@ const Allproducts = () => {
                             className="cursor-pointer p-1 rounded transition-colors"
                           >
                             {workExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
+                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
                             ) : (
-                              <ChevronDown className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
+                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
                             )}
                           </div>
                         </div>
@@ -690,7 +837,7 @@ const Allproducts = () => {
                                     onChange={() => toggleWork(val.work_id)}
                                     className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
                                   />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.name}</span>
+                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
                                 </div>
                               </label>
                             ))}
@@ -709,9 +856,9 @@ const Allproducts = () => {
                             className="cursor-pointer p-1 rounded transition-colors"
                           >
                             {occasionExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
+                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
                             ) : (
-                              <ChevronDown className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
+                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
                             )}
                           </div>
                         </div>
@@ -729,7 +876,7 @@ const Allproducts = () => {
                                     onChange={() => toggleOccasion(val.occasion_id)}
                                     className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
                                   />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.name}</span>
+                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
                                 </div>
                               </label>
                             ))}
@@ -748,9 +895,9 @@ const Allproducts = () => {
                             className="cursor-pointer p-1 rounded transition-colors"
                           >
                             {styleExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
+                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
                             ) : (
-                              <ChevronDown className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
+                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
                             )}
                           </div>
                         </div>
@@ -768,7 +915,7 @@ const Allproducts = () => {
                                     onChange={() => toggleStyle(val.style_id)}
                                     className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
                                   />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.name}</span>
+                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
                                 </div>
                               </label>
                             ))}
@@ -782,23 +929,35 @@ const Allproducts = () => {
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Size</span>
+                          <div
+                            onClick={() => setSizeExpanded(!sizeExpanded)}
+                            className="cursor-pointer p-1 rounded transition-colors"
+                          >
+                            {sizeExpanded ? (
+                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                            )}
+                          </div>
                         </div>
-                        <div className="space-y-1">
-                          {filters.sizes.map((val) => (
-                            <label
-                              key={val.size_id}
-                              className="flex items-center justify-center gap-1.5 cursor-pointer border border-gray-200 bg-white hover:border-gray-400 p-2 rounded transition-colors"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selectedSizes.includes(val.size_id)}
-                                onChange={() => toggleSizeNew(val.size_id)}
-                                className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
-                              />
-                              <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.size_name}</span>
-                            </label>
-                          ))}
-                        </div>
+                        {sizeExpanded && (
+                          <div className="space-y-1">
+                            {filters.sizes.map((val) => (
+                              <label
+                                key={val.size_id}
+                                className="flex items-center gap-3 group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selectedSizes.includes(val.size_id)}
+                                  onChange={() => toggleSizeNew(val.size_id)}
+                                  className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                />
+                                <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.size_name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -812,9 +971,9 @@ const Allproducts = () => {
                             className="cursor-pointer p-1 rounded transition-colors"
                           >
                             {colorExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
+                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
                             ) : (
-                              <ChevronDown className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
+                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
                             )}
                           </div>
                         </div>
@@ -870,19 +1029,21 @@ const Allproducts = () => {
                     )}
                   </div>
                 </div>
+              </div>
 
+              <div className="bg-[#f3f0ed] border border-gray-200 rounded-lg overflow-hidden lg:sticky shadow-sm">
                 {/* --- PRICE RANGE SECTION --- */}
                 <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between p-2">
+                  <div className="flex items-center justify-between sm:p-4 p-2 border-b border-gray-200">
                     <h2 className="text-xl font-400 text-[#2D2D2D] font-[Oxygen] border-l-4 pl-2">Price Range</h2>
                   </div>
 
                   {/* Price Content */}
-                  <div className="p-2">
+                  <div className="p-2 px-4">
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <div className="relative w-1/2">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
                           <input
                             type="number"
                             min={0}
@@ -895,11 +1056,11 @@ const Allproducts = () => {
                           />
                         </div>
                         <div className="relative w-1/2">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
                           <input
                             type="number"
                             min={0}
-                            value={priceRange[1]}
+                            value={Math.ceil(priceRange[1] / 1000) * 1000}
                             onChange={(e) =>
                               setPriceRange([priceRange[0], Number(e.target.value)])
                             }
@@ -910,17 +1071,18 @@ const Allproducts = () => {
                       </div>
                       <div className="flex justify-between items-center pt-1">
                         <span className="text-xs text-[#2c2c2c] font-medium py-1 rounded">
-                          ${priceRange[0]}
+                          ₹{priceRange[0]}
                         </span>
                         <span className="text-xs text-[#2c2c2c]">to</span>
                         <span className="text-xs text-[#2c2c2c] font-medium py-1 rounded">
-                          ${priceRange[1]}
+                          ₹{Math.ceil(priceRange[1] / 1000) * 1000}
                         </span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+
             </aside>
 
             {/* 
@@ -929,7 +1091,7 @@ const Allproducts = () => {
               Now it acts as a normal block element, allowing the page to scroll naturally.
             */}
             <main className="flex-1 min-w-0">
-              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
+              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-['Judson'] font-bold font-700 capitalize text-[#000000] mb-4 leading-tight">
                 {activeFilterName
                   ? `${activeFilterName} - ${categoryDisplayName} Collection`
                   : `${categoryDisplayName} Collection`}
@@ -963,7 +1125,7 @@ const Allproducts = () => {
                     aria-label="Search"
                     type="button"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
                     </svg>
                   </button>
@@ -1007,70 +1169,31 @@ const Allproducts = () => {
               )}
 
               {/* Pagination Controls */}
-              {totalProducts > 0 && totalPages > 1 && (
-                <div className="flex flex-col items-center mt-10 mb-8">
-                  <div className="flex items-center gap-2">
-                    {/* Previous */}
-                    <button
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(1, prev - 1))
-                      }
-                      disabled={currentPage === 1}
-                      className={`px-5 py-2.5 rounded-lg font-medium border transition-all ${currentPage === 1
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300"
-                        : "bg-white text-gray-800 border-gray-300 hover:bg-gray-50"
-                        }`}
-                    >
-                      Previous
-                    </button>
-                    {/* Page Numbers */}
-                    {(() => {
-                      const pages = [];
-                      const maxVisible = 5;
-                      let startPage = Math.max(1, currentPage - 2);
-                      let endPage = Math.min(
-                        totalPages,
-                        startPage + maxVisible - 1
-                      );
-                      if (endPage - startPage < maxVisible - 1) {
-                        startPage = Math.max(1, endPage - maxVisible + 1);
-                      }
-                      for (let i = startPage; i <= endPage; i++) {
-                        pages.push(
-                          <button
-                            key={i}
-                            onClick={() => setCurrentPage(i)}
-                            className={`w-11 h-11 rounded-lg font-medium transition-all ${currentPage === i
-                              ? "bg-black text-white"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                              }`}
-                          >
-                            {i}
-                          </button>
-                        );
-                      }
-                      return pages;
-                    })()}
-                    {/* Next */}
-                    <button
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-                      }
-                      disabled={currentPage === totalPages}
-                      className={`px-5 py-2.5 rounded-lg font-medium border transition-all ${currentPage === totalPages
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300"
-                        : "bg-white text-gray-800 border-gray-300 hover:bg-gray-50"
-                        }`}
-                    >
-                      Next
-                    </button>
+              {totalProducts > 0 && (
+                <div className="flex flex-col items-center mt-12 mb-16">
+                  <p className="text-[#767676] mb-4 text-[14px]">
+                    Showing 1&ndash;{products.length} of {totalProducts} item(s)
+                  </p>
+                  <div className="w-64 h-[2px] bg-[#E5E7EB] mb-8 relative">
+                    <div
+                      className="absolute top-0 left-0 h-full bg-[#1C2F2F] transition-all duration-500"
+                      style={{ width: `${Math.min((products.length / totalProducts) * 100, 100)}%` }}
+                    />
                   </div>
+                  {products.length < totalProducts && (
+                    <button
+                      onClick={() => setCurrentPage(prev => prev + 1)}
+                      className="bg-[#2D2D2D] hover:bg-black text-white px-8 py-3 rounded-[30px] font-medium transition-colors flex items-center gap-2"
+                    >
+                      Load More <ChevronRight className="w-5 h-5" />
+                    </button>
+                  )}
                 </div>
               )}
             </main>
           </div>
-        </div>
-      </div>
+        </div >
+      </div >
     </>
   );
 };

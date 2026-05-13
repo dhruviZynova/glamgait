@@ -12,7 +12,6 @@ const OrderDetails = () => {
   const [order, setOrder] = useState(null);
   const [tracking, setTracking] = useState(null);
   const [loading, setLoading] = useState(true);
-  console.log(orderId, "id");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,7 +95,7 @@ const OrderDetails = () => {
     <>
       <div className="w-full lg:pt-0 pt-8 px-2 md:px-8 xl:px-24">
         <div className="max-w-7xl mx-auto min-h-screen flex flex-col md:flex-row font-inter">
-          <div className="w-full md:w-1/4 md:sticky md:top-0 md:h-screen">
+          <div className="w-full md:w-1/4">
             <SideBar />
           </div>
 
@@ -129,7 +128,7 @@ const OrderDetails = () => {
                   </p>
                 </div>
                 <div className="text-left sm:text-right">
-                  <p className="text-sm text-[#807D7E] font-semibold mb-1">Total : <span className="text-[#1a1a1a] text-2xl">₹{order.grandTotal.toFixed(2)}</span></p>
+                  <p className="text-lg text-[#807D7E] font-semibold mb-1">Total : &nbsp; <span className="text-[#1a1a1a]">₹{Math.round(order.grandTotal)}</span></p>
                 </div>
               </div>
             </div>
@@ -180,14 +179,23 @@ const OrderDetails = () => {
                         className="w-32 h-32 rounded-xl object-cover shadow-sm transition-transform group-hover:scale-105"
                       />
                       <div className="flex-1 text-center sm:text-left">
-                        <h3 className="font-600 text-[#1a1a1a] font-[poppins] text-xl mb-4">
+                        <h3 className="font-600 text-[#1a1a1a] font-[poppins] text-xl mb-2">
                           {item.productName}
                         </h3>
-                        <div className="flex flex-wrap justify-center sm:justify-start gap-x-8 gap-y-2">
-                          <p className="text-[#807D7E] font-400 font-[poppins]">Color : <span className="text-[#1a1a1a] font-400 capitalize">{item.color?.color_name || "N/A"}</span></p>
+                        <div className="flex flex-wrap justify-center items-center sm:justify-start gap-x-8 gap-y-2">
+                          <p className="text-[#807D7E] font-400 font-[poppins] flex items-center gap-2 justify-center sm:justify-start">
+                            Color :
+                            <span className="text-[#1a1a1a] font-400 capitalize">{item.color_name || "N/A"}</span>
+                            {item.color_code && (
+                              <span
+                                className="w-4 h-4 rounded-full border border-gray-300"
+                                style={{ backgroundColor: item.color_code }}
+                              ></span>
+                            )}
+                          </p>
                           <p className="text-[#807D7E] font-400 font-[poppins]">Qty : <span className="text-[#1a1a1a] font-400">{item.quantity}</span></p>
                           <p className="text-[#807D7E] font-400 mt-2 sm:mt-0 ml-auto">
-                            <span className="text-[#1a1a1a] text-2xl font-semibold">₹{item.totalAmount?.toFixed(2) || item.price.toFixed(2)}</span>
+                            <span className="text-[#1a1a1a] text-2xl font-semibold">₹{Math.round(item.totalAmount || item.price)}</span>
                           </p>
                         </div>
                       </div>

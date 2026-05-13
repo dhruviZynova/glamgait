@@ -27,6 +27,8 @@ const Navbar = () => {
   const [mobileExpanded, setMobileExpanded] = useState({});
   const [megaMenuCache, setMegaMenuCache] = useState({});
   const [showAuthChoice, setShowAuthChoice] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
 
   const desktopSearchRef = useRef(null);
   const navRef = useRef(null);
@@ -34,12 +36,12 @@ const Navbar = () => {
   // Helper function to get user initials
   const getUserInitials = (userName) => {
     if (!userName) return "U";
-    
+
     const names = userName.trim().split(" ");
     if (names.length === 1) {
       return names[0].charAt(0).toUpperCase();
     }
-    
+
     const firstInitial = names[0].charAt(0).toUpperCase();
     const lastInitial = names[names.length - 1].charAt(0).toUpperCase();
     return firstInitial + lastInitial;
@@ -129,6 +131,17 @@ const Navbar = () => {
     return () => clearInterval(interval);
   }, [announcements]);
 
+  // Pre-fetch filters for all categories to know if they have subcategories
+  useEffect(() => {
+    if (categories.length > 0) {
+      categories.forEach(cat => {
+        if (!megaMenuCache[cat.cate_id]) {
+          fetchCategoryFilters(cat.cate_id);
+        }
+      });
+    }
+  }, [categories]);
+
   useEffect(() => {
     const handleScroll = () => {
       const windowHeight = window.innerHeight;
@@ -163,6 +176,60 @@ const Navbar = () => {
     return () => window.removeEventListener("resize", updateBounds);
   }, [categories]);
 
+  const fetchCartCount = async () => {
+    try {
+      if (!u_id) {
+        const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
+        setCartCount(localCart.reduce((total, item) => total + (item.quantity || 1), 0));
+        return;
+      }
+      const res = await axiosInstance.get(`/getcart?u_id=${u_id}`);
+      if (res?.data?.status === 1) {
+        const items = res.data.data || [];
+        setCartCount(items.reduce((total, item) => total + Number(item.quantity || 1), 0));
+      } else {
+        setCartCount(0);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchWishlistCount = async () => {
+    try {
+      if (!u_id) {
+        const localWishlist = JSON.parse(localStorage.getItem('localWishlist') || '[]');
+        setWishlistCount(localWishlist.length);
+        return;
+      }
+      const res = await axiosInstance.get(`/getwishlist?u_id=${u_id}`);
+      if (res?.data?.status === 1) {
+        const items = res.data.data || [];
+        setWishlistCount(items.length);
+      } else {
+        setWishlistCount(0);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCartCount();
+    fetchWishlistCount();
+
+    const handleCartUpdate = () => fetchCartCount();
+    const handleWishlistUpdate = () => fetchWishlistCount();
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('wishlistUpdated', handleWishlistUpdate);
+
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('wishlistUpdated', handleWishlistUpdate);
+    };
+  }, [u_id]);
+
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const handleSearch = (e) => {
@@ -184,7 +251,6 @@ const Navbar = () => {
   // Menu items with cate_slug
   const menuItems = [
     { to: "/", label: "Home" },
-    { to: "/about", label: "About" },
     ...categories.map((cat) => {
       const cate_slug = createSlug(cat.cate_name);
       return {
@@ -194,6 +260,7 @@ const Navbar = () => {
         cate_slug,
       };
     }),
+    { to: "/about", label: "About" },
     { to: "/contact", label: "Contact Us" },
   ];
 
@@ -239,14 +306,14 @@ const Navbar = () => {
               >
                 <Link
                   to={item.to}
-                  className={`text-[16px] font-medium transition-colors ${location.pathname.startsWith("/collections") &&
+                  className={`text-[16px] capitalize transition-all duration-300 ${location.pathname.startsWith("/collections") &&
                     item.cate_slug
                     ? location.pathname.includes(item.cate_slug)
-                      ? "text-[#1C2F2F] font-500 poppins-font"
-                      : "text-[#767676] hover:text-black"
+                      ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
+                      : "text-[#767676] font-medium hover:text-[#1C2F2F]"
                     : location.pathname === item.to
-                      ? "text-[#1C2F2F] font-500 poppins-font"
-                      : "text-[#767676] hover:text-black"
+                      ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
+                      : "text-[#767676] font-medium hover:text-[#1C2F2F]"
                     }`}
                 >
                   {item.label}
@@ -260,18 +327,24 @@ const Navbar = () => {
 
             {/* 1. Search Icon */}
             <Search
-              className="cursor-pointer text-[#767676] hover:text-black"
+              className="cursor-pointer text-[#767676] hover:text-[#1C2F2F]"
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
             />
 
             {/* 2. Heart/Wishlist Icon */}
-            <Link to="/wishlist">
-              <Heart className="cursor-pointer text-[#767676] hover:text-black" />
+            <Link to="/wishlist" className="relative">
+              <Heart className="cursor-pointer text-[#767676] hover:text-[#1C2F2F]" />
+              <span className="absolute -top-2 -right-2 bg-[#1C2F2F] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                {wishlistCount}
+              </span>
             </Link>
 
             {/* 3. Shopping Cart Icon */}
-            <Link to="/cart">
-              <ShoppingCart className="cursor-pointer text-[#767676] hover:text-black" />
+            <Link to="/cart" className="relative">
+              <ShoppingCart className="cursor-pointer text-[#767676] hover:text-[#1C2F2F]" />
+              <span className="absolute -top-2 -right-2 bg-[#1C2F2F] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                {cartCount}
+              </span>
             </Link>
 
             {/* 4. Custom User Icon */}
@@ -281,7 +354,7 @@ const Navbar = () => {
                 if (u_id && token) {
                   navigate("/myorders");
                 } else {
-                  setShowAuthChoice(true);
+                  navigate("/login");
                 }
               }}
             >
@@ -344,7 +417,7 @@ const Navbar = () => {
         </div>
 
         {/* Mega Menu – Desktop */}
-        {showMegaMenu && hoveredCategory?.cate_id && (
+        {showMegaMenu && hoveredCategory?.cate_id && Object.values(megaMenuData).some(items => items && items.length > 0) && (
           <div
             className="max-w-5xl mx-auto absolute inset-x-0 top-full bg-[#f3f0ed] shadow-xl border-t"
             onMouseEnter={() => setShowMegaMenu(true)}
@@ -438,42 +511,55 @@ const Navbar = () => {
                   className="border-b border-gray-200 last:border-0"
                 >
                   {item.cate_id ? (
-                    <>
-                      <button
-                        onClick={() => {
-                          if (mobileExpanded[item.cate_id]) {
-                            setMobileExpanded((prev) => ({
-                              ...prev,
-                              [item.cate_id]: null,
-                            }));
-                          } else {
-                            setMobileExpanded((prev) => ({
-                              ...prev,
-                              [item.cate_id]: "all",
-                            }));
-                            fetchCategoryFilters(item.cate_id);
-                          }
-                        }}
-                        className="w-full flex justify-between items-center py-4 text-left font-medium text-gray-900"
-                      >
-                        {item.label}
-                        {mobileExpanded[item.cate_id] ? (
-                          <Minus size={18} />
-                        ) : (
-                          <Plus size={18} />
+                    <div className="flex flex-col">
+                      <div className="flex justify-between items-center">
+                        <Link
+                          to={item.to}
+                          onClick={() => setIsOpen(false)}
+                          className={`flex-grow py-4 capitalize transition-colors ${location.pathname === item.to || (item.cate_slug && location.pathname.includes(item.cate_slug))
+                            ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
+                            : "text-gray-900 font-medium"
+                            }`}
+                        >
+                          {item.label}
+                        </Link>
+                        {megaMenuCache[item.cate_id] && Object.values(megaMenuCache[item.cate_id]).some(items => items && items.length > 0) && (
+                          <button
+                            onClick={() => {
+                              if (mobileExpanded[item.cate_id]) {
+                                setMobileExpanded((prev) => ({
+                                  ...prev,
+                                  [item.cate_id]: null,
+                                }));
+                              } else {
+                                setMobileExpanded((prev) => ({
+                                  ...prev,
+                                  [item.cate_id]: "all",
+                                }));
+                                fetchCategoryFilters(item.cate_id);
+                              }
+                            }}
+                            className="p-4 text-gray-500 hover:text-[#1C2F2F]"
+                          >
+                            {mobileExpanded[item.cate_id] ? (
+                              <Minus size={18} />
+                            ) : (
+                              <Plus size={18} />
+                            )}
+                          </button>
                         )}
-                      </button>
+                      </div>
                       {mobileExpanded[item.cate_id] && (
                         <div className="pb-4 space-y-4">
                           <Link
                             to={item.to}
                             onClick={() => setIsOpen(false)}
-                            className="block pl-4 text-sm font-bold text-gray-700"
+                            className="block pl-4 text-sm font-bold text-gray-700 hover:text-[#1C2F2F]"
                           >
-                            All {item.label}
+                            All <span className="capitalize">{item.label}</span>
                           </Link>
-                          {Object.keys(megaMenuData).map((key) => {
-                            const data = megaMenuData[key];
+                          {megaMenuCache[item.cate_id] && Object.keys(megaMenuCache[item.cate_id]).map((key) => {
+                            const data = megaMenuCache[item.cate_id][key];
                             if (!data?.length) return null;
                             const label = labelMap[key] || key;
                             return (
@@ -484,7 +570,7 @@ const Navbar = () => {
                                   }
                                   className="w-full flex justify-between items-center py-2 pl-4 text-sm font-medium text-gray-700"
                                 >
-                                  {label}
+                                  <span className="capitalize">{label}</span>
                                   {mobileExpanded[item.cate_id] === key ? (
                                     <Minus size={16} />
                                   ) : (
@@ -503,7 +589,7 @@ const Navbar = () => {
                                             onClick={() => setIsOpen(false)}
                                             className="block text-sm text-gray-600 hover:text-black"
                                           >
-                                            {it.name}
+                                            <span className="capitalize">{it.name}</span>
                                           </Link>
                                         </li>
                                       );
@@ -515,12 +601,15 @@ const Navbar = () => {
                           })}
                         </div>
                       )}
-                    </>
+                    </div>
                   ) : (
                     <Link
                       to={item.to}
                       onClick={() => setIsOpen(false)}
-                      className="block py-4 font-medium text-gray-900"
+                      className={`block py-4 capitalize transition-colors ${location.pathname === item.to
+                        ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4"
+                        : "text-gray-900 font-medium"
+                        }`}
                     >
                       {item.label}
                     </Link>

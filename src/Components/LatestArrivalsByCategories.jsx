@@ -24,7 +24,6 @@ const LatestArrivalsByCategories = () => {
             try {
                 setLoading(true);
                 const response = await axiosInstance.get(`${ApiURL}/getlatestarrivals`);
-                console.log("Latest Arrivals Response:", response.data);
                 if (response.data.status === 1) {
                     setProducts(response.data.data || []);
                 }
@@ -61,62 +60,72 @@ const LatestArrivalsByCategories = () => {
                     </p>
                 </div>
 
-                <div className="grid-container">
-                    <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
-                        {products.map((product) => {
-                            const discountPercentage =
-                                product?.original_price && product?.original_price > product?.price
-                                    ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
-                                    : 0;
+                <div className="space-y-12 px-4 sm:px-12 ">
+                    {products.map((categoryGroup, groupIdx) => (
+                        <div key={categoryGroup.category?.cate_id || groupIdx}>
+                            <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
+                                {categoryGroup.products?.map((product) => {
+                                    const discountPercentage =
+                                        product?.original_price && product?.original_price > product?.price
+                                            ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
+                                            : 0;
 
-                            const productSlug = product.slug || createSlug(product.name) || product.p_id;
+                                    const productSlug = product.slug || createSlug(product.name) || product.p_id;
 
-                            return (
-                                <Link
-                                    to={`/product/${productSlug}`}
-                                    key={product.p_id}
-                                    style={{ textDecoration: "none", color: "inherit" }}
-                                >
-                                    <div className="arrival-card">
-                                        <div className="card-image-wrapper">
-                                            <span className="off-badge">{discountPercentage > 0 ? `${discountPercentage}% OFF` : ''}</span>
-                                            <img
-                                                src={`${ApiURL}/assets/Products/${product?.productcolors?.[0]?.productimages?.[0]?.image_url || ''}`}
-                                                alt={product.name}
-                                                onError={(e) => {
-                                                    e.target.onerror = null;
-                                                    e.target.src = "/placeholder.png"; // Fallback image if needed
-                                                }}
-                                            />
-                                        </div>
-                                        <div className="card-info">
-                                            <div className="info-header">
-                                                <h3 className="product-name">{product.name}</h3>
-                                                <div className="product-price">
-                                                    {product.original_price > product.price && (
-                                                        <span className="original-price">₹{product.original_price}</span>
-                                                    )}
-                                                    <span>₹{product.price}</span>
+                                    let imageUrl = product?.colors?.[0]?.images?.[0]?.image_url || '';
+                                    if (imageUrl && !imageUrl.startsWith('http')) {
+                                        imageUrl = `${ApiURL}/assets/Products/${imageUrl}`;
+                                    }
+
+                                    return (
+                                        <Link
+                                            to={`/product/${productSlug}`}
+                                            key={product.p_id}
+                                            style={{ textDecoration: "none", color: "inherit" }}
+                                        >
+                                            <div className="arrival-card">
+                                                <div className="card-image-wrapper">
+                                                    <span className="off-badge">{discountPercentage > 0 ? `${discountPercentage}% OFF` : ''}</span>
+                                                    <img
+                                                        src={imageUrl}
+                                                        alt={product.name}
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = "/placeholder.png"; // Fallback image if needed
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="card-info">
+                                                    <div className="info-header">
+                                                        <h3 className="product-name">{product.name}</h3>
+                                                        <div className="product-price">
+                                                            {product.original_price > product.price && (
+                                                                <span className="original-price">₹{product.original_price}</span>
+                                                            )}
+                                                            <span>₹{product.price}</span>
+                                                        </div>
+                                                    </div>
+                                                    <p className="category-tag">
+                                                        {categoryGroup.category?.cate_name || product?.colors?.[0]?.color_name || "Style"}
+                                                    </p>
+                                                    <div className="color-swatches">
+                                                        {product.colors?.slice(0, 4).map((color) => (
+                                                            <div
+                                                                key={color.color_id || color.color_name}
+                                                                className="swatch"
+                                                                style={{ backgroundColor: color.color_code }}
+                                                                title={color.color_name}
+                                                            />
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <p className="category-tag">
-                                                {product.category?.cate_name || product?.productcolors?.[0]?.color?.color_name || "Style"}
-                                            </p>
-                                            <div className="color-swatches">
-                                                {product.productcolors?.slice(0, 4).map((color) => (
-                                                    <div
-                                                        key={color.pcolor_id}
-                                                        className="swatch"
-                                                        style={{ backgroundColor: color.color?.color_code }}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Link>
-                            );
-                        })}
-                    </div>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </section>

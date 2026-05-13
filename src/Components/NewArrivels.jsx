@@ -16,8 +16,8 @@ const NewArrivels = () => {
     const fetchProducts = async () => {
       try {
         const [newArrivalsRes, bestSellerRes] = await Promise.all([
-          axiosInstance.post(`${ApiURL}/getproducts`, { limit: 8 }),
-          axiosInstance.post(`${ApiURL}/getproducts`, { limit: 8 }),
+          axiosInstance.get(`${ApiURL}/getproducts`, { limit: 8 }),
+          axiosInstance.get(`${ApiURL}/getproducts`, { limit: 8 }),
         ]);
         setNewArrivals(newArrivalsRes.data.data || []);
         setBestSeller(bestSellerRes.data.data || []);
@@ -145,8 +145,8 @@ const NewArrivels = () => {
         <button
           onClick={() => setActiveTab("bestSeller")}
           className={`px-6 py-2 rounded-[10px] text-gray-800 text-[14px] lg:text-[16px]  transition ${activeTab === "bestSeller"
-              ? "bg-[#02382A] text-white"
-              : "bg-white shadow"
+            ? "bg-[#02382A] text-white"
+            : "bg-white shadow"
             }`}
         >
           BEST SELLER
@@ -154,8 +154,8 @@ const NewArrivels = () => {
         <button
           onClick={() => setActiveTab("newArrivals")}
           className={`px-6 py-2 rounded-[10px] text-gray-800 text-[14px] lg:text-[16px] transition ${activeTab === "newArrivals"
-              ? "bg-[#02382A] text-white"
-              : "bg-white shadow"
+            ? "bg-[#02382A] text-white"
+            : "bg-white shadow"
             }`}
         >
           NEW ARRIVALS

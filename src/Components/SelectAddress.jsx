@@ -594,6 +594,11 @@ const SelectAddress = () => {
         setFormData({ ...formData, [name]: value });
         if (value.length === 6) fetchCityState(value);
       }
+    } else if (name === "phone_number") {
+      // Only allow digits, max 15
+      if (/^\d*$/.test(value) && value.length <= 15) {
+        setFormData({ ...formData, [name]: value });
+      }
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -638,6 +643,13 @@ const SelectAddress = () => {
       !formData.state
     ) {
       toast.error("Please fill all required address fields");
+      return;
+    }
+
+    // Validate phone number (10-15 digits)
+    const phoneDigits = formData.phone_number.replace(/\D/g, "");
+    if (phoneDigits.length < 10 || phoneDigits.length > 15) {
+      toast.error("Phone number must be between 10 and 15 digits");
       return;
     }
 
@@ -810,7 +822,7 @@ const SelectAddress = () => {
     if (!coupon) return toast.error("Invalid or expired coupon");
 
     if (subtotal < coupon.min_amount) {
-      return console.log(`Minimum cart ₹${coupon.min_amount}`);
+      return toast.error(`Minimum cart ₹${coupon.min_amount}`);
     }
 
     const discount = Math.floor((subtotal * coupon.discount_percent) / 100);
@@ -878,8 +890,10 @@ const SelectAddress = () => {
                 type="tel"
                 value={formData.phone_number}
                 onChange={handleChange}
-                placeholder="Phone Number *"
+                placeholder="Phone Number (10-15 digits) *"
                 required
+                minLength={10}
+                maxLength={15}
                 className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
               />
 
@@ -938,22 +952,20 @@ const SelectAddress = () => {
                 <button
                   type="button"
                   onClick={() => setAddressType("HOME")}
-                  className={`flex-1 py-2 rounded-md font-medium ${
-                    addressType === "HOME"
+                  className={`flex-1 py-2 rounded-md font-medium ${addressType === "HOME"
                       ? "bg-[#063d32] text-white"
                       : "bg-gray-200 text-gray-700"
-                  }`}
+                    }`}
                 >
                   HOME
                 </button>
                 <button
                   type="button"
                   onClick={() => setAddressType("WORK")}
-                  className={`flex-1 py-2 rounded-md font-medium ${
-                    addressType === "WORK"
+                  className={`flex-1 py-2 rounded-md font-medium ${addressType === "WORK"
                       ? "bg-[#063d32] text-white"
                       : "bg-gray-200 text-gray-700"
-                  }`}
+                    }`}
                 >
                   WORK
                 </button>
@@ -971,9 +983,8 @@ const SelectAddress = () => {
               {cartItems.map((item, i) => (
                 <div key={i} className="flex gap-4 pb-4 border-b">
                   <img
-                    src={`${ApiURL}/assets/Products/${
-                      item.image_url || item.images?.[0]
-                    }`}
+                    src={`${ApiURL}/assets/Products/${item.image_url || item.images?.[0]
+                      }`}
                     alt={item.product_name}
                     className="w-20 h-20 object-cover rounded"
                   />

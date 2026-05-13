@@ -51,7 +51,7 @@ const SideBar = ({ onMenuChange = () => { } }) => {
       {/* Sidebar */}
       <div
         className={`${isOpen ? "block" : "hidden"
-          } md:block md:min-h-screen w-full p-6 md:p-8 font-inter sticky top-0 z-40 transition-all duration-300`}
+          } md:block h-fit w-full p-6 md:p-8 font-inter sticky top-20 z-40 transition-all duration-300`}
       >
         {/* Header */}
         <div className="mb-8">

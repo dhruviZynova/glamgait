@@ -336,21 +336,21 @@ const Profileorder = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2">
                       <div>
                         <h3 className="text-lg font-semibold text-[#1a1a1a] mb-2">Order no: #{order.orderId}</h3>
-                        <p className="text-sm text-gray-500 font-medium">
-                          <span className="text-[#807D7E] font-[Causten] font-semibold">Order Date : </span><span className="text-[#BEBCBD] font-[Causten] font-normal">{new Date(order.createdAt).toLocaleDateString()}</span>
+                        <p className="text-sm">
+                          <span className="text-[#3C4242] font-[Causten] font-600">Order Date : </span><span className="text-[#3C4242] font-[Causten] font-600">{new Date(order.createdAt).toLocaleDateString()}</span>
                         </p>
-                        <p className="text-sm text-gray-500 font-medium">
-                          <span className="text-[#807D7E] font-[Causten] font-semibold">Estimated Delivery Date : </span><span className="text-[#BEBCBD] font-[Causten] font-normal">8 June 2023</span>
+                        <p className="text-sm">
+                          <span className="text-[#3C4242] font-[Causten] font-600">Estimated Delivery Date : </span><span className="text-[#3C4242] font-[Causten] font-600">8 June 2023</span>
                         </p>
                       </div>
                     </div>
 
                     <div className="text-left md:text-right space-y-1">
-                      <p className="text-sm text-gray-500 font-medium">
-                        <span className="text-[#807D7E] font-[Causten] font-semibold">Order Status : </span><span className="text-[#BEBCBD] font-[Causten] font-normal capitalize">{statusMap[order.status] || "Unknown"}</span>
+                      <p className="text-sm">
+                        <span className="text-[#3C4242] font-[Causten] font-600">Order Status : </span><span className="text-[#3C4242] font-[Causten] font-600 capitalize">{statusMap[order.status] || "Unknown"}</span>
                       </p>
-                      <p className="text-sm text-gray-500 font-medium">
-                        <span className="text-[#807D7E] font-[Causten] font-semibold">Payment Method : </span><span className="text-[#BEBCBD] font-[Causten] font-normal">{order.paymentStatus}</span>
+                      <p className="text-sm">
+                        <span className="text-[#3C4242] font-[Causten] font-600">Payment Method : </span><span className="text-[#3C4242] font-[Causten] font-600">{order.paymentStatus}</span>
                       </p>
                     </div>
                   </div>
@@ -370,14 +370,20 @@ const Profileorder = () => {
                           <div className="flex flex-col justify-center">
                             <h4 className="font-semibold text-[#1a1a1a] text-lg mb-1">{item.productName}</h4>
                             <div className="space-y-0.5">
-                              <p className="text-sm text-gray-500">
-                                Colour : <span className="text-[#BEBCBD] font-[Causten] font-normal capitalize">{item.color_name || "N/A"}</span>
+                              <p className="text-sm flex items-center gap-2">
+                                Colour : <span className="text-[#3C4242] font-[Causten] font-600 capitalize">{item.color_name || "N/A"}</span>
+                                {item.color_code && (
+                                  <span 
+                                    className="w-3 h-3 rounded-full border border-gray-300" 
+                                    style={{ backgroundColor: item.color_code }}
+                                  ></span>
+                                )}
                               </p>
-                              <p className="text-sm text-gray-500">
-                                Qty : <span className="text-[#BEBCBD] font-[Causten] font-normal">{item.quantity}</span>
+                              <p className="text-sm">
+                                Qty : <span className="text-[#3C4242] font-[Causten] font-600">{item.quantity}</span>
                               </p>
-                              <p className="text-sm text-gray-500">
-                                Total : <span className="text-[#BEBCBD] font-[Causten] font-normal">₹{item.totalAmount.toFixed(2)}</span>
+                              <p className="text-sm">
+                                Total : <span className="text-[#3C4242] font-[Causten] font-600">₹{Math.round(item.totalAmount)}</span>
                               </p>
                             </div>
                           </div>

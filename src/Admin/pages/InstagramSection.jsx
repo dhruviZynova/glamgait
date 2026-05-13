@@ -2,11 +2,12 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../../Axios/axios";
 import { Upload, Trash2, Loader2 } from "lucide-react";
-import { ApiURL, showToaster } from "../../Variable";
+import { ApiURL, showToaster, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import toast, { Toaster } from "react-hot-toast";
 
 const InstagramSection = () => {
+  const adminData = adminInfo();
   const [error, setError] = useState("");
   const [file, setFile] = useState(null);
   const [media, setMedia] = useState([]);
@@ -61,7 +62,12 @@ const InstagramSection = () => {
     try {
       const response = await axiosInstance.post(
         `${ApiURL}/addinstaimage`,
-        formData
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        }
       );
       if (response?.data?.status) {
         setFile(null);
@@ -93,7 +99,12 @@ const InstagramSection = () => {
   const confirmDelete = async () => {
     try {
       const response = await axiosInstance.delete(
-        `${ApiURL}/deleteinstaimage/${deleteModal.insta_id}`
+        `${ApiURL}/deleteinstaimage/${deleteModal.insta_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        }
       );
       if (response?.data?.status) {
         fetchImages();
@@ -117,7 +128,11 @@ const InstagramSection = () => {
 
   const fetchImages = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getinstaimages`);
+      const response = await axiosInstance.get(`${ApiURL}/getinstaimages`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       if (response?.data?.status) {
         setMedia(response.data.data);
       } else {
@@ -210,8 +225,9 @@ const InstagramSection = () => {
                     alt="Media preview"
                     className="w-full h-full object-cover"
                     onError={(e) => {
+                      e.target.onerror = null;
                       e.target.src =
-                        "https://via.placeholder.com/180x320?text=Preview+Failed";
+                        "https://placehold.co/180x320?text=Preview+Failed";
                     }}
                   />
                 ) : (
@@ -220,8 +236,9 @@ const InstagramSection = () => {
                     controls
                     className="w-full h-full object-cover"
                     onError={(e) => {
+                      e.target.onerror = null;
                       e.target.poster =
-                        "https://via.placeholder.com/180x320?text=Preview+Failed";
+                        "https://placehold.co/180x320?text=Preview+Failed";
                     }}
                   />
                 )}
@@ -262,23 +279,25 @@ const InstagramSection = () => {
                     item?.image_url.endsWith(".webm") ||
                     item?.image_url.endsWith(".ogg") ? (
                     <video
-                      src={`${ApiURL}/assets/Instagram/${item?.image_url}`}
+                      src={`${item?.image_url}`}
                       controls
                       className="w-full h-full object-cover"
                       onError={(e) => {
+                        e.target.onerror = null;
                         e.target.poster =
-                          "https://via.placeholder.com/180x320?text=Media+Failed";
+                          "https://placehold.co/180x320?text=Media+Failed";
                       }}
                       aria-label={`Instagram video ${item.insta_id}`}
                     />
                   ) : (
                     <img
-                      src={`${ApiURL}/assets/Instagram/${item?.image_url}`}
+                      src={`${item?.image_url}`}
                       alt={`Instagram media ${item.insta_id}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
+                        e.target.onerror = null;
                         e.target.src =
-                          "https://via.placeholder.com/180x320?text=Media+Failed";
+                          "https://placehold.co/180x320?text=Media+Failed";
                       }}
                     />
                   )}

@@ -88,7 +88,11 @@ const PersonalInfo = () => {
         toast.error(res.data.description || "Failed to update");
       }
     } catch (err) {
-      toast.error("Something went wrong");
+      if (err.response?.status === 400 && err.response?.data?.description) {
+        toast.error(err.response.data.description);
+      } else {
+        toast.error("Something went wrong while updating your profile");
+      }
       console.error(err);
     }
   };

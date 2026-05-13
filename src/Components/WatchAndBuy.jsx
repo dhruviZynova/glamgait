@@ -230,7 +230,7 @@ const WatchAndBuy = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/getproducts`, {
+      const response = await axiosInstance.get(`${ApiURL}/getproducts`, {
         limit: 10,
         is_expert_choice: 1,
       });

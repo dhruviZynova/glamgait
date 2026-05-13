@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ApiURL, showToaster } from "../../Variable";
+import { ApiURL, showToaster, adminInfo } from "../../Variable";
 import axiosInstance from "../../Axios/axios";
 import {
   PlusIcon,
@@ -10,6 +10,7 @@ import {
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Occasions = () => {
+  const adminData = adminInfo();
   const [isEdit, setIsEdit] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
 
@@ -30,7 +31,11 @@ const Occasions = () => {
 
   const fetchOccasions = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getoccasions`);
+      const response = await axiosInstance.get(`${ApiURL}/getoccasions`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       if (response?.data?.status) setOccasionData(response?.data?.data);
       else setOccasionData([]);
     } catch (error) {
@@ -40,7 +45,11 @@ const Occasions = () => {
   };
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`);
+      const response = await axiosInstance.get(`${ApiURL}/getcategory`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       setCategoryData(response?.data?.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -59,13 +68,23 @@ const Occasions = () => {
       if (isEdit) {
         const response = await axiosInstance.put(
           `${ApiURL}/updateoccasion`,
-          formData
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+            },
+          }
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
         const response = await axiosInstance.post(
           `${ApiURL}/addoccasion`,
-          formData
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+            },
+          }
         );
         showToaster(response?.data?.status, response?.data?.description);
       }
@@ -74,8 +93,7 @@ const Occasions = () => {
       setFormData({ name: "", occasion_id: null, cate_id: "" });
       setIsEdit(false);
     } catch (error) {
-      console.log(error);
-      showToaster(0, "Error saving occasion");
+      showToaster(0, error?.response?.data?.description || "Error saving occasion");
     }
   };
 
@@ -85,9 +103,17 @@ const Occasions = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/deleteoccasion`, {
-        occasion_id: deleteModal.occasion_id,
-      });
+      const response = await axiosInstance.post(
+        `${ApiURL}/deleteoccasion`,
+        {
+          occasion_id: deleteModal.occasion_id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        }
+      );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status) fetchOccasions();
     } catch (error) {

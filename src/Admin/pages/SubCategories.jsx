@@ -385,10 +385,11 @@ import {
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import axiosInstance from "../../Axios/axios";
-import { ApiURL, showToaster, getFullImageUrl } from "../../Variable";
+import { ApiURL, showToaster, getFullImageUrl, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const SubCategories = () => {
+  const adminData= adminInfo();
   const [isEdit, setIsEdit] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [subCategoryData, setSubCategoryData] = useState([]);
@@ -412,7 +413,11 @@ const SubCategories = () => {
   // Fetch categories for dropdown
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`);
+      const response = await axiosInstance.get(`${ApiURL}/getcategory`,{
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       if (response?.data?.status) {
         setCategoryData(response?.data?.data);
       } else {
@@ -427,7 +432,11 @@ const SubCategories = () => {
   // Fetch subcategories (updated to include SEO fields)
   const fetchSubCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getsubcategory`);
+      const response = await axiosInstance.get(`${ApiURL}/getsubcategory`,{
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       if (response?.data?.status) {
         setSubCategoryData(response?.data?.data);
       } else {
@@ -470,12 +479,22 @@ const SubCategories = () => {
       if (isEdit) {
         response = await axiosInstance.put(
           `${ApiURL}/updatesubcategory`,
-          payload
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+            },
+          }
         );
       } else {
         response = await axiosInstance.post(
           `${ApiURL}/addsubcategory`,
-          payload
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+            },
+          }
         );
       }
 
@@ -530,7 +549,12 @@ const SubCategories = () => {
   const confirmDelete = async () => {
     try {
       const response = await axiosInstance.delete(
-        `${ApiURL}/deletesubcategory/${deleteModal.sc_id}`
+        `${ApiURL}/deletesubcategory/${deleteModal.sc_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        }
       );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status) fetchSubCategories();

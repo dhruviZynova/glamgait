@@ -343,11 +343,11 @@ import {
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import axiosInstance from "../../Axios/axios";
-import { ApiURL, showToaster, userInfo, getFullImageUrl } from "../../Variable";
+import { ApiURL, showToaster, adminInfo, getFullImageUrl } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Categories = () => {
-  const userData = userInfo();
+  const adminData = adminInfo();
 
   const [isEdit, setIsEdit] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -430,13 +430,14 @@ const Categories = () => {
         method: isEdit ? "PUT" : "POST",
         url: api,
         data: payload,
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
       });
 
-      showToaster(response?.data?.status, response?.data?.description);
-
       fetchCategories();
-
       setIsModalOpen(false);
+      showToaster(response?.data?.status, response?.data?.description);
       setFormData({
         cate_name: "",
         cate_id: null,
@@ -448,8 +449,7 @@ const Categories = () => {
       setMediaType(null);
       setIsEdit(false);
     } catch (error) {
-      console.log(error);
-      showToaster(0, "Error saving category");
+      showToaster(0, error?.response?.data?.description || "Error saving category");
     }
   };
 
@@ -467,7 +467,9 @@ const Categories = () => {
           cate_chart: deleteModal.cate_chart, // ⭐ include chart delete
         },
         {
-          headers: { Authorization: `Bearer ${userData?.token}` },
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
         }
       );
 
@@ -549,7 +551,7 @@ const Categories = () => {
                 <tr key={category?.cate_id}>
                   <td className="px-6 py-4 text-sm text-gray-700">{category?.cate_name}</td>
 
-                   <td className="px-6 py-4">
+                  <td className="px-6 py-4">
                     {category?.image || category?.cate_image ? (
                       (category?.image || category?.cate_image)?.match(/\.(mp4|webm|ogg)$/i) ? (
                         <video

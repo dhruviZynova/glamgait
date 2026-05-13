@@ -6,10 +6,11 @@ import {
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import axiosInstance from "../../Axios/axios";
-import { ApiURL, showToaster } from "../../Variable";
+import { ApiURL, showToaster, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Sizes = () => {
+  const adminData = adminInfo();
   const [isEdit, setIsEdit] = useState(false);
   const [sizeData, setSizeData] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -28,7 +29,11 @@ const Sizes = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`);
+      const response = await axiosInstance.get(`${ApiURL}/getcategory`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       if (response?.data?.status) {
         setCategories(response?.data?.data);
       } else {
@@ -42,7 +47,11 @@ const Sizes = () => {
 
   const fetchSizes = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getsize`);
+      const response = await axiosInstance.get(`${ApiURL}/getsize`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       if (response?.data?.status) setSizeData(response?.data?.data);
       else setSizeData([]);
     } catch (error) {
@@ -68,11 +77,20 @@ const Sizes = () => {
       if (isEdit) {
         const response = await axiosInstance.put(
           `${ApiURL}/updatesize`,
-          payload
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+            },
+          }
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
-        const response = await axiosInstance.post(`${ApiURL}/addsize`, payload);
+        const response = await axiosInstance.post(`${ApiURL}/addsize`, payload, {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        });
         showToaster(response?.data?.status, response?.data?.description);
       }
       fetchSizes();
@@ -80,8 +98,7 @@ const Sizes = () => {
       setFormData({ size_name: "", cate_id: "", size_id: null });
       setIsEdit(false);
     } catch (error) {
-      console.log(error);
-      showToaster(0, "Error saving size");
+      showToaster(0, error?.response?.data?.description || "Error saving size");
     }
   };
 
@@ -95,8 +112,7 @@ const Sizes = () => {
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status) fetchSizes();
     } catch (error) {
-      console.log(error);
-      showToaster(0, "Error deleting size");
+      showToaster(0, error?.response?.data?.description || "Error deleting size");
     } finally {
       setDeleteModal({ isOpen: false, size_id: null, name: "" });
     }

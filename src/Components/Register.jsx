@@ -24,6 +24,13 @@ const Register = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validatePassword = (password) => {
+    if (password.length < 8) return "Password must be at least 8 characters";
+    if (!/[A-Z]/.test(password)) return "Password must contain at least one uppercase letter";
+    if (!/[0-9]/.test(password)) return "Password must contain at least one number";
+    return null;
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -31,6 +38,13 @@ const Register = () => {
     const { first_name, last_name, email, password } = formData;
     if (!first_name || !last_name || !email || !password) {
       toast.error("Please fill all fields");
+      setLoading(false);
+      return;
+    }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      toast.error(passwordError);
       setLoading(false);
       return;
     }
@@ -108,7 +122,7 @@ const Register = () => {
                   <input
                     type={passwordVisible ? "text" : "password"}
                     name="password"
-                    placeholder="••••••"
+                    placeholder="Min 8 chars, 1 uppercase, 1 number"
                     value={formData.password}
                     onChange={handleChange}
                     className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-300"
@@ -121,6 +135,7 @@ const Register = () => {
                     {passwordVisible ? <FaRegEyeSlash size={16} /> : <FaRegEye size={16} />}
                   </button>
                 </div>
+                <p className="text-[10px] text-gray-400 pl-2">Min 8 characters, 1 uppercase letter &amp; 1 number required</p>
               </div>
 
               <button

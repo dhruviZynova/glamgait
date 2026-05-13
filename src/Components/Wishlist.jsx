@@ -183,14 +183,23 @@ import wishlistempty from "../assets/wishlistempty.png";
 const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const user = userInfo();
+  const userData = userInfo();
 
   const fetchWishlist = async () => {
     try {
-      const identifier = user?.u_id || getGuestId();
-      const query = user?.u_id
-        ? `u_id=${identifier}`
-        : `guest_id=${identifier}`;
+      if (!userData?.u_id) {
+        const localWishlist = JSON.parse(localStorage.getItem('localWishlist') || '[]');
+        const mappedLocalWishlist = localWishlist.map((item, index) => ({
+          ...item,
+          w_id: `local-${index}`
+        }));
+        setWishlistItems(mappedLocalWishlist);
+        setLoading(false);
+        return;
+      }
+
+      const identifier = userData.u_id;
+      const query = `u_id=${identifier}`;
 
       const res = await axiosInstance.get(`${ApiURL}/getwishlist?${query}`);
 
@@ -212,12 +221,23 @@ const Wishlist = () => {
   }, []);
 
   const handleRemove = async (w_id) => {
+    if (!userData?.u_id && typeof w_id === 'string' && w_id.startsWith('local-')) {
+      const localWishlist = JSON.parse(localStorage.getItem('localWishlist') || '[]');
+      const index = parseInt(w_id.split('-')[1]);
+      localWishlist.splice(index, 1);
+      localStorage.setItem('localWishlist', JSON.stringify(localWishlist));
+      window.dispatchEvent(new Event('wishlistUpdated'));
+      fetchWishlist();
+      return;
+    }
+
     try {
       const res = await axiosInstance.post(`${ApiURL}/removewishlist`, {
         w_id,
       });
       if (res.data.status === 1) {
         setWishlistItems((prev) => prev.filter((item) => item.w_id !== w_id));
+        window.dispatchEvent(new Event('wishlistUpdated'));
         // toast.success("Removed from wishlist");
       }
     } catch (err) {
@@ -226,21 +246,56 @@ const Wishlist = () => {
   };
 
   const handleMoveToCart = async (item) => {
-    try {
-      const identifier = user?.u_id || getGuestId();
+    if (!userData?.u_id) {
+      const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
+      const existingItemIndex = localCart.findIndex(cartItem =>
+        cartItem.p_id === item.p_id &&
+        cartItem.pcolor_id === item.pcolor_id &&
+        cartItem.psize_id === (item.psize_id || null)
+      );
+      if (existingItemIndex !== -1) {
+        localCart[existingItemIndex].quantity += 1;
+      } else {
+        localCart.push({
+          p_id: item.p_id,
+          pcolor_id: item.pcolor_id,
+          psize_id: item.psize_id || null,
+          quantity: 1,
+          product_name: item.product_name,
+          price: item.price,
+          original_price: item.original_price,
+          image_url: item.image_url,
+          color_name: item.color_name,
+          size_name: item.size_name,
+          available_stock: item.stock_qty || item.available_stock
+        });
+      }
+      localStorage.setItem('localCart', JSON.stringify(localCart));
+      window.dispatchEvent(new Event('cartUpdated'));
+      toast.success("Moved to cart!");
+      handleRemove(item.w_id);
+      return;
+    }
 
+    try {
       const payload = {
         p_id: item.p_id,
         pcolor_id: item.pcolor_id,
         psize_id: item.psize_id || null,
         quantity: 1,
-        ...(user?.u_id ? { u_id: user.u_id } : { guest_id: identifier }),
+        u_id: userData.u_id,
+        guest_id: null,
       };
 
-      const res = await axiosInstance.post(`${ApiURL}/createcart`, payload);
+      const res = await axiosInstance.post(
+        `${ApiURL}/createcart`,
+        payload,
+        { headers: { Authorization: `Bearer ${userData.auth_token}` } }
+      );
 
       if (res.data.status === 1) {
         toast.success("Moved to cart!");
+        window.dispatchEvent(new Event('cartUpdated'));
         handleRemove(item.w_id); // Auto-remove from wishlist
       } else {
         toast.error(res.data.description || "Out of stock");
@@ -303,7 +358,7 @@ const Wishlist = () => {
                           </p>
                         ) : item.stock_qty <= 5 ? (
                           <p className="text-orange-600 text-sm font-medium mt-1">
-                            Only {item.stock_qty} left!
+                            Only {item.stock_qty} left
                           </p>
                         ) : null}
                       </div>
@@ -313,11 +368,10 @@ const Wishlist = () => {
                       <button
                         onClick={() => handleMoveToCart(item)}
                         disabled={item.stock_qty === 0}
-                        className={`border px-3 py-2 text-sm rounded-md transition whitespace-nowrap cursor-pointer ${
-                          item.stock_qty > 0
-                            ? "hover:bg-[#02382A] hover:text-white"
-                            : "opacity-60 cursor-not-allowed"
-                        }`}
+                        className={`border px-3 py-2 text-sm rounded-md transition whitespace-nowrap cursor-pointer ${item.stock_qty > 0
+                          ? "hover:bg-[#02382A] hover:text-white"
+                          : "opacity-60 cursor-not-allowed"
+                          }`}
                       >
                         {item.stock_qty > 0 ? "MOVE TO CART" : "UNAVAILABLE"}
                       </button>

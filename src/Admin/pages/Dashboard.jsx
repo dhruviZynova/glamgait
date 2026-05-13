@@ -27,7 +27,7 @@ import {
   XCircle,
   Truck,
 } from "lucide-react";
-import { ApiURL } from "../../Variable";
+import { ApiURL, adminInfo } from "../../Variable";
 import axiosInstance from "../../Axios/axios";
 
 const formatRevenue = (revenue) => {
@@ -44,6 +44,7 @@ const formatRevenue = (revenue) => {
 };
 
 const Dashboard = () => {
+  const adminData = adminInfo();
   const [timeframe, setTimeframe] = useState("daily");
   const [userCount, setUserCount] = useState([]);
   const [dashboardCount, setDashboardCount] = useState({
@@ -71,7 +72,11 @@ const Dashboard = () => {
   // Fetch dashboard data
   const fetchDashboardData = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/stats`);
+      const res = await axiosInstance.get(`${ApiURL}/stats`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       setDashboardCount(res.data.data.stats);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -80,7 +85,11 @@ const Dashboard = () => {
 
   const fetchuserCount = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/usercount`);
+      const res = await axiosInstance.get(`${ApiURL}/usercount`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       setUserCount(res.data.data.count);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -90,7 +99,11 @@ const Dashboard = () => {
   // Fetch chart data
   const fetchChartData = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/chart-data`);
+      const res = await axiosInstance.get(`${ApiURL}/chart-data`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       setChartData(res.data.data.chartData);
     } catch (error) {
       console.error("Error fetching chart data:", error);
@@ -100,7 +113,11 @@ const Dashboard = () => {
   // Fetch order status data
   const fetchOrderStatusData = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/order-status-data`);
+      const res = await axiosInstance.get(`${ApiURL}/order-status-data`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       setOrderStatusData(res.data.data.orderStatusData);
     } catch (error) {
       console.error("Error fetching order status data:", error);
@@ -110,7 +127,11 @@ const Dashboard = () => {
   // Fetch recent orders
   const fetchRecentOrders = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/recent-orders`);
+      const res = await axiosInstance.get(`${ApiURL}/recent-orders`, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       setRecentOrders(res.data.data.recentOrders);
     } catch (error) {
       console.error("Error fetching recent orders:", error);

@@ -11,7 +11,7 @@ import {
 import { Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import axiosInstance from "../../Axios/axios";
-import { ApiURL, userInfo } from "../../Variable";
+import { ApiURL, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Contact = () => {
@@ -26,13 +26,15 @@ const Contact = () => {
     contactId: null,
     name: "",
   });
-  const userData = userInfo();
-  const token = userData?.token;
+  const userData = adminInfo();
 
   const fetchContacts = async (page = 1, limit = itemsPerPage, search = searchTerm) => {
     try {
       const response = await axiosInstance.get(`${ApiURL}/getcontacts`, {
         params: { page, limit, search },
+        headers: {
+          Authorization: `Bearer ${userData?.token || userData?.auth_token}`,
+        },
       });
 
       const { contacts, totalPages } = response.data.data || {
@@ -60,7 +62,7 @@ const Contact = () => {
         `${ApiURL}/deletecontact/${deleteModal.contactId}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${userData?.token || userData?.auth_token}`,
           },
         }
       );

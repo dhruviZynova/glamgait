@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import Topbar from "./components/Topbar";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
-import { userInfo } from "../Variable";
+import { adminInfo } from "../Variable";
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
-  const user = userInfo();
+  const user = adminInfo();
 
   useEffect(() => {
     if (!user?.auth_token || user?.role !== "admin") {

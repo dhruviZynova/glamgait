@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>LocalStorage Test</title>
 </head>
+
 <body>
     <h1>LocalStorage Test</h1>
     <button onclick="testLocalStorage()">Test LocalStorage</button>
     <button onclick="clearLocalStorage()">Clear LocalStorage</button>
     <div id="result"></div>
-    
+
     <script>
         function testLocalStorage() {
             try {
@@ -19,32 +21,30 @@
                     role: 'user',
                     u_id: '123'
                 };
-                
+
                 localStorage.setItem('GlamGait', JSON.stringify(testData));
-                
+
                 const retrieved = localStorage.getItem('GlamGait');
                 const parsed = JSON.parse(retrieved);
-                
+
                 document.getElementById('result').innerHTML = `
                     <h3>Test Results:</h3>
                     <p>Stored: ${JSON.stringify(testData)}</p>
                     <p>Retrieved: ${JSON.stringify(parsed)}</p>
                     <p><strong>Success: ${JSON.stringify(testData) === retrieved}</strong></p>
                 `;
-                
-                console.log('Test data stored:', testData);
-                console.log('Retrieved data:', parsed);
-                
+
             } catch (error) {
                 console.error('LocalStorage test failed:', error);
                 document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
             }
         }
-        
+
         function clearLocalStorage() {
             localStorage.removeItem('GlamGait');
             document.getElementById('result').innerHTML = '<p>LocalStorage cleared</p>';
         }
     </script>
 </body>
+
 </html>

@@ -3,7 +3,7 @@ import img5 from '../assets/images/img5.png';
 
 const HolidayBanner = () => {
     return (
-        <section className="px-4 py-6 md:py-16 md:px-10 lg:px-20">
+        <section className="px-4 py-6 md:py-16 md:px-8 lg:px-10">
             <div className="bg-[#1C2F2F] rounded-3xl overflow-hidden flex flex-col md:flex-row items-center md:h-[400px] lg:h-[430px]">
                 {/* Left Content Area */}
                 <div className="flex-1 p-6 md:p-10 py-16 lg:p-12 text-white space-y-4">

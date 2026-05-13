@@ -6,10 +6,11 @@ import {
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import axiosInstance from "../../Axios/axios";
-import { ApiURL, showToaster } from "../../Variable";
+import { ApiURL, showToaster, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Fabrics = () => {
+  const adminData = adminInfo();
   const [categoryData, setCategoryData] = useState([]);
   const [isEdit, setIsEdit] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -67,13 +68,23 @@ const Fabrics = () => {
       if (isEdit) {
         const response = await axiosInstance.put(
           `${ApiURL}/updatefabric`,
-          formData
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+            },
+          }
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
         const response = await axiosInstance.post(
           `${ApiURL}/addfabric`,
-          formData
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+            },
+          }
         );
         showToaster(response?.data?.status, response?.data?.description);
       }
@@ -83,8 +94,7 @@ const Fabrics = () => {
       setFormData({ name: "", f_id: null, cate_id: null });
       setIsEdit(false);
     } catch (error) {
-      console.log(error);
-      showToaster(0, "Error saving fabric");
+      showToaster(0, error?.response?.data?.description || "Error saving fabric");
     }
   };
 
@@ -94,9 +104,17 @@ const Fabrics = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/deletefabric`, {
-        f_id: deleteModal.f_id,
-      });
+      const response = await axiosInstance.post(
+        `${ApiURL}/deletefabric`,
+        {
+          f_id: deleteModal.f_id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        }
+      );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status) fetchFabrics();
     } catch (error) {

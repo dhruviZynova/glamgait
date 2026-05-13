@@ -6,12 +6,13 @@ import {
   XMarkIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import { ApiURL } from "../../Variable";
+import { ApiURL, adminInfo } from "../../Variable";
 import toast from "react-hot-toast";
 import axiosInstance from "../../Axios/axios";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Reviews = () => {
+  const adminData = adminInfo();
   const [reviews, setReviews] = useState([]);
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,6 +52,10 @@ const Reviews = () => {
         page,
         perPage: reviewsPerPage,
         search: searchTerm,
+      }, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
       });
       if (response.data.status === 1) {
         const data = response.data.data;
@@ -70,8 +75,12 @@ const Reviews = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axiosInstance.post(`${ApiURL}/getproducts`, {
+      const res = await axiosInstance.get(`${ApiURL}/getproducts`, {
         limit: 100,
+      }, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
       });
       if (res.data.status === 1) setProducts(res.data.data || []);
     } catch (err) {
@@ -95,12 +104,17 @@ const Reviews = () => {
   const confirmDelete = async () => {
     try {
       await axiosInstance.delete(
-        `${ApiURL}/deleteuserreview/${deleteModal.reviewId}`
+        `${ApiURL}/deleteuserreview/${deleteModal.reviewId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        }
       );
       toast.success("Review deleted");
       fetchReviews(currentPage);
     } catch (error) {
-      toast.error("Failed to delete");
+      toast.error(error.response?.data?.message || "Failed to delete");
     } finally {
       setDeleteModal({ isOpen: false, reviewId: null, name: "" });
     }
@@ -112,6 +126,10 @@ const Reviews = () => {
       await axiosInstance.post(`${ApiURL}/togglereviewpublish`, {
         r_id: reviewId,
         is_published: newStatus,
+      }, {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
       });
       toast.success(newStatus ? "Published" : "Unpublished");
       fetchReviews(currentPage);
@@ -173,10 +191,18 @@ const Reviews = () => {
       }
       if (modal.editMode) {
         formData.append("r_id", modal.reviewId);
-        await axiosInstance.post(`${ApiURL}/updateuserreview`, formData);
+        await axiosInstance.post(`${ApiURL}/updateuserreview`, formData, {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        });
         toast.success("Review updated!");
       } else {
-        await axiosInstance.post(`${ApiURL}/addfakereview`, formData);
+        await axiosInstance.post(`${ApiURL}/addfakereview`, formData, {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        });
         toast.success("Review added!");
       }
 
@@ -253,7 +279,7 @@ const Reviews = () => {
                 {/* Image */}
                 {r.image_url && (
                   <img
-                    src={`${ApiURL}/assets/UserReviews/${r.image_url}`}
+                    src={r.image_url}
                     alt="review"
                     className="w-full h-40 object-cover rounded-lg mb-3"
                   />
@@ -329,7 +355,6 @@ const Reviews = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Image</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Product</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Rating</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Comment</th>
@@ -350,9 +375,6 @@ const Reviews = () => {
                       ) : (
                         "-"
                       )}
-                    </td>
-                    <td className="px-6 py-3 font-medium">
-                      {r?.reviewer_name}
                     </td>
                     <td className="px-6 py-3">{r.product_name || "N/A"}</td>
                     <td className="px-6 py-3 flex items-center gap-1">

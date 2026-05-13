@@ -3,11 +3,12 @@ import { Button } from "reactstrap";
 import axiosInstance from "../../Axios/axios";
 import { useForm } from "react-hook-form";
 import { Pencil, PlusCircle, Trash2 } from "lucide-react";
-import { ApiURL, showToaster } from "../../Variable";
+import { ApiURL, showToaster, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import { Toaster } from "react-hot-toast";
 
 const Sliders = () => {
+  const adminData = adminInfo();
   const { reset } = useForm();
   const fileInputRef = useRef();
 
@@ -31,7 +32,7 @@ const Sliders = () => {
 
     setSelectedImages((prev) => {
       if (prev.length + files.length > 3 && !editingImage) {
-        console.log("You can only upload up to 3 images.");
+        showToaster(0, "You can only upload up to 3 images.");
         return prev;
       }
       return editingImage ? files.slice(0, 1) : [...prev, ...files];
@@ -52,7 +53,7 @@ const Sliders = () => {
   // Add or Update
   const saveSliderImages = async () => {
     if (selectedImages.length === 0) {
-      console.log("Please select an image first.");
+      showToaster(0, "Please select an image first.");
       return;
     }
 
@@ -71,9 +72,17 @@ const Sliders = () => {
     try {
       let response;
       if (editingImage) {
-        response = await axiosInstance.put(`${ApiURL}/updateslider`, formData);
+        response = await axiosInstance.put(`${ApiURL}/updateslider`, formData, {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        });
       } else {
-        response = await axiosInstance.post(`${ApiURL}/addslider`, formData);
+        response = await axiosInstance.post(`${ApiURL}/addslider`, formData, {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        });
       }
 
       showToaster(response?.data?.status, response?.data?.description);
@@ -95,7 +104,12 @@ const Sliders = () => {
   const deleteSliderFunction = async () => {
     try {
       const response = await axiosInstance.delete(
-        `${ApiURL}/deleteslider/${deleteModal.image_id}`
+        `${ApiURL}/deleteslider/${deleteModal.image_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+          },
+        }
       );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status === 1) {
@@ -111,7 +125,11 @@ const Sliders = () => {
   // Fetch Sliders
   const getSlidersFunction = async () => {
     try {
-      const response = await axiosInstance.get("/getsliders");
+      const response = await axiosInstance.get("/getsliders", {
+        headers: {
+          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
+        },
+      });
       if (response?.data?.status === 1) {
         setSliderList(response?.data?.data);
       } else {
@@ -177,7 +195,7 @@ const Sliders = () => {
                   >
                     <div className="w-full aspect-[16/9] bg-gray-200">
                       <img
-                        src={`${ApiURL}/assets/Sliders/${img?.image}`}
+                        src={img?.image}
                         alt={img?.image}
                         className="w-full h-full object-cover"
                       />
