@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ApiURL, showToaster, adminInfo } from "../../Variable";
-import axiosInstance from "../../Axios/axios";
+import axiosInstance, { adminAxios } from "../../Axios/axios";
 import {
   PlusIcon,
   TrashIcon,
@@ -31,11 +31,7 @@ const Works = () => {
 
   const fetchWorks = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getworks`, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const response = await adminAxios.get(`${ApiURL}/getworks`);
       if (response?.data?.status) setWorkData(response?.data?.data);
       else setWorkData([]);
     } catch (error) {
@@ -45,11 +41,7 @@ const Works = () => {
   };
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const response = await adminAxios.get(`${ApiURL}/getcategory`);
       setCategoryData(response?.data?.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -66,25 +58,15 @@ const Works = () => {
     e.preventDefault();
     try {
       if (isEdit) {
-        const response = await axiosInstance.put(
+        const response = await adminAxios.put(
           `${ApiURL}/updatework`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-            },
-          }
+          formData
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
-        const response = await axiosInstance.post(
+        const response = await adminAxios.post(
           `${ApiURL}/addwork`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-            },
-          }
+          formData
         );
         showToaster(response?.data?.status, response?.data?.description);
       }
@@ -107,11 +89,6 @@ const Works = () => {
         `${ApiURL}/deletework`,
         {
           work_id: deleteModal.work_id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
         }
       );
       showToaster(response?.data?.status, response?.data?.description);

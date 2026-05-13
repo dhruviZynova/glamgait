@@ -606,7 +606,7 @@ import {
   FaDownload,
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import { ApiURL, adminInfo } from "../../Variable";
 import TrackingSection from "./TrackingSection";
 
@@ -678,14 +678,10 @@ const AdminOrders = () => {
 
   const fetchOrders = async (page = 1, search = "") => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/getallorders`, {
+      const response = await adminAxios.post(`${ApiURL}/getallorders`, {
         page,
         limit,
         search,
-      }, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
       });
       if (response?.data?.status === 1) {
         setOrders(response.data.data.orders || []);
@@ -718,14 +714,9 @@ const AdminOrders = () => {
   const fetchLogistics = async (expressflyOrderId) => {
     try {
       setLoadingLogistics(true);
-      const res = await axiosInstance.post(
+      const res = await adminAxios.post(
         `${ApiURL}/get-logistics/${expressflyOrderId}`,
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
-        },
       );
       if (res.data.status === 1) {
         setLogistics(Object.values(res.data.data));
@@ -745,13 +736,9 @@ const AdminOrders = () => {
     toast.loading("Shipping order...", { id: "ship" });
     try {
       const order = orders.find((o) => o.orderId === orderId);
-      const res = await axiosInstance.post(`${ApiURL}/ship-order`, {
+      const res = await adminAxios.post(`${ApiURL}/ship-order`, {
         expressfly_order_id: order.expressfly_order_id,
         logistic_id: selectedLogistic.logistic_id,
-      }, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
       });
 
       toast.dismiss("ship");
@@ -770,7 +757,7 @@ const AdminOrders = () => {
   const handleTracking = async (awb) => {
     setTrackingDetails([]);
     try {
-      const res = await axiosInstance.get(`${ApiURL}/track/${awb}`);
+      const res = await adminAxios.get(`${ApiURL}/track/${awb}`);
       setTrackingDetails(res.data.data);
     } catch {
       setTrackingDetails([]);
@@ -786,12 +773,8 @@ const AdminOrders = () => {
   const cancelOrder = async (orderId) => {
     if (!window.confirm("Cancel this order?")) return;
     try {
-      const res = await axiosInstance.put(`${ApiURL}/cancelorder`, {
+      const res = await adminAxios.put(`${ApiURL}/cancelorder`, {
         order_id: orderId,
-      }, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
       });
       if (res.data.status === 1) {
         toast.success("Order cancelled");

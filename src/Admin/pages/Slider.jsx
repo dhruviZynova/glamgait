@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "reactstrap";
-import axiosInstance from "../../Axios/axios";
+import axiosInstance, { adminAxios } from "../../Axios/axios";
 import { useForm } from "react-hook-form";
 import { Pencil, PlusCircle, Trash2 } from "lucide-react";
 import { ApiURL, showToaster, adminInfo } from "../../Variable";
@@ -72,17 +72,9 @@ const Sliders = () => {
     try {
       let response;
       if (editingImage) {
-        response = await axiosInstance.put(`${ApiURL}/updateslider`, formData, {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
-        });
+        response = await adminAxios.put(`${ApiURL}/updateslider`, formData);
       } else {
-        response = await axiosInstance.post(`${ApiURL}/addslider`, formData, {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
-        });
+        response = await adminAxios.post(`${ApiURL}/addslider`, formData);
       }
 
       showToaster(response?.data?.status, response?.data?.description);
@@ -103,13 +95,8 @@ const Sliders = () => {
 
   const deleteSliderFunction = async () => {
     try {
-      const response = await axiosInstance.delete(
-        `${ApiURL}/deleteslider/${deleteModal.image_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
-        }
+      const response = await adminAxios.delete(
+        `${ApiURL}/deleteslider/${deleteModal.image_id}`
       );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status === 1) {
@@ -125,11 +112,7 @@ const Sliders = () => {
   // Fetch Sliders
   const getSlidersFunction = async () => {
     try {
-      const response = await axiosInstance.get("/getsliders", {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const response = await adminAxios.get("/getsliders");
       if (response?.data?.status === 1) {
         setSliderList(response?.data?.data);
       } else {

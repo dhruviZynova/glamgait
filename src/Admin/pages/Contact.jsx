@@ -10,7 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import axiosInstance from "../../Axios/axios";
+import axiosInstance, { adminAxios } from "../../Axios/axios";
 import { ApiURL, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
@@ -30,11 +30,8 @@ const Contact = () => {
 
   const fetchContacts = async (page = 1, limit = itemsPerPage, search = searchTerm) => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcontacts`, {
+      const response = await adminAxios.get(`${ApiURL}/getcontacts`, {
         params: { page, limit, search },
-        headers: {
-          Authorization: `Bearer ${userData?.token || userData?.auth_token}`,
-        },
       });
 
       const { contacts, totalPages } = response.data.data || {
@@ -58,13 +55,8 @@ const Contact = () => {
 
   const confirmDelete = async () => {
     try {
-      await axiosInstance.delete(
-        `${ApiURL}/deletecontact/${deleteModal.contactId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${userData?.token || userData?.auth_token}`,
-          },
-        }
+      await adminAxios.delete(
+        `${ApiURL}/deletecontact/${deleteModal.contactId}`
       );
       toast.success("Request Deleted...");
       fetchContacts(currentPage);

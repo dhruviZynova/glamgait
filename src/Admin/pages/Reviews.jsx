@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ApiURL, adminInfo } from "../../Variable";
 import toast from "react-hot-toast";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Reviews = () => {
@@ -48,14 +48,10 @@ const Reviews = () => {
   // Fetch Reviews
   const fetchReviews = async (page = 1) => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/getalluserreviews`, {
+      const response = await adminAxios.post(`${ApiURL}/getalluserreviews`, {
         page,
         perPage: reviewsPerPage,
         search: searchTerm,
-      }, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
       });
       if (response.data.status === 1) {
         const data = response.data.data;
@@ -75,12 +71,8 @@ const Reviews = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/getproducts`, {
-        limit: 100,
-      }, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
+      const res = await adminAxios.get(`${ApiURL}/getproducts`, {
+        params: { limit: 100 },
       });
       if (res.data.status === 1) setProducts(res.data.data || []);
     } catch (err) {
@@ -103,13 +95,8 @@ const Reviews = () => {
 
   const confirmDelete = async () => {
     try {
-      await axiosInstance.delete(
-        `${ApiURL}/deleteuserreview/${deleteModal.reviewId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
-        }
+      await adminAxios.delete(
+        `${ApiURL}/deleteuserreview/${deleteModal.reviewId}`
       );
       toast.success("Review deleted");
       fetchReviews(currentPage);
@@ -123,13 +110,9 @@ const Reviews = () => {
   const togglePublish = async (reviewId, currentStatus) => {
     try {
       const newStatus = currentStatus ? 0 : 1;
-      await axiosInstance.post(`${ApiURL}/togglereviewpublish`, {
+      await adminAxios.post(`${ApiURL}/togglereviewpublish`, {
         r_id: reviewId,
         is_published: newStatus,
-      }, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
       });
       toast.success(newStatus ? "Published" : "Unpublished");
       fetchReviews(currentPage);
@@ -191,18 +174,10 @@ const Reviews = () => {
       }
       if (modal.editMode) {
         formData.append("r_id", modal.reviewId);
-        await axiosInstance.post(`${ApiURL}/updateuserreview`, formData, {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
-        });
+        await adminAxios.post(`${ApiURL}/updateuserreview`, formData);
         toast.success("Review updated!");
       } else {
-        await axiosInstance.post(`${ApiURL}/addfakereview`, formData, {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
-        });
+        await adminAxios.post(`${ApiURL}/addfakereview`, formData);
         toast.success("Review added!");
       }
 

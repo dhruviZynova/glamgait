@@ -9,7 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import { ApiURL, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
@@ -30,9 +30,7 @@ const Users = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getallusers`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await adminAxios.get(`${ApiURL}/getallusers`);
       if (response?.data?.status) {
         setUsers(response?.data?.data || []);
         setTotalPages(Math.ceil((response?.data?.data?.length || 0) / itemsPerPage));
@@ -68,9 +66,7 @@ const Users = () => {
 
   const confirmDelete = async () => {
     try {
-      await axiosInstance.delete(`${ApiURL}/user/delete/${deleteModal.userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await adminAxios.delete(`${ApiURL}/user/delete/${deleteModal.userId}`);
       toast.success("User deleted successfully!");
       fetchUsers(currentPage);
     } catch (error) {

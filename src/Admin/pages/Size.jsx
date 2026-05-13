@@ -5,7 +5,7 @@ import {
   ArrowPathIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import axiosInstance from "../../Axios/axios";
+import axiosInstance, { adminAxios } from "../../Axios/axios";
 import { ApiURL, showToaster, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
@@ -29,11 +29,7 @@ const Sizes = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const response = await adminAxios.get(`${ApiURL}/getcategory`);
       if (response?.data?.status) {
         setCategories(response?.data?.data);
       } else {
@@ -47,11 +43,7 @@ const Sizes = () => {
 
   const fetchSizes = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getsize`, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const response = await adminAxios.get(`${ApiURL}/getsize`);
       if (response?.data?.status) setSizeData(response?.data?.data);
       else setSizeData([]);
     } catch (error) {
@@ -75,22 +67,13 @@ const Sizes = () => {
       };
 
       if (isEdit) {
-        const response = await axiosInstance.put(
+        const response = await adminAxios.put(
           `${ApiURL}/updatesize`,
-          payload,
-          {
-            headers: {
-              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-            },
-          }
+          payload
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
-        const response = await axiosInstance.post(`${ApiURL}/addsize`, payload, {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
-        });
+        const response = await adminAxios.post(`${ApiURL}/addsize`, payload);
         showToaster(response?.data?.status, response?.data?.description);
       }
       fetchSizes();

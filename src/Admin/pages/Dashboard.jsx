@@ -28,7 +28,7 @@ import {
   Truck,
 } from "lucide-react";
 import { ApiURL, adminInfo } from "../../Variable";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 
 const formatRevenue = (revenue) => {
   if (revenue >= 100000) {
@@ -72,11 +72,7 @@ const Dashboard = () => {
   // Fetch dashboard data
   const fetchDashboardData = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/stats`, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const res = await adminAxios.get(`${ApiURL}/stats`);
       setDashboardCount(res.data.data.stats);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -85,11 +81,7 @@ const Dashboard = () => {
 
   const fetchuserCount = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/usercount`, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const res = await adminAxios.get(`${ApiURL}/usercount`);
       setUserCount(res.data.data.count);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -99,11 +91,7 @@ const Dashboard = () => {
   // Fetch chart data
   const fetchChartData = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/chart-data`, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const res = await adminAxios.get(`${ApiURL}/chart-data`);
       setChartData(res.data.data.chartData);
     } catch (error) {
       console.error("Error fetching chart data:", error);
@@ -113,11 +101,7 @@ const Dashboard = () => {
   // Fetch order status data
   const fetchOrderStatusData = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/order-status-data`, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const res = await adminAxios.get(`${ApiURL}/order-status-data`);
       setOrderStatusData(res.data.data.orderStatusData);
     } catch (error) {
       console.error("Error fetching order status data:", error);
@@ -127,11 +111,7 @@ const Dashboard = () => {
   // Fetch recent orders
   const fetchRecentOrders = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/recent-orders`, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const res = await adminAxios.get(`${ApiURL}/recent-orders`);
       setRecentOrders(res.data.data.recentOrders);
     } catch (error) {
       console.error("Error fetching recent orders:", error);

@@ -5,7 +5,7 @@ import {
   ArrowPathIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import axiosInstance from "../../Axios/axios";
+import axiosInstance, { adminAxios } from "../../Axios/axios";
 import { ApiURL, showToaster, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
@@ -31,7 +31,7 @@ const Fabrics = () => {
   // ✅ Fetch all categories
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`);
+      const response = await adminAxios.get(`${ApiURL}/getcategory`);
       setCategoryData(response?.data?.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -42,7 +42,7 @@ const Fabrics = () => {
 
   const fetchFabrics = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getfabrics`);
+      const response = await adminAxios.get(`${ApiURL}/getfabrics`);
       if (response?.data?.status) setFabricData(response?.data?.data);
       else setFabricData([]);
     } catch (error) {
@@ -66,25 +66,15 @@ const Fabrics = () => {
       }
 
       if (isEdit) {
-        const response = await axiosInstance.put(
+        const response = await adminAxios.put(
           `${ApiURL}/updatefabric`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-            },
-          }
+          formData
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
-        const response = await axiosInstance.post(
+        const response = await adminAxios.post(
           `${ApiURL}/addfabric`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-            },
-          }
+          formData
         );
         showToaster(response?.data?.status, response?.data?.description);
       }
@@ -104,15 +94,10 @@ const Fabrics = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.post(
+      const response = await adminAxios.post(
         `${ApiURL}/deletefabric`,
         {
           f_id: deleteModal.f_id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
         }
       );
       showToaster(response?.data?.status, response?.data?.description);

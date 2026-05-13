@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ApiURL, showToaster, adminInfo } from "../../Variable";
-import axiosInstance from "../../Axios/axios";
+import axiosInstance, { adminAxios } from "../../Axios/axios";
 import {
   PlusIcon,
   TrashIcon,
@@ -30,11 +30,7 @@ const Styles = () => {
   // Fetch Styles
   const fetchStyles = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getstyles`, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const response = await adminAxios.get(`${ApiURL}/getstyles`);
       if (response?.data?.status) setStyleData(response?.data?.data);
       else setStyleData([]);
     } catch (error) {
@@ -46,11 +42,7 @@ const Styles = () => {
   // Fetch Categories
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const response = await adminAxios.get(`${ApiURL}/getcategory`);
       setCategoryData(response?.data?.data || []);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -68,25 +60,15 @@ const Styles = () => {
     e.preventDefault();
     try {
       if (isEdit) {
-        const response = await axiosInstance.put(
+        const response = await adminAxios.put(
           `${ApiURL}/updatestyle`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-            },
-          }
+          formData
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
-        const response = await axiosInstance.post(
+        const response = await adminAxios.post(
           `${ApiURL}/addstyle`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-            },
-          }
+          formData
         );
         showToaster(response?.data?.status, response?.data?.description);
       }
@@ -111,11 +93,6 @@ const Styles = () => {
         `${ApiURL}/deletestyle`,
         {
           style_id: deleteModal.style_id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
         }
       );
       showToaster(response?.data?.status, response?.data?.description);

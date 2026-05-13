@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import ProductModal from "./ProductModel";
 import { ApiURL, showToaster } from "../../Variable";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 
 const ProductDetail = () => {
   const { p_id } = useParams();

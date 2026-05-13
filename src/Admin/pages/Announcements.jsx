@@ -5,7 +5,7 @@ import {
   ArrowPathIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import { ApiURL, showToaster, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 // 
@@ -29,7 +29,7 @@ const Announcement = () => {
   // Fetch announcements
   const fetchAnnouncements = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getannouncements`);
+      const response = await adminAxios.get(`${ApiURL}/getannouncements`);
       if (response?.data?.status) setAnnouncements(response?.data?.data);
       else setAnnouncements([]);
     } catch (error) {
@@ -48,12 +48,12 @@ const Announcement = () => {
     try {
       let response;
       if (isEdit) {
-        response = await axiosInstance.put(`${ApiURL}/updateannouncement`, {
+        response = await adminAxios.put(`${ApiURL}/updateannouncement`, {
           ann_id: formData.ann_id,
           text: formData.text,
         });
       } else {
-        response = await axiosInstance.post(`${ApiURL}/addannouncement`, {
+        response = await adminAxios.post(`${ApiURL}/addannouncement`, {
           text: formData.text,
         });
       }
@@ -76,11 +76,8 @@ const Announcement = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.delete(
-        `${ApiURL}/deleteannouncement/${deleteModal.ann_id}`,
-        {
-          headers: { Authorization: `Bearer ${userData?.token}` },
-        }
+      const response = await adminAxios.delete(
+        `${ApiURL}/deleteannouncement/${deleteModal.ann_id}`
       );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status) fetchAnnouncements();

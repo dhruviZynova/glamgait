@@ -1269,7 +1269,7 @@ import { useState, useEffect } from "react";
 import { PlusCircle, Trash2, X } from "lucide-react";
 import { ApiURL, adminInfo } from "../../Variable";
 import toast from "react-hot-toast";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 
 const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
   const adminData = adminInfo();
@@ -1471,7 +1471,7 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
   }, [formData.colors, formData.sizes, product]);
 
   useEffect(() => {
-    axiosInstance
+    adminAxios
       .get(`${ApiURL}/getcategory`)
       .then((res) => {
         setCategories(res?.data?.data || []);
@@ -1492,25 +1492,25 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
     }
 
     Promise.all([
-      axiosInstance
+      adminAxios
         .get(`${ApiURL}/getcolor`)
         .then((r) => setColorsList(r.data.data || [])),
-      axiosInstance
+      adminAxios
         .get(`${ApiURL}/getsize/${formData.cate_id}`)
         .then((r) => setSizesList(r.data.data || [])),
-      axiosInstance
+      adminAxios
         .get(`${ApiURL}/getsubcategory/${formData.cate_id}`)
         .then((r) => setSubCategories(r.data.data || [])),
-      axiosInstance
+      adminAxios
         .get(`${ApiURL}/getworks/${formData.cate_id}`)
         .then((r) => setWorks(r.data.data || [])),
-      axiosInstance
+      adminAxios
         .get(`${ApiURL}/getfabrics/${formData.cate_id}`)
         .then((r) => setFabrics(r.data.data || [])),
-      axiosInstance
+      adminAxios
         .get(`${ApiURL}/getstyles/${formData.cate_id}`)
         .then((r) => setStyles(r.data.data || [])),
-      axiosInstance
+      adminAxios
         .get(`${ApiURL}/getoccasions/${formData.cate_id}`)
         .then((r) => setOccasions(r.data.data || [])),
     ]).catch(console.error);
@@ -1627,25 +1627,15 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
         ? `${ApiURL}/updateproduct/${product.p_id}`
         : `${ApiURL}/insertproduct`;
 
-      const res = await axiosInstance.post(url, data, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const res = await adminAxios.post(url, data);
       if (res.data.status !== 1)
         throw new Error(res.data.description || "Failed");
 
       const p_id = product?.p_id || res.data.data.p_id;
 
       // Refetch full product to get pcolor_id & psize_id
-      const fullRes = await axiosInstance.get(
-        `${ApiURL}/getproductbyid/${p_id}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
-        },
+      const fullRes = await adminAxios.get(
+        `${ApiURL}/getproductbyid/${p_id}`
       );
       const fullProduct = fullRes.data.data;
 
@@ -1677,21 +1667,19 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
             // Add stock if needed
             if (adjustment.add > 0) {
               stockPromises.push(
-                axiosInstance.post(`${ApiURL}/addstock`, {
+                adminAxios.post(`${ApiURL}/addstock`, {
                   p_id,
                   pcolor_id,
                   psize_id,
                   qty_to_add: adjustment.add,
-                }
-                  , { headers: { Authorization: `Bearer ${adminData?.token || adminData?.auth_token}` } }
-                ),
+                }),
               );
             }
 
             // Remove stock if needed
             if (adjustment.remove > 0) {
               stockPromises.push(
-                axiosInstance.post(`${ApiURL}/removestock`, {
+                adminAxios.post(`${ApiURL}/removestock`, {
                   p_id,
                   pcolor_id,
                   psize_id,
@@ -1710,21 +1698,19 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
             // Add stock if needed
             if (adjustment.add > 0) {
               stockPromises.push(
-                axiosInstance.post(`${ApiURL}/addstock`, {
+                adminAxios.post(`${ApiURL}/addstock`, {
                   p_id,
                   pcolor_id,
                   psize_id: null,
                   qty_to_add: adjustment.add,
-                }
-                  , { headers: { Authorization: `Bearer ${adminData?.token || adminData?.auth_token}` } }
-                ),
+                }),
               );
             }
 
             // Remove stock if needed
             if (adjustment.remove > 0) {
               stockPromises.push(
-                axiosInstance.post(`${ApiURL}/removestock`, {
+                adminAxios.post(`${ApiURL}/removestock`, {
                   p_id,
                   pcolor_id,
                   psize_id: null,
@@ -1745,14 +1731,12 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
 
             if (pcolor_id && psize_id) {
               stockPromises.push(
-                axiosInstance.post(`${ApiURL}/addstock`, {
+                adminAxios.post(`${ApiURL}/addstock`, {
                   p_id,
                   pcolor_id,
                   psize_id,
                   qty_to_add: qty,
-                }
-                  , { headers: { Authorization: `Bearer ${adminData?.token || adminData?.auth_token}` } }
-                ),
+                }),
               );
             }
           }
@@ -1763,14 +1747,12 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
             const pcolor_id = pColorMap[color_id];
             if (pcolor_id) {
               stockPromises.push(
-                axiosInstance.post(`${ApiURL}/addstock`, {
+                adminAxios.post(`${ApiURL}/addstock`, {
                   p_id,
                   pcolor_id,
                   psize_id: null,
                   qty_to_add: qty,
-                }
-                  , { headers: { Authorization: `Bearer ${adminData?.token || adminData?.auth_token}` } }
-                ),
+                }),
               );
             }
           }

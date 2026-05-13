@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
-import axiosInstance from "../../Axios/axios";
+import axiosInstance, { adminAxios } from "../../Axios/axios";
 import { Upload, Trash2, Loader2 } from "lucide-react";
 import { ApiURL, showToaster, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
@@ -60,14 +60,9 @@ const InstagramSection = () => {
     formData.append("insta_link", instaLink);
 
     try {
-      const response = await axiosInstance.post(
+      const response = await adminAxios.post(
         `${ApiURL}/addinstaimage`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
-        }
+        formData
       );
       if (response?.data?.status) {
         setFile(null);
@@ -98,13 +93,8 @@ const InstagramSection = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.delete(
-        `${ApiURL}/deleteinstaimage/${deleteModal.insta_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
-        }
+      const response = await adminAxios.delete(
+        `${ApiURL}/deleteinstaimage/${deleteModal.insta_id}`
       );
       if (response?.data?.status) {
         fetchImages();
@@ -128,11 +118,7 @@ const InstagramSection = () => {
 
   const fetchImages = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getinstaimages`, {
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
-      });
+      const response = await adminAxios.get(`${ApiURL}/getinstaimages`);
       if (response?.data?.status) {
         setMedia(response.data.data);
       } else {

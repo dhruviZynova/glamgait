@@ -342,7 +342,7 @@ import {
   ArrowPathIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import { ApiURL, showToaster, adminInfo, getFullImageUrl } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
@@ -376,7 +376,7 @@ const Categories = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`);
+      const response = await adminAxios.get(`${ApiURL}/getcategory`);
 
       if (response?.data?.status) setCategoryData(response?.data?.data);
       else setCategoryData([]);
@@ -426,13 +426,10 @@ const Categories = () => {
         ? `${ApiURL}/updatecategory`
         : `${ApiURL}/addcategory`;
 
-      const response = await axiosInstance({
+      const response = await adminAxios({
         method: isEdit ? "PUT" : "POST",
         url: api,
         data: payload,
-        headers: {
-          Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-        },
       });
 
       fetchCategories();
@@ -459,17 +456,12 @@ const Categories = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.post(
+      const response = await adminAxios.post(
         `${ApiURL}/deletecategory`,
         {
           cate_id: deleteModal.cate_id,
           cate_image: deleteModal.cate_image,
           cate_chart: deleteModal.cate_chart, // ⭐ include chart delete
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${adminData?.token || adminData?.auth_token}`,
-          },
         }
       );
 

@@ -13,7 +13,7 @@ import {
 import { ApiURL, adminInfo } from "../../Variable";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import ProductModal from "./ProductModel";
 
 const Product = () => {
@@ -28,11 +28,11 @@ const Product = () => {
 
   const fetchProducts = async (page = 1, search = "") => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/getallproducts`, {
+      const res = await adminAxios.get(`${ApiURL}/getallproducts`, {
         page,
         perPage: itemsPerPage,
         search,
-      }, { headers: { Authorization: `Bearer ${adminData?.token || adminData?.auth_token}` } });
+      });
 
       const { productData, totalCount } = res.data.data || {};
       const enhancedProducts = (productData || []).map((p) => {
@@ -77,10 +77,10 @@ const Product = () => {
   const handleStatusToggle = async (product) => {
     try {
       const newStatus = product.p_status === 1 ? 0 : 1;
-      await axiosInstance.post(`${ApiURL}/changeproductstatus`, {
+      await adminAxios.post(`${ApiURL}/changeproductstatus`, {
         p_id: product.p_id,
         p_status: newStatus,
-      }, { headers: { Authorization: `Bearer ${adminData?.token || adminData?.auth_token}` } });
+      });
       toast.success(`Product ${newStatus === 1 ? "activated" : "deactivated"}`);
       fetchProducts(currentPage, searchTerm);
     } catch (error) {

@@ -2,7 +2,7 @@
 // src/pages/admin/PromotionsManagement.jsx
 import { useEffect, useState } from "react";
 import { ApiURL, showToaster } from "../../Variable"; // adjust path if needed
-import axiosInstance from "../../Axios/axios";
+import axiosInstance, { adminAxios } from "../../Axios/axios";
 import {
   PlusIcon,
   TrashIcon,
@@ -33,7 +33,7 @@ const PromotionsManagement = () => {
   const fetchOffers = async () => {
     try {
       setLoading(true);
-      const res = await axiosInstance.post(`${ApiURL}/getoffers`);
+      const res = await adminAxios.post(`${ApiURL}/getoffers`);
       if (res?.data?.status === 1) setOffers(res.data.data || []);
     } catch (err) {
       console.error("Error fetching offers:", err);
@@ -46,7 +46,7 @@ const PromotionsManagement = () => {
   const fetchCoupons = async () => {
     try {
       setLoading(true);
-      const res = await axiosInstance.post(`${ApiURL}/getcoupons`);
+      const res = await adminAxios.post(`${ApiURL}/getcoupons`);
       if (res?.data?.status === 1) setCoupons(res.data.data || []);
     } catch (err) {
       console.error("Error fetching coupons:", err);
@@ -87,7 +87,7 @@ const PromotionsManagement = () => {
     const idField = deleteModal.type === "offer" ? "offer_id" : "coupon_id";
 
     try {
-      const res = await axiosInstance.post(`${ApiURL}/${endpoint}`, {
+      const res = await adminAxios.post(`${ApiURL}/${endpoint}`, {
         [idField]: deleteModal.id,
       });
       showToaster(res?.data?.status, res?.data?.description || "Deleted");
@@ -114,7 +114,7 @@ const PromotionsManagement = () => {
         : "addcoupon";
 
     try {
-      const res = await axiosInstance[isEdit ? "put" : "post"](
+      const res = await adminAxios[isEdit ? "put" : "post"](
         `${ApiURL}/${endpoint}`,
         formData
       );
