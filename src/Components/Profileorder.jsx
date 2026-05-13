@@ -296,7 +296,7 @@ const Profileorder = () => {
   return (
     <>
       <div className="w-full lg:pt-0 pt-8 px-2 md:px-8 xl:px-24">
-        <div className="min-h-screen flex flex-col md:flex-row font-inter">
+        <div className="flex flex-col md:flex-row font-inter">
           {/* Sidebar */}
           <div className="w-full md:w-1/4">
             <SideBar />
@@ -309,13 +309,13 @@ const Profileorder = () => {
             </h2>
 
             {/* Tabs */}
-            <div className="flex border-b border-[#F6F6F6] mb-8 relative">
+            <div className="flex border-b-2 border-[#F6F6F6] mb-8 relative">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`relative py-2 px-8 text-base sm:text-lg font-semibold transition-all duration-300 text-center rounded-[4px] cursor-pointer ${activeTab === tab
-                    ? "text-[#3C4242] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[3px] after:bg-[#1a1a1a] bg-[#F6F6F6]"
+                    ? "text-[#3C4242] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#1a1a1a] bg-[#F6F6F6]"
                     : "text-[#3C4242] hover:text-[#1a1a1a]"
                     }`}
                 >
@@ -373,8 +373,8 @@ const Profileorder = () => {
                               <p className="text-sm flex items-center gap-2">
                                 Colour : <span className="text-[#3C4242] font-[Causten] font-600 capitalize">{item.color_name || "N/A"}</span>
                                 {item.color_code && (
-                                  <span 
-                                    className="w-3 h-3 rounded-full border border-gray-300" 
+                                  <span
+                                    className="w-3 h-3 rounded-full border border-gray-300"
                                     style={{ backgroundColor: item.color_code }}
                                   ></span>
                                 )}

@@ -97,20 +97,33 @@ const Navbar = () => {
     }
     try {
       const skip = { skipLoader: true };
-      const [styleRes, subRes, fabricRes, workRes, occRes] = await Promise.all([
-        axiosInstance.get(`/getstyles/${cate_id}`, skip),
-        axiosInstance.get(`/getsubcategory/${cate_id}`, skip),
-        axiosInstance.get(`/getfabrics/${cate_id}`, skip),
-        axiosInstance.get(`/getworks/${cate_id}`, skip),
-        axiosInstance.get(`/getoccasions/${cate_id}`, skip),
-      ]);
-      const data = {
-        Style: styleRes?.data?.data || [],
-        Collection: subRes?.data?.data || [],
-        Fabric: fabricRes?.data?.data || [],
-        Work: workRes?.data?.data || [],
-        Occasion: occRes?.data?.data || [],
+      // Helper for safe fetching
+      const safeGet = async (url) => {
+        try {
+          const res = await axiosInstance.get(url, skip);
+          return res?.data?.data || [];
+        } catch (err) {
+          console.warn(`Filter fetch skipped for ${url}:`, err.message);
+          return [];
+        }
       };
+
+      const [styleData, subData, fabricData, workData, occData] = await Promise.all([
+        safeGet(`/getstyles/${cate_id}`),
+        safeGet(`/getsubcategory/${cate_id}`),
+        safeGet(`/getfabrics/${cate_id}`),
+        safeGet(`/getworks/${cate_id}`),
+        safeGet(`/getoccasions/${cate_id}`),
+      ]);
+
+      const data = {
+        Style: styleData,
+        Collection: subData,
+        Fabric: fabricData,
+        Work: workData,
+        Occasion: occData,
+      };
+
       setMegaMenuCache((prev) => ({ ...prev, [cate_id]: data }));
       setMegaMenuData(data);
     } catch (error) {
@@ -354,7 +367,7 @@ const Navbar = () => {
                 if (u_id && token) {
                   navigate("/myorders");
                 } else {
-                  navigate("/login");
+                  navigate("/login", { state: { from: location.pathname + location.search } });
                 }
               }}
             >

@@ -119,13 +119,13 @@ const SideBar = ({ onMenuChange = () => { } }) => {
             <div className="flex justify-between gap-4 mt-4">
               <button
                 onClick={() => setShowLogoutModal(false)}
-                className="flex-1 py-2 px-4 bg-gray-200 rounded-md text-gray-700 hover:bg-gray-300 transition-colors"
+                className="flex-1 py-2 px-4 bg-gray-200 rounded-md text-gray-700 hover:bg-gray-300 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleLogout}
-                className="flex-1 py-2 px-4 bg-red-600 rounded-md text-white hover:bg-red-700 transition-colors"
+                className="flex-1 py-2 px-4 bg-red-600 rounded-md text-white hover:bg-red-700 transition-colors cursor-pointer"
               >
                 Logout
               </button>

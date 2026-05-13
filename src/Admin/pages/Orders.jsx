@@ -784,6 +784,25 @@ const AdminOrders = () => {
     }
   };
 
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      toast.loading("Updating status...", { id: "updateStatus" });
+      const res = await adminAxios.put(`${ApiURL}/updateorderstatus/${orderId}`, {
+        status: newStatus,
+      });
+      toast.dismiss("updateStatus");
+      if (res.data.status === 1) {
+        toast.success("Order status updated");
+        fetchOrders(currentPage, searchTerm);
+      } else {
+        toast.error(res.data.description || "Failed to update status");
+      }
+    } catch (error) {
+      toast.dismiss("updateStatus");
+      toast.error("Error updating status");
+    }
+  };
+
   return (
     <div className="pb-8 min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto">
@@ -1118,6 +1137,24 @@ const AdminOrders = () => {
                                   </button>
                                 </div>
                               )}
+                              <div className="pt-2">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">
+                                  Update Status
+                                </span>
+                                <select
+                                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm font-bold focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                                  value={order.status}
+                                  onChange={(e) => updateOrderStatus(order.orderId, e.target.value)}
+                                >
+                                  <option value="1">Pending</option>
+                                  <option value="2">Accepted</option>
+                                  <option value="3">Preparing</option>
+                                  <option value="4">Shipped</option>
+                                  <option value="5">Delivered</option>
+                                  <option value="6">Cancelled</option>
+                                </select>
+                              </div>
+
                               <button
                                 onClick={() => cancelOrder(order.orderId)}
                                 className="w-full py-3 bg-white border border-rose-200 text-rose-600 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-rose-50 transition-all active:scale-95"

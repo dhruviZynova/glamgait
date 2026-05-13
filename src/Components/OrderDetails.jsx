@@ -83,6 +83,27 @@ const OrderDetails = () => {
     ? [...tracking.tracking_detail].reverse()
     : [];
 
+  const steps = ["Order Placed", "Inprogress", "shipped", "Delivered"];
+  
+  const getStatusStep = (status) => {
+    const s = status?.toLowerCase();
+    if (s === "delivered") return 3;
+    if (s === "shipped") return 2;
+    if (s === "inprogress" || s === "preparing" || s === "accepted" || s === "order accepted") return 1;
+    return 0; // "order placed" or "pending"
+  };
+
+  const currentStep = getStatusStep(order?.status_label);
+  const progressWidth = (currentStep / (steps.length - 1)) * 100;
+
+  const getStatusMessage = (status) => {
+    const s = status?.toLowerCase();
+    if (s === "delivered") return "Your order has been delivered successfully.";
+    if (s === "shipped") return "Your order has been shipped and is on its way.";
+    if (s === "inprogress" || s === "preparing" || s === "accepted" || s === "order accepted") return "Your order is currently being prepared and verified.";
+    return "Your order has been placed successfully and is awaiting verification.";
+  };
+
   if (!order) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f3f0ed] text-red-600">
@@ -94,7 +115,7 @@ const OrderDetails = () => {
   return (
     <>
       <div className="w-full lg:pt-0 pt-8 px-2 md:px-8 xl:px-24">
-        <div className="max-w-7xl mx-auto min-h-screen flex flex-col md:flex-row font-inter">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row font-inter">
           <div className="w-full md:w-1/4">
             <SideBar />
           </div>
@@ -134,35 +155,74 @@ const OrderDetails = () => {
             </div>
 
             {/* Stepper Tracking */}
-            <div className="mb-12 px-4">
-              <div className="relative flex justify-between items-center max-w-4xl mx-auto">
-                {/* Connection Line */}
-                <div className="absolute top-1/2 left-0 w-full h-1 bg-[#BEBCBD] -translate-y-1/2"></div>
+            <div className="mb-16 px-4">
+              <div className="relative max-w-4xl mx-auto">
+                {/* Progress Bar Background */}
+                <div className="absolute top-[10px] left-0 w-full h-1 bg-[#E0E0E0] rounded-full -translate-y-1/2"></div>
+                
+                {/* Progress Bar Active */}
                 <div
-                  className="absolute top-1/2 left-0 h-1 bg-[#004534] -translate-y-1/2 transition-all duration-500"
-                  style={{ width: "33%" }} // Fixed for demo, should be dynamic based on status
+                  className="absolute top-[10px] left-0 h-1 bg-[#004534] rounded-full transition-all duration-700 ease-in-out -translate-y-1/2"
+                  style={{ width: `${progressWidth}%` }}
                 ></div>
 
                 {/* Steps */}
-                {["Order Placed", "Inprogress", "shipped", "Delivered"].map((step, idx) => (
-                  <div key={idx} className="relative z-10 flex flex-col items-center">
-                    <div className={`w-5 h-5 rounded-full border-4 ${idx <= 1 ? "bg-[#004534] border-[#004534]" : "bg-white border-[#BEBCBD]"
-                      }`}></div>
-                    <p className={`mt-3 text-sm font-bold capitalize ${idx <= 1 ? "text-[#004534]" : "text-[#BEBCBD]"
-                      }`}>{step}</p>
-                  </div>
-                ))}
+                <div className="relative flex justify-between items-start">
+                  {steps.map((step, idx) => (
+                    <div key={idx} className="flex flex-col items-center w-24">
+                      <div 
+                        className={`w-5 h-5 rounded-full border-2 z-10 transition-colors duration-500 flex items-center justify-center ${
+                          idx <= currentStep 
+                            ? "bg-[#004534] border-[#004534]" 
+                            : "bg-white border-[#E0E0E0]"
+                        }`}
+                      >
+                        {idx < currentStep && <CheckCircle size={10} className="text-white" />}
+                        {idx === currentStep && <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />}
+                      </div>
+                      <p 
+                        className={`mt-4 text-[12px] sm:text-sm font-bold text-center capitalize transition-colors duration-500 ${
+                          idx <= currentStep ? "text-[#004534]" : "text-[#BEBCBD]"
+                        }`}
+                      >
+                        {step}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Status Highlight Banner */}
               <div className="mt-12 relative max-w-4xl mx-auto">
-                {/* Pointer Arrow */}
-                <div className="absolute -top-3 left-[33%] -translate-x-1/2 w-6 h-6 bg-[#f9f9f9] rotate-45 border-l border-t border-[#807D7E33] hidden sm:block"></div>
+                {/* Pointer Arrow - Clamped to stay within banner bounds */}
+                <div 
+                  className="absolute -top-2.5 w-5 h-5 bg-[#f9f9f9] rotate-45 -translate-x-1/2 border-l border-t border-[#807D7E33] hidden sm:block transition-all duration-700 ease-in-out z-0"
+                  style={{ 
+                    left: `${Math.min(Math.max(progressWidth, 5), 95)}%`
+                  }}
+                ></div>
 
-                <div className="bg-[#f9f9f9] rounded-xl p-6 border border-[#807D7E33] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <p className="text-sm text-[#807D7E] font-semibold">8 June 2023 3:40 PM</p>
-                  <p className="text-base text-[#3C4242] font-semibold">Your order has been successfully verified.</p>
-                  <div className="hidden sm:block"></div> {/* Spacer */}
+                <div className="bg-[#f9f9f9] rounded-2xl p-6 border border-[#807D7E33] flex flex-col sm:flex-row justify-between items-center gap-6 relative z-10 shadow-[0_4px_15px_rgba(0,0,0,0.02)]">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#00453410] flex items-center justify-center text-[#004534] flex-shrink-0">
+                      <Package size={24} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-[#807D7E] font-bold uppercase tracking-widest mb-0.5">Order Status</p>
+                      <p className="text-base text-[#3C4242] font-bold">{getStatusMessage(order.status_label)}</p>
+                    </div>
+                  </div>
+                  <div className="text-left sm:text-right flex-shrink-0">
+                    <p className="text-[10px] text-[#807D7E] font-bold uppercase tracking-widest mb-0.5">Last Update</p>
+                    <p className="text-sm text-[#1a1a1a] font-bold">
+                      {order.updatedAt 
+                        ? new Date(order.updatedAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                        : order.createdAt
+                          ? new Date(order.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                          : "N/A"
+                      }
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

@@ -1,23 +1,33 @@
 import React, { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
-import { Star, ChevronRight, ShoppingBag, CheckCircle, ImagePlus, X, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Star, ChevronRight, ShoppingBag, CheckCircle, ImagePlus, X, ThumbsUp, ThumbsDown, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
 
 // Extracts up to 2 initials from a full name  e.g. "Dhruv Gajjar" → "DG"
-const getInitials = (name = "") =>
-  name
+const getInitials = (name) => {
+  if (!name) return "?";
+  return name
     .trim()
     .split(/\s+/)
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("") || "?";
+};
 
-const ReviewCard = ({ review, displayDate }) => {
+const ReviewCard = ({ review, displayDate, currentUser, onEdit }) => {
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
   const [likeCount, setLikeCount] = useState(review?.likes || 0);
   const [dislikeCount, setDislikeCount] = useState(review?.dislikes || 0);
+
+  const isAuthor = currentUser?.u_id && (
+    String(review.u_id || review.user_id) === String(currentUser.u_id) ||
+    (review.reviewer_email && review.reviewer_email === currentUser.email) ||
+    ((review.reviewer_name || review.name || review.u_name)?.toLowerCase().trim() === (currentUser.name || `${currentUser.first_name} ${currentUser.last_name}`).toLowerCase().trim()) ||
+    ((review.reviewer_name || review.name || review.u_name)?.toLowerCase().trim() === currentUser.first_name?.toLowerCase().trim())
+  );
 
   const handleLike = () => {
     if (liked) {
@@ -48,13 +58,13 @@ const ReviewCard = ({ review, displayDate }) => {
   };
 
   return (
-    <div className="border border-[#D3D3D3] rounded-[14px] p-6 sm:p-8 mb-6">
+    <div className="border border-[#D3D3D3] rounded-[14px] p-6 sm:p-8 mb-6 relative group">
       <div className="flex gap-4 sm:gap-6">
         <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#D9D9D9] flex items-center justify-center text-[#555] text-sm sm:text-base font-semibold select-none">
           {getInitials(review?.reviewer_name)}
         </div>
         <div className="flex-1">
-          <div className="flex justify-between items-start mb-2">
+          <div className="flex justify-between items-center mb-3">
             <h4 className="text-[#3D3D3D] font-semibold text-base sm:text-lg font-[oxygen]">
               {review?.reviewer_name}
             </h4>
@@ -69,36 +79,52 @@ const ReviewCard = ({ review, displayDate }) => {
             </div>
           </div>
 
-          <p className="text-[#949494] text-sm sm:text-base leading-relaxed mb-6 font-[oxygen]">
+          <p className="text-[#949494] text-sm sm:text-base leading-relaxed mb-4 font-[oxygen]">
             {review?.message}
           </p>
 
+          {review?.image_url && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {review.image_url.split(",").map((img, i) => (
+                <img
+                  key={i}
+                  src={img}
+                  alt={`Review ${i}`}
+                  className="w-10 h-10 object-cover rounded-lg border border-[#eee] hover:opacity-90 cursor-pointer transition-opacity"
+                  onClick={() => window.open(img, "_blank")}
+                />
+              ))}
+            </div>
+          )}
+
           <div className="flex items-center gap-5 text-[#3D3D3D] text-xs sm:text-sm font-medium">
-            {/* Thumbs Up */}
             <button
               onClick={handleLike}
               className={`flex items-center gap-1.5 transition-colors ${liked ? "text-black" : "text-[#AEAEAE] hover:text-black"
                 }`}
             >
-              <ThumbsUp
-                size={16}
-                className={liked ? "fill-black" : ""}
-              />
+              <ThumbsUp size={16} className={liked ? "fill-black" : ""} />
               {likeCount > 0 && <span>{likeCount}</span>}
             </button>
 
-            {/* Thumbs Down */}
             <button
               onClick={handleDislike}
               className={`flex items-center gap-1.5 transition-colors ${disliked ? "text-black" : "text-[#AEAEAE] hover:text-black"
                 }`}
             >
-              <ThumbsDown
-                size={16}
-                className={disliked ? "fill-black" : ""}
-              />
+              <ThumbsDown size={16} className={disliked ? "fill-black" : ""} />
               {dislikeCount > 0 && <span>{dislikeCount}</span>}
             </button>
+
+            {isAuthor && onEdit && (
+              <button
+                onClick={() => onEdit(review)}
+                className="p-1.5 rounded-full bg-gray-50 text-gray-400 hover:text-black hover:bg-gray-200 transition-all"
+                title="Edit your review"
+              >
+                <Pencil size={16} />
+              </button>
+            )}
 
             <span className="text-[#AEAEAE] font-normal">{displayDate(review)}</span>
           </div>
@@ -116,7 +142,20 @@ const Review = ({ p_id, productName }) => {
   const [visibleCount, setVisibleCount] = useState(3);
   const [hasOrders, setHasOrders] = useState(null); // null = still loading
   const [alreadyReviewed, setAlreadyReviewed] = useState(false);
+  const location = useLocation();
   const user = userInfo();
+  const [reviewerName, setReviewerName] = useState("");
+  const [reviewerEmail, setReviewerEmail] = useState("");
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingReviewId, setEditingReviewId] = useState(null);
+
+  useEffect(() => {
+    if (user && !isEditing) {
+      setReviewerName(user.first_name || user.name || "");
+      setReviewerEmail(user.email || "");
+    }
+  }, [user?.u_id, isEditing]);
 
   // ── 1. Fetch reviews for this product ────────────────────────────────────
   const fetchReviews = async () => {
@@ -129,9 +168,15 @@ const Review = ({ p_id, productName }) => {
 
         // Check if logged-in user already reviewed this product
         if (user?.u_id) {
-          const userReview = data.find(
-            (r) => String(r.u_id) === String(user.u_id)
-          );
+          const userReview = data.find((r) => {
+            const userIdMatch = String(r.u_id || r.user_id) === String(user.u_id);
+            const accountNameMatch = (r.reviewer_name || r.name || r.u_name)?.toLowerCase().trim() === (user.name || `${user.first_name} ${user.last_name}`).toLowerCase().trim();
+            const firstNameMatch = (r.reviewer_name || r.name || r.u_name)?.toLowerCase().trim() === user.first_name?.toLowerCase().trim();
+            const formNameMatch = (r.reviewer_name || r.name || r.u_name)?.toLowerCase().trim() === reviewerName.toLowerCase().trim();
+            const emailMatch = (r.reviewer_email || r.email)?.toLowerCase().trim() === (user.email || reviewerEmail).toLowerCase().trim();
+
+            return userIdMatch || accountNameMatch || firstNameMatch || formNameMatch || (emailMatch && (user.email || reviewerEmail));
+          });
           setAlreadyReviewed(!!userReview);
         }
       } else {
@@ -158,6 +203,7 @@ const Review = ({ p_id, productName }) => {
       ) {
         // Find if any order contains this specific product (by ID or Name)
         const hasBoughtThisProduct = res.data.data.some(order =>
+          order.status_label === "Delivered" &&
           order.orderItems && order.orderItems.some(item => {
             const itemId = item.p_id || item.product_id || item.pid || item.id || item.productId;
             const idMatch = itemId && String(itemId) === String(p_id);
@@ -186,46 +232,75 @@ const Review = ({ p_id, productName }) => {
   }, [p_id, user?.u_id]);
 
   // ── Submit handler ────────────────────────────────────────────────────────
+  const handleEdit = (review) => {
+    setIsEditing(true);
+    setEditingReviewId(review.r_id || review.review_id);
+    setReviewerName(review.reviewer_name || "");
+    setReviewerEmail(review.reviewer_email || "");
+    setReviewContent(review.message || "");
+    setSelectedStars(review.rating || 5);
+    setUploadedImages([]);
+
+    // Smooth scroll to form
+    const formElement = document.getElementById("review-form-section");
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const cancelEdit = () => {
+    setIsEditing(false);
+    setEditingReviewId(null);
+    setReviewerName(user.first_name || user.name || "");
+    setReviewerEmail(user.email || "");
+    setReviewContent("");
+    setSelectedStars(5);
+    setUploadedImages([]);
+  };
+
+  // ── 3. Submit review (Add or Update) ──────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!p_id) return;
 
-    if (!user?.u_id) {
-      toast.error("Please login to submit a review");
-      return;
-    }
-    if (!hasOrders) {
-      toast.error("You must place at least one order before writing a review");
-      return;
-    }
-    if (alreadyReviewed) {
-      toast.error("You have already reviewed this product");
+    if (selectedStars === 0) {
+      toast.error("Please select a rating");
       return;
     }
 
     try {
       const formData = new FormData();
-      formData.append("u_id", user.u_id);
+      if (isEditing) {
+        formData.append("r_id", editingReviewId);
+      }
       formData.append("p_id", p_id);
       formData.append("rating", selectedStars);
       formData.append("message", reviewContent);
-      formData.append(
-        "reviewer_name",
-        user.first_name || user.name || "Anonymous"
-      );
+      formData.append("reviewer_name", reviewerName);
+      formData.append("reviewer_email", reviewerEmail);
 
-      uploadedImages.forEach((file) => {
-        if (file instanceof File) formData.append("userReviewImage", file);
+      // Handle images
+      uploadedImages.forEach((img) => {
+        if (img instanceof File) {
+          formData.append("userReviewImage", img);
+        }
       });
 
-      const res = await axiosInstance.post("/adduserreview", formData);
+      const endpoint = isEditing ? "/updateuserreview" : "/adduserreview";
+      const res = await axiosInstance.post(endpoint, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
       if (res.data.status === 1) {
-        toast.success("Review added successfully!");
+        toast.success(isEditing ? "Review updated successfully!" : "Review added successfully!");
         setSelectedStars(5);
         setReviewContent("");
         setUploadedImages([]);
+        setIsEditing(false);
+        setEditingReviewId(null);
         fetchReviews();
       } else {
-        toast.error(res.data.description || "Failed to add review");
+        toast.error(res.data.description || "Failed to submit review");
       }
     } catch (err) {
       console.error(err);
@@ -258,9 +333,13 @@ const Review = ({ p_id, productName }) => {
         <div className="text-center py-8">
           <p className="text-[#949494] font-[oxygen]">
             Please{" "}
-            <a href="/login" className="text-black underline font-semibold">
+            <Link
+              to="/login"
+              state={{ from: location.pathname + location.search }}
+              className="text-black underline font-semibold"
+            >
               login
-            </a>{" "}
+            </Link>{" "}
             to write a review.
           </p>
         </div>
@@ -276,28 +355,13 @@ const Review = ({ p_id, productName }) => {
       );
     }
 
-    // User has no orders yet
-    if (!hasOrders) {
-      return (
-        <div className="flex flex-col items-center gap-3 py-8 text-center">
-          <ShoppingBag size={36} className="text-[#D3D3D3]" />
-          <p className="text-[#949494] font-[oxygen] text-sm sm:text-base">
-            You need to place at least one order before you can write a review.
-          </p>
-        </div>
-      );
+    if (!hasOrders && !isEditing) {
+      return null;
     }
 
     // User already reviewed this product
-    if (alreadyReviewed) {
-      return (
-        <div className="flex flex-col items-center gap-3 py-8 text-center">
-          <CheckCircle size={36} className="text-green-500" />
-          <p className="text-[#949494] font-[oxygen] text-sm sm:text-base">
-            You have already submitted a review for this product. Thank you!
-          </p>
-        </div>
-      );
+    if (alreadyReviewed && !isEditing) {
+      return null;
     }
 
     // Show the review form
@@ -310,9 +374,10 @@ const Review = ({ p_id, productName }) => {
             </label>
             <input
               type="text"
-              disabled
-              value={user?.first_name || user?.name || "John Doe"}
-              className="w-full bg-[#FAFAFA] border border-[#00000026] rounded-full px-6 py-4 text-[#7B7B7B] outline-none focus:border-black transition"
+              value={reviewerName}
+              onChange={(e) => setReviewerName(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full bg-[#FAFAFA] border border-[#00000026] rounded-full px-6 py-4 text-[#414141] capitalize outline-none focus:border-black transition"
             />
           </div>
           <div className="space-y-2 flex flex-col gap-2">
@@ -321,9 +386,10 @@ const Review = ({ p_id, productName }) => {
             </label>
             <input
               type="email"
-              disabled
-              value={user?.email || "person@gmail.com"}
-              className="w-full bg-[#FAFAFA] border border-[#00000026] rounded-full px-6 py-4 text-[#7B7B7B] outline-none focus:border-black transition"
+              value={reviewerEmail}
+              onChange={(e) => setReviewerEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="w-full bg-[#FAFAFA] border border-[#00000026] rounded-full px-6 py-4 text-[#414141] outline-none focus:border-black transition"
             />
           </div>
         </div>
@@ -416,12 +482,23 @@ const Review = ({ p_id, productName }) => {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="bg-[#000000] text-white px-8 py-3 rounded-full font-[Exo] font-500 text-md flex items-center gap-2 cursor-pointer transition self-end sm:self-auto"
-          >
-            Post Review <ChevronRight size={20} />
-          </button>
+          <div className="flex items-center gap-4">
+            {isEditing && (
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="text-gray-500 font-medium hover:text-red-500 transition-colors"
+              >
+                Cancel Edit
+              </button>
+            )}
+            <button
+              type="submit"
+              className="bg-[#000000] text-white px-8 py-3 rounded-full font-[Exo] font-500 text-md flex items-center gap-2 cursor-pointer transition self-end sm:self-auto"
+            >
+              {isEditing ? "Update Review" : "Post Review"} <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
       </form>
     );
@@ -437,7 +514,13 @@ const Review = ({ p_id, productName }) => {
           </div>
         ) : (
           reviews?.slice(0, visibleCount).map((review, index) => (
-            <ReviewCard key={index} review={review} displayDate={displayDate} />
+            <ReviewCard
+              key={index}
+              review={review}
+              displayDate={displayDate}
+              currentUser={user}
+              onEdit={handleEdit}
+            />
           ))
         )}
 
@@ -453,16 +536,24 @@ const Review = ({ p_id, productName }) => {
         )}
       </div>
 
-      {/* Write a Review Section - Only shown for users who ordered the product and haven't reviewed it yet */}
-      {hasOrders && !alreadyReviewed && (
-        <div className="border border-[#D3D3D3] rounded-[14px] p-6 sm:p-8 mb-6">
+      {/* Write a Review Section */}
+      {((!alreadyReviewed && hasOrders !== false) || isEditing || !user?.u_id) && (
+        <div id="review-form-section" className="border border-[#D3D3D3] rounded-[14px] p-6 sm:p-8 mb-6">
           <div className="flex gap-6">
             <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#D9D9D9] flex items-center justify-center text-[#555] text-sm sm:text-base font-semibold select-none">
               {getInitials(user?.first_name
-                ? `${user.first_name} ${user.last_name || ""}`
+                ? `${user.first_name}`
                 : user?.name)}
             </div>
-            <div className="flex-1">{renderReviewFormArea()}</div>
+            <div className="flex-1">
+              {isEditing && (
+                <div className="mb-6 flex items-center gap-2 text-[#004534] bg-[#00453410] px-4 py-2 rounded-lg w-fit">
+                  <Pencil size={16} />
+                  <span className="text-sm font-semibold">Editing your review</span>
+                </div>
+              )}
+              {renderReviewFormArea()}
+            </div>
           </div>
         </div>
       )}

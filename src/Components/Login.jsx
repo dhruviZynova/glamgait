@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import { ApiURL } from "../Variable";
 import toast from "react-hot-toast";
@@ -10,6 +10,8 @@ import BrandBanner from "./BrandBanner";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/";
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -90,7 +92,7 @@ const Login = () => {
           if (response.data.data.role === "admin") {
             window.location.href = "/admin";
           } else {
-            window.location.href = "/";
+            window.location.href = from;
           }
         }, 2000);
 
@@ -114,7 +116,7 @@ const Login = () => {
           <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2">Login</h1>
             <p className="text-sm text-gray-500 mb-8">
-              Do not have an account, <span onClick={() => navigate("/register")} className="underline cursor-pointer">create a new one.</span>
+              Do not have an account, <span onClick={() => navigate("/register", { state: { from } })} className="underline cursor-pointer">create a new one.</span>
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -157,7 +159,7 @@ const Login = () => {
 
               <button
                 type="submit"
-                className="w-full bg-[#1A2C2C] text-white py-4 rounded-full font-bold text-lg hover:bg-opacity-90 transition-all duration-300 mt-4 shadow-lg"
+                className="w-full bg-[#1A2C2C] text-white py-4 rounded-full font-bold text-lg hover:bg-opacity-90 transition-all duration-300 mt-4 shadow-lg cursor-pointer"
               >
                 Login
               </button>
@@ -166,7 +168,7 @@ const Login = () => {
             <div className="mt-8 text-center">
               <button
                 onClick={() => navigate("/forgot-password")}
-                className="text-xs text-gray-500 hover:underline underline-offset-4"
+                className="text-xs text-gray-500 hover:underline underline-offset-4 cursor-pointer"
               >
                 Forgot Your Password
               </button>

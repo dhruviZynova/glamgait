@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import fontimg from "../assets/images/fontimg.png";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
@@ -19,6 +19,8 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/";
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -53,7 +55,7 @@ const Register = () => {
       const response = await axiosInstance.post("/userregister", formData);
       if (response.data.status === 1) {
         toast.success("Registration Successful!");
-        navigate("/login");
+        navigate("/login", { state: { from } });
       } else {
         toast.error(response.data.message || "Registration failed");
       }
@@ -76,7 +78,7 @@ const Register = () => {
           <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 sm:p-8 lg:p-12 flex flex-col justify-center rounded-xl md:rounded-tr-none md:rounded-l-xl z-10 border border-white/20">
             <h1 className="text-2xl sm:text-3xl font-bold text-[#1A2C2C] mb-2 text-center md:text-left">Create Account</h1>
             <p className="text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8 text-center md:text-left">
-              Already Have An Account? <span onClick={() => navigate("/login")} className="text-[#1A2C2C] font-semibold underline cursor-pointer">Log In</span>
+              Already Have An Account? <span onClick={() => navigate("/login", { state: { from } })} className="text-[#1A2C2C] font-semibold underline cursor-pointer">Log In</span>
             </p>
 
             <form className="space-y-3 sm:space-y-4" onSubmit={handleRegister}>
@@ -141,7 +143,7 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#1A2C2C] text-white py-3 sm:py-4 rounded-full font-bold text-sm sm:text-lg hover:bg-opacity-90 transition-all duration-300 mt-3 sm:mt-4 shadow-lg disabled:bg-gray-400"
+                className="w-full bg-[#1A2C2C] text-white py-3 sm:py-4 rounded-full font-bold text-sm sm:text-lg hover:bg-opacity-90 transition-all duration-300 mt-3 sm:mt-4 shadow-lg disabled:bg-gray-400 cursor-pointer"
               >
                 {loading ? "Registering..." : "Register"}
               </button>
