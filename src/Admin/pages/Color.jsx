@@ -5,13 +5,12 @@ import {
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { Trash2 } from "lucide-react";
-import axiosInstance, { adminAxios } from "../../Axios/axios";
-import { ApiURL, showToaster, adminInfo } from "../../Variable";
+import { adminAxios } from "../../Axios/axios";
+import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import { Toaster } from "react-hot-toast";
 
 const Colors = () => {
-  const adminData = adminInfo();
   const [isEdit, setIsEdit] = useState(false);
   const [colorData, setColorData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");

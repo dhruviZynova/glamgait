@@ -10,14 +10,13 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
-import { ApiURL, adminInfo } from "../../Variable";
+import { ApiURL } from "../../Variable";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { adminAxios } from "../../Axios/axios";
 import ProductModal from "./ProductModel";
 
 const Product = () => {
-  const adminData = adminInfo();
   const [products, setProducts] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);

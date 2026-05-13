@@ -607,11 +607,10 @@ import {
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
-import { ApiURL, adminInfo } from "../../Variable";
+import { ApiURL } from "../../Variable";
 import TrackingSection from "./TrackingSection";
 
 const AdminOrders = () => {
-  const adminData = adminInfo();
   const [orders, setOrders] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);

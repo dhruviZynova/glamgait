@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "reactstrap";
-import axiosInstance, { adminAxios } from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import { useForm } from "react-hook-form";
 import { Pencil, PlusCircle, Trash2 } from "lucide-react";
-import { ApiURL, showToaster, adminInfo } from "../../Variable";
+import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import { Toaster } from "react-hot-toast";
 
 const Sliders = () => {
-  const adminData = adminInfo();
   const { reset } = useForm();
   const fileInputRef = useRef();
 

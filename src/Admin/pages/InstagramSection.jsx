@@ -1,13 +1,12 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
-import axiosInstance, { adminAxios } from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import { Upload, Trash2, Loader2 } from "lucide-react";
-import { ApiURL, showToaster, adminInfo } from "../../Variable";
+import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import toast, { Toaster } from "react-hot-toast";
 
 const InstagramSection = () => {
-  const adminData = adminInfo();
   const [error, setError] = useState("");
   const [file, setFile] = useState(null);
   const [media, setMedia] = useState([]);

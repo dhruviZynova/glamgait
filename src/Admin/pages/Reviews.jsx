@@ -6,13 +6,12 @@ import {
   XMarkIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import { ApiURL, adminInfo } from "../../Variable";
+import { ApiURL } from "../../Variable";
 import toast from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Reviews = () => {
-  const adminData = adminInfo();
   const [reviews, setReviews] = useState([]);
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");

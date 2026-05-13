@@ -1267,12 +1267,11 @@
 
 import { useState, useEffect } from "react";
 import { PlusCircle, Trash2, X } from "lucide-react";
-import { ApiURL, adminInfo } from "../../Variable";
+import { ApiURL } from "../../Variable";
 import toast from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
 
 const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
-  const adminData = adminInfo();
   const [formData, setFormData] = useState({
     name: "",
     cate_id: "",

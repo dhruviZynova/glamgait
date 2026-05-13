@@ -5,12 +5,11 @@ import {
   ArrowPathIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import axiosInstance, { adminAxios } from "../../Axios/axios";
-import { ApiURL, showToaster, adminInfo } from "../../Variable";
+import { adminAxios } from "../../Axios/axios";
+import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Fabrics = () => {
-  const adminData = adminInfo();
   const [categoryData, setCategoryData] = useState([]);
   const [isEdit, setIsEdit] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");

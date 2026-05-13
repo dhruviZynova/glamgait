@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { ApiURL, showToaster, adminInfo } from "../../Variable";
-import axiosInstance, { adminAxios } from "../../Axios/axios";
+import { ApiURL, showToaster } from "../../Variable";
+import { adminAxios } from "../../Axios/axios";
 import {
   PlusIcon,
   TrashIcon,
@@ -10,7 +10,6 @@ import {
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Works = () => {
-  const adminData = adminInfo();
   const [isEdit, setIsEdit] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");

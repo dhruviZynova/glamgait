@@ -27,7 +27,7 @@ import {
   XCircle,
   Truck,
 } from "lucide-react";
-import { ApiURL, adminInfo } from "../../Variable";
+import { ApiURL } from "../../Variable";
 import { adminAxios } from "../../Axios/axios";
 
 const formatRevenue = (revenue) => {
@@ -44,7 +44,6 @@ const formatRevenue = (revenue) => {
 };
 
 const Dashboard = () => {
-  const adminData = adminInfo();
   const [timeframe, setTimeframe] = useState("daily");
   const [userCount, setUserCount] = useState([]);
   const [dashboardCount, setDashboardCount] = useState({

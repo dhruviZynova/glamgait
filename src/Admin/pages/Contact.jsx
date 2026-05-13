@@ -10,7 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import axiosInstance, { adminAxios } from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import { ApiURL, adminInfo } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 

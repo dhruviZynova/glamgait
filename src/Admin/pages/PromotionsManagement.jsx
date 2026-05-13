@@ -2,7 +2,7 @@
 // src/pages/admin/PromotionsManagement.jsx
 import { useEffect, useState } from "react";
 import { ApiURL, showToaster } from "../../Variable"; // adjust path if needed
-import axiosInstance, { adminAxios } from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import {
   PlusIcon,
   TrashIcon,

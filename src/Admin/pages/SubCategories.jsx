@@ -385,11 +385,10 @@ import {
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { adminAxios } from "../../Axios/axios";
-import { ApiURL, showToaster, getFullImageUrl, adminInfo } from "../../Variable";
+import { ApiURL, showToaster, getFullImageUrl } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const SubCategories = () => {
-  const adminData= adminInfo();
   const [isEdit, setIsEdit] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [subCategoryData, setSubCategoryData] = useState([]);
