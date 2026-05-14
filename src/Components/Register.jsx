@@ -1,6 +1,5 @@
 // src/pages/Register.jsx
 import React, { useState } from "react";
-import fontimg from "../assets/images/fontimg.png";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -60,8 +59,7 @@ const Register = () => {
         toast.error(response.data.message || "Registration failed");
       }
     } catch (error) {
-      console.error("Registration error:", error);
-      toast.error("An error occurred during registration");
+      toast.error(error?.description || error?.message || "An error occurred during registration");
     } finally {
       setLoading(false);
     }
@@ -72,7 +70,7 @@ const Register = () => {
       <div className="w-full pt-6 pb-24 px-4 sm:px-6 md:px-12 lg:px-20 flex items-center justify-center overflow-hidden font-sans relative">
 
         {/* Register Card */}
-        <div className="relative z-20 w-full max-w-6xl mx-2 sm:mx-4 rounded-xl flex flex-col md:flex-row min-h-[500px] md:min-h-[600px] shadow-2xl">
+        <div className="relative z-20 w-full max-w-6xl mx-2 sm:mx-4 rounded-xl flex flex-col md:flex-row min-h-auto">
 
           {/* Left Side: Register Form */}
           <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 sm:p-8 lg:p-12 flex flex-col justify-center rounded-xl md:rounded-tr-none md:rounded-l-xl z-10 border border-white/20">
@@ -90,7 +88,7 @@ const Register = () => {
                   placeholder="First Name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-300"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
@@ -102,7 +100,7 @@ const Register = () => {
                   placeholder="Last Name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-300"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
@@ -114,7 +112,7 @@ const Register = () => {
                   placeholder="Email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-300"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
@@ -127,7 +125,7 @@ const Register = () => {
                     placeholder="Min 8 chars, 1 uppercase, 1 number"
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-300"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-400"
                   />
                   <button
                     type="button"
@@ -149,7 +147,7 @@ const Register = () => {
               </button>
             </form>
 
-            <p className="text-[8px] sm:text-[10px] text-center text-gray-500 mt-4 sm:mt-6 leading-relaxed px-2">
+            <p className="text-[12px] text-center text-gray-500 mt-6 leading-relaxed px-2">
               By clicking Register you agree to <span className="underline cursor-pointer">Terms & Conditions</span> and <span className="underline cursor-pointer">Privacy Policy</span>.
             </p>
           </div>

@@ -78,7 +78,7 @@ const HomePage = () => {
           ></div>
 
           {/* Text Content */}
-          <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-12 md:px-20 lg:px-32 w-full md:w-2/3 lg:w-1/2">
+          <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-12 md:px-20 lg:px-10 w-full md:w-2/3 lg:w-1/2">
             <h3 className="text-green-800 text-sm md:text-base font-semibold tracking-widest uppercase mb-2">New Collection</h3>
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4" style={{ fontFamily: "serif" }}>
               Modesty is the <br /> New Beauty

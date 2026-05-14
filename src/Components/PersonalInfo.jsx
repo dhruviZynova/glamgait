@@ -166,7 +166,7 @@ const PersonalInfo = () => {
                     {[
                       { label: "Your Name", field: "first_name" },
                       { label: "Email Address", field: "email" },
-                      { label: "Phone Number", field: "phone_number" },
+                      // { label: "Phone Number", field: "phone_number" },
                       { label: "Password", field: "password" },
                     ].map(({ label, field }) => (
                       <div

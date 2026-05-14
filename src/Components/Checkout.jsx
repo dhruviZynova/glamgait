@@ -251,63 +251,9 @@ const Checkout = () => {
             </div>
 
             {formData.paymentMethod === "online" && (
-                <>
-                    <div className="md:col-span-2 space-y-2">
-                        <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Name On Card*</label>
-                        <input
-                            type="text"
-                            name="cardName"
-                            value={formData.cardName}
-                            onChange={handleInputChange}
-                            className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                        />
-                    </div>
-                    <div className="md:col-span-2 space-y-2">
-                        <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Card Number*</label>
-                        <input
-                            type="text"
-                            name="cardNumber"
-                            value={formData.cardNumber}
-                            onChange={handleInputChange}
-                            className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Valid Through*</label>
-                        <input
-                            type="text"
-                            name="validThrough"
-                            placeholder="MM/YY"
-                            value={formData.validThrough}
-                            onChange={handleInputChange}
-                            className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">CVV*</label>
-                        <input
-                            type="password"
-                            name="cvv"
-                            maxLength="3"
-                            value={formData.cvv}
-                            onChange={handleInputChange}
-                            className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                        />
-                    </div>
-                    <div className="md:col-span-2 flex items-center gap-3">
-                        <input
-                            type="checkbox"
-                            id="saveAsDefault"
-                            name="saveAsDefault"
-                            checked={formData.saveAsDefault}
-                            onChange={handleInputChange}
-                            className="w-5 h-5 accent-[#1C2F2F] cursor-pointer"
-                        />
-                        <label htmlFor="saveAsDefault" className="text-[#3D3D3D] font-[Oxygen] text-sm md:text-base cursor-pointer">
-                            Save As Default Payment Method
-                        </label>
-                    </div>
-                </>
+                <div className="md:col-span-2 p-6 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-green-800 font-[Oxygen]">You have selected Online Payment. You will be redirected to the payment gateway to complete your transaction securely after clicking "Place Order".</p>
+                </div>
             )}
             {formData.paymentMethod === "COD" && (
                 <div className="md:col-span-2 p-6 bg-blue-50 border border-blue-200 rounded-lg">
@@ -334,7 +280,7 @@ const Checkout = () => {
                     <div className="flex justify-between text-[#3D3D3D] font-[Oxygen]">
                         <span>Payment Method:</span>
                         <span className="font-medium">
-                            {formData.paymentMethod === "COD" ? "Cash on Delivery" : `Card ending in ${formData.cardNumber.slice(-4) || "****"}`}
+                            {formData.paymentMethod === "COD" ? "Cash on Delivery" : "Online Payment"}
                         </span>
                     </div>
                 </div>
@@ -393,13 +339,6 @@ const Checkout = () => {
                 setIsProcessing(false);
             }
         } else if (currentStep === 2) {
-            // Validate Billing (if online)
-            if (formData.paymentMethod === "online") {
-                if (!formData.cardName || !formData.cardNumber || !formData.validThrough || !formData.cvv) {
-                    toast.error("Please fill all billing fields");
-                    return;
-                }
-            }
             setCurrentStep(3);
         } else {
             // Step 3: Place Order
@@ -443,13 +382,30 @@ const Checkout = () => {
             };
 
             const res = await axiosInstance.post(`/createorder`, orderData);
+            const apiBody = res.data || res;
 
-            if (res.data.status !== 1) {
-                throw new Error(res.data.message || "Order failed");
+            if (apiBody.status !== 1) {
+                throw new Error(apiBody.message || "Order failed");
             }
 
-            // Show success modal upon successful order placement
-            setShowSuccessModal(true);
+            if (formData.paymentMethod === "online") {
+                const checkoutUrl = apiBody?.data?.checkoutUrl;
+                const paymentId = apiBody?.data?.paymentId || apiBody?.data?.id || apiBody?.data?.paymentIntentId;
+
+                if (paymentId) {
+                    sessionStorage.setItem('retryPaymentId', paymentId);
+                }
+
+                if (checkoutUrl) {
+                    window.location.href = checkoutUrl;
+                } else {
+                    toast.error('Failed to get payment checkout URL.');
+                    setIsProcessing(false);
+                }
+            } else {
+                // Show success modal upon successful order placement (COD)
+                setShowSuccessModal(true);
+            }
         } catch (err) {
             console.error(err);
             toast.error(err.message || "Failed to place order");

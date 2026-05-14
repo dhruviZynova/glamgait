@@ -88,22 +88,15 @@ const Login = () => {
           }
         }
 
-        setTimeout(() => {
-          if (response.data.data.role === "admin") {
-            window.location.href = "/admin";
-          } else {
-            window.location.href = from;
-          }
-        }, 2000);
+        window.location.href = from;
 
         setEmail("");
         setPassword("");
       } else {
-        toast.error("Invalid email or password");
+        toast.error(response.data.description || "Invalid email or password");
       }
     } catch (err) {
-      console.error("Login error:", err);
-      toast.error("Invalid email or password");
+      toast.error(err?.description || err?.message || "Invalid email or password");
     }
   };
 
@@ -111,7 +104,7 @@ const Login = () => {
     <>
       <div className="w-full pt-20 pb-16 px-6 md:px-12 lg:px-20 flex items-center justify-center overflow-hidden font-sans">
         {/* Login Card */}
-        <div className="relative z-20 w-full max-w-5xl mx-4 rounded-xl flex flex-col md:flex-row min-h-[500px]">
+        <div className="relative z-20 w-full max-w-5xl mx-4 rounded-xl flex flex-col md:flex-row min-h-auto">
           {/* Left Side: Login Form */}
           <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2">Login</h1>
@@ -130,7 +123,7 @@ const Login = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="michael.joe@xmail.com"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-300"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
@@ -145,7 +138,7 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="••••••"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-300"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
                   />
                   <button
                     type="button"

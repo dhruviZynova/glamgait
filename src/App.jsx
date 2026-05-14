@@ -52,6 +52,9 @@ import SearchResults from "./Components/SearchResults";
 import PromotionsManagement from "./Admin/pages/PromotionsManagement";
 import Checkout from "./Components/Checkout";
 import AdminLogin from "./Admin/pages/AdminLogin";
+import ForgotPassword from "./Components/ForgotPassword";
+import ResetPassword from "./Components/ResetPassword";
+import VerifyOTP from "./Components/VerifyOTP";
 
 function App() {
   return (
@@ -117,6 +120,9 @@ function App() {
             />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-otp" element={<VerifyOTP />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/wishlist" element={<Wishlist />} />
