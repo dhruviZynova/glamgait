@@ -285,13 +285,16 @@ const Navbar = () => {
           <div className="flex items-center gap-4 md:gap-4">
 
             {/* 1. Search Icon */}
-            <Search
-              className="cursor-pointer text-[#767676] hover:text-[#1C2F2F]"
+            <button 
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-            />
+              aria-label="Toggle search"
+              className="focus:outline-none"
+            >
+              <Search className="cursor-pointer text-[#767676] hover:text-[#1C2F2F]" />
+            </button>
 
             {/* 2. Heart/Wishlist Icon */}
-            <Link to="/wishlist" className="relative">
+            <Link to="/wishlist" className="relative" aria-label={`Wishlist, ${wishlistCount} items`}>
               <Heart className="cursor-pointer text-[#767676] hover:text-[#1C2F2F]" />
               <span className="absolute -top-2 -right-2 bg-[#1C2F2F] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                 {wishlistCount}
@@ -299,7 +302,7 @@ const Navbar = () => {
             </Link>
 
             {/* 3. Shopping Cart Icon */}
-            <Link to="/cart" className="relative">
+            <Link to="/cart" className="relative" aria-label={`Shopping cart, ${cartCount} items`}>
               <ShoppingCart className="cursor-pointer text-[#767676] hover:text-[#1C2F2F]" />
               <span className="absolute -top-2 -right-2 bg-[#1C2F2F] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                 {cartCount}
@@ -309,6 +312,8 @@ const Navbar = () => {
             {/* 4. Custom User Icon */}
             <div
               className="flex items-center gap-1 cursor-pointer text-[#767676] hover:text-black"
+              aria-label={u_id && token ? "Account" : "Login"}
+              role="button"
               onClick={() => {
                 if (u_id && token) {
                   navigate("/myorders");

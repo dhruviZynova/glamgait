@@ -4,6 +4,7 @@ import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
 import { Star, ChevronRight, ShoppingBag, CheckCircle, ImagePlus, X, ThumbsUp, ThumbsDown, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
+import { ORDER_STATUS } from "../utils/constants";
 
 // Extracts up to 2 initials from a full name  e.g. "Dhruv Gajjar" → "DG"
 const getInitials = (name) => {
@@ -203,7 +204,7 @@ const Review = ({ p_id, productName }) => {
       ) {
         // Find if any order contains this specific product (by ID or Name)
         const hasBoughtThisProduct = res.data.data.some(order =>
-          order.status_label === "Delivered" &&
+          (parseInt(order.status) === ORDER_STATUS.DELIVERED || order.status_label === "Delivered") &&
           order.orderItems && order.orderItems.some(item => {
             const itemId = item.p_id || item.product_id || item.pid || item.id || item.productId;
             const idMatch = itemId && String(itemId) === String(p_id);

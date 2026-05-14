@@ -166,7 +166,7 @@ const Profileorder = () => {
                           <span className="text-[#3C4242] font-[Causten] font-600">Order Date : </span><span className="text-[#3C4242] font-[Causten] font-600">{new Date(order.createdAt).toLocaleDateString()}</span>
                         </p>
                         <p className="text-sm">
-                          <span className="text-[#3C4242] font-[Causten] font-600">Estimated Delivery Date : </span><span className="text-[#3C4242] font-[Causten] font-600">8 June 2023</span>
+                          <span className="text-[#3C4242] font-[Causten] font-600">Estimated Delivery Date : </span><span className="text-[#3C4242] font-[Causten] font-600">{new Date(new Date(order.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}</span>
                         </p>
                       </div>
                     </div>

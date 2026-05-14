@@ -3,6 +3,7 @@ import { Routes, Route, BrowserRouter, Outlet } from "react-router-dom";
 import "./App.css";
 import { LoaderProvider } from "./Context/LoaderContext";
 import { CartProvider } from "./Context/CartContext";
+import { UserProvider } from "./Context/UserContext";
 import GlobalLoader from "./Components/GlobalLoader";
 import Navbar from "./Components/Navbar";
 import { Toaster } from "react-hot-toast";
@@ -75,7 +76,8 @@ const NotFound = lazy(() => import("./Components/NotFound"));
 
 function App() {
   return (
-    <LoaderProvider>
+    <UserProvider>
+      <LoaderProvider>
       <CartProvider>
         <Toaster
           position="top-right"
@@ -167,6 +169,7 @@ function App() {
         </BrowserRouter>
       </CartProvider>
     </LoaderProvider>
+    </UserProvider>
   );
 }
 

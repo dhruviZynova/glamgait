@@ -167,6 +167,7 @@ const ProductCard = ({
           <button
             onClick={toggleWishlist}
             className="wishlist-heart-btn"
+            aria-label={isWished ? "Remove from wishlist" : "Add to wishlist"}
           >
             <Heart
               size={20}
@@ -183,6 +184,7 @@ const ProductCard = ({
               || ''
             }
             alt={product.name}
+            loading="lazy"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
 

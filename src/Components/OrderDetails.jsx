@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { ChevronLeft, Package, Truck, CheckCircle, MapPin, X, XCircle } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import SideBar from "./SideBar";
@@ -141,7 +142,6 @@ const OrderDetails = () => {
     if (s === "cancelled") return "This order has been cancelled.";
     if (s === "returned") return "This order has been returned.";
     return "Your order has been placed successfully and is awaiting verification.";
-  };
   };
 
   if (!order) {
