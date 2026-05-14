@@ -141,7 +141,7 @@ const Users = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <button
                           onClick={() => handleDelete(user.u_id, user.first_name)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 cursor-pointer"
                           aria-label={`Delete ${user.first_name}`}
                         >
                           <Trash2 className="h-5 w-5" />
@@ -159,7 +159,7 @@ const Users = () => {
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg disabled:opacity-50 flex items-center gap-1"
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg disabled:opacity-50 flex items-center gap-1 cursor-pointer"
             >
               <ChevronLeftIcon className="h-5 w-5" />
               Prev
@@ -170,7 +170,7 @@ const Users = () => {
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg disabled:opacity-50 flex items-center gap-1"
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg disabled:opacity-50 flex items-center gap-1 cursor-pointer"
             >
               Next
               <ChevronRightIcon className="h-5 w-5" />

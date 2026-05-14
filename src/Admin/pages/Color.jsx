@@ -123,7 +123,7 @@ const Colors = () => {
               });
               setIsModalOpen(true);
             }}
-            className="w-full flex items-center justify-center gap-2 bg-black  text-white px-4 py-2 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-black  text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             <span>Add Color</span>
@@ -185,7 +185,7 @@ const Colors = () => {
                         });
                         setIsModalOpen(true);
                       }}
-                      className="text-black hover:text-gray-700 mr-4"
+                      className="text-black hover:text-gray-700 mr-4 cursor-pointer"
                       aria-label={`Edit color ${color.color_name}`}
                     >
                       <PencilSquareIcon className="h-5 w-5" />
@@ -194,7 +194,7 @@ const Colors = () => {
                       onClick={() =>
                         handleDelete(color.color_id, color.color_name)
                       }
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 cursor-pointer"
                       aria-label={`Delete color ${color.color_name}`}
                     >
                       <Trash2 className="h-5 w-5" />
@@ -261,14 +261,14 @@ const Colors = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
                   aria-label="Cancel color form"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 shadow-sm text-sm font-medium"
+                  className="px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
                   aria-label={isEdit ? "Update color" : "Create color"}
                 >
                   {isEdit ? "Update" : "Create"}

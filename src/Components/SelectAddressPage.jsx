@@ -27,11 +27,11 @@ const SelectAddressPage = () => {
     const [showAddAddressModal, setShowAddAddressModal] = useState(false);
     const [addressType, setAddressType] = useState("HOME");
 
-    // Calculate totals
-    const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const taxes = Math.round(subtotal * 0.18); // 18% GST
-    const deliveryFee = subtotal > 500 ? 0 : 40; // Free delivery above ₹500
-    const grandTotal = subtotal + taxes + deliveryFee;
+    // Calculate totals - Memoized for performance
+    const subtotal = React.useMemo(() => cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0), [cartItems]);
+    const taxes = React.useMemo(() => Math.round(subtotal * 0.18), [subtotal]); // 18% GST
+    const deliveryFee = React.useMemo(() => subtotal > 500 ? 0 : 40, [subtotal]); // Free delivery above ₹500
+    const grandTotal = React.useMemo(() => subtotal + taxes + deliveryFee, [subtotal, taxes, deliveryFee]);
 
     // Fetch addresses
     useEffect(() => {
@@ -532,7 +532,7 @@ const SelectAddressPage = () => {
                             </h2>
                             <div className="space-y-4 text-[#3D3D3D] font-[Oxygen] text-md md:text-lg max-w-lg mx-auto leading-relaxed">
                                 <p>
-                                    Thank You For Choosing Modimal, Your Order Will Be Generated Based On Your Delivery Request.
+                                    Thank You For Choosing GlamGait, Your Order Will Be Generated Based On Your Delivery Request.
                                 </p>
                                 <p>
                                     The Receipt Has Been Sent To Your Email
@@ -545,9 +545,9 @@ const SelectAddressPage = () => {
                                 Please Contact Us For Any Query
                             </p>
                             <div className="space-y-1 font-[Oxygen] text-[#3D3D3D]">
-                                <p className="text-lg">+1(929)460-3208</p>
+                                <p className="text-lg">+91 98765 43210</p>
                                 <p className="uppercase text-sm">OR</p>
-                                <p className="text-lg font-medium">Hello @ Modimal.Com</p>
+                                <p className="text-lg font-medium">Hello @ GlamGait.Com</p>
                             </div>
                         </div>
                     </div>

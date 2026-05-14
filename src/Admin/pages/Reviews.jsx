@@ -229,7 +229,7 @@ const Reviews = () => {
           />
           <button
             onClick={() => openModal(false)}
-            className="bg-black text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-800 transition"
+            className="bg-black text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-800 transition cursor-pointer"
           >
             Add Review
           </button>
@@ -307,13 +307,13 @@ const Reviews = () => {
                   <div className="flex gap-2 text-xs">
                     <button
                       onClick={() => openModal(true, r)}
-                      className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                      className="text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
                     >
                       <PencilSquareIcon className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(r.r_id, r.reviewer_name)}
-                      className="text-red-600 hover:text-red-800 flex items-center gap-1"
+                      className="text-red-600 hover:text-red-800 flex items-center gap-1 cursor-pointer"
                     >
                       <TrashIcon className="w-4 h-4" />
                     </button>
@@ -379,13 +379,13 @@ const Reviews = () => {
                         {/* Edit & Delete */}
                         {/* <button
                           onClick={() => openModal(true, r)}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-blue-600 hover:text-blue-800 cursor-pointer"
                         >
                           <PencilSquareIcon className="w-5 h-5" />
                         </button> */}
                         <button
                           onClick={() => handleDelete(r.r_id, r.reviewer_name)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 cursor-pointer"
                         >
                           <TrashIcon className="w-5 h-5" />
                         </button>
@@ -441,7 +441,7 @@ const Reviews = () => {
                 onClick={() =>
                   setModal({ open: false, editMode: false, reviewId: null })
                 }
-                className="p-2 -mr-2 rounded-full hover:bg-gray-100 transition-colors"
+                className="p-2 -mr-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
               >
                 <XMarkIcon className="w-7 h-7 text-gray-500 hover:text-gray-700" />
               </button>
@@ -670,7 +670,7 @@ const Reviews = () => {
                         onClick={() =>
                           setForm({ ...form, image: null, preview: null })
                         }
-                        className="text-red-600 hover:text-red-800 underline text-sm mt-1"
+                        className="text-red-600 hover:text-red-800 underline text-sm mt-1 cursor-pointer"
                       >
                         Remove photo
                       </button>
@@ -687,7 +687,7 @@ const Reviews = () => {
                 onClick={() =>
                   setModal({ open: false, editMode: false, reviewId: null })
                 }
-                className="flex-1 py-3.5 px-6 rounded-xl font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 active:bg-gray-200 transition-colors order-2 sm:order-1"
+                className="flex-1 py-3.5 px-6 rounded-xl font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 active:bg-gray-200 transition-colors order-2 sm:order-1 cursor-pointer"
               >
                 Cancel
               </button>
@@ -695,7 +695,7 @@ const Reviews = () => {
               <button
                 disabled={submitting}
                 onClick={handleSubmit}
-                className={`flex-1 py-3.5 px-6 rounded-xl font-medium text-white transition-colors order-1 sm:order-2 ${submitting
+                className={`flex-1 py-3.5 px-6 rounded-xl font-medium text-white transition-colors order-1 sm:order-2 cursor-pointer ${submitting
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-black hover:bg-gray-900 active:bg-gray-900"
                   }`}

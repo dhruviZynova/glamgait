@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import { ApiURL } from "../Variable";
 import toast from "react-hot-toast";
@@ -10,6 +10,8 @@ import { FaArrowLeft } from "react-icons/fa";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/";
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +27,8 @@ const ForgotPassword = () => {
       if (response.data.status === 1) {
         navigate("/verify-otp", {
           state: {
-            email: email
+            email: email,
+            from: from
           }
         });
         toast.success(response.data.description || "OTP sent to your email");
@@ -50,7 +53,7 @@ const ForgotPassword = () => {
           <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <div className="absolute top-8 left-8 lg:left-14">
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => navigate("/login", { state: { from } })}
                 className="flex items-center justify-start gap-3 text-sm font-medium text-gray-400 hover:text-[#1A2C2C] transition-all duration-300 cursor-pointer group"
               >
                 <FaArrowLeft className="text-[10px]" />
@@ -98,7 +101,7 @@ const ForgotPassword = () => {
                 <p className="text-[12px] text-center text-gray-500 mt-4 sm:mt-6 leading-relaxed px-2">
                   Remember password?{" "}
                   <span
-                    onClick={() => navigate("/login")}
+                    onClick={() => navigate("/login", { state: { from } })}
                     className="text-[#1A2C2C] font-medium hover:underline underline-offset-4 cursor-pointer ml-1 transition-all"
                   >
                     Login now

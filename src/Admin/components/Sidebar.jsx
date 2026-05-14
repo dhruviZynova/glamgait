@@ -82,7 +82,7 @@ const Sidebar = ({ onClose }) => {
         <div className="text-sm font-semibold tracking-wider text-white uppercase">Menu</div>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-white transition-colors p-1 rounded-md hover:bg-white/10"
+          className="text-gray-400 hover:text-white transition-colors p-1 rounded-md hover:bg-white/10 cursor-pointer"
         >
           <X className="h-5 w-5" />
         </button>

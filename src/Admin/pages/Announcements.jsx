@@ -115,7 +115,7 @@ const Announcement = () => {
               setFormData({ text: "", ann_id: null });
               setIsModalOpen(true);
             }}
-            className="w-full flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             <span>Add Announcement</span>
@@ -159,13 +159,13 @@ const Announcement = () => {
                         });
                         setIsModalOpen(true);
                       }}
-                      className="text-black mr-4"
+                      className="text-black mr-4 cursor-pointer"
                     >
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(item?.ann_id, item?.text)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 cursor-pointer"
                     >
                       <TrashIcon className="h-5 w-5" />
                     </button>
@@ -204,13 +204,13 @@ const Announcement = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black"
+                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer"
                 >
                   {isEdit ? "Update" : "Create"}
                 </button>

@@ -12,6 +12,7 @@ const VerifyOTP = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || "";
+  const from = location.state?.from || "/";
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
@@ -71,7 +72,7 @@ const VerifyOTP = () => {
 
       if (response.data.status === 1) {
         toast.success(response.data.description || "OTP Verified Successfully");
-        navigate("/reset-password", { state: { email, otp: otpString } });
+        navigate("/reset-password", { state: { email, otp: otpString, from } });
       } else {
         toast.error(response.data.description || "Invalid OTP");
       }

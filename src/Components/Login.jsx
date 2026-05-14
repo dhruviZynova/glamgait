@@ -60,7 +60,7 @@ const Login = () => {
                 { headers: { Authorization: `Bearer ${userData.auth_token}` } }
               )
             ));
-            localStorage.removeItem("localCart");
+            // localStorage.removeItem("localCart"); // Persist local cart
           } catch (error) {
             console.error("Local cart sync failed:", error);
           }
@@ -82,13 +82,15 @@ const Login = () => {
                 { headers: { Authorization: `Bearer ${userData.auth_token}` } }
               )
             ));
-            localStorage.removeItem("localWishlist");
+            // localStorage.removeItem("localWishlist"); // Persist local wishlist
           } catch (error) {
             console.error("Local wishlist sync failed:", error);
           }
         }
 
-        window.location.href = from;
+        // Redirection Hardening: Ensure 'from' is a safe relative path
+        const safeFrom = (from && from.startsWith('/') && !from.startsWith('//')) ? from : "/";
+        navigate(safeFrom, { replace: true });
 
         setEmail("");
         setPassword("");
@@ -160,7 +162,7 @@ const Login = () => {
 
             <div className="mt-8 text-center">
               <button
-                onClick={() => navigate("/forgot-password")}
+                onClick={() => navigate("/forgot-password", { state: { from } })}
                 className="text-xs text-gray-500 hover:underline underline-offset-4 cursor-pointer"
               >
                 Forgot Your Password

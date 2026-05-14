@@ -26,7 +26,7 @@ const ProductDetail = () => {
 
   const fetchProduct = async () => {
     try {
-      const response = await axiosInstance.get(
+      const response = await adminAxios.get(
         `${ApiURL}/getproductbyid/${p_id}`
       );
       const productData = response.data.data;
@@ -129,7 +129,7 @@ const ProductDetail = () => {
   const handleDelete = async () => {
     if (window.confirm("Delete this product permanently?")) {
       try {
-        await axiosInstance.delete(`${ApiURL}/deleteproduct/${p_id}`);
+        await adminAxios.delete(`${ApiURL}/deleteproduct/${p_id}`);
         showToaster(1, "Product deleted");
         navigate("/admin/product");
       } catch (error) {
@@ -152,20 +152,20 @@ const ProductDetail = () => {
       <div className="max-w-7xl mx-auto mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-700 hover:text-black"
+          className="flex items-center gap-2 text-gray-700 hover:text-black cursor-pointer"
         >
           <ArrowLeft /> Back
         </button>
         <div className="flex gap-3">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-black text-white px-5 py-3 rounded-lg flex items-center gap-2 hover:bg-gray-800"
+            className="bg-black text-white px-5 py-3 rounded-lg flex items-center gap-2 hover:bg-gray-800 cursor-pointer"
           >
             <Edit size={18} /> Edit Product
           </button>
           <button
             onClick={handleDelete}
-            className="bg-red-600 text-white px-5 py-3 rounded-lg flex items-center gap-2 hover:bg-red-700"
+            className="bg-red-600 text-white px-5 py-3 rounded-lg flex items-center gap-2 hover:bg-red-700 cursor-pointer"
           >
             <Trash2 size={18} /> Delete
           </button>
@@ -239,7 +239,7 @@ const ProductDetail = () => {
                     <button
                       key={img.image_id}
                       onClick={() => handleThumbnailClick(img.image_url)}
-                      className={`w-20 h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all relative ${mainMedia === mediaUrl
+                      className={`w-20 h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all relative cursor-pointer ${mainMedia === mediaUrl
                         ? "border-black"
                         : "border-gray-300"
                         }`}
@@ -312,8 +312,8 @@ const ProductDetail = () => {
 
         {/* Right: Details + Stock */}
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl p-8 shadow-lg">
-            <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
+          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg">
+            <h1 className="text-2xl font-medium mb-4">{product.name}</h1>
 
             {/* Price */}
             <div className="mb-6">
@@ -387,7 +387,7 @@ const ProductDetail = () => {
                   </div>
                 ) : (
                   // No sizes → show total for color
-                  <div className="p-6 bg-green-50 border-2 border-green-300 rounded-xl text-center">
+                  <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl text-center">
                     <p className="text-lg font-semibold text-green-800">
                       One Size · {selectedColor.total_available} in stock
                     </p>

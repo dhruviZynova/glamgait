@@ -9,25 +9,24 @@ import { useNavigate } from "react-router-dom";
 
 import "../style/ProductCard.css";
 
+// Slug generate kare helper function (Optional: Agar API slug nahi ape to name thi banavi sake)
+const createSlug = (name) => {
+  if (!name) return "";
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
 const ProductCard = ({
   product,
   wishlistMap,
   onWishlistChange,
 }) => {
-
   const navigate = useNavigate();
-
-  // Slug generate kare helper function (Optional: Agar API slug nahi ape to name thi banavi sake)
-  const createSlug = (name) => {
-    if (!name) return "";
-    return name
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-+|-+$/g, "");
-  };
 
   // Support both API shapes:
   // /productbycategory → product.colors[]
@@ -145,12 +144,12 @@ const ProductCard = ({
   };
 
   // Robust stock calculation
-  const totalStock = typeof product.total_stock === 'number' 
-    ? product.total_stock 
+  const totalStock = typeof product.total_stock === 'number'
+    ? product.total_stock
     : (product.productcolors || product.colors || []).reduce((acc, color) => {
-        const sizes = color.productsizes || color.sizes || [];
-        return acc + sizes.reduce((sAcc, size) => sAcc + (Number(size.remaining_qty) || 0), 0);
-      }, 0);
+      const sizes = color.productsizes || color.sizes || [];
+      return acc + sizes.reduce((sAcc, size) => sAcc + (Number(size.remaining_qty) || 0), 0);
+    }, 0);
 
   // Logic: Pehlo Slug check karo, agal nahi hoy to ID use karo.
   const productSlug = product.slug || createSlug(product.name) || product.p_id;

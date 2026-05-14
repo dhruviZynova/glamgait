@@ -119,14 +119,16 @@ const Dashboard = () => {
 
   // Check if order should contribute to revenue
   const isRevenueEligible = (status) => {
+    // Standardize to number as the table uses numeric status IDs
+    const statusId = parseInt(status);
     const eligibleStatuses = [
-      "pending",
-      "accepted",
-      "preparing",
-      "shipped",
-      "delivered",
+      1, // pending
+      2, // accepted
+      3, // preparing
+      4, // shipped
+      5, // delivered
     ];
-    return eligibleStatuses.includes(status);
+    return eligibleStatuses.includes(statusId);
   };
 
   useEffect(() => {
@@ -204,7 +206,7 @@ const Dashboard = () => {
           </div>
           <button
             onClick={fetchDashboardData}
-            className="mt-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-pink-600 transition-colors"
+            className="mt-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-pink-600 transition-colors cursor-pointer"
           >
             Refresh Data
           </button>
@@ -312,7 +314,7 @@ const Dashboard = () => {
                   <button
                     key={period}
                     onClick={() => setTimeframe(period)}
-                    className={`px-3 py-1 text-sm rounded-md capitalize transition-colors ${timeframe === period
+                    className={`px-3 py-1 text-sm rounded-md capitalize transition-colors cursor-pointer ${timeframe === period
                       ? "bg-pink-500 text-white"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
@@ -399,7 +401,7 @@ const Dashboard = () => {
                 <button
                   key={period}
                   onClick={() => setTimeframe(period)}
-                  className={`px-3 py-1 text-sm rounded-md capitalize transition-colors ${timeframe === period
+                  className={`px-3 py-1 text-sm rounded-md capitalize transition-colors cursor-pointer ${timeframe === period
                     ? "bg-pink-500 text-white"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     }`}

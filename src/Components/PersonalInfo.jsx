@@ -188,13 +188,13 @@ const PersonalInfo = () => {
                               />
                               <div className="flex gap-4 mt-3">
                                 <button
-                                  className="text-sm font-semibold text-green-600 hover:text-green-800 transition-colors"
+                                  className="text-sm font-semibold text-green-600 hover:text-green-800 transition-colors cursor-pointer"
                                   onClick={handleSave}
                                 >
                                   Save
                                 </button>
                                 <button
-                                  className="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors"
+                                  className="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors cursor-pointer"
                                   onClick={() => setEditingField("")}
                                 >
                                   Cancel
@@ -290,14 +290,14 @@ const PersonalInfo = () => {
 
                         <div className="flex items-center gap-6">
                           <button
-                            className={`text-sm font-bold transition-colors ${addr.add_id.toString().startsWith('dummy') ? 'text-[#3C4242] cursor-not-allowed' : 'text-[#3C4242] hover:text-[#3C4242]'} font-semibold`}
+                            className={`text-sm font-bold transition-colors cursor-pointer ${addr.add_id.toString().startsWith('dummy') ? 'text-[#3C4242] cursor-not-allowed' : 'text-[#3C4242] hover:text-[#3C4242]'} font-semibold`}
                             onClick={() => !addr.add_id.toString().startsWith('dummy') && handleDeleteAddress(addr.add_id)}
                             disabled={addr.add_id.toString().startsWith('dummy')}
                           >
                             Remove
                           </button>
                           <button
-                            className={`text-sm font-bold transition-colors ${addr.add_id.toString().startsWith('dummy') ? 'text-[#3C4242] cursor-not-allowed' : 'text-[#3C4242] hover:text-[#3C4242]'} font-semibold`}
+                            className={`text-sm font-bold transition-colors cursor-pointer ${addr.add_id.toString().startsWith('dummy') ? 'text-[#3C4242] cursor-not-allowed' : 'text-[#3C4242] hover:text-[#3C4242]'} font-semibold`}
                             onClick={() => !addr.add_id.toString().startsWith('dummy') && handleEditAddress(addr)}
                             disabled={addr.add_id.toString().startsWith('dummy')}
                           >
@@ -305,7 +305,7 @@ const PersonalInfo = () => {
                           </button>
                           {addr.is_default != 1 && (
                             <button
-                              className={`text-sm font-bold transition-colors ${addr.add_id.toString().startsWith('dummy') ? 'text-[#3C4242] cursor-not-allowed' : 'text-[#3C4242] hover:text-[#3C4242]'} font-semibold`}
+                              className={`text-sm font-bold transition-colors cursor-pointer ${addr.add_id.toString().startsWith('dummy') ? 'text-[#3C4242] cursor-not-allowed' : 'text-[#3C4242] hover:text-[#3C4242]'} font-semibold`}
                               disabled={addr.add_id.toString().startsWith('dummy')}
                             >
                               Set as default
@@ -346,13 +346,13 @@ const PersonalInfo = () => {
             </h3>
             <div className="flex gap-4 justify-end">
               <button
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
                 onClick={cancelDelete}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-800 transition-colors cursor-pointer"
                 onClick={confirmDeleteAddress}
               >
                 Delete

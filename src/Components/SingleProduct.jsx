@@ -711,7 +711,7 @@ function SingleProduct() {
                 </div>
                 <button
                   onClick={toggleWishlist}
-                  className="transition bg-none"
+                  className="transition bg-none cursor-pointer"
                 >
                   <Heart
                     className={`${wishlistMap[`${product.p_id}-${selectedColor?.pcolor_id}`]
@@ -830,14 +830,14 @@ function SingleProduct() {
                   <div className="flex items-center justify-between sm:justify-center bg-white border border-[#D7D7D7] rounded-full p-1 w-full sm:w-auto">
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full hover:bg-gray-50 transition text-[#414141]"
+                      className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full hover:bg-gray-50 transition text-[#414141] cursor-pointer"
                     >
                       <Minus size={18} />
                     </button>
                     <span className="w-12 text-center font-medium text-[#1A1A1A]">{quantity}</span>
                     <button
                       onClick={() => setQuantity(quantity + 1)}
-                      className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full hover:bg-gray-50 transition text-[#414141]"
+                      className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full hover:bg-gray-50 transition text-[#414141] cursor-pointer"
                     >
                       <Plus size={18} />
                     </button>

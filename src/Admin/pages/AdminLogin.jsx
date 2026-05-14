@@ -25,7 +25,7 @@ const AdminLogin = () => {
 
             if (response.data.status === 1) {
                 const userData = response.data.data;
-                
+
                 if (userData.role === "admin") {
                     // Extract specific user data to store in localStorage
                     const userSessionData = {
@@ -38,7 +38,7 @@ const AdminLogin = () => {
                         phone: userData.phone || '',
                         ...userData
                     };
-                    
+
                     localStorage.setItem("GlamGaitAdmin", JSON.stringify(userSessionData));
                     toast.success("Login Successful");
                     navigate("/admin");
@@ -80,7 +80,7 @@ const AdminLogin = () => {
             </div>
 
             {/* Grid Pattern Overlay */}
-            <div 
+            <div
                 className="absolute inset-0"
                 style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='grid' width='60' height='60' patternUnits='userSpaceOnUse'%3E%3Cpath d='M 60 0 L 0 0 0 60' fill='none' stroke='white' stroke-width='0.5' opacity='0.1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23grid)' /%3E%3C/svg%3E")`
@@ -92,12 +92,12 @@ const AdminLogin = () => {
                 <div className="relative">
                     {/* Glow Effect */}
                     <div className="absolute -inset-1 bg-amber-500/20 rounded-2xl blur-lg opacity-50"></div>
-                    
+
                     {/* Main Card */}
                     <div className="relative bg-[#1a1d23] backdrop-blur-xl rounded-2xl border border-white/5 shadow-2xl overflow-hidden">
                         {/* Header Accent */}
                         <div className="h-2 bg-amber-500"></div>
-                        
+
                         <div className="p-8">
                             {/* Logo Section with Animation */}
                             <div className="text-center mb-8">
@@ -154,7 +154,7 @@ const AdminLogin = () => {
                                         <button
                                             type="button"
                                             onClick={() => setPasswordVisible(!passwordVisible)}
-                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white focus:outline-none transition-colors duration-200"
+                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white focus:outline-none transition-colors duration-200 cursor-pointer"
                                         >
                                             {passwordVisible ? <FaRegEyeSlash size={18} /> : <FaRegEye size={18} />}
                                         </button>
@@ -171,7 +171,7 @@ const AdminLogin = () => {
                                         />
                                         <span className="ml-2 text-sm text-gray-300">Remember me</span>
                                     </label>
-                                    <button type="button" className="text-sm text-amber-400 hover:text-amber-300 transition-colors duration-200">
+                                    <button type="button" className="text-sm text-amber-400 hover:text-amber-300 transition-colors duration-200 cursor-pointer">
                                         Forgot password?
                                     </button>
                                 </div>
@@ -201,9 +201,9 @@ const AdminLogin = () => {
                             {/* Footer */}
                             <div className="mt-8 pt-6 border-t border-white/10">
                                 <div className="flex items-center justify-between">
-                                    <button 
+                                    <button
                                         onClick={() => navigate("/")}
-                                        className="text-sm text-gray-300 hover:text-white transition-colors duration-200 flex items-center"
+                                        className="text-sm text-gray-300 hover:text-white transition-colors duration-200 flex items-center cursor-pointer"
                                     >
                                         <span className="mr-1">←</span>
                                         Return to website

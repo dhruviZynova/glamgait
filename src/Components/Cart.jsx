@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Plus, Minus } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import cartempty from "../assets/cartempty.png";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
@@ -11,6 +11,7 @@ import BrandBanner from "./BrandBanner";
 
 const Cart = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = userInfo();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -125,7 +126,7 @@ const Cart = () => {
 
     if (!isLoggedIn) {
       toast.error("Please login to proceed to checkout");
-      navigate("/login");
+      navigate("/login", { state: { from: location.pathname + location.search } });
       return;
     }
 
@@ -288,7 +289,7 @@ const Cart = () => {
                           <div className="flex items-center gap-6">
                             <button
                               onClick={() => handleRemove(item.cart_id)}
-                              className="transition-colors"
+                              className="transition-colors cursor-pointer"
                             >
                               <X size={18} className="text-[#3D3D3D]" />
                             </button>
@@ -314,7 +315,7 @@ const Cart = () => {
                             <div className="flex items-center border border-[#D7D7D7] rounded-full py-2 px-4 bg-white">
                               <button
                                 onClick={() => decreaseQty(item.cart_id, item.quantity)}
-                                className="text-[#414141]"
+                                className="text-[#414141] cursor-pointer"
                               >
                                 <Minus size={14} />
                               </button>
@@ -327,7 +328,7 @@ const Cart = () => {
                                     item.available_stock
                                   )
                                 }
-                                className="text-[#414141]"
+                                className="text-[#414141] cursor-pointer"
                               >
                                 <Plus size={14} />
                               </button>

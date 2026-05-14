@@ -173,7 +173,7 @@ const InstagramSection = () => {
             <button
               onClick={handleUpload}
               disabled={isUploading}
-              className={`flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-xl hover:bg-black transition-all duration-200 shadow-sm text-sm font-medium ${isUploading ? "opacity-50 cursor-not-allowed" : ""
+              className={`flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-xl hover:bg-black transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer ${isUploading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               aria-label="Upload media"
             >
@@ -305,7 +305,7 @@ const InstagramSection = () => {
                     onClick={() =>
                       handleDelete(item?.insta_id, item?.image_url)
                     }
-                    className="flex items-center gap-1 text-red-500 text-sm font-medium hover:text-red-600 transition-colors duration-200"
+                    className="flex items-center gap-1 text-red-500 text-sm font-medium hover:text-red-600 transition-colors duration-200 cursor-pointer"
                     aria-label={`Delete Instagram media ${item.insta_id}`}
                   >
                     <Trash2 className="w-4 h-4" />

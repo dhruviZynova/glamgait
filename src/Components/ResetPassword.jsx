@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import { ApiURL } from "../Variable";
 import toast from "react-hot-toast";
@@ -10,6 +10,8 @@ import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/";
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [password, setPassword] = useState("");
@@ -36,7 +38,7 @@ const ResetPassword = () => {
       if (response.data.status === 1) {
         toast.success(response.data.description || "Password reset successfully");
         setTimeout(() => {
-          navigate("/login");
+          navigate("/login", { state: { from } });
         }, 2000);
       } else {
         toast.error(response.data.description || "Failed to reset password");
@@ -128,7 +130,7 @@ const ResetPassword = () => {
 
               <div className="mt-8 text-center">
                 <button
-                  onClick={() => navigate("/login")}
+                  onClick={() => navigate("/login", { state: { from } })}
                   className="text-xs text-gray-500 hover:underline underline-offset-4 cursor-pointer"
                 >
                   Back to Login

@@ -208,7 +208,7 @@ const Contact = () => {
                           onClick={() =>
                             handleDelete(contact.contact_id, contact.name)
                           }
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 cursor-pointer"
                           aria-label={`Delete contact request from ${contact.name || "Unknown"
                             }`}
                         >
@@ -245,7 +245,7 @@ const Contact = () => {
                   disabled={currentPage === 1}
                   className={`px-3 py-1 border rounded flex items-center ${currentPage === 1
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-50"
+                    : "hover:bg-gray-50 cursor-pointer"
                     }`}
                   aria-label="Previous page"
                 >
@@ -268,7 +268,7 @@ const Contact = () => {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`px-3 py-1 border rounded ${currentPage === pageNum
+                        className={`px-3 py-1 border rounded cursor-pointer ${currentPage === pageNum
                           ? "bg-black text-white border-black"
                           : "hover:bg-gray-50"
                           }`}
@@ -296,7 +296,7 @@ const Contact = () => {
                     setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                   }
                   disabled={currentPage === totalPages}
-                  className={`px-3 py-1 border rounded flex items-center ${currentPage === totalPages
+                  className={`px-3 py-1 border rounded flex items-center cursor-pointer ${currentPage === totalPages
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:bg-gray-50"
                     }`}

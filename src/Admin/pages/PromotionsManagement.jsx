@@ -153,7 +153,7 @@ const PromotionsManagement = () => {
           <div className="flex flex-wrap gap-3">
             <button
               onClick={() => setActiveTab("offers")}
-              className={`px-5 py-2 rounded-lg font-medium transition-colors ${activeTab === "offers"
+              className={`px-5 py-2 rounded-lg font-medium transition-colors cursor-pointer ${activeTab === "offers"
                 ? "bg-black text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
@@ -163,7 +163,7 @@ const PromotionsManagement = () => {
             </button>
             <button
               onClick={() => setActiveTab("coupons")}
-              className={`px-5 py-2 rounded-lg font-medium transition-colors ${activeTab === "coupons"
+              className={`px-5 py-2 rounded-lg font-medium transition-colors cursor-pointer ${activeTab === "coupons"
                 ? "bg-black text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
@@ -177,7 +177,7 @@ const PromotionsManagement = () => {
         <div className="flex justify-end">
           <button
             onClick={openAddModal}
-            className="flex items-center justify-center gap-2 bg-black text-white px-5 py-2 rounded-lg hover:bg-gray-900 transition-colors"
+            className="flex items-center justify-center gap-2 bg-black text-white px-5 py-2 rounded-lg hover:bg-gray-900 transition-colors cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             Add {activeTab === "offers" ? "Offer" : "Coupon"}
@@ -251,13 +251,13 @@ const PromotionsManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => openEditModal(item)}
-                        className="text-black mr-4 hover:text-gray-700"
+                        className="text-black mr-4 hover:text-gray-700 cursor-pointer"
                       >
                         <PencilSquareIcon className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => handleDeleteRequest(item.offer_id)}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 cursor-pointer"
                       >
                         <TrashIcon className="h-5 w-5" />
                       </button>
@@ -283,13 +283,13 @@ const PromotionsManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => openEditModal(item)}
-                        className="text-black mr-4 hover:text-gray-700"
+                        className="text-black mr-4 hover:text-gray-700 cursor-pointer"
                       >
                         <PencilSquareIcon className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => handleDeleteRequest(item.coupon_id)}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 cursor-pointer"
                       >
                         <TrashIcon className="h-5 w-5" />
                       </button>

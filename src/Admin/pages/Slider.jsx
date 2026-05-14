@@ -148,7 +148,7 @@ const Sliders = () => {
             />
             <Button
               onClick={handleAddImages}
-              className="flex w-full items-center justify-center gap-2 bg-black hover:bg-black text-white px-4 py-2 rounded-lg"
+              className="flex w-full items-center justify-center gap-2 bg-black hover:bg-black text-white px-4 py-2 rounded-lg cursor-pointer"
             >
               <PlusCircle size={20} /> Add Images
             </Button>
@@ -186,7 +186,7 @@ const Sliders = () => {
                     <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition">
                       <button
                         onClick={() => handleEditImage(img)}
-                        className="bg-blue-500 text-white p-1 rounded"
+                        className="bg-blue-500 text-white p-1 rounded cursor-pointer"
                         aria-label={`Edit image ${img.image_id}`}
                       >
                         <Pencil size={16} />
@@ -199,7 +199,7 @@ const Sliders = () => {
                             image_name: img.image,
                           })
                         }
-                        className="bg-red-500 text-white p-1 rounded"
+                        className="bg-red-500 text-white p-1 rounded cursor-pointer"
                         aria-label={`Delete slider ${img.image}`}
                       >
                         <Trash2 size={16} />

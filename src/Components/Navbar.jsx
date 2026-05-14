@@ -6,6 +6,7 @@ import logo from "../assets/logo1.png";
 import axiosInstance from "../Axios/axios";
 import { userInfo } from "../Variable";
 import { getGuestId } from "../utils/guest";
+import { useCart } from "../Context/CartContext";
 
 const Navbar = () => {
   const location = useLocation();
@@ -14,6 +15,7 @@ const Navbar = () => {
   const u_id = user?.u_id;
   const guestId = getGuestId();
   const token = user?.token || user?.auth_token;
+  const { cartCount, wishlistCount } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,8 +29,6 @@ const Navbar = () => {
   const [mobileExpanded, setMobileExpanded] = useState({});
   const [megaMenuCache, setMegaMenuCache] = useState({});
   const [showAuthChoice, setShowAuthChoice] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
 
   const desktopSearchRef = useRef(null);
   const navRef = useRef(null);
@@ -188,60 +188,6 @@ const Navbar = () => {
     window.addEventListener("resize", updateBounds);
     return () => window.removeEventListener("resize", updateBounds);
   }, [categories]);
-
-  const fetchCartCount = async () => {
-    try {
-      if (!u_id) {
-        const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
-        setCartCount(localCart.reduce((total, item) => total + (item.quantity || 1), 0));
-        return;
-      }
-      const res = await axiosInstance.get(`/getcart?u_id=${u_id}`);
-      if (res?.data?.status === 1) {
-        const items = res.data.data || [];
-        setCartCount(items.reduce((total, item) => total + Number(item.quantity || 1), 0));
-      } else {
-        setCartCount(0);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const fetchWishlistCount = async () => {
-    try {
-      if (!u_id) {
-        const localWishlist = JSON.parse(localStorage.getItem('localWishlist') || '[]');
-        setWishlistCount(localWishlist.length);
-        return;
-      }
-      const res = await axiosInstance.get(`/getwishlist?u_id=${u_id}`);
-      if (res?.data?.status === 1) {
-        const items = res.data.data || [];
-        setWishlistCount(items.length);
-      } else {
-        setWishlistCount(0);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    fetchCartCount();
-    fetchWishlistCount();
-
-    const handleCartUpdate = () => fetchCartCount();
-    const handleWishlistUpdate = () => fetchWishlistCount();
-
-    window.addEventListener('cartUpdated', handleCartUpdate);
-    window.addEventListener('wishlistUpdated', handleWishlistUpdate);
-
-    return () => {
-      window.removeEventListener('cartUpdated', handleCartUpdate);
-      window.removeEventListener('wishlistUpdated', handleWishlistUpdate);
-    };
-  }, [u_id]);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -406,7 +352,7 @@ const Navbar = () => {
                     <button
                       onClick={() => {
                         setShowAuthChoice(false);
-                        navigate("/login");
+                        navigate("/login", { state: { from: location.pathname + location.search } });
                       }}
                       className="w-full bg-black text-white py-3 rounded-md"
                     >

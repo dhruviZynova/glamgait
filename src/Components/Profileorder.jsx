@@ -1,215 +1,13 @@
-// import React, { useEffect, useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import SideBar from "./SideBar";
-// import { ApiURL, userInfo } from "../Variable";
-// import axiosInstance from "../Axios/axios";
-
-// const Profileorder = () => {
-//   const statusMap = {
-//     1: "Pending",
-//     2: "Accepted",
-//     3: "Preparing",
-//     4: "Shipped",
-//     5: "Delivered",
-//     6: "Cancelled",
-//   };
-//   const [activeTab, setActiveTab] = useState("Active");
-//   const [orders, setOrders] = useState([]);
-
-//   const navigate = useNavigate();
-
-//   const tabs = ["Active", "Cancelled", "Completed"];
-
-//   const user = userInfo();
-//   const u_id = user?.u_id;
-
-//   useEffect(() => {
-//     const fetchOrders = async () => {
-//       try {
-//         if (!u_id) return;
-//         const res = await axiosInstance.get(`${ApiURL}/getorder/${u_id}`);
-//         if (res.data.status === 1) {
-//           setOrders(res.data.data);
-//         } else {
-//           setOrders([]);
-//         }
-//       } catch (err) {
-//         console.error("Error fetching orders:", err);
-//         setOrders([]);
-//       }
-//     };
-//     fetchOrders();
-//   }, [u_id]);
-
-//   //  Filter orders by tab
-//   const filteredOrders = orders.filter((order) => {
-//     if (activeTab === "Active") return order.status === 1; // pending/active
-//     if (activeTab === "Cancelled") return order.status === 0; // cancelled
-//     if (activeTab === "Completed") return order.status === 2; // completed
-//     return true;
-//   });
-
-//   return (
-//     <div className="bg-[#f3f0ed] min-h-screen flex flex-col md:flex-row font-inter">
-//       {/* Sidebar */}
-//       <div className="w-full md:w-1/4">
-//         <SideBar />
-//       </div>
-
-//       {/* Main content */}
-//       <div className="flex-1 p-4 sm:p-6 md:p-10 bg-[#f3f0ed]">
-//         <h2 className="text-xl sm:text-2xl font-semibold mb-6 text-gray-800">
-//           My Orders
-//         </h2>
-
-//         {/* Tabs */}
-//         <div className="flex justify-between border-b border-gray-300 mb-8">
-//           {tabs.map((tab) => (
-//             <button
-//               key={tab}
-//               onClick={() => setActiveTab(tab)}
-//               className={`relative pb-3 w-1/3 text-sm sm:text-lg font-medium transition-all duration-300 text-center rounded-t-md ${
-//                 activeTab === tab
-//                   ? "text-gray-900 bg-[#f6f6f6] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-black"
-//                   : "text-gray-500 hover:text-gray-800"
-//               }`}
-//             >
-//               {tab}
-//             </button>
-//           ))}
-//         </div>
-
-//         {/* Orders List */}
-//         <div className="space-y-6">
-//           {filteredOrders?.map((order, i) => (
-//             <div
-//               key={order.orderId}
-//               className="bg-[#f6f6f6] rounded-xl p-5 sm:p-6 shadow-sm border border-gray-100"
-//             >
-//               {/* Header */}
-//               <div className="flex flex-col sm:flex-row justify-between text-sm text-gray-600 mb-4">
-//                 <div>
-//                   <p>
-//                     <span className="font-medium text-gray-800">Order no:</span>{" "}
-//                     {order.orderId}
-//                   </p>
-//                   <p className="font-light">Order Date: {order?.date}</p>
-//                   <p className="font-light">
-//                     Estimated Delivery Date: {order?.delivery}
-//                   </p>
-//                 </div>
-
-//                 <div className="mt-3 sm:mt-0 text-left sm:text-right font-light text-gray-500">
-//                   <p>
-//                     <span className="font-light text-gray-500">
-//                       Order Status:
-//                     </span>{" "}
-//                     <span className="text-black">
-//                       {statusMap[order.status] || "Unknown"}
-//                     </span>
-//                   </p>
-//                   <p>
-//                     <span className="font-light text-gray-500">
-//                       Payment Method:
-//                     </span>{" "}
-//                     {order.paymentStatus}
-//                   </p>
-//                 </div>
-//               </div>
-
-//               <hr className="my-3" />
-
-//               {/* Product Info */}
-//               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-//                 {order.orderItems.map((item, idx) => (
-//                   <div
-//                     key={idx}
-//                     className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 bg-[#f6f6f6] p-4 rounded-md"
-//                   >
-//                     <div className="flex items-center gap-4">
-//                       <img
-//                         src={`${ApiURL}/assets/Products/${item.imageUrl}`}
-//                         alt={item.productName}
-//                         className="w-20 h-20 rounded-md object-cover"
-//                       />
-//                       <div>
-//                         <h3 className="font-semibold text-gray-800 text-sm sm:text-base">
-//                           {item.productName}
-//                         </h3>
-//                         <p className="text-xs sm:text-sm text-gray-600">
-//                           Colour:{" "}
-//                           <span className="text-black">
-//                             {item.color?.color_name || "N/A"}
-//                           </span>
-//                         </p>
-//                         <p className="text-xs sm:text-sm text-gray-600">
-//                           Qty:{" "}
-//                           <span className="text-black">{item.quantity}</span>
-//                         </p>
-//                         <p className="text-xs sm:text-sm text-gray-600">
-//                           Total:{" "}
-//                           <span className="text-black">
-//                             ₹{item.totalAmount.toFixed(2)}
-//                           </span>
-//                         </p>
-//                       </div>
-//                     </div>
-//                   </div>
-//                 ))}
-
-//                 {/* Button logic */}
-//                 <div className="w-full sm:w-auto">
-//                   {order.status === "Active" ? (
-//                     <button
-//                       onClick={() => navigate("/orderdetails")}
-//                       className="mt-3 sm:mt-0 bg-[#002e25] text-white px-5 py-2 rounded-md hover:bg-[#004534] transition text-sm sm:text-base w-full sm:w-auto text-center"
-//                     >
-//                       View Details
-//                     </button>
-//                   ) : order.status === "Cancelled" ? (
-//                     <button
-//                       disabled
-//                       className="mt-3 sm:mt-0 bg-red-100 text-red-700 px-5 py-2 rounded-md text-sm sm:text-base w-full sm:w-auto text-center cursor-not-allowed"
-//                     >
-//                       Successfully Cancelled
-//                     </button>
-//                   ) : (
-//                     <button
-//                       disabled
-//                       className="mt-3 sm:mt-0 bg-green-100 text-green-700 px-5 py-2 rounded-md text-sm sm:text-base w-full sm:w-auto text-center cursor-not-allowed"
-//                     >
-//                       Received Successfully
-//                     </button>
-//                   )}
-//                 </div>
-//               </div>
-//             </div>
-//           ))}
-
-//           {/* No orders message */}
-//           {filteredOrders.length === 0 && (
-//             <div className="text-center text-gray-500 text-sm py-10">
-//               No {activeTab.toLowerCase()} orders found.
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Profileorder;
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SideBar from "./SideBar";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
-import ConfirmDeleteModal from "../Admin/pages/ConfirmDeleteModal";
-import { Package } from "lucide-react";
+import { Package, XCircle } from "lucide-react";
 import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
+import CancelOrderModal from "./CancelOrderModal";
 
 const Profileorder = () => {
   const statusMap = {
@@ -226,7 +24,7 @@ const Profileorder = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const navigate = useNavigate();
-  const tabs = ["Active", "Cancelled", "Completed"];
+  const tabs = ["Active", "Completed", "Cancelled"];
   const user = userInfo();
   const u_id = user?.u_id;
   const guestId = getGuestId();
@@ -260,11 +58,11 @@ const Profileorder = () => {
     fetchOrders();
   }, [u_id, isLoggedIn, guestId]);
 
-  const handleCancelOrder = async () => {
+  const handleCancelOrder = async (reason) => {
     try {
       const res = await axiosInstance.put(`${ApiURL}/cancelorder`, {
         order_id: selectedOrderId,
-        // Optional: guest_id bhej sakte ho if needed
+        reason: reason, // Passing the reason for cancellation
         ...(!isLoggedIn && { guest_id: guestId }),
       });
 
@@ -329,7 +127,7 @@ const Profileorder = () => {
               {filteredOrders?.map((order) => (
                 <div
                   key={order.orderId}
-                  className="bg-white rounded-2xl p-6 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0,03)] border border-gray-100"
+                  className="bg-white rounded-2xl p-6 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100"
                 >
                   {/* Header Info */}
                   <div className="flex flex-col md:flex-row justify-between gap-6 mb-6">
@@ -347,7 +145,7 @@ const Profileorder = () => {
 
                     <div className="text-left md:text-right space-y-1">
                       <p className="text-sm">
-                        <span className="text-[#3C4242] font-[Causten] font-600">Order Status : </span><span className="text-[#3C4242] font-[Causten] font-600 capitalize">{statusMap[order.status] || "Unknown"}</span>
+                        <span className="text-[#3C4242] font-[Causten] font-600">Order Status : </span><span className={`font-[Causten] font-600 capitalize ${order.status === 6 ? "text-red-500" : "text-[#3C4242]"}`}>{statusMap[order.status] || "Unknown"}</span>
                       </p>
                       <p className="text-sm">
                         <span className="text-[#3C4242] font-[Causten] font-600">Payment Method : </span><span className="text-[#3C4242] font-[Causten] font-600">{order.paymentStatus}</span>
@@ -393,16 +191,22 @@ const Profileorder = () => {
 
                     {/* Actions */}
                     <div className="flex flex-wrap gap-3 w-full sm:w-auto mt-4 sm:mt-0">
-                      {order.status === 1 && (
+                      {order.status === 5 && (
                         <button
                           onClick={() => {
                             setSelectedOrderId(order.orderId);
                             setShowCancelModal(true);
                           }}
-                          className="flex-1 sm:flex-none bg-[#b32b2b] text-white px-8 py-3 rounded-lg font-bold hover:bg-[#8e2222] transition shadow-md min-w-[140px]"
+                          className="flex-1 sm:flex-none bg-white border-2 border-[#b32b2b] text-[#b32b2b] px-8 py-3 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition shadow-sm min-w-[140px] cursor-pointer"
                         >
-                          Cancel
+                          Cancel Order
                         </button>
+                      )}
+                      {order.status === 6 && (
+                         <div className="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 rounded-lg font-bold border border-red-100">
+                            <XCircle size={18} />
+                            <span>Cancelled</span>
+                         </div>
                       )}
                       <button
                         onClick={() => navigate(`/orderdetails/${order.orderId}`)}
@@ -423,12 +227,11 @@ const Profileorder = () => {
               )}
             </div>
           </div>
-          <ConfirmDeleteModal
+          <CancelOrderModal
             isOpen={showCancelModal}
             onClose={() => setShowCancelModal(false)}
             onConfirm={handleCancelOrder}
-            itemType="order"
-            itemName={`#${selectedOrderId}`}
+            orderId={selectedOrderId}
           />
         </div>
       </div>

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Plus,
   Edit,
@@ -21,16 +21,37 @@ const Product = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const searchTimeoutRef = useRef(null);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 24;
+
+  // Debounce logic
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm]);
 
   const fetchProducts = async (page = 1, search = "") => {
     try {
       const res = await adminAxios.get(`${ApiURL}/getallproducts`, {
-        page,
-        perPage: itemsPerPage,
-        search,
+        params: {
+          page,
+          perPage: itemsPerPage,
+          search,
+        }
       });
 
       const { productData, totalCount } = res.data.data || {};
@@ -70,8 +91,8 @@ const Product = () => {
   };
 
   useEffect(() => {
-    fetchProducts(1, "");
-  }, []);
+    fetchProducts(1, debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
 
   const handleStatusToggle = async (product) => {
     try {
@@ -81,20 +102,16 @@ const Product = () => {
         p_status: newStatus,
       });
       toast.success(`Product ${newStatus === 1 ? "activated" : "deactivated"}`);
-      fetchProducts(currentPage, searchTerm);
+      fetchProducts(currentPage, debouncedSearchTerm);
     } catch (error) {
       console.error("Error:", error);
       toast.error(error?.message || "Failed to update status");
     }
   };
 
-  const handleSearch = () => {
-    fetchProducts(1, searchTerm);
-  };
-
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
-      fetchProducts(page, searchTerm);
+      fetchProducts(page, debouncedSearchTerm);
     }
   };
 
@@ -114,14 +131,13 @@ const Product = () => {
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
           <button
             onClick={() => {
               setCurrentProduct(null);
               setIsModalOpen(true);
             }}
-            className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap"
+            className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap cursor-pointer"
           >
             <Plus className="w-5 h-5" />
             <span>Add Product</span>
@@ -257,7 +273,7 @@ const Product = () => {
                     setCurrentProduct(product);
                     setIsModalOpen(true);
                   }}
-                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                  className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
                   title="Edit Product"
                 >
                   <Edit size={20} />
@@ -269,7 +285,7 @@ const Product = () => {
                     e.preventDefault();
                     handleStatusToggle(product);
                   }}
-                  className="transition-all"
+                  className="transition-all cursor-pointer"
                   title={product.p_status === 1 ? "Deactivate" : "Activate"}
                 >
                   {product.p_status === 1 ? (
