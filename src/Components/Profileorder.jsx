@@ -159,7 +159,7 @@ const Profileorder = () => {
                 >
                   {/* Header Info */}
                   <div className="flex flex-col md:flex-row justify-between gap-6 mb-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2">
+                    <div className="grid grid-cols-1 gap-x-12 gap-y-2">
                       <div>
                         <h3 className="text-lg font-semibold text-[#1a1a1a] mb-2">Order no: #{order.orderId}</h3>
                         <p className="text-sm">

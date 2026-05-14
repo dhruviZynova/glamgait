@@ -41,7 +41,7 @@ const SideBar = ({ onMenuChange = () => { } }) => {
   return (
     <>
       {/* Mobile Header */}
-      <div className="md:hidden px-5 py-4 flex justify-between items-center shadow-sm sticky top-0 z-20">
+      <div className="md:hidden px-5 py-4 flex justify-between items-center sticky top-0 z-20">
         <h1 className="text-lg font-semibold text-gray-900">My Account</h1>
         <button onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X size={22} /> : <Menu size={22} />}
