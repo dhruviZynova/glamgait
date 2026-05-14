@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { ApiURL } from "../../Variable";
 import { adminAxios } from "../../Axios/axios";
+import { ORDER_STATUS, STATUS_LABELS, STATUS_COLORS } from "../../utils/constants";
 
 const formatRevenue = (revenue) => {
   if (revenue >= 100000) {
@@ -119,14 +120,13 @@ const Dashboard = () => {
 
   // Check if order should contribute to revenue
   const isRevenueEligible = (status) => {
-    // Standardize to number as the table uses numeric status IDs
     const statusId = parseInt(status);
     const eligibleStatuses = [
-      1, // pending
-      2, // accepted
-      3, // preparing
-      4, // shipped
-      5, // delivered
+      ORDER_STATUS.PENDING,
+      ORDER_STATUS.ACCEPTED,
+      ORDER_STATUS.PREPARING,
+      ORDER_STATUS.SHIPPED,
+      ORDER_STATUS.DELIVERED,
     ];
     return eligibleStatuses.includes(statusId);
   };
@@ -543,30 +543,9 @@ const Dashboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${parseInt(order.status) === 5
-                          ? "bg-green-100 text-green-800"
-                          : parseInt(order.status) === 4
-                            ? "bg-purple-100 text-purple-800"
-                            : parseInt(order.status) === 3
-                              ? "bg-blue-100 text-blue-800"
-                              : parseInt(order.status) === 2
-                                ? "bg-yellow-100 text-yellow-800"
-                                : parseInt(order.status) === 1
-                                  ? "bg-gray-100 text-gray-800"
-                                  : "bg-red-100 text-red-800"
-                          }`}
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${STATUS_COLORS[parseInt(order.status)] || STATUS_COLORS[ORDER_STATUS.CANCELLED]}`}
                       >
-                        {parseInt(order.status) === 1
-                          ? "Pending"
-                          : parseInt(order.status) === 2
-                            ? "Accepted"
-                            : parseInt(order.status) === 3
-                              ? "Preparing"
-                              : parseInt(order.status) === 4
-                                ? "Shipped"
-                                : parseInt(order.status) === 5
-                                  ? "Delivered"
-                                  : "Cancelled"}
+                        {STATUS_LABELS[parseInt(order.status)] || "Unknown"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">

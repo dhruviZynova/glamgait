@@ -6,8 +6,10 @@ import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
 import BrandBanner from "./BrandBanner";
 import CancelOrderModal from "./CancelOrderModal";
-import toast from "react-hot-toast";
+import ReturnOrderModal from "./ReturnOrderModal";
 import { getGuestId } from "../utils/guest";
+import { ORDER_STATUS } from "../utils/constants";
+import { RefreshCcw } from "lucide-react";
 
 const OrderDetails = () => {
   const navigate = useNavigate();
@@ -16,34 +18,20 @@ const OrderDetails = () => {
   const [tracking, setTracking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
   const user = userInfo();
   const u_id = user?.u_id;
   const guestId = getGuestId();
   const isLoggedIn = !!u_id;
 
+  // 1. Fetch Order Details
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchOrder = async () => {
       if (!orderId) return;
-
       try {
-        const orderRes = await axiosInstance.get(
-          `${ApiURL}/getorder/${orderId}`
-        );
-        const orderData = orderRes.data.data;
-        setOrder(orderData);
-
-        // 2. AWB se tracking fetch karo — yahan orderData use karo, order state ka wait mat karo!
-        if (orderData?.awb_number) {
-          try {
-            const trackRes = await axiosInstance.get(
-              `${ApiURL}/track/${orderData.awb_number}`
-            );
-            if (trackRes.data.status === 1 && trackRes.data.data) {
-              setTracking(trackRes.data.data);
-            }
-          } catch (trackErr) {
-            console.log("Tracking API failed:", trackErr);
-          }
+        const orderRes = await axiosInstance.get(`${ApiURL}/getorder/${orderId}`);
+        if (orderRes.data.status === 1) {
+          setOrder(orderRes.data.data);
         }
       } catch (err) {
         console.error("Order fetch failed:", err);
@@ -51,28 +39,25 @@ const OrderDetails = () => {
         setLoading(false);
       }
     };
-
-    fetchData();
+    fetchOrder();
   }, [orderId]);
 
-  // Ab yeh safety net bhi add kar dete hain (extra strong)
+  // 2. Fetch Tracking Info (when awb_number is available)
   useEffect(() => {
-    if (order?.awb_number && !tracking) {
-      const retry = async () => {
+    const fetchTracking = async () => {
+      if (order?.awb_number && !tracking) {
         try {
-          const res = await axiosInstance.get(
-            `${ApiURL}/track/${order.awb_number}`
-          );
-          if (res.data.status === 1 && res.data.data) {
-            setTracking(res.data.data);
+          const trackRes = await axiosInstance.get(`${ApiURL}/track/${order.awb_number}`);
+          if (trackRes.data.status === 1 && trackRes.data.data) {
+            setTracking(trackRes.data.data);
           }
-        } catch (err) {
-          console.log("Retry failed");
+        } catch (trackErr) {
+          console.warn("Tracking API failed:", trackErr);
         }
-      };
-      retry();
-    }
-  }, [order]);
+      }
+    };
+    fetchTracking();
+  }, [order?.awb_number, tracking]);
 
   const handleCancelOrder = async (reason) => {
     try {
@@ -84,7 +69,7 @@ const OrderDetails = () => {
 
       if (res.data.status === 1) {
         toast.success("Order cancelled successfully!");
-        setOrder(prev => ({ ...prev, status: 6, status_label: "Cancelled" }));
+        setOrder(prev => ({ ...prev, status: ORDER_STATUS.CANCELLED, status_label: "Cancelled" }));
       } else {
         toast.error(res.data.message || "Failed to cancel");
       }
@@ -93,6 +78,28 @@ const OrderDetails = () => {
       console.error(err);
     } finally {
       setShowCancelModal(false);
+    }
+  };
+
+  const handleReturnOrder = async (reason) => {
+    try {
+      const res = await axiosInstance.put(`${ApiURL}/returnorder`, {
+        order_id: orderId,
+        reason: reason,
+        ...(!isLoggedIn && { guest_id: guestId }),
+      });
+
+      if (res.data.status === 1) {
+        toast.success("Return request submitted successfully!");
+        setOrder(prev => ({ ...prev, status: ORDER_STATUS.RETURNED, status_label: "Returned" }));
+      } else {
+        toast.error(res.data.message || "Failed to submit return request");
+      }
+    } catch (err) {
+      toast.error("Something went wrong");
+      console.error(err);
+    } finally {
+      setShowReturnModal(false);
     }
   };
 
@@ -132,7 +139,9 @@ const OrderDetails = () => {
     if (s === "shipped") return "Your order has been shipped and is on its way.";
     if (s === "inprogress" || s === "preparing" || s === "accepted" || s === "order accepted") return "Your order is currently being prepared and verified.";
     if (s === "cancelled") return "This order has been cancelled.";
+    if (s === "returned") return "This order has been returned.";
     return "Your order has been placed successfully and is awaiting verification.";
+  };
   };
 
   if (!order) {
@@ -163,19 +172,37 @@ const OrderDetails = () => {
                 <h2 className="text-3xl font-semibold">Order Details</h2>
               </div>
               
-              <div className="flex gap-4">
-                {order.status === 5 && (
-                  <button
-                    onClick={() => setShowCancelModal(true)}
-                    className="bg-white border-2 border-[#b32b2b] text-[#b32b2b] px-6 py-2.5 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition shadow-sm cursor-pointer"
-                  >
-                    Cancel Order
-                  </button>
+              <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                {/* Both buttons only show when status is DELIVERED */}
+                {order.status === ORDER_STATUS.DELIVERED && (
+                  <>
+                    <button
+                      onClick={() => setShowCancelModal(true)}
+                      className="w-full sm:w-auto bg-white border-2 border-[#b32b2b] text-[#b32b2b] px-6 py-2.5 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition shadow-sm cursor-pointer text-sm"
+                    >
+                      Cancel Order
+                    </button>
+                    <button
+                      onClick={() => setShowReturnModal(true)}
+                      className="w-full sm:w-auto bg-white border-2 border-[#004534] text-[#004534] px-6 py-2.5 rounded-lg font-bold hover:bg-[#004534] hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
+                    >
+                      <RefreshCcw size={18} />
+                      Return Order
+                    </button>
+                  </>
                 )}
-                {order.status === 6 && (
-                   <div className="flex items-center gap-2 px-6 py-2.5 bg-red-50 text-red-600 rounded-lg font-bold border border-red-100">
+
+                {order.status === ORDER_STATUS.CANCELLED && (
+                   <div className="flex items-center justify-center gap-2 px-6 py-2.5 bg-red-50 text-red-600 rounded-lg font-bold border border-red-100 text-sm">
                       <XCircle size={18} />
                       <span>Cancelled</span>
+                   </div>
+                )}
+
+                {order.status === ORDER_STATUS.RETURNED && (
+                   <div className="flex items-center justify-center gap-2 px-6 py-2.5 bg-orange-50 text-orange-600 rounded-lg font-bold border border-orange-100 text-sm">
+                      <RefreshCcw size={18} />
+                      <span>Returned</span>
                    </div>
                 )}
               </div>
@@ -205,7 +232,7 @@ const OrderDetails = () => {
             </div>
 
             {/* Stepper Tracking */}
-            {order.status !== 6 && (
+            {order.status !== ORDER_STATUS.CANCELLED && (
                <div className="mb-16 px-4">
                <div className="relative max-w-4xl mx-auto">
                  {/* Progress Bar Background */}
@@ -279,7 +306,7 @@ const OrderDetails = () => {
              </div>
             )}
 
-            {order.status === 6 && (
+            {order.status === ORDER_STATUS.CANCELLED && (
                <div className="mb-16 bg-red-50 p-8 rounded-2xl border border-red-100 flex flex-col items-center text-center max-w-4xl mx-auto shadow-sm">
                   <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-red-600 mb-4">
                      <XCircle size={40} />
@@ -287,6 +314,18 @@ const OrderDetails = () => {
                   <h3 className="text-2xl font-bold text-red-700 mb-2">Order Cancelled</h3>
                   <p className="text-red-600 max-w-md mx-auto">
                      This order was cancelled. If you have any questions or would like to re-order, please contact our support team.
+                  </p>
+               </div>
+            )}
+
+            {order.status === ORDER_STATUS.RETURNED && (
+               <div className="mb-16 bg-orange-50 p-8 rounded-2xl border border-orange-100 flex flex-col items-center text-center max-w-4xl mx-auto shadow-sm">
+                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 mb-4">
+                     <RefreshCcw size={40} />
+                  </div>
+                  <h3 className="text-2xl font-bold text-orange-700 mb-2">Order Returned</h3>
+                  <p className="text-orange-600 max-w-md mx-auto">
+                     A return request has been processed for this order. We will contact you shortly regarding the pickup and refund.
                   </p>
                </div>
             )}
@@ -336,6 +375,13 @@ const OrderDetails = () => {
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
         onConfirm={handleCancelOrder}
+        orderId={orderId}
+      />
+
+      <ReturnOrderModal 
+        isOpen={showReturnModal}
+        onClose={() => setShowReturnModal(false)}
+        onConfirm={handleReturnOrder}
         orderId={orderId}
       />
 

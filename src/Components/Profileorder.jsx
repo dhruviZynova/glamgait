@@ -8,23 +8,19 @@ import { Package, XCircle } from "lucide-react";
 import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 import CancelOrderModal from "./CancelOrderModal";
+import ReturnOrderModal from "./ReturnOrderModal";
+import { ORDER_STATUS, STATUS_LABELS } from "../utils/constants";
+import { RefreshCcw } from "lucide-react";
 
 const Profileorder = () => {
-  const statusMap = {
-    1: "Pending",
-    2: "Accepted",
-    3: "Preparing",
-    4: "Shipped",
-    5: "Delivered",
-    6: "Cancelled",
-  };
 
   const [activeTab, setActiveTab] = useState("Active");
   const [orders, setOrders] = useState([]);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const navigate = useNavigate();
-  const tabs = ["Active", "Completed", "Cancelled"];
+  const tabs = ["Active", "Completed", "Cancelled", "Returned"];
   const user = userInfo();
   const u_id = user?.u_id;
   const guestId = getGuestId();
@@ -70,7 +66,7 @@ const Profileorder = () => {
         toast.success("Order cancelled successfully!");
         setOrders((prev) =>
           prev.map((o) =>
-            o.orderId === selectedOrderId ? { ...o, status: 6 } : o,
+            o.orderId === selectedOrderId ? { ...o, status: ORDER_STATUS.CANCELLED } : o,
           ),
         );
       } else {
@@ -84,10 +80,42 @@ const Profileorder = () => {
     }
   };
 
+  const handleReturnOrder = async (reason) => {
+    try {
+      const res = await axiosInstance.put(`${ApiURL}/returnorder`, {
+        order_id: selectedOrderId,
+        reason: reason,
+        ...(!isLoggedIn && { guest_id: guestId }),
+      });
+
+      if (res.data.status === 1) {
+        toast.success("Return request submitted successfully!");
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.orderId === selectedOrderId ? { ...o, status: ORDER_STATUS.RETURNED } : o,
+          ),
+        );
+      } else {
+        toast.error(res.data.message || "Failed to submit return request");
+      }
+    } catch (err) {
+      toast.error("Something went wrong");
+      console.error(err);
+    } finally {
+      setShowReturnModal(false);
+    }
+  };
+
   const filteredOrders = orders.filter((order) => {
-    if (activeTab === "Active") return [1, 2, 3, 4].includes(order.status); // Pending to Shipped
-    if (activeTab === "Cancelled") return order.status === 6; // Cancelled
-    if (activeTab === "Completed") return [5].includes(order.status); // Delivered
+    if (activeTab === "Active") return [
+      ORDER_STATUS.PENDING,
+      ORDER_STATUS.ACCEPTED,
+      ORDER_STATUS.PREPARING,
+      ORDER_STATUS.SHIPPED
+    ].includes(order.status);
+    if (activeTab === "Cancelled") return order.status === ORDER_STATUS.CANCELLED;
+    if (activeTab === "Completed") return order.status === ORDER_STATUS.DELIVERED;
+    if (activeTab === "Returned") return order.status === ORDER_STATUS.RETURNED;
     return true;
   });
 
@@ -145,7 +173,7 @@ const Profileorder = () => {
 
                     <div className="text-left md:text-right space-y-1">
                       <p className="text-sm">
-                        <span className="text-[#3C4242] font-[Causten] font-600">Order Status : </span><span className={`font-[Causten] font-600 capitalize ${order.status === 6 ? "text-red-500" : "text-[#3C4242]"}`}>{statusMap[order.status] || "Unknown"}</span>
+                        <span className="text-[#3C4242] font-[Causten] font-600">Order Status : </span><span className={`font-[Causten] font-600 capitalize ${order.status === ORDER_STATUS.CANCELLED ? "text-red-500" : order.status === ORDER_STATUS.RETURNED ? "text-orange-500" : "text-[#3C4242]"}`}>{STATUS_LABELS[order.status] || "Unknown"}</span>
                       </p>
                       <p className="text-sm">
                         <span className="text-[#3C4242] font-[Causten] font-600">Payment Method : </span><span className="text-[#3C4242] font-[Causten] font-600">{order.paymentStatus}</span>
@@ -156,7 +184,7 @@ const Profileorder = () => {
                   <div className="h-px bg-gray-100 w-full mb-8"></div>
 
                   {/* Product/Item Preview */}
-                  <div className="flex flex-col lg:flex-row justify-between items-end lg:items-center gap-6">
+                  <div className="flex flex-col justify-between items-end lg:items-center gap-6">
                     <div className="flex flex-wrap gap-6 flex-1 w-full">
                       {order.orderItems.map((item) => (
                         <div key={item.orderItemId} className="flex gap-4 w-full sm:w-auto">
@@ -190,27 +218,46 @@ const Profileorder = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex flex-wrap gap-3 w-full sm:w-auto mt-4 sm:mt-0">
-                      {order.status === 5 && (
-                        <button
-                          onClick={() => {
-                            setSelectedOrderId(order.orderId);
-                            setShowCancelModal(true);
-                          }}
-                          className="flex-1 sm:flex-none bg-white border-2 border-[#b32b2b] text-[#b32b2b] px-8 py-3 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition shadow-sm min-w-[140px] cursor-pointer"
-                        >
-                          Cancel Order
-                        </button>
+                    {/* Actions */}
+                    <div className="flex flex-col sm:flex-row justify-end flex-wrap gap-3 w-full mt-6 sm:mt-0">
+                      {order.status === ORDER_STATUS.DELIVERED && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setSelectedOrderId(order.orderId);
+                              setShowCancelModal(true);
+                            }}
+                            className="w-full sm:w-auto bg-white border-2 border-[#b32b2b] text-[#b32b2b] px-6 py-2.5 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition shadow-sm cursor-pointer text-sm"
+                          >
+                            Cancel Order
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedOrderId(order.orderId);
+                              setShowReturnModal(true);
+                            }}
+                            className="w-full sm:w-auto bg-white border-2 border-[#004534] text-[#004534] px-6 py-2.5 rounded-lg font-bold hover:bg-[#004534] hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
+                          >
+                            <RefreshCcw size={16} />
+                            Return Order
+                          </button>
+                        </>
                       )}
-                      {order.status === 6 && (
-                         <div className="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 rounded-lg font-bold border border-red-100">
-                            <XCircle size={18} />
-                            <span>Cancelled</span>
-                         </div>
+                      {order.status === ORDER_STATUS.CANCELLED && (
+                        <div className="flex items-center justify-center gap-2 px-6 py-2.5 bg-red-50 text-red-600 rounded-lg font-bold border border-red-100 text-sm">
+                          <XCircle size={18} />
+                          <span>Cancelled</span>
+                        </div>
+                      )}
+                      {order.status === ORDER_STATUS.RETURNED && (
+                        <div className="flex items-center justify-center gap-2 px-6 py-2.5 bg-orange-50 text-orange-600 rounded-lg font-bold border border-orange-100 text-sm">
+                          <RefreshCcw size={18} />
+                          <span>Returned</span>
+                        </div>
                       )}
                       <button
                         onClick={() => navigate(`/orderdetails/${order.orderId}`)}
-                        className="flex-1 sm:flex-none bg-[#004534] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#00382e] transition shadow-md min-w-[140px] cursor-pointer"
+                        className="w-full sm:w-auto bg-[#004534] text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-[#00382e] transition shadow-md cursor-pointer text-sm"
                       >
                         View Detail
                       </button>
@@ -231,6 +278,12 @@ const Profileorder = () => {
             isOpen={showCancelModal}
             onClose={() => setShowCancelModal(false)}
             onConfirm={handleCancelOrder}
+            orderId={selectedOrderId}
+          />
+          <ReturnOrderModal
+            isOpen={showReturnModal}
+            onClose={() => setShowReturnModal(false)}
+            onConfirm={handleReturnOrder}
             orderId={selectedOrderId}
           />
         </div>

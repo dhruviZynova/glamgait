@@ -16,6 +16,7 @@ import { toast } from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
 import { ApiURL } from "../../Variable";
 import TrackingSection from "./TrackingSection";
+import { ORDER_STATUS, STATUS_LABELS, STATUS_COLORS } from "../../utils/constants";
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -31,38 +32,10 @@ const AdminOrders = () => {
 
   const getStatusInfo = (status) => {
     const s = parseInt(status);
-    switch (s) {
-      case 1:
-        return {
-          label: "Pending",
-          color: "bg-amber-100 text-amber-700 border-amber-200",
-        };
-      case 2:
-        return {
-          label: "Accepted",
-          color: "bg-sky-100 text-sky-700 border-sky-200",
-        };
-      case 3:
-        return {
-          label: "Preparing",
-          color: "bg-indigo-100 text-indigo-700 border-indigo-200",
-        };
-      case 4:
-        return {
-          label: "Shipped",
-          color: "bg-purple-100 text-purple-700 border-purple-200",
-        };
-      case 5:
-        return {
-          label: "Delivered",
-          color: "bg-emerald-100 text-emerald-700 border-emerald-200",
-        };
-      default:
-        return {
-          label: "Cancelled",
-          color: "bg-rose-100 text-rose-700 border-rose-200",
-        };
-    }
+    return {
+      label: STATUS_LABELS[s] || "Unknown",
+      color: STATUS_COLORS[s] || STATUS_COLORS[ORDER_STATUS.CANCELLED],
+    };
   };
 
   // Consolidate fetching logic
@@ -549,12 +522,11 @@ const AdminOrders = () => {
                                   value={order.status}
                                   onChange={(e) => updateOrderStatus(order.orderId, e.target.value)}
                                 >
-                                  <option value="1">Pending</option>
-                                  <option value="2">Accepted</option>
-                                  <option value="3">Preparing</option>
-                                  <option value="4">Shipped</option>
-                                  <option value="5">Delivered</option>
-                                  <option value="6">Cancelled</option>
+                                  {Object.entries(ORDER_STATUS).map(([key, value]) => (
+                                    <option key={value} value={value}>
+                                      {STATUS_LABELS[value]}
+                                    </option>
+                                  ))}
                                 </select>
                               </div>
 
