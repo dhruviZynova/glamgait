@@ -5,8 +5,9 @@ import cartempty from "../assets/cartempty.png";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
 import toast from "react-hot-toast";
-import categorie from "../assets/images/categorie5.png";
+// import categorie from "../assets/images/categorie5.png";
 import BrandBanner from "./BrandBanner";
+import WatchAndBuy from "./WatchAndBuy";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -146,93 +147,93 @@ const Cart = () => {
   const delivery = 0;
   const grandTotal = subtotal + taxes + delivery;
 
-  const dummyProducts = [
-    {
-      p_id: "d1",
-      name: "Black Burqa",
-      price: 132,
-      original_price: 188,
-      slug: "black-burqa-1",
-      productcolors: [
-        {
-          pcolor_id: "c1",
-          color: { color_name: "Black", color_code: "#1a1a1b" },
-          productimages: [{ image_url: categorie }]
-        },
-        { pcolor_id: "c2", color: { color_name: "Grey", color_code: "#565656" } },
-        { pcolor_id: "c3", color: { color_name: "Beige", color_code: "#9f8262" } },
-        { pcolor_id: "c4", color: { color_name: "Dark", color_code: "#2a2a2a" } }
-      ]
-    },
-    {
-      p_id: "d2",
-      name: "Black Burqa",
-      price: 132,
-      original_price: 188,
-      slug: "black-burqa-2",
-      productcolors: [
-        {
-          pcolor_id: "c5",
-          color: { color_name: "Black", color_code: "#1a1a1b" },
-          productimages: [{ image_url: categorie }]
-        },
-        { pcolor_id: "c6", color: { color_name: "Grey", color_code: "#565656" } },
-        { pcolor_id: "c7", color: { color_name: "Beige", color_code: "#9f8262" } },
-        { pcolor_id: "c8", color: { color_name: "Dark", color_code: "#2a2a2a" } }
-      ]
-    },
-    {
-      p_id: "d3",
-      name: "Black Burqa",
-      price: 132,
-      original_price: 188,
-      slug: "black-burqa-3",
-      productcolors: [
-        {
-          pcolor_id: "c9",
-          color: { color_name: "Black", color_code: "#1a1a1b" },
-          productimages: [{ image_url: categorie }]
-        },
-        { pcolor_id: "c10", color: { color_name: "Grey", color_code: "#565656" } },
-        { pcolor_id: "c11", color: { color_name: "Beige", color_code: "#9f8262" } },
-        { pcolor_id: "c12", color: { color_name: "Dark", color_code: "#2a2a2a" } }
-      ]
-    },
-    {
-      p_id: "d4",
-      name: "Black Burqa",
-      price: 132,
-      original_price: 188,
-      slug: "black-burqa-4",
-      productcolors: [
-        {
-          pcolor_id: "c13",
-          color: { color_name: "Black", color_code: "#1a1a1b" },
-          productimages: [{ image_url: categorie }]
-        },
-        { pcolor_id: "c14", color: { color_name: "Grey", color_code: "#565656" } },
-        { pcolor_id: "c15", color: { color_name: "Beige", color_code: "#9f8262" } },
-        { pcolor_id: "c16", color: { color_name: "Dark", color_code: "#2a2a2a" } }
-      ]
-    },
-    {
-      p_id: "d5",
-      name: "Black Burqa",
-      price: 132,
-      original_price: 188,
-      slug: "black-burqa-4",
-      productcolors: [
-        {
-          pcolor_id: "c17",
-          color: { color_name: "Black", color_code: "#1a1a1b" },
-          productimages: [{ image_url: categorie }]
-        },
-        { pcolor_id: "c18", color: { color_name: "Grey", color_code: "#565656" } },
-        { pcolor_id: "c19", color: { color_name: "Beige", color_code: "#9f8262" } },
-        { pcolor_id: "c20", color: { color_name: "Dark", color_code: "#2a2a2a" } }
-      ]
-    }
-  ];
+  // const dummyProducts = [
+  //   {
+  //     p_id: "d1",
+  //     name: "Black Burqa",
+  //     price: 132,
+  //     original_price: 188,
+  //     slug: "black-burqa-1",
+  //     productcolors: [
+  //       {
+  //         pcolor_id: "c1",
+  //         color: { color_name: "Black", color_code: "#1a1a1b" },
+  //         productimages: [{ image_url: categorie }]
+  //       },
+  //       { pcolor_id: "c2", color: { color_name: "Grey", color_code: "#565656" } },
+  //       { pcolor_id: "c3", color: { color_name: "Beige", color_code: "#9f8262" } },
+  //       { pcolor_id: "c4", color: { color_name: "Dark", color_code: "#2a2a2a" } }
+  //     ]
+  //   },
+  //   {
+  //     p_id: "d2",
+  //     name: "Black Burqa",
+  //     price: 132,
+  //     original_price: 188,
+  //     slug: "black-burqa-2",
+  //     productcolors: [
+  //       {
+  //         pcolor_id: "c5",
+  //         color: { color_name: "Black", color_code: "#1a1a1b" },
+  //         productimages: [{ image_url: categorie }]
+  //       },
+  //       { pcolor_id: "c6", color: { color_name: "Grey", color_code: "#565656" } },
+  //       { pcolor_id: "c7", color: { color_name: "Beige", color_code: "#9f8262" } },
+  //       { pcolor_id: "c8", color: { color_name: "Dark", color_code: "#2a2a2a" } }
+  //     ]
+  //   },
+  //   {
+  //     p_id: "d3",
+  //     name: "Black Burqa",
+  //     price: 132,
+  //     original_price: 188,
+  //     slug: "black-burqa-3",
+  //     productcolors: [
+  //       {
+  //         pcolor_id: "c9",
+  //         color: { color_name: "Black", color_code: "#1a1a1b" },
+  //         productimages: [{ image_url: categorie }]
+  //       },
+  //       { pcolor_id: "c10", color: { color_name: "Grey", color_code: "#565656" } },
+  //       { pcolor_id: "c11", color: { color_name: "Beige", color_code: "#9f8262" } },
+  //       { pcolor_id: "c12", color: { color_name: "Dark", color_code: "#2a2a2a" } }
+  //     ]
+  //   },
+  //   {
+  //     p_id: "d4",
+  //     name: "Black Burqa",
+  //     price: 132,
+  //     original_price: 188,
+  //     slug: "black-burqa-4",
+  //     productcolors: [
+  //       {
+  //         pcolor_id: "c13",
+  //         color: { color_name: "Black", color_code: "#1a1a1b" },
+  //         productimages: [{ image_url: categorie }]
+  //       },
+  //       { pcolor_id: "c14", color: { color_name: "Grey", color_code: "#565656" } },
+  //       { pcolor_id: "c15", color: { color_name: "Beige", color_code: "#9f8262" } },
+  //       { pcolor_id: "c16", color: { color_name: "Dark", color_code: "#2a2a2a" } }
+  //     ]
+  //   },
+  //   {
+  //     p_id: "d5",
+  //     name: "Black Burqa",
+  //     price: 132,
+  //     original_price: 188,
+  //     slug: "black-burqa-4",
+  //     productcolors: [
+  //       {
+  //         pcolor_id: "c17",
+  //         color: { color_name: "Black", color_code: "#1a1a1b" },
+  //         productimages: [{ image_url: categorie }]
+  //       },
+  //       { pcolor_id: "c18", color: { color_name: "Grey", color_code: "#565656" } },
+  //       { pcolor_id: "c19", color: { color_name: "Beige", color_code: "#9f8262" } },
+  //       { pcolor_id: "c20", color: { color_name: "Dark", color_code: "#2a2a2a" } }
+  //     ]
+  //   }
+  // ];
 
   if (loading) {
     return (
@@ -432,14 +433,13 @@ const Cart = () => {
           </div>
 
           {/* You May Also Like Section */}
-          <div className="mt-16 sm:mt-18">
+          {/* <div className="mt-16 sm:mt-18">
             <h2 className="text-[20px] md:text-[34px] font-700 text-[#3D3D3D] font-[Oxygen] mb-8 md:mb-12">
               You May Also Like
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
               {dummyProducts.map((product) => (
                 <div key={product.p_id} className="group cursor-pointer">
-                  {/* Image Container */}
                   <div className="relative aspect-[3.5/4.5] overflow-hidden rounded-2xl bg-[#E8E8E8] mb-3">
                     <div className="absolute top-4 left-4 z-10">
                       <span className="bg-white text-[#E11D48] px-3 py-1 rounded text-[12px] font-bold shadow-sm">
@@ -453,7 +453,6 @@ const Cart = () => {
                     />
                   </div>
 
-                  {/* Info */}
                   <div className="space-y-1">
                     <div className="flex justify-between items-baseline">
                       <h3 className="text-[14px] md:text-[16px] font-semibold text-[#1A1A1A] font-[Oxygen]">
@@ -473,7 +472,6 @@ const Cart = () => {
                       {product.productcolors[0].color.color_name}
                     </p>
 
-                    {/* Swatches */}
                     <div className="flex gap-2 pt-1">
                       {product.productcolors.map((color, idx) => (
                         <div
@@ -488,7 +486,12 @@ const Cart = () => {
                 </div>
               ))}
             </div>
+          </div> */}
+
+          <div className="mt-16 sm:mt-32">
+            <WatchAndBuy />
           </div>
+
         </div>
       </div>
       <BrandBanner />
