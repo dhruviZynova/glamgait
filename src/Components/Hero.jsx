@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -10,9 +10,7 @@ import { ApiURL } from "../Variable";
 
 const Hero = () => {
   const [sliders, setSliders] = useState([]);
-  const [swiperInstance, setSwiperInstance] = useState(null);
-  const textScrollRef = useRef(null);
-  const animationRef = useRef(null);
+  const [setSwiperInstance] = useState(null);
 
   const getSlider = async () => {
     try {

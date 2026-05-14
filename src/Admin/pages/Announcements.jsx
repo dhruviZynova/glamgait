@@ -6,12 +6,10 @@ import {
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { adminAxios } from "../../Axios/axios";
-import { ApiURL, showToaster, adminInfo } from "../../Variable";
+import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 // 
 const Announcement = () => {
-  const userData = adminInfo();
-
   const [isEdit, setIsEdit] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [announcements, setAnnouncements] = useState([]);

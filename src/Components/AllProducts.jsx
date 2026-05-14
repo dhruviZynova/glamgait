@@ -1,11 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronRight } from "lucide-react";
-import HomePageBanner from "../Components/HomePageBanner";
-import singlebanner from "../assets/singlebanner.jpg";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import ScrollToTop from "./ScrollToTop";
-import { userInfo } from "../Variable";
+import { ApiURL, userInfo } from "../Variable";
 import { getGuestId } from "../utils/guest";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import ProductCard from "./ProductCard";
@@ -71,27 +69,27 @@ const Allproducts = () => {
   const [selectedColors, setSelectedColors] = useState([]);
   const { cate_name, filterValue } = useParams();
   const [wishlistMap, setWishlistMap] = useState({});
-  const [reviewsSummary, setReviewsSummary] = useState({});
+
   const [products, setProducts] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [sortBy, setSortBy] = useState("a-z");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const [categoryReviews, setCategoryReviews] = useState([]);
+
   const [cateId, setCateId] = useState(null);
   const [categoryDisplayName, setCategoryDisplayName] = useState("");
   const [activeFilterName, setActiveFilterName] = useState("");
   const [limit] = useState(18);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+
   const [seo, setSeo] = useState({
     title: "",
     description: "",
   });
 
   const navigate = useNavigate();
-  const prevProductsRef = useRef([]);
+
 
   const createSlug = (name) =>
     name
@@ -198,19 +196,19 @@ const Allproducts = () => {
     const fetchCategoryFilters = async () => {
       try {
         // Fetch categories (no category ID needed)
-        const categoryRes = await axiosInstance.get(`/getcategory`);
+        const categoryRes = await axiosInstance.get(`${ApiURL}/getcategory`);
 
         // Fetch other filters using category ID if available, otherwise use default (2)
         const categoryId = cateId || 2;
 
         const [subRes, fabricRes, workRes, occRes, styleRes, sizeRes] =
           await Promise.all([
-            cateId ? axiosInstance.get(`/getsubcategory/${categoryId}`) : Promise.resolve({ data: { data: [] } }),
-            axiosInstance.get(`/getfabrics/${categoryId}`),
-            axiosInstance.get(`/getworks/${categoryId}`),
-            axiosInstance.get(`/getoccasions/${categoryId}`),
-            axiosInstance.get(`/getstyles/${categoryId}`),
-            axiosInstance.get(`/getsize/${categoryId}`),
+            cateId ? axiosInstance.get(`${ApiURL}/getsubcategory/${categoryId}`) : Promise.resolve({ data: { data: [] } }),
+            axiosInstance.get(`${ApiURL}/getfabrics/${categoryId}`),
+            axiosInstance.get(`${ApiURL}/getworks/${categoryId}`),
+            axiosInstance.get(`${ApiURL}/getoccasions/${categoryId}`),
+            axiosInstance.get(`${ApiURL}/getstyles/${categoryId}`),
+            axiosInstance.get(`${ApiURL}/getsize/${categoryId}`),
           ]);
 
         setFilters({
@@ -352,7 +350,6 @@ const Allproducts = () => {
         }
 
         setTotalProducts(pagination?.totalCount || 0);
-        setTotalPages(pagination?.totalPages || 0);
 
         if (pagination?.page && pagination.page !== currentPage) {
           // Only sync if necessary
@@ -361,7 +358,6 @@ const Allproducts = () => {
       } else {
         setProducts([]);
         setTotalProducts(0);
-        setTotalPages(0);
       }
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -529,75 +525,9 @@ const Allproducts = () => {
       console.error("Wishlist refresh failed", err);
     }
   };
-  const fetchAllReviewsSummary = async () => {
-    if (products.length === 0) return;
-    const productIds = products.map((p) => p.p_id);
-    try {
-      const res = await axiosInstance.post("/getreviewsformultiple", {
-        p_ids: productIds,
-      });
-      if (res.data.status === 1) {
-        const data = res.data.data || {};
-        const summary = {};
-        Object.keys(data).forEach((p_id) => {
-          const item = data[p_id];
-          summary[p_id] = {
-            rating: item.average_rating,
-            count: item.total_reviews,
-          };
-        });
-        setReviewsSummary(summary);
-      }
-    } catch (err) {
-      console.error("Reviews fetch failed", err);
-    }
-  };
-  useEffect(() => {
-    const prev = prevProductsRef.current;
-    const hasProductsNow = products.length > 0;
-    const hadNoProductsBefore = prev.length === 0;
-    if (hasProductsNow && hadNoProductsBefore) {
-      fetchAllReviewsSummary();
-    }
-    prevProductsRef.current = products;
-  }, [products]);
 
-  // In your React component
-  const fetchCategoryReviews = async () => {
-    if (!cate_name) return;
 
-    try {
-      const response = await axiosInstance.post("/getReviewsByCategory", {
-        cate_name: cate_name,
-        page: 1,
-        perPage: 30,
-      });
 
-      if (response.data.status === 1) {
-        const fetchedReviews = response.data.data.reviews || [];
-
-        // Optional: Format dates or add any client-side processing
-        const formatted = fetchedReviews.map((review) => ({
-          ...review,
-          createdAt: review.createdAt
-            ? new Date(review.createdAt).toLocaleDateString()
-            : "",
-        }));
-
-        setCategoryReviews(formatted);
-      } else {
-        console.log("No reviews found for category:", cate_name);
-        setCategoryReviews([]);
-      }
-    } catch (error) {
-      console.error("Error fetching category reviews:", error);
-      setCategoryReviews([]);
-    }
-  };
-
-  useEffect(() => {
-    fetchCategoryReviews();
-  }, [cate_name]);
 
   useEffect(() => {
     let title = "";
@@ -1131,7 +1061,7 @@ const Allproducts = () => {
                   </button>
                 </div>
               </div>
-              <div className="mb-6">
+              <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <p className="text-sm text-gray-600">
                   Showing{" "}
                   <span className="font-semibold">
@@ -1141,6 +1071,23 @@ const Allproducts = () => {
                   of <span className="font-semibold">{totalProducts}</span>{" "}
                   item(s)
                 </p>
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500 font-medium">Sort by:</span>
+                  <select 
+                    value={sortBy}
+                    onChange={(e) => {
+                      setSortBy(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="bg-transparent border-none text-sm font-semibold text-gray-900 focus:ring-0 cursor-pointer outline-none"
+                  >
+                    <option value="a-z">Alphabetical (A-Z)</option>
+                    <option value="z-a">Alphabetical (Z-A)</option>
+                    <option value="low-high">Price (Low to High)</option>
+                    <option value="high-low">Price (High to Low)</option>
+                  </select>
+                </div>
               </div>
 
               {products?.length > 0 ? (

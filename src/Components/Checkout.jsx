@@ -10,7 +10,7 @@ import BrandBanner from "./BrandBanner";
 const Checkout = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { cartItems = [], isGuest, guestId: stateGuestId } = location.state || {};
+    const { cartItems = [], guestId: stateGuestId } = location.state || {};
 
     const [currentStep, setCurrentStep] = useState(1); // 1: Personal, 2: Billing, 3: Confirmation
     const [showSuccessModal, setShowSuccessModal] = useState(false);

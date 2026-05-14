@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Heart, ShoppingCart, CircleUser, X, AlignRight, Plus, Minus, ChevronDown } from "lucide-react";
 import { FaUserCircle, FaUser } from "react-icons/fa";
 import logo from "../assets/logo1.png";
 import axiosInstance from "../Axios/axios";
-import { userInfo } from "../Variable";
-import { getGuestId } from "../utils/guest";
+import { ApiURL, userInfo } from "../Variable";
 import { useCart } from "../Context/CartContext";
 
 const Navbar = () => {
@@ -13,7 +12,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const user = userInfo();
   const u_id = user?.u_id;
-  const guestId = getGuestId();
   const token = user?.token || user?.auth_token;
   const { cartCount, wishlistCount } = useCart();
   const [isOpen, setIsOpen] = useState(false);
@@ -73,7 +71,7 @@ const Navbar = () => {
 
   const getAnnouncements = async () => {
     try {
-      const res = await axiosInstance.get("/getannouncements");
+      const res = await axiosInstance.get(`${ApiURL}/getannouncements`);
       if (res?.data?.status === 1) setAnnouncements(res.data.data);
     } catch (err) {
       console.error(err);
@@ -82,14 +80,14 @@ const Navbar = () => {
 
   const getCategories = async () => {
     try {
-      const res = await axiosInstance.get("/getcategory");
+      const res = await axiosInstance.get(`${ApiURL}/getcategory`);
       if (res?.data?.status === 1) setCategories(res.data.data);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const fetchCategoryFilters = async (cate_id) => {
+  const fetchCategoryFilters = useCallback(async (cate_id) => {
     if (!cate_id) return;
     if (megaMenuCache[cate_id]) {
       setMegaMenuData(megaMenuCache[cate_id]);
@@ -100,7 +98,7 @@ const Navbar = () => {
       // Helper for safe fetching
       const safeGet = async (url) => {
         try {
-          const res = await axiosInstance.get(url, skip);
+          const res = await axiosInstance.get(`${ApiURL}${url}`, skip);
           return res?.data?.data || [];
         } catch (err) {
           console.warn(`Filter fetch skipped for ${url}:`, err.message);
@@ -129,7 +127,7 @@ const Navbar = () => {
     } catch (error) {
       console.error("Error fetching filters:", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     getCategories();
@@ -153,7 +151,7 @@ const Navbar = () => {
         }
       });
     }
-  }, [categories]);
+  }, [categories, fetchCategoryFilters, megaMenuCache]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -236,7 +234,13 @@ const Navbar = () => {
     <>
       {/* Announcement Bar */}
       <div className="bg-[#23403b] text-white text-xs md:text-sm py-2 text-center font-Montserrat font-medium">
-        Enjoy Free Shipping On All Orders
+        {announcements.length > 0 ? (
+          <div className="transition-all duration-500 ease-in-out">
+            {announcements[currentAnnouncement]?.message || "Enjoy Free Shipping On All Orders"}
+          </div>
+        ) : (
+          "Enjoy Free Shipping On All Orders"
+        )}
       </div>
       <nav ref={navRef} className="sticky bg-white shadow-md top-0 z-50">
         <div className="mx-auto px-4 md:px-10 lg:px-20 py-3 flex justify-between items-center">
@@ -285,7 +289,7 @@ const Navbar = () => {
           <div className="flex items-center gap-4 md:gap-4">
 
             {/* 1. Search Icon */}
-            <button 
+            <button
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
               aria-label="Toggle search"
               className="focus:outline-none"

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
@@ -144,7 +144,11 @@ const Review = ({ p_id, productName }) => {
   const [hasOrders, setHasOrders] = useState(null); // null = still loading
   const [alreadyReviewed, setAlreadyReviewed] = useState(false);
   const location = useLocation();
-  const user = userInfo();
+  const userRaw = userInfo();
+  
+  // Memoize user to prevent infinite loops since userInfo() returns a new object on every call
+  const user = useMemo(() => userRaw, [JSON.stringify(userRaw)]);
+
   const [reviewerName, setReviewerName] = useState("");
   const [reviewerEmail, setReviewerEmail] = useState("");
 
@@ -156,10 +160,10 @@ const Review = ({ p_id, productName }) => {
       setReviewerName(user.first_name || user.name || "");
       setReviewerEmail(user.email || "");
     }
-  }, [user?.u_id, isEditing]);
+  }, [user?.u_id, user?.email, isEditing]);
 
   // ── 1. Fetch reviews for this product ────────────────────────────────────
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     if (!p_id) return;
     try {
       const res = await axiosInstance.post("/getuserreviews", { p_id });
@@ -186,10 +190,10 @@ const Review = ({ p_id, productName }) => {
     } catch (err) {
       console.error("Error fetching reviews:", err);
     }
-  };
+  }, [p_id, user?.u_id, user?.email, reviewerName, reviewerEmail]);
 
   // ── 2. Check if logged-in user has ordered THIS specific product ────────
-  const checkUserOrders = async () => {
+  const checkUserOrders = useCallback(async () => {
     if (!user?.u_id) {
       setHasOrders(false);
       return;
@@ -223,14 +227,14 @@ const Review = ({ p_id, productName }) => {
       console.error("Error checking orders:", err);
       setHasOrders(false);
     }
-  };
+  }, [user?.u_id, p_id, productName]);
 
   useEffect(() => {
     if (p_id) {
       fetchReviews();
       checkUserOrders();
     }
-  }, [p_id, user?.u_id]);
+  }, [p_id, fetchReviews, checkUserOrders]);
 
   // ── Submit handler ────────────────────────────────────────────────────────
   const handleEdit = (review) => {

@@ -17,13 +17,6 @@ const SideBar = ({ onMenuChange = () => { } }) => {
         ? "orders"
         : "";
 
-  const breadcrumbLabel =
-    activeMenu === "orders"
-      ? "My Orders"
-      : activeMenu === "info"
-        ? "Personal Info"
-        : "";
-
   const handleMenuClick = (menu) => {
     onMenuChange(menu);
 

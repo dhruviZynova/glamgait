@@ -10,6 +10,23 @@ const multipartAPIs = [
   "/adddynamicimages",
 ];
 
+const publicAPIs = [
+  "/getannouncements",
+  "/getcategory",
+  "/getsubcategory",
+  "/getfabrics",
+  "/getworks",
+  "/getoccasions",
+  "/getstyles",
+  "/getsize",
+  "/getalluserreviews",
+  "/getproducts",
+  "/getproductdetails",
+];
+
+// Normalize ApiURL: Remove trailing slash if present to prevent double-slashes in requests
+const normalizedApiURL = ApiURL?.endsWith("/") ? ApiURL.slice(0, -1) : ApiURL;
+
 /**
  * Common interceptor setup for both User and Admin instances
  */
@@ -18,23 +35,30 @@ const setupInterceptors = (instance, infoGetter, storageKey) => {
     (config) => {
       if (!config.skipLoader) loaderService.show();
 
-      // 1. CSRF Protection: Automatically read XSRF-TOKEN from cookies and add to header
+      // Ensure URL is normalized if it's relative
+      if (config.url && !config.url.startsWith("http")) {
+        config.url = config.url.startsWith("/") ? config.url : `/${config.url}`;
+      }
+
+      // 1. CSRF Protection
       const xsrfToken = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1];
       if (xsrfToken) {
         config.headers["X-XSRF-TOKEN"] = xsrfToken;
       }
 
-      // 2. Hybrid Auth: Prioritize HttpOnly cookies (via withCredentials) 
-      // Fallback to Header only if necessary, ensuring no sensitive data is leaked
-      if (!config.headers.Authorization) {
+      // 2. Auth Header: Only add for non-public routes OR if manually provided
+      const isPublic = publicAPIs.some(api => config.url.includes(api));
+
+      if (!config.headers.Authorization && !isPublic) {
         const data = infoGetter();
-        if (data?.token || data?.auth_token) {
-          config.headers["Authorization"] = `Bearer ${data.token || data.auth_token}`;
+        const token = data?.token || data?.auth_token;
+        if (token && String(token).trim() !== "" && String(token) !== "undefined" && String(token) !== "null") {
+          config.headers["Authorization"] = `Bearer ${token}`;
         }
       }
 
       // Handle Multipart APIs
-      if (multipartAPIs.some((api) => config.url.includes(api))) {
+      if (config.url && multipartAPIs.some((api) => config.url.includes(api))) {
         config.headers["Content-Type"] = "multipart/form-data";
       }
 
@@ -45,67 +69,52 @@ const setupInterceptors = (instance, infoGetter, storageKey) => {
 
   instance.interceptors.response.use(
     (response) => {
-      if (!response.config.skipLoader) loaderService.hide();
+      loaderService.hide();
       return response;
     },
-    async (error) => {
-      if (!error.config?.skipLoader) loaderService.hide();
-      
-      const originalRequest = error.config;
+    (error) => {
+      loaderService.hide();
 
       // Handle Token Expiry (401 Unauthorized)
-      if (error?.response?.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
-        
-        /* 
-         * TOKEN REFRESH LOGIC PLACEHOLDER
-         * Implementation depends on backend support for /refresh-token
-         * 
-         * try {
-         *   const refreshResponse = await axios.post(`${ApiURL}/refresh-token`, { refreshToken: getRefreshToken() });
-         *   const newToken = refreshResponse.data.token;
-         *   saveNewToken(newToken);
-         *   originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-         *   return instance(originalRequest);
-         * } catch (refreshError) {
-         *   localStorage.removeItem(storageKey);
-         *   window.location.href = '/login';
-         * }
-         */
-
+      if (error?.response?.status === 401) {
         localStorage.removeItem(storageKey);
         if (!window.location.pathname.includes('/login')) {
           window.location.href = '/login';
         }
       }
 
-      // Handle Forbidden (403)
-      if (error?.response?.status === 403 || error?.response?.data?.status === 403) {
-        const currentData = infoGetter();
-        if (!currentData) {
-          localStorage.removeItem(storageKey);
-        }
-      }
-      
       return Promise.reject(error);
     }
   );
 };
 
-// 1. User Instance (Default for client-side)
-export const userAxios = axios.create({ 
-  baseURL: ApiURL,
-  withCredentials: true // Enable sending cookies (HttpOnly) with every request
+// Create User Instance
+export const userAxios = axios.create({
+  baseURL: normalizedApiURL,
+  withCredentials: true
 });
-setupInterceptors(userAxios, userInfo, "GlamGait");
 
-// 2. Admin Instance (Specifically for admin panel)
-export const adminAxios = axios.create({ 
-  baseURL: ApiURL,
-  withCredentials: true 
+// Create Admin Instance
+export const adminAxios = axios.create({
+  baseURL: normalizedApiURL,
+  withCredentials: true
 });
+
+// Apply Interceptors
+setupInterceptors(userAxios, userInfo, "GlamGait");
 setupInterceptors(adminAxios, adminInfo, "GlamGaitAdmin");
 
-// Export userAxios as the default axiosInstance for backward compatibility
+// Standard headers - Move Content-Type to specific methods to avoid 400 on GET/DELETE
+const commonHeaders = {
+  "Accept": "application/json",
+};
+
+[userAxios, adminAxios].forEach(instance => {
+  Object.assign(instance.defaults.headers.common, commonHeaders);
+  instance.defaults.headers.post["Content-Type"] = "application/json";
+  instance.defaults.headers.put["Content-Type"] = "application/json";
+  instance.defaults.headers.patch["Content-Type"] = "application/json";
+});
+
 const axiosInstance = userAxios;
 export default axiosInstance;

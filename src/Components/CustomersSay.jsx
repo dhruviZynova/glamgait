@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import ReviewCard from "./ReviewCard";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
@@ -18,14 +18,11 @@ const CustomersSay = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       const response = await axiosInstance.post(`${ApiURL}/getalluserreviews`, {
         page: 1,
-        perPage: 10, // Fetch more for the slider
-        headers: {
-          Authorization: `Bearer ${userData.auth_token}`,
-        }
+        perPage: 10,
       });
 
       if (response.data.status === 1) {
@@ -36,11 +33,11 @@ const CustomersSay = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userData?.auth_token]);
 
   useEffect(() => {
     fetchReviews();
-  }, []);
+  }, [fetchReviews]);
 
   // Don't render anything while loading or when there are no reviews
   if (loading || reviews.length === 0) return null;

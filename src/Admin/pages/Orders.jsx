@@ -1,13 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 import {
   FaTrash,
   FaRupeeSign,
   FaChevronDown,
-  FaChevronUp,
   FaSearch,
   FaSpinner,
-  FaInfoCircle,
   FaTruck,
   FaBoxOpen,
   FaDownload,
@@ -175,7 +172,7 @@ const AdminOrders = () => {
       }
     } catch (error) {
       toast.dismiss("updateStatus");
-      toast.error("Error updating status");
+      toast.error(error.message || "Error updating status");
     }
   };
 
@@ -522,7 +519,7 @@ const AdminOrders = () => {
                                   value={order.status}
                                   onChange={(e) => updateOrderStatus(order.orderId, e.target.value)}
                                 >
-                                  {Object.entries(ORDER_STATUS).map(([key, value]) => (
+                                  {Object.values(ORDER_STATUS).map((value) => (
                                     <option key={value} value={value}>
                                       {STATUS_LABELS[value]}
                                     </option>

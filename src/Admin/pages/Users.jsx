@@ -10,7 +10,7 @@ import {
 import { Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
-import { ApiURL, adminInfo } from "../../Variable";
+import { ApiURL } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Users = () => {
@@ -24,9 +24,6 @@ const Users = () => {
     userId: null,
     first_name: "",
   });
-
-  const userData = adminInfo();
-  const token = userData?.token;
 
   const fetchUsers = async () => {
     try {

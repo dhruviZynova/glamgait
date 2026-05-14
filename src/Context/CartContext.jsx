@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import axiosInstance from "../Axios/axios";
 import { userInfo } from "../Variable";
-import { getGuestId } from "../utils/guest";
 
 const CartContext = createContext();
 
@@ -18,11 +17,10 @@ export const CartProvider = ({ children }) => {
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartItems, setCartItems] = useState([]);
   const [wishlistItems, setWishlistItems] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  const user = userInfo();
+  const userRaw = userInfo();
+  const user = React.useMemo(() => userRaw, [JSON.stringify(userRaw)]);
   const u_id = user?.u_id;
-  const token = user?.token || user?.auth_token;
 
   const fetchCart = useCallback(async () => {
     try {
@@ -37,7 +35,7 @@ export const CartProvider = ({ children }) => {
         const items = res.data.data || [];
         setCartItems(items);
         setCartCount(items.length);
-        
+
         // Sync to localStorage for persistence across logout
         const mappedItems = items.map(item => ({
           p_id: item.p_id,

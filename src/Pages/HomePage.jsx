@@ -1,45 +1,8 @@
-// // import React from "react";
-// // import Hero from "../Components/Hero";
-// // import Categories from "../Components/Categories";
-// // import FourCategories from "../Components/FourCategories";
-// // import NewArrivels from "../Components/NewArrivels";
-// // import Services from "../Components/Services";
-// // import CustomersSay from "../Components/CustomersSay";
-// // import WatchAndBuy from "../Components/WatchAndBuy";
-// // import StayInLoop from "../Components/StayInLoop";
-
-// // const HomePage = () => {
-// //   return (
-// //     <div>
-// //       <Hero />
-// //       <Categories />
-// //       <NewArrivels />
-// //       <FourCategories /> 
-// //       <Services />
-// //       <CustomersSay />
-// //       <WatchAndBuy />
-// //       <StayInLoop />
-// //     </div>
-// //   );
-// // };
-
-// // export default HomePage;
-
 import React from "react";
-import Hero from "../Components/Hero";
-import Categories from "../Components/Categories";
-import FourCategories from "../Components/FourCategories";
-import NewArrivels from "../Components/NewArrivels";
-import Services from "../Components/Services";
 import CustomersSay from "../Components/CustomersSay";
-import WatchAndBuy from "../Components/WatchAndBuy";
-import StayInLoop from "../Components/StayInLoop";
-import leftlight from "../assets/leftlight.png";
-import waves from "../assets/waves.png";
 import HomeHero from "../Components/HomeHero";
 import CategorySection from "../Components/CategorySection";
 import BannerSection from "../Components/BannerSection";
-// import TopProductShowcase from "../Components/TopProductShowcase";
 import LatestArrivalsByCategories from "../Components/LatestArrivalsByCategories";
 import CollectionBanner from "../Components/CollectionBanner";
 import FashionShowcase from "../Components/FashionShowcase";
@@ -54,9 +17,6 @@ const HomePage = () => {
     <div className="overflow-x-hidden relative">
       {/* <Hero /> */}
       <HomeHero />
-
-      {/* Top Product Showcase - New Section */}
-      {/* <TopProductShowcase /> */}
 
       {/* <Categories /> */}
       <CategorySection />

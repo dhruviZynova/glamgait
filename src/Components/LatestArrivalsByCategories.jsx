@@ -74,7 +74,7 @@ const LatestArrivalsByCategories = () => {
 
                                     let imageUrl = product?.colors?.[0]?.images?.[0]?.image_url || '';
                                     if (imageUrl && !imageUrl.startsWith('http')) {
-                                        imageUrl = `${ApiURL}/assets/Products/${imageUrl}`;
+                                        imageUrl = `${ApiURL}${imageUrl}`;
                                     }
 
                                     return (

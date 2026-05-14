@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { userInfo, adminInfo } from '../Variable';
 
@@ -18,14 +19,14 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     refreshUser();
     setLoading(false);
-    
+
     // Sync across tabs
     const handleStorageChange = (e) => {
       if (e.key === 'GlamGait' || e.key === 'GlamGaitAdmin') {
         refreshUser();
       }
     };
-    
+
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
@@ -44,7 +45,6 @@ export const UserProvider = ({ children }) => {
     </UserContext.Provider>
   );
 };
-
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {

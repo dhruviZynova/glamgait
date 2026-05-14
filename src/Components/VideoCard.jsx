@@ -1,75 +1,3 @@
-// import { useRef, useState, useCallback } from "react";
-// import { Link } from "react-router-dom";
-
-// const VideoCard = ({ video, onClick }) => {
-//   const { id, title, price, videoUrl, reviews, to } = video || {};
-//   const videoRef = useRef(null);
-//   const [isPlaying, setIsPlaying] = useState(true);
-
-//   const handleCardClick = useCallback(() => {
-//     if (onClick) {
-//       onClick(id);
-//     }
-//   }, [onClick, id]);
-
-//   const handlePlayPause = () => {
-//     if (videoRef.current) {
-//       if (isPlaying) {
-//         videoRef.current.pause();
-//       } else {
-//         videoRef.current.play();
-//       }
-//       setIsPlaying(!isPlaying);
-//     }
-//   };
-
-//   return (
-//     <Link
-//       to={to}
-//       className="relative overflow-hidden cursor-pointer w-full max-w-[300px] mx-auto"
-//       onClick={handleCardClick}
-//     >
-//       {videoUrl && (
-//         <video
-//           ref={videoRef}
-//           src={videoUrl}
-//           className="w-full h-auto aspect-[4/6] object-cover rounded-2xl"
-//           autoPlay
-//           loop
-//           muted
-//           playsInline
-//           onClick={(e) => {
-//             e.stopPropagation();
-//             handlePlayPause();
-//           }}
-//         />
-//       )}
-
-//       <div className="absolute bottom-4 left-4 right-4">
-//         <div className="bg-[#FFFFFF]/50 backdrop-blur-md rounded-2xl p-3 shadow-lg w-auto">
-//           <div className="flex items-start gap-3">
-//             <div className="flex-1 min-w-0">
-//               <div className="flex items-baseline gap-2">
-//                 <h3 className="text-lg font-semibold text-gray-900 truncate">
-//                   {title}
-//                 </h3>
-//               </div>
-//               <span className="text-[14px] font-bold text-gray-900">
-//                 Rs.{price}
-//               </span>
-//               <p className="text-xs text-gray-600 leading-relaxed line-clamp-1">
-//                 {reviews}
-//               </p>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </Link>
-//   );
-// };
-
-// export default VideoCard;
-
 import { useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { ApiURL } from "../Variable";
@@ -88,7 +16,7 @@ const VideoCard = ({ product }) => {
 
   const mediaSrc = videoFile?.image_url || imageFile?.image_url || "";
 
-  const handleCardClick = useCallback(() => {}, []);
+  const handleCardClick = useCallback(() => { }, []);
 
   const handlePlayPause = (e) => {
     e.stopPropagation();

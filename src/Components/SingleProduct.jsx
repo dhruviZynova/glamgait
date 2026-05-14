@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import {
   Star,
   Truck,
@@ -22,14 +22,13 @@ import ReletedProduct from "../Components/ReletedProduct";
 import { getGuestId } from "../utils/guest";
 import toast from "react-hot-toast";
 import Review from "./Review";
-import OfferList from "./OfferList";
-import CouponList from "./CouponList";
+
 import { Helmet } from "@dr.pogodin/react-helmet";
 
 function SingleProduct() {
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
+
   const [mainIndex, setMainIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(null);
@@ -40,58 +39,15 @@ function SingleProduct() {
   const [videoFiles, setVideoFiles] = useState([]);
   const [availableStock, setAvailableStock] = useState(0);
   const [reviewsSummary, setReviewsSummary] = useState({});
-  const [offers, setOffers] = useState([]);
-  const [coupons, setCoupons] = useState([]);
+
   const [activeTab, setActiveTab] = useState("description");
   const [wishlistMap, setWishlistMap] = useState({});
 
   const navigate = useNavigate();
-  const user = userInfo();
+  const userRaw = userInfo();
+  const user = useMemo(() => userRaw, [JSON.stringify(userRaw)]);
 
-  const names = [
-    "Yash Rajput",
-    "Amit Sharma",
-    "Priya Singh",
-    "Neha Patel",
-    "Ravi Mehta",
-    "Karan Verma",
-    "Simran Kaur",
-    "Rahul Joshi",
-    "Pooja Das",
-    "Ankit Mishra",
-  ];
 
-  const cities = [
-    "Mumbai",
-    "Delhi",
-    "Ahmedabad",
-    "Jaipur",
-    "Surat",
-    "Indore",
-    "Pune",
-    "Varanasi",
-    "Kanpur",
-    "Chennai",
-  ];
-
-  const times = [
-    "2 minutes",
-    "5 minutes",
-    "9 minutes",
-    "14 minutes",
-    "18 minutes",
-    "25 minutes",
-    "31 minutes",
-    "40 minutes",
-    "45 minutes",
-    "50 minutes",
-  ];
-
-  const [purchase, setPurchase] = useState({
-    name: "Yash Rajput",
-    time: "31 minutes",
-    city: "Jamnagar",
-  });
 
   useEffect(() => {
     if (!product?.p_id) return;
@@ -116,21 +72,7 @@ function SingleProduct() {
     fetchReviewsSummary();
   }, [product?.p_id]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const randomName = names[Math.floor(Math.random() * names.length)];
-      const randomTime = times[Math.floor(Math.random() * times.length)];
-      const randomCity = cities[Math.floor(Math.random() * cities.length)];
 
-      setPurchase({
-        name: randomName,
-        time: randomTime,
-        city: randomCity,
-      });
-    }, 5000); // change every 5 seconds
-
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -196,7 +138,7 @@ function SingleProduct() {
           }
         }
       } catch (err) {
-        toast.error("Product not found");
+        toast.error(err.message || "Product not found");
       }
     };
     fetchProduct();
@@ -243,7 +185,7 @@ function SingleProduct() {
     setSelectedColorImages(imageFiles);
     setVideoFiles(videos);
     setMainIndex(0);
-    setSelectedImage(null);
+
 
     // Size auto select
     const firstSize = color.sizes.find((s) => s.in_stock) || color.sizes[0];
@@ -325,7 +267,7 @@ function SingleProduct() {
         toast.error(res.data.description || "Failed to add");
       }
     } catch (err) {
-      toast.error("Something went wrong");
+      toast.error(err.message || "Something went wrong");
     }
   };
 
@@ -373,45 +315,12 @@ function SingleProduct() {
         navigate("/selectaddress", { state: { cartItems: [cartItem] } });
       }
     } catch (err) {
-      toast.error("Buy Now failed");
+      toast.error(err.message || "Buy Now failed");
     }
   };
 
-  useEffect(() => {
-    const fetchOffers = async () => {
-      try {
-        const res = await axiosInstance.post(`${ApiURL}/getoffers`);
-        if (res?.data?.status === 1) {
-          // show only active offers
-          const activeOffers = res.data.data.filter((o) => o.is_active);
-          setOffers(activeOffers);
-        }
-      } catch (err) {
-        console.error("Failed to load offers");
-      }
-    };
-
-    fetchOffers();
-  }, []);
-
-  useEffect(() => {
-    const fetchCoupons = async () => {
-      try {
-        const res = await axiosInstance.post(`${ApiURL}/getcoupons`);
-        if (res?.data?.status === 1) {
-          // show only active offers
-          const activeOffers = res.data.data.filter((o) => o.is_active);
-          setCoupons(activeOffers);
-        }
-      } catch (err) {
-        console.error("Failed to load offers");
-      }
-    };
-
-    fetchCoupons();
-  }, []);
-
-  const fetchWishlist = async () => {
+  const isFetchingWishlist = useRef(false);
+  const fetchWishlist = useCallback(async () => {
     if (!user?.u_id) {
       const localWishlist = JSON.parse(localStorage.getItem('localWishlist') || '[]');
       const map = {};
@@ -425,6 +334,10 @@ function SingleProduct() {
       setWishlistMap(map);
       return;
     }
+
+    if (isFetchingWishlist.current) return;
+    isFetchingWishlist.current = true;
+
     const identifier = user.u_id;
     try {
       const query = `u_id=${identifier}`;
@@ -443,12 +356,14 @@ function SingleProduct() {
       }
     } catch (err) {
       console.error("Wishlist fetch failed", err);
+    } finally {
+      isFetchingWishlist.current = false;
     }
-  };
+  }, [user?.u_id]);
 
   useEffect(() => {
     fetchWishlist();
-  }, []);
+  }, [fetchWishlist]);
 
   const toggleWishlist = async (e) => {
     e.stopPropagation();
@@ -656,8 +571,7 @@ function SingleProduct() {
               {/* Main Image */}
               <div className="flex-1">
                 <div
-                  onClick={() => setSelectedImage(mainIndex)}
-                  className="bg-white rounded-[15px] sm:rounded-[20px] overflow-hidden cursor-pointer shadow-sm"
+                  className="bg-white rounded-[15px] sm:rounded-[20px] overflow-hidden cursor-default shadow-sm"
                 >
                   <img
                     src={`${ApiURL}/assets/Products/${imageFiles[mainIndex]}`}

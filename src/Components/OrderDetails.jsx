@@ -104,22 +104,9 @@ const OrderDetails = () => {
     }
   };
 
-  // Current status from latest scan
-  const getCurrentStatus = () => {
-    if (!tracking?.tracking_detail || tracking.tracking_detail.length === 0) {
-      return "Order Placed";
-    }
-    const latest =
-      tracking.tracking_detail[tracking.tracking_detail.length - 1];
-    return latest.scan;
-  };
 
-  const currentStatus = tracking ? getCurrentStatus() : "Processing";
 
-  // Sort scans: latest first
-  const sortedScans = tracking?.tracking_detail
-    ? [...tracking.tracking_detail].reverse()
-    : [];
+
 
   const steps = ["Order Placed", "Inprogress", "shipped", "Delivered"];
   
@@ -144,9 +131,17 @@ const OrderDetails = () => {
     return "Your order has been placed successfully and is awaiting verification.";
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f3f0ed]">
+        <RefreshCcw className="w-10 h-10 animate-spin text-[#004534]" />
+      </div>
+    );
+  }
+
   if (!order) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f3f0ed] text-red-600">
+      <div className="min-h-screen flex items-center justify-center bg-[#f3f0ed] text-red-600 font-bold">
         Order not found
       </div>
     );

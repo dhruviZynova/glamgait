@@ -1,4 +1,3 @@
-import React from 'react';
 import fontimg from '../assets/images/fontimg.png';
 
 const BrandBanner = () => {

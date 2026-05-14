@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import leftlonglight from "../assets/images/leftlonglight.png";
 import footerbgimg from "../assets/images/footerbgimg.png";
-import longlight2 from "../assets/images/longlight2.png";
 import logo from "../assets/logo2.png";
 import axiosInstance from "../Axios/axios";
 

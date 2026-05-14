@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import {
   PlusIcon,
-  ArrowPathIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { Trash2 } from "lucide-react";
 import { adminAxios } from "../../Axios/axios";
 import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
-import { Toaster } from "react-hot-toast";
 
 const Colors = () => {
   const [isEdit, setIsEdit] = useState(false);
@@ -101,7 +99,6 @@ const Colors = () => {
 
   return (
     <div className="pb-8">
-      <Toaster />
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">Color Management</h1>
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">

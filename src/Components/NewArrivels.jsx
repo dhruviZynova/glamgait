@@ -1,5 +1,5 @@
 // NewArrivels.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ProductCard from "./ProductCard";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
@@ -93,7 +93,7 @@ const NewArrivels = () => {
     }
   };
 
-  const fetchAllReviewsSummary = async () => {
+  const fetchAllReviewsSummary = useCallback(async () => {
     if (currentProducts.length === 0) return;
 
     const productIds = currentProducts.map(p => p.p_id);
@@ -120,11 +120,11 @@ const NewArrivels = () => {
     } catch (err) {
       console.error("Reviews fetch failed", err);
     }
-  };
+  }, [currentProducts]);
 
   useEffect(() => {
     fetchAllReviewsSummary();
-  }, [currentProducts]);
+  }, [fetchAllReviewsSummary]);
 
   return (
     <section className="relative sm:pt-0 md:pt-16 md:px-4 bg-[#F3F0ED] overflow-hidden">

@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { ApiURL } from "../Variable";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
-import { getGuestId } from "../utils/guest";
 import { userInfo } from "../Variable";
 import { useNavigate } from "react-router-dom";
 

@@ -1,7 +1,6 @@
 import ProductCard from "./ProductCard"; // Make sure this exists
-import singlebanner from "../assets/singlebanner.jpg";
 import axiosInstance from "../Axios/axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { userInfo } from "../Variable";
 import { getGuestId } from "../utils/guest";
 
@@ -10,7 +9,7 @@ const ReletedProduct = ({ cate_name, currentProductId, cate_id }) => {
   const [wishlistMap, setWishlistMap] = useState({});
   const [reviewsSummary, setReviewsSummary] = useState({});
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const response = await axiosInstance.get(
         `/productbycategory/${cate_name}`,
@@ -54,11 +53,11 @@ const ReletedProduct = ({ cate_name, currentProductId, cate_id }) => {
     } catch (error) {
       console.error("Error fetching products:", error);
     }
-  };
+  }, [cate_name, cate_id, currentProductId]);
 
   useEffect(() => {
     fetchProducts();
-  }, [cate_name]);
+  }, [fetchProducts]);
 
   useEffect(() => {
     const fetchWishlist = async () => {

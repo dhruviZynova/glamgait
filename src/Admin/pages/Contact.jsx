@@ -11,7 +11,7 @@ import {
 import { Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
-import { ApiURL, adminInfo } from "../../Variable";
+import { ApiURL } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Contact = () => {
@@ -26,7 +26,6 @@ const Contact = () => {
     contactId: null,
     name: "",
   });
-  const userData = adminInfo();
 
   const fetchContacts = async (page = 1, limit = itemsPerPage, search = searchTerm) => {
     try {

@@ -5,13 +5,6 @@ import "swiper/css";
 import "swiper/css/pagination";
 import { Pagination, Autoplay } from "swiper/modules";
 
-import bgPattern from "../assets/images/transprantbg1.png";
-import frame from "../assets/images/frame1.png";
-import model from "../assets/images/categorie1.png";
-// import c1 from "../assets/images/c1.png";
-// import c2 from "../assets/images/c2.png";
-// import c3 from "../assets/images/c3.png";
-
 import axiosInstance from "../Axios/axios";
 import { ApiURL } from "../Variable";
 

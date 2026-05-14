@@ -49,8 +49,6 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [stockMatrix, setStockMatrix] = useState({});
-  const [colorQuantities, setColorQuantities] = useState({});
   const [originalStock, setOriginalStock] = useState({});
   const [originalColorQuantities, setOriginalColorQuantities] = useState({});
   const [stockAdjustments, setStockAdjustments] = useState({});
@@ -84,8 +82,6 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
         colors: [{ color_id: "", images: [] }],
         sizes: [{ size_id: "" }],
       });
-      setStockMatrix({});
-      setColorQuantities({});
       setExistingMedia([]);
       setDeletedMediaIds([]);
       setStockAdjustments({});

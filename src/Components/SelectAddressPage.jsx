@@ -23,7 +23,7 @@ const SelectAddressPage = () => {
     const [paymentMethod, setPaymentMethod] = useState("COD");
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [orderId, setOrderId] = useState(null);
+
     const [showAddAddressModal, setShowAddAddressModal] = useState(false);
     const [addressType, setAddressType] = useState("HOME");
 
@@ -167,7 +167,7 @@ const SelectAddressPage = () => {
             }
 
             const { order_id: newOrderId, rzp_order_id, amount } = res.data.data;
-            setOrderId(newOrderId);
+
 
             // Handle payment
             if (paymentMethod === "online") {

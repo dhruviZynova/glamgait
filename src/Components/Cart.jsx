@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { X, Plus, Minus } from "lucide-react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import cartempty from "../assets/cartempty.png";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
-import { getGuestId } from "../utils/guest";
 import toast from "react-hot-toast";
 import categorie from "../assets/images/categorie5.png";
 import BrandBanner from "./BrandBanner";
@@ -17,7 +16,7 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const isLoggedIn = !!user?.u_id && !!user?.auth_token;
 
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     try {
       if (!isLoggedIn) {
         const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
@@ -44,11 +43,11 @@ const Cart = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isLoggedIn, user?.u_id]);
 
   useEffect(() => {
     fetchCart();
-  }, []);
+  }, [fetchCart]);
 
   const updateCartQty = async (cart_id, quantity) => {
     if (!isLoggedIn && typeof cart_id === 'string' && cart_id.startsWith('local-')) {
@@ -76,7 +75,7 @@ const Cart = () => {
         toast.error(res.data.description || "Not enough stock");
       }
     } catch (error) {
-      toast.error("Failed to update quantity");
+      toast.error(error || "Failed to update quantity");
     }
   };
 
@@ -100,7 +99,7 @@ const Cart = () => {
         toast.success("Removed from cart");
       }
     } catch (error) {
-      toast.error("Failed to remove");
+      toast.error(error || "Failed to remove");
     }
   };
 
@@ -235,6 +234,14 @@ const Cart = () => {
     }
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f3f0ed] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1C2F2F]"></div>
+      </div>
+    );
+  }
+
   if (cartItems.length === 0) {
     return (
       <div className="bg-[#FAF7F2] h-screen flex items-center justify-center p-4">
@@ -263,6 +270,8 @@ const Cart = () => {
       </div>
     );
   }
+
+
 
   return (
     <>

@@ -98,7 +98,7 @@ const AddAddress = ({
       });
       setAddressType(editingAddress.address_type || "HOME");
     }
-  }, [editingAddress]);
+  }, [editingAddress, setAddressType]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
