@@ -436,7 +436,7 @@ const Cart = () => {
             <h2 className="text-[20px] md:text-[34px] font-700 text-[#3D3D3D] font-[Oxygen] mb-8 md:mb-12">
               You May Also Like
             </h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
               {dummyProducts.map((product) => (
                 <div key={product.p_id} className="group cursor-pointer">
                   {/* Image Container */}

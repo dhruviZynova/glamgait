@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import { ApiURL } from "../Variable";
 import "../style/LatestArrivalsByCategories.css";
 
 const LatestArrivalsByCategories = () => {
+    const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -63,7 +64,7 @@ const LatestArrivalsByCategories = () => {
                 <div className="space-y-12 px-4 sm:px-12 ">
                     {products.map((categoryGroup, groupIdx) => (
                         <div key={categoryGroup.category?.cate_id || groupIdx}>
-                            <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
                                 {categoryGroup.products?.map((product) => {
                                     const discountPercentage =
                                         product?.original_price && product?.original_price > product?.price
@@ -78,8 +79,8 @@ const LatestArrivalsByCategories = () => {
                                     }
 
                                     return (
-                                        <Link
-                                            to={`/product/${productSlug}`}
+                                        <div
+                                            onClick={() => navigate(`/product/${productSlug}`)}
                                             key={product.p_id}
                                             style={{ textDecoration: "none", color: "inherit" }}
                                         >
@@ -95,7 +96,7 @@ const LatestArrivalsByCategories = () => {
                                                         }}
                                                     />
                                                 </div>
-                                                <div className="card-info">
+                                                <div className="card-info pt-3">
                                                     <div className="info-header">
                                                         <h3 className="product-name">{product.name}</h3>
                                                         <div className="product-price">
@@ -120,7 +121,7 @@ const LatestArrivalsByCategories = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </Link>
+                                        </div>
                                     );
                                 })}
                             </div>

@@ -162,7 +162,7 @@ const NewArrivels = () => {
         </button>
       </div>
       <div className="max-w-7xl mx-auto relative z-20">
-        <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8 px-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8 px-4">
           {currentProducts?.map((product) => (
             <div key={product.p_id}>
               <ProductCard
