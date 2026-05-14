@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Star,
   Truck,
@@ -15,7 +15,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import VideoPopUp from "../Ui/VideoPopUp";
 import ImagePop from "../Ui/ImagePop";
 import ReturnsDetails from "../Information/ReturnsDetails";
-import { ApiURL, userInfo } from "../Variable";
+import { ApiURL, createSlug } from "../Variable";
+import { useUser } from "../Context/UserContext";
 
 import axiosInstance from "../Axios/axios";
 import ReletedProduct from "../Components/ReletedProduct";
@@ -44,8 +45,7 @@ function SingleProduct() {
   const [wishlistMap, setWishlistMap] = useState({});
 
   const navigate = useNavigate();
-  const userRaw = userInfo();
-  const user = useMemo(() => userRaw, [JSON.stringify(userRaw)]);
+  const { user } = useUser();
 
 
 
@@ -534,7 +534,7 @@ function SingleProduct() {
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs sm:text-sm font-[oxygen] font-400 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
             <Link
-              to={`/collections/${product?.category?.cate_name}`}
+              to={`/collections/${createSlug(product?.category?.cate_name)}`}
               className="hover:underline cursor-pointer text-[#7B7B7B]"
             >
               Collections

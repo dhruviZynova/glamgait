@@ -86,8 +86,12 @@ export const showToaster = (status, description) => {
 };
 
 export const validationFunction = {
-  includes: (item) =>
-    item == null || item === "" || item === undefined || item === "undefined",
+  isEmpty: (item) =>
+    item == null ||
+    (typeof item === "string" && item.trim() === "") ||
+    item === undefined ||
+    item === "undefined" ||
+    (Array.isArray(item) && item.length === 0),
 };
 
 export const getFullImageUrl = (imagePath, defaultFolder = "Category") => {
@@ -107,4 +111,13 @@ export const getFullImageUrl = (imagePath, defaultFolder = "Category") => {
   // Otherwise, fallback to prepending the default folder
   return `${ApiURL}/assets/${defaultFolder}/${imagePath}`;
 };
-
+export const createSlug = (name) => {
+  if (!name || typeof name !== 'string') return "";
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};

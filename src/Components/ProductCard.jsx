@@ -1,24 +1,12 @@
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
-import { ApiURL } from "../Variable";
+import { ApiURL, createSlug } from "../Variable";
+import { useUser } from "../Context/UserContext";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
-import { userInfo } from "../Variable";
 import { useNavigate } from "react-router-dom";
 
 import "../style/ProductCard.css";
-
-// Slug generate kare helper function (Optional: Agar API slug nahi ape to name thi banavi sake)
-const createSlug = (name) => {
-  if (!name) return "";
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "");
-};
 
 const ProductCard = ({
   product,
@@ -58,7 +46,7 @@ const ProductCard = ({
       return;
     }
 
-    const user = userInfo();
+    const { user } = useUser();
 
     if (!user?.u_id) {
       let localWishlist = JSON.parse(localStorage.getItem('localWishlist') || '[]');

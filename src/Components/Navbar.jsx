@@ -4,13 +4,14 @@ import { Search, Heart, ShoppingCart, CircleUser, X, AlignRight, Plus, Minus, Ch
 import { FaUserCircle, FaUser } from "react-icons/fa";
 import logo from "../assets/logo1.png";
 import axiosInstance from "../Axios/axios";
-import { ApiURL, userInfo } from "../Variable";
+import { ApiURL, createSlug } from "../Variable";
 import { useCart } from "../Context/CartContext";
+import { useUser } from "../Context/UserContext";
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = userInfo();
+  const { user } = useUser();
   const u_id = user?.u_id;
   const token = user?.token || user?.auth_token;
   const { cartCount, wishlistCount } = useCart();
@@ -45,15 +46,6 @@ const Navbar = () => {
     return firstInitial + lastInitial;
   };
 
-  // Slug helper function
-  const createSlug = (name) =>
-    name
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-+|-+$/g, "");
 
   // Close search on outside click
   useEffect(() => {
@@ -548,8 +540,8 @@ const Navbar = () => {
                                 {mobileExpanded[item.cate_id] === key && (
                                   <ul className="pl-8 space-y-1">
                                     {data.map((it, i) => {
-                                      const itemSlug = createSlug(it.name);
-                                      const linkTo = `/collections/${item.cate_slug}/${itemSlug}`;
+                                      const productSlug = it.slug || createSlug(it.name) || it.p_id;
+                                      const linkTo = `/collections/${item.cate_slug}/${productSlug}`;
                                       return (
                                         <li key={i}>
                                           <Link

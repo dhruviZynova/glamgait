@@ -3,7 +3,8 @@ import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronRight } from "lucide-
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import ScrollToTop from "./ScrollToTop";
-import { ApiURL, userInfo } from "../Variable";
+import { ApiURL, createSlug } from "../Variable";
+import { useUser } from "../Context/UserContext";
 import { getGuestId } from "../utils/guest";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import ProductCard from "./ProductCard";
@@ -89,16 +90,9 @@ const Allproducts = () => {
   });
 
   const navigate = useNavigate();
+  const { user } = useUser();
 
 
-  const createSlug = (name) =>
-    name
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-+|-+$/g, "");
   // Set selected filters from URL filterValue (infer type by matching in filters)
 
   useEffect(() => {
@@ -475,7 +469,6 @@ const Allproducts = () => {
 
   useEffect(() => {
     const fetchWishlist = async () => {
-      const user = userInfo();
       const identifier = user?.u_id || getGuestId();
       try {
         const query = user?.u_id
@@ -502,7 +495,6 @@ const Allproducts = () => {
     fetchWishlist();
   }, []);
   const refreshWishlist = async () => {
-    const user = userInfo();
     const identifier = user?.u_id || getGuestId();
     try {
       const query = user?.u_id
