@@ -1,31 +1,21 @@
 // Test script to verify localStorage functionality
 // This can be run in the browser console to test the implementation
 
-// Simulate the data structure that would be stored after login
-const mockUserData = {
-  name: 'Test User',
-  email: 'test@example.com',
-  token: 'mock_auth_token_12345',
-  role: 'user',
-  u_id: '123',
-  phone: '1234567890'
-};
-
-// Store the data (simulating what Login.jsx does)
-localStorage.setItem('GlamGait', JSON.stringify(mockUserData));
-
-// Retrieve the data (simulating what userInfo() does)
+// Retrieve the actual user data from localStorage
 const storedData = JSON.parse(localStorage.getItem('GlamGait'));
 
-// Verify the required fields are present
-const requiredFields = ['name', 'email', 'token', 'role'];
-const hasAllFields = requiredFields.every(field => storedData[field] !== undefined);
-
-if (hasAllFields) {
-  console.log('✅ localStorage implementation is working correctly!');
+if (!storedData) {
+  console.log('ℹ️ No active user session found in localStorage under key "GlamGait". Please log in first.');
 } else {
-  console.log('❌ localStorage implementation has issues!');
-}
+  console.log('Found user session:', storedData);
 
-// Cleanup
-localStorage.removeItem('GlamGait');
+  // Verify the required fields are present
+  const requiredFields = ['name', 'email', 'token', 'role'];
+  const missingFields = requiredFields.filter(field => storedData[field] === undefined);
+
+  if (missingFields.length === 0) {
+    console.log('✅ localStorage user data structure is correct and valid!');
+  } else {
+    console.log(`❌ localStorage user data structure has issues! Missing fields: ${missingFields.join(', ')}`);
+  }
+}
