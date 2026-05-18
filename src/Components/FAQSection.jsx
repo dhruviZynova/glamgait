@@ -4,7 +4,7 @@ import faqbgimg from '../assets/images/faqbgimg.png';
 
 const FAQItem = ({ question, answer, isOpen, onClick }) => {
     return (
-        <div className={`border border-gray-300 rounded-2xl mb-4 overflow-hidden transition-all duration-300`}>
+        <div className={`border border-gray-300 rounded-2xl mb-4 overflow-hidden transition-all duration-300 bg-[#ffffffcc]`}>
             <button
                 className="w-full px-6 py-5 flex justify-between items-center text-left focus:outline-none"
                 onClick={onClick}

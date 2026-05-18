@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import { ApiURL } from "../Variable";
 import toast from "react-hot-toast";
@@ -10,6 +10,8 @@ import BrandBanner from "./BrandBanner";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/";
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,75 +25,93 @@ const Login = () => {
         password,
       });
 
-      console.log("Full API response:", response);
-
       if (response.data.status === 1) {
         const userData = response.data.data;
-        
+
         // Extract specific user data to store in localStorage
         const userSessionData = {
           ...userData
         };
-        
+
         try {
           localStorage.setItem("GlamGait", JSON.stringify(userSessionData));
-          
+
         } catch (error) {
           console.error("Error storing data in localStorage:", error);
         }
-        
-        toast.success(response.data.description);
-        const guest_id = localStorage.getItem("guest_id");
 
-        if (guest_id) {
+        toast.success(response.data.description);
+        const localCart = JSON.parse(localStorage.getItem("localCart") || "[]");
+        const localWishlist = JSON.parse(localStorage.getItem("localWishlist") || "[]");
+
+        if (localCart.length > 0) {
           try {
-            await Promise.all([
-              axiosInstance.post(`${ApiURL}/merge-cart`, {
-                u_id: userData.u_id,
-                guest_id,
-              }),
-              axiosInstance.post(`${ApiURL}/merge-wishlist`, {
-                u_id: userData.u_id,
-                guest_id,
-              }),
-            ]);
-            localStorage.removeItem("guest_id");
+            await Promise.all(localCart.map(item =>
+              axiosInstance.post(
+                `${ApiURL}/createcart`,
+                {
+                  p_id: item.p_id,
+                  pcolor_id: item.pcolor_id,
+                  psize_id: item.psize_id || null,
+                  quantity: item.quantity || 1,
+                  u_id: userData.u_id,
+                  guest_id: null
+                },
+                { headers: { Authorization: `Bearer ${userData.auth_token}` } }
+              )
+            ));
+            // localStorage.removeItem("localCart"); // Persist local cart
           } catch (error) {
-            console.error("Merge failed:", error);
+            console.error("Local cart sync failed:", error);
           }
         }
 
-        setTimeout(() => {
-          if (response.data.data.role === "admin") {
-            window.location.href = "/admin";
-          } else {
-            window.location.href = "/";
+        if (localWishlist.length > 0) {
+          try {
+            await Promise.all(localWishlist.map(item =>
+              axiosInstance.post(
+                `${ApiURL}/addtowishlist`,
+                {
+                  p_id: item.p_id,
+                  sc_id: item.sc_id || null,
+                  pcolor_id: item.pcolor_id,
+                  psize_id: item.psize_id || null,
+                  u_id: userData.u_id,
+                  guest_id: null
+                },
+                { headers: { Authorization: `Bearer ${userData.auth_token}` } }
+              )
+            ));
+            // localStorage.removeItem("localWishlist"); // Persist local wishlist
+          } catch (error) {
+            console.error("Local wishlist sync failed:", error);
           }
-        }, 2000);
+        }
+
+        // Redirection Hardening: Ensure 'from' is a safe relative path
+        const safeFrom = (from && from.startsWith('/') && !from.startsWith('//')) ? from : "/";
+        navigate(safeFrom, { replace: true });
 
         setEmail("");
         setPassword("");
       } else {
-        console.log("Login failed, response:", response.data);
-        toast.error(response?.data?.description || "Login failed");
+        toast.error(response.data.description || "Invalid email or password");
       }
     } catch (err) {
-      console.error("Login error:", err);
-      console.error("Error response:", err.response);
-      toast.error("Something went wrong");
+      toast.error(err?.description || err?.message || "Invalid email or password");
     }
   };
 
   return (
     <>
-      <div className="min-h-screen w-full pt-20 pb-16 px-6 md:px-12 lg:px-20 flex items-center justify-center overflow-hidden font-sans">
+      <div className="w-full pt-20 pb-16 px-6 md:px-12 lg:px-20 flex items-center justify-center overflow-hidden font-sans">
         {/* Login Card */}
-        <div className="relative z-20 w-full max-w-5xl mx-4 rounded-xl flex flex-col md:flex-row min-h-[500px]">
+        <div className="relative z-20 w-full max-w-5xl mx-4 rounded-xl flex flex-col md:flex-row min-h-auto">
           {/* Left Side: Login Form */}
           <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2">Login</h1>
             <p className="text-sm text-gray-500 mb-8">
-              Do not have an account, <span onClick={() => navigate("/register")} className="underline cursor-pointer">create a new one.</span>
+              Do not have an account, <span onClick={() => navigate("/register", { state: { from } })} className="underline cursor-pointer">create a new one.</span>
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -105,7 +125,7 @@ const Login = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="michael.joe@xmail.com"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-300"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
@@ -120,7 +140,7 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="••••••"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-300"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
                   />
                   <button
                     type="button"
@@ -134,7 +154,7 @@ const Login = () => {
 
               <button
                 type="submit"
-                className="w-full bg-[#1A2C2C] text-white py-4 rounded-full font-bold text-lg hover:bg-opacity-90 transition-all duration-300 mt-4 shadow-lg"
+                className="w-full bg-[#1A2C2C] text-white py-4 rounded-full font-bold text-lg hover:bg-opacity-90 transition-all duration-300 mt-4 shadow-lg cursor-pointer"
               >
                 Login
               </button>
@@ -142,8 +162,8 @@ const Login = () => {
 
             <div className="mt-8 text-center">
               <button
-                onClick={() => navigate("/forgot-password")}
-                className="text-xs text-gray-500 hover:underline underline-offset-4"
+                onClick={() => navigate("/forgot-password", { state: { from } })}
+                className="text-xs text-gray-500 hover:underline underline-offset-4 cursor-pointer"
               >
                 Forgot Your Password
               </button>

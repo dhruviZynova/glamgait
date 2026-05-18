@@ -9,8 +9,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import axiosInstance from "../../Axios/axios";
-import { ApiURL, userInfo } from "../../Variable";
+import { adminAxios } from "../../Axios/axios";
+import { ApiURL } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Users = () => {
@@ -25,15 +25,28 @@ const Users = () => {
     first_name: "",
   });
 
-  const userData = userInfo();
-  const token = userData?.token;
-
-  const fetchUsers = async () => {
+  const fetchUsers = async (pageNumber) => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getallusers`);
+      const page = typeof pageNumber === "number" ? pageNumber : currentPage;
+      const response = await adminAxios.get(`${ApiURL}/getusers`, {
+        params: {
+          page: page,
+          limit: itemsPerPage,
+          search: searchTerm,
+        },
+      });
       if (response?.data?.status) {
-        setUsers(response?.data?.data || []);
-        setTotalPages(Math.ceil((response?.data?.data?.length || 0) / itemsPerPage));
+        const responseData = response?.data?.data;
+        if (responseData && Array.isArray(responseData.users)) {
+          setUsers(responseData.users);
+          setTotalPages(responseData.totalPages || 1);
+        } else if (Array.isArray(responseData)) {
+          setUsers(responseData);
+          setTotalPages(Math.ceil(responseData.length / itemsPerPage));
+        } else {
+          setUsers([]);
+          setTotalPages(1);
+        }
       } else {
         setUsers([]);
         setTotalPages(1);
@@ -66,9 +79,7 @@ const Users = () => {
 
   const confirmDelete = async () => {
     try {
-      await axiosInstance.delete(`${ApiURL}/user/delete/${deleteModal.userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await adminAxios.delete(`${ApiURL}/user/delete/${deleteModal.userId}`);
       toast.success("User deleted successfully!");
       fetchUsers(currentPage);
     } catch (error) {
@@ -120,13 +131,13 @@ const Users = () => {
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       Email
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       Actions
-                    </th>
+                    </th> */}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-                  {users.map((user) => (
+                  {users.filter((user) => user.role === "user").map((user) => (
                     <tr
                       key={user.u_id}
                       className="hover:bg-gray-50 transition-all duration-200"
@@ -140,15 +151,15 @@ const Users = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         {user.email}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-right">
                         <button
                           onClick={() => handleDelete(user.u_id, user.first_name)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 cursor-pointer"
                           aria-label={`Delete ${user.first_name}`}
                         >
                           <Trash2 className="h-5 w-5" />
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -161,7 +172,7 @@ const Users = () => {
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg disabled:opacity-50 flex items-center gap-1"
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg disabled:opacity-50 flex items-center gap-1 cursor-pointer"
             >
               <ChevronLeftIcon className="h-5 w-5" />
               Prev
@@ -172,7 +183,7 @@ const Users = () => {
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg disabled:opacity-50 flex items-center gap-1"
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg disabled:opacity-50 flex items-center gap-1 cursor-pointer"
             >
               Next
               <ChevronRightIcon className="h-5 w-5" />

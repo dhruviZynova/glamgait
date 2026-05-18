@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import ReviewCard from "./ReviewCard";
-import { ApiURL } from "../Variable";
+import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
 
 // Import Swiper React components
@@ -14,15 +14,23 @@ import "swiper/css/autoplay";
 import { Autoplay } from "swiper/modules";
 
 const CustomersSay = () => {
+  const userData = userInfo();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/getalluserreviews`, {
-        page: 1,
-        perPage: 10, // Fetch more for the slider
-      });
+      const response = await axiosInstance.post(`${ApiURL}/getalluserreviews`,
+        {
+          page: 1,
+          perPage: 10,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${userData?.auth_token}`,
+          },
+        }
+      );
 
       if (response.data.status === 1) {
         setReviews(response.data.data.reviews || []);
@@ -32,11 +40,14 @@ const CustomersSay = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userData?.auth_token]);
 
   useEffect(() => {
     fetchReviews();
-  }, []);
+  }, [fetchReviews]);
+
+  // Don't render anything while loading or when there are no reviews
+  if (loading || reviews.length === 0) return null;
 
   return (
     <section className="relative py-8 overflow-hidden w-full">
@@ -52,46 +63,32 @@ const CustomersSay = () => {
 
       {/* Slider Layout - Edge to Edge */}
       <div className="w-full relative z-10">
-        {loading ? (
-          <div className="flex overflow-hidden">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="w-full sm:w-1/2 lg:w-1/3 aspect-[4/4] bg-gray-50 animate-pulse border-r border-gray-100 last:border-r-0"></div>
-            ))}
-          </div>
-        ) : (
-          <Swiper
-            slidesPerView={1}
-            spaceBetween={0}
-            loop={true}
-            autoplay={{
-              delay: 3000,
-              disableOnInteraction: false,
-            }}
-            breakpoints={{
-              640: {
-                slidesPerView: 2,
-              },
-              1024: {
-                slidesPerView: 3,
-              },
-              1440: {
-                slidesPerView: 4,
-              },
-            }}
-            modules={[Autoplay]}
-            className="mySwiper testimonial-swiper"
-          >
-            {reviews.map((item, idx) => (
-              <SwiperSlide key={idx}>
-                <ReviewCard
-                  name={item?.reviewer_name}
-                  review={item?.message}
-                  image={item?.image}
-                />
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        )}
+        <Swiper
+          slidesPerView={1}
+          spaceBetween={0}
+          loop={true}
+          autoplay={{
+            delay: 3000,
+            disableOnInteraction: false,
+          }}
+          breakpoints={{
+            640: { slidesPerView: 2 },
+            1024: { slidesPerView: 3 },
+            1440: { slidesPerView: 4 },
+          }}
+          modules={[Autoplay]}
+          className="mySwiper testimonial-swiper"
+        >
+          {reviews.map((item, idx) => (
+            <SwiperSlide key={idx}>
+              <ReviewCard
+                name={item?.reviewer_name}
+                review={item?.message}
+                image={item?.image}
+              />
+            </SwiperSlide>
+          ))}
+        </Swiper>
       </div>
 
       {/* Decorative Background Pattern */}
@@ -100,12 +97,8 @@ const CustomersSay = () => {
       </div>
 
       <style>{`
-        .testimonial-swiper .swiper-pagination-bullet-active {
-          display: none;
-        }
-        .testimonial-swiper .swiper-pagination {
-          display: none;
-        }
+        .testimonial-swiper .swiper-pagination-bullet-active { display: none; }
+        .testimonial-swiper .swiper-pagination { display: none; }
       `}</style>
     </section>
   );

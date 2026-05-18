@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ApiURL, showToaster } from "../../Variable";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import {
   PlusIcon,
   TrashIcon,
@@ -30,7 +30,7 @@ const Works = () => {
 
   const fetchWorks = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getworks`);
+      const response = await adminAxios.get(`${ApiURL}/getworks`);
       if (response?.data?.status) setWorkData(response?.data?.data);
       else setWorkData([]);
     } catch (error) {
@@ -40,7 +40,7 @@ const Works = () => {
   };
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`);
+      const response = await adminAxios.get(`${ApiURL}/getcategory`);
       setCategoryData(response?.data?.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -57,13 +57,13 @@ const Works = () => {
     e.preventDefault();
     try {
       if (isEdit) {
-        const response = await axiosInstance.put(
+        const response = await adminAxios.put(
           `${ApiURL}/updatework`,
           formData
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
-        const response = await axiosInstance.post(
+        const response = await adminAxios.post(
           `${ApiURL}/addwork`,
           formData
         );
@@ -74,8 +74,7 @@ const Works = () => {
       setFormData({ name: "", work_id: null, cate_id: "" });
       setIsEdit(false);
     } catch (error) {
-      console.log(error);
-      showToaster(0, "Error saving work");
+      showToaster(0, error?.response?.data?.description || "Error saving work");
     }
   };
 
@@ -85,9 +84,12 @@ const Works = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/deletework`, {
-        work_id: deleteModal.work_id,
-      });
+      const response = await adminAxios.post(
+        `${ApiURL}/deletework`,
+        {
+          work_id: deleteModal.work_id,
+        }
+      );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status) fetchWorks();
     } catch (error) {
@@ -120,7 +122,7 @@ const Works = () => {
               setFormData({ name: "", work_id: null, cate_id: "" });
               setIsModalOpen(true);
             }}
-            className="w-full flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             <span>Add Work</span>
@@ -173,13 +175,13 @@ const Works = () => {
                         });
                         setIsModalOpen(true);
                       }}
-                      className="text-black mr-4"
+                      className="text-black mr-4 cursor-pointer"
                     >
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(work?.work_id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 cursor-pointer"
                     >
                       <TrashIcon className="h-5 w-5" />
                     </button>
@@ -239,13 +241,13 @@ const Works = () => {
                   onClick={() => {
                     setIsModalOpen(false);
                   }}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black"
+                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer"
                 >
                   {isEdit ? "Update" : "Create"}
                 </button>

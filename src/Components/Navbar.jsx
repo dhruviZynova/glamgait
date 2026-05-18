@@ -1,19 +1,20 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Heart, ShoppingCart, CircleUser, X, AlignRight, Plus, Minus, ChevronDown } from "lucide-react";
 import { FaUserCircle, FaUser } from "react-icons/fa";
 import logo from "../assets/logo1.png";
 import axiosInstance from "../Axios/axios";
-import { userInfo } from "../Variable";
-import { getGuestId } from "../utils/guest";
+import { ApiURL, createSlug } from "../Variable";
+import { useCart } from "../Context/CartContext";
+import { useUser } from "../Context/UserContext";
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = userInfo();
+  const { user } = useUser();
   const u_id = user?.u_id;
-  const guestId = getGuestId();
   const token = user?.token || user?.auth_token;
+  const { cartCount, wishlistCount } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,26 +35,17 @@ const Navbar = () => {
   // Helper function to get user initials
   const getUserInitials = (userName) => {
     if (!userName) return "U";
-    
+
     const names = userName.trim().split(" ");
     if (names.length === 1) {
       return names[0].charAt(0).toUpperCase();
     }
-    
+
     const firstInitial = names[0].charAt(0).toUpperCase();
     const lastInitial = names[names.length - 1].charAt(0).toUpperCase();
     return firstInitial + lastInitial;
   };
 
-  // Slug helper function
-  const createSlug = (name) =>
-    name
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-+|-+$/g, "");
 
   // Close search on outside click
   useEffect(() => {
@@ -71,7 +63,7 @@ const Navbar = () => {
 
   const getAnnouncements = async () => {
     try {
-      const res = await axiosInstance.get("/getannouncements");
+      const res = await axiosInstance.get(`${ApiURL}/getannouncements`);
       if (res?.data?.status === 1) setAnnouncements(res.data.data);
     } catch (err) {
       console.error(err);
@@ -80,14 +72,14 @@ const Navbar = () => {
 
   const getCategories = async () => {
     try {
-      const res = await axiosInstance.get("/getcategory");
+      const res = await axiosInstance.get(`${ApiURL}/getcategory`);
       if (res?.data?.status === 1) setCategories(res.data.data);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const fetchCategoryFilters = async (cate_id) => {
+  const fetchCategoryFilters = useCallback(async (cate_id) => {
     if (!cate_id) return;
     if (megaMenuCache[cate_id]) {
       setMegaMenuData(megaMenuCache[cate_id]);
@@ -95,26 +87,39 @@ const Navbar = () => {
     }
     try {
       const skip = { skipLoader: true };
-      const [styleRes, subRes, fabricRes, workRes, occRes] = await Promise.all([
-        axiosInstance.get(`/getstyles/${cate_id}`, skip),
-        axiosInstance.get(`/getsubcategory/${cate_id}`, skip),
-        axiosInstance.get(`/getfabrics/${cate_id}`, skip),
-        axiosInstance.get(`/getworks/${cate_id}`, skip),
-        axiosInstance.get(`/getoccasions/${cate_id}`, skip),
-      ]);
-      const data = {
-        Style: styleRes?.data?.data || [],
-        Collection: subRes?.data?.data || [],
-        Fabric: fabricRes?.data?.data || [],
-        Work: workRes?.data?.data || [],
-        Occasion: occRes?.data?.data || [],
+      // Helper for safe fetching
+      const safeGet = async (url) => {
+        try {
+          const res = await axiosInstance.get(`${ApiURL}${url}`, skip);
+          return res?.data?.data || [];
+        } catch (err) {
+          console.warn(`Filter fetch skipped for ${url}:`, err.message);
+          return [];
+        }
       };
+
+      const [styleData, subData, fabricData, workData, occData] = await Promise.all([
+        safeGet(`/getstyles/${cate_id}`),
+        safeGet(`/getsubcategory/${cate_id}`),
+        safeGet(`/getfabrics/${cate_id}`),
+        safeGet(`/getworks/${cate_id}`),
+        safeGet(`/getoccasions/${cate_id}`),
+      ]);
+
+      const data = {
+        Style: styleData,
+        Collection: subData,
+        Fabric: fabricData,
+        Work: workData,
+        Occasion: occData,
+      };
+
       setMegaMenuCache((prev) => ({ ...prev, [cate_id]: data }));
       setMegaMenuData(data);
     } catch (error) {
       console.error("Error fetching filters:", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     getCategories();
@@ -128,6 +133,17 @@ const Navbar = () => {
     }, 4000);
     return () => clearInterval(interval);
   }, [announcements]);
+
+  // Pre-fetch filters for all categories to know if they have subcategories
+  useEffect(() => {
+    if (categories.length > 0) {
+      categories.forEach(cat => {
+        if (!megaMenuCache[cat.cate_id]) {
+          fetchCategoryFilters(cat.cate_id);
+        }
+      });
+    }
+  }, [categories, fetchCategoryFilters, megaMenuCache]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -184,7 +200,6 @@ const Navbar = () => {
   // Menu items with cate_slug
   const menuItems = [
     { to: "/", label: "Home" },
-    { to: "/about", label: "About" },
     ...categories.map((cat) => {
       const cate_slug = createSlug(cat.cate_name);
       return {
@@ -194,6 +209,7 @@ const Navbar = () => {
         cate_slug,
       };
     }),
+    { to: "/about", label: "About" },
     { to: "/contact", label: "Contact Us" },
   ];
 
@@ -210,7 +226,13 @@ const Navbar = () => {
     <>
       {/* Announcement Bar */}
       <div className="bg-[#23403b] text-white text-xs md:text-sm py-2 text-center font-Montserrat font-medium">
-        Enjoy Free Shipping On All Orders
+        {announcements.length > 0 ? (
+          <div className="transition-all duration-500 ease-in-out">
+            {announcements[currentAnnouncement]?.message || "Enjoy Free Shipping On All Orders"}
+          </div>
+        ) : (
+          "Enjoy Free Shipping On All Orders"
+        )}
       </div>
       <nav ref={navRef} className="sticky bg-white shadow-md top-0 z-50">
         <div className="mx-auto px-4 md:px-10 lg:px-20 py-3 flex justify-between items-center">
@@ -239,14 +261,14 @@ const Navbar = () => {
               >
                 <Link
                   to={item.to}
-                  className={`text-[16px] font-medium transition-colors ${location.pathname.startsWith("/collections") &&
+                  className={`text-[16px] capitalize transition-all duration-300 ${location.pathname.startsWith("/collections") &&
                     item.cate_slug
                     ? location.pathname.includes(item.cate_slug)
-                      ? "text-[#1C2F2F] font-500 poppins-font"
-                      : "text-[#767676] hover:text-black"
+                      ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
+                      : "text-[#767676] font-medium hover:text-[#1C2F2F]"
                     : location.pathname === item.to
-                      ? "text-[#1C2F2F] font-500 poppins-font"
-                      : "text-[#767676] hover:text-black"
+                      ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
+                      : "text-[#767676] font-medium hover:text-[#1C2F2F]"
                     }`}
                 >
                   {item.label}
@@ -259,29 +281,40 @@ const Navbar = () => {
           <div className="flex items-center gap-4 md:gap-4">
 
             {/* 1. Search Icon */}
-            <Search
-              className="cursor-pointer text-[#767676] hover:text-black"
+            <button
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-            />
+              aria-label="Toggle search"
+              className="focus:outline-none"
+            >
+              <Search className="cursor-pointer text-[#767676] hover:text-[#1C2F2F]" />
+            </button>
 
             {/* 2. Heart/Wishlist Icon */}
-            <Link to="/wishlist">
-              <Heart className="cursor-pointer text-[#767676] hover:text-black" />
+            <Link to="/wishlist" className="relative" aria-label={`Wishlist, ${wishlistCount} items`}>
+              <Heart className="cursor-pointer text-[#767676] hover:text-[#1C2F2F]" />
+              <span className="absolute -top-2 -right-2 bg-[#1C2F2F] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                {wishlistCount}
+              </span>
             </Link>
 
             {/* 3. Shopping Cart Icon */}
-            <Link to="/cart">
-              <ShoppingCart className="cursor-pointer text-[#767676] hover:text-black" />
+            <Link to="/cart" className="relative" aria-label={`Shopping cart, ${cartCount} items`}>
+              <ShoppingCart className="cursor-pointer text-[#767676] hover:text-[#1C2F2F]" />
+              <span className="absolute -top-2 -right-2 bg-[#1C2F2F] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                {cartCount}
+              </span>
             </Link>
 
             {/* 4. Custom User Icon */}
             <div
               className="flex items-center gap-1 cursor-pointer text-[#767676] hover:text-black"
+              aria-label={u_id && token ? "Account" : "Login"}
+              role="button"
               onClick={() => {
                 if (u_id && token) {
                   navigate("/myorders");
                 } else {
-                  setShowAuthChoice(true);
+                  navigate("/login", { state: { from: location.pathname + location.search } });
                 }
               }}
             >
@@ -320,7 +353,7 @@ const Navbar = () => {
                     <button
                       onClick={() => {
                         setShowAuthChoice(false);
-                        navigate("/login");
+                        navigate("/login", { state: { from: location.pathname + location.search } });
                       }}
                       className="w-full bg-black text-white py-3 rounded-md"
                     >
@@ -344,7 +377,7 @@ const Navbar = () => {
         </div>
 
         {/* Mega Menu – Desktop */}
-        {showMegaMenu && hoveredCategory?.cate_id && (
+        {showMegaMenu && hoveredCategory?.cate_id && Object.values(megaMenuData).some(items => items && items.length > 0) && (
           <div
             className="max-w-5xl mx-auto absolute inset-x-0 top-full bg-[#f3f0ed] shadow-xl border-t"
             onMouseEnter={() => setShowMegaMenu(true)}
@@ -438,42 +471,55 @@ const Navbar = () => {
                   className="border-b border-gray-200 last:border-0"
                 >
                   {item.cate_id ? (
-                    <>
-                      <button
-                        onClick={() => {
-                          if (mobileExpanded[item.cate_id]) {
-                            setMobileExpanded((prev) => ({
-                              ...prev,
-                              [item.cate_id]: null,
-                            }));
-                          } else {
-                            setMobileExpanded((prev) => ({
-                              ...prev,
-                              [item.cate_id]: "all",
-                            }));
-                            fetchCategoryFilters(item.cate_id);
-                          }
-                        }}
-                        className="w-full flex justify-between items-center py-4 text-left font-medium text-gray-900"
-                      >
-                        {item.label}
-                        {mobileExpanded[item.cate_id] ? (
-                          <Minus size={18} />
-                        ) : (
-                          <Plus size={18} />
+                    <div className="flex flex-col">
+                      <div className="flex justify-between items-center">
+                        <Link
+                          to={item.to}
+                          onClick={() => setIsOpen(false)}
+                          className={`flex-grow py-4 capitalize transition-colors ${location.pathname === item.to || (item.cate_slug && location.pathname.includes(item.cate_slug))
+                            ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
+                            : "text-gray-900 font-medium"
+                            }`}
+                        >
+                          {item.label}
+                        </Link>
+                        {megaMenuCache[item.cate_id] && Object.values(megaMenuCache[item.cate_id]).some(items => items && items.length > 0) && (
+                          <button
+                            onClick={() => {
+                              if (mobileExpanded[item.cate_id]) {
+                                setMobileExpanded((prev) => ({
+                                  ...prev,
+                                  [item.cate_id]: null,
+                                }));
+                              } else {
+                                setMobileExpanded((prev) => ({
+                                  ...prev,
+                                  [item.cate_id]: "all",
+                                }));
+                                fetchCategoryFilters(item.cate_id);
+                              }
+                            }}
+                            className="p-4 text-gray-500 hover:text-[#1C2F2F]"
+                          >
+                            {mobileExpanded[item.cate_id] ? (
+                              <Minus size={18} />
+                            ) : (
+                              <Plus size={18} />
+                            )}
+                          </button>
                         )}
-                      </button>
+                      </div>
                       {mobileExpanded[item.cate_id] && (
                         <div className="pb-4 space-y-4">
                           <Link
                             to={item.to}
                             onClick={() => setIsOpen(false)}
-                            className="block pl-4 text-sm font-bold text-gray-700"
+                            className="block pl-4 text-sm font-bold text-gray-700 hover:text-[#1C2F2F]"
                           >
-                            All {item.label}
+                            All <span className="capitalize">{item.label}</span>
                           </Link>
-                          {Object.keys(megaMenuData).map((key) => {
-                            const data = megaMenuData[key];
+                          {megaMenuCache[item.cate_id] && Object.keys(megaMenuCache[item.cate_id]).map((key) => {
+                            const data = megaMenuCache[item.cate_id][key];
                             if (!data?.length) return null;
                             const label = labelMap[key] || key;
                             return (
@@ -484,7 +530,7 @@ const Navbar = () => {
                                   }
                                   className="w-full flex justify-between items-center py-2 pl-4 text-sm font-medium text-gray-700"
                                 >
-                                  {label}
+                                  <span className="capitalize">{label}</span>
                                   {mobileExpanded[item.cate_id] === key ? (
                                     <Minus size={16} />
                                   ) : (
@@ -494,8 +540,8 @@ const Navbar = () => {
                                 {mobileExpanded[item.cate_id] === key && (
                                   <ul className="pl-8 space-y-1">
                                     {data.map((it, i) => {
-                                      const itemSlug = createSlug(it.name);
-                                      const linkTo = `/collections/${item.cate_slug}/${itemSlug}`;
+                                      const productSlug = it.slug || createSlug(it.name) || it.p_id;
+                                      const linkTo = `/collections/${item.cate_slug}/${productSlug}`;
                                       return (
                                         <li key={i}>
                                           <Link
@@ -503,7 +549,7 @@ const Navbar = () => {
                                             onClick={() => setIsOpen(false)}
                                             className="block text-sm text-gray-600 hover:text-black"
                                           >
-                                            {it.name}
+                                            <span className="capitalize">{it.name}</span>
                                           </Link>
                                         </li>
                                       );
@@ -515,12 +561,15 @@ const Navbar = () => {
                           })}
                         </div>
                       )}
-                    </>
+                    </div>
                   ) : (
                     <Link
                       to={item.to}
                       onClick={() => setIsOpen(false)}
-                      className="block py-4 font-medium text-gray-900"
+                      className={`block py-4 capitalize transition-colors ${location.pathname === item.to
+                        ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4"
+                        : "text-gray-900 font-medium"
+                        }`}
                     >
                       {item.label}
                     </Link>

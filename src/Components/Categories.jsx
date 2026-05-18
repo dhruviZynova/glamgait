@@ -5,10 +5,11 @@ import leftlight from "../assets/leftlight.png";
 import rightlight from "../assets/rightlight.png";
 import waves from "../assets/waves.png";
 import axiosInstance from "../Axios/axios";
-import { ApiURL } from "../Variable";
+import { ApiURL, createSlug } from "../Variable";
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const scrollRef = useRef(null);
 
@@ -24,6 +25,7 @@ const Categories = () => {
 
   const getCategories = async () => {
     try {
+      setLoading(true);
       const response = await axiosInstance.get("/getcategory");
       if (response?.data?.status === 1) {
         setCategories(response.data.data);
@@ -32,12 +34,43 @@ const Categories = () => {
       }
     } catch (error) {
       console.error("Error fetching categories:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     getCategories();
   }, []);
+
+  const renderedCategories = React.useMemo(() => {
+    return categories?.map((category) => {
+      const image = category.cate_image;
+      const cate_slug = createSlug(category.cate_name);
+      return (
+        <div key={category.cate_id} className="hover:scale-105 transition-all duration-300">
+          <NavLink
+            to={`/collections/${cate_slug}`}
+            className="rounded-lg overflow-hidden cursor-pointer flex-shrink-0 xl:flex-shrink xl:min-w-0 xl:basis-1/5"
+          >
+            <div className="relative pt-[120%] w-42 h-60 md:w-60 md:h-87 z-30">
+              <img
+                src={`${ApiURL}/assets/Category/${image}`}
+                alt={category.cate_name}
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover hover:brightness-110 transition-all duration-300"
+              />
+            </div>
+            <div className="mt-3 text-center pb-2">
+              <span className="text-gray-800 text-base md:text-lg font-semibold capitalize">
+                {category.cate_name}
+              </span>
+            </div>
+          </NavLink>
+        </div>
+      );
+    });
+  }, [categories]);
 
   return (
     <section className="relative py-16 px-4 bg-[#F3F0ED] overflow-visible">
@@ -74,50 +107,12 @@ const Categories = () => {
           className="overflow-x-auto xl:overflow-visible hide-scrollbar scroll-smooth xl:px-0"
         >
           <div className="flex space-x-4 w-max xl:w-auto xl:grid xl:grid-cols-5 xl:gap-5 xl:space-x-0">
-            {categories?.map((category) => {
-              const image = category.cate_image;
-              const cate_name = category.cate_name
-                .trim()
-                .toLowerCase()
-                .replace(/[^a-zA-Z0-9\s-]/g, "") // allow both cases
-                .replace(/\s+/g, "-") // spaces → dashes
-                .replace(/-+/g, "-") // multiple dashes → one
-                .replace(/^-+|-+$/g, "");
-              return (
-                <div className="hover:scale-105 transition-all duration-300">
-                  <NavLink
-                    key={category.cate_id}
-                    to={`/collections/${cate_name}`}
-                    className="rounded-lg overflow-hidden cursor-pointer flex-shrink-0 xl:flex-shrink xl:min-w-0 xl:basis-1/5"
-                  >
-                    <div className="relative pt-[120%] w-42 h-60 md:w-60 md:h-87 z-30">
-                      <img
-                        src={`${ApiURL}/assets/Category/${image}`}
-                        alt={category.cate_name}
-                        className="absolute inset-0 w-full h-full object-cover hover:brightness-110 transition-all duration-300"
-                      />
-                    </div>
-                    <div className="mt-3 text-center pb-2">
-                      <span className="text-gray-800 text-base md:text-lg font-semibold capitalize">
-                        {category.cate_name}
-                      </span>
-                    </div>
-                  </NavLink>
-                </div>
-              );
-            })}
+            {renderedCategories}
           </div>
         </div>
       </div>
 
       {/* Decorative top right and most right waves */}
-      {/* <div className="hidden md:block absolute top-0 right-20 md:-top-5 md:right-5 lg:right-30 lg:-top-15 xl:right-40 xl:-top-30 2xl:right-80 2xl:-top-30 w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 xl:w-96 xl:h-96 2xl:w-120 2xl:h-120 z-0">
-        <img
-          src={waves}
-          alt="Decorative"
-          className="w-full h-full object-contain"
-        />
-      </div> */}
       <div className="absolute h-55 -top-5 -right-5 sm:h-60 sm:right-5 md:h-80 lg:h-100 lg:-top-13 xl:right-30 2xl:right-50 2k:right-100 4k:right-140 -rotate-10 z-0">
         <img
           src={waves}
@@ -125,13 +120,6 @@ const Categories = () => {
           className="w-full h-full object-contain"
         />
       </div>
-      {/* <div className="hidden md:block absolute top-50 right-[-50px] lg:top-60 lg:-right-20 xl:top-50 xl:-right-10 2xl:top-50 2xl:right-20 w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 xl:w-96 xl:h-96 2xl:w-120 2xl:h-120 z-0 -rotate-30">
-        <img
-          src={waves}
-          alt="Decorative"
-          className="w-full h-full object-contain"
-        />
-      </div> */}
       <div className="hidden md:block absolute md:h-90 md:-right-25 md:top-60 xl:-right-30 2xl:-right-5 2k:right-40 4k:right-90 z-0 -rotate-25">
         <img
           src={waves}
@@ -142,13 +130,6 @@ const Categories = () => {
 
       {/* Decorative bottom images */}
       <div className=" relative overflow-visible z-10">
-        {/* <div className="absolute -bottom-30 -left-7 sm:-bottom-34 sm:left-25 md:-bottom-48 md:left-28 lg:-bottom-53 lg:left-48 xl:-top-12 xl:left-38 2xl:left-80 w-30 h-40 sm:w-40 sm:h-45 md:w-50 md:h-60 lg:w-60 lg:h-65 xl:w-70 xl:h-80 2xl:w-90 2xl:h-90">
-          <img
-            src={leftlight}
-            alt="Decorative"
-            className="w-full h-full object-contain"
-          />
-        </div> */}
         <div className="absolute h-30 -top-5 left-5 sm:-top-10 sm:left-35 sm:h-35 md:h-45 md:left-50 md:-top-12 lg:h-50 xl:h-55 lg:left-50 2xl:left-80 2k:left-120 4k:left-200">
           <img
             src={leftlight}
@@ -156,13 +137,6 @@ const Categories = () => {
             className="w-full h-full object-contain"
           />
         </div>
-        {/* <div className="hidden md:block absolute bottom-[-50px] right-10 md:-bottom-49 md:-right-5 lg:-bottom-55 lg:right-10 xl:-bottom-74 xl:right-20 2xl:right-80 w-48 h-48 md:w-64 md:h-64 lg:w-70 lg:h-70 xl:w-80 xl:h-80 2xl:w-90 2xl:h-90">
-          <img
-            src={rightlight}
-            alt="Decorative"
-            className="w-full h-full object-contain"
-          />
-        </div> */}
         <div className="hidden md:block absolute h-40 -right-2 -top-15 sm:h-55 sm:right-5 md:h-60 lg:h-70 lg:right-5 xl:h-80 2xl:right-50 2k:right-100 4k:right-150">
           <img
             src={rightlight}

@@ -1,27 +1,38 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { X, Plus, Minus } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import cartempty from "../assets/cartempty.png";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
-import { getGuestId } from "../utils/guest";
 import toast from "react-hot-toast";
-import categorie from "../assets/images/categorie5.png";
 import BrandBanner from "./BrandBanner";
+import ProductCard from "./ProductCard";
+import { getGuestId } from "../utils/guest";
 
 const Cart = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = userInfo();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const [wishlistMap, setWishlistMap] = useState({});
   const isLoggedIn = !!user?.u_id && !!user?.auth_token;
 
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     try {
-      const identifier = user?.u_id || getGuestId();
-      const query = user?.u_id
-        ? `u_id=${identifier}`
-        : `guest_id=${identifier}`;
+      if (!isLoggedIn) {
+        const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
+        const mappedLocalCart = localCart.map((item, index) => ({
+          ...item,
+          cart_id: `local-${index}`
+        }));
+        setCartItems(mappedLocalCart);
+        setLoading(false);
+        return;
+      }
+      const identifier = user.u_id;
+      const query = `u_id=${identifier}`;
       const res = await axiosInstance.get(`${ApiURL}/getcart?${query}`);
 
       if (res.data.status === 1) {
@@ -35,13 +46,65 @@ const Cart = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isLoggedIn, user?.u_id]);
 
   useEffect(() => {
     fetchCart();
+  }, [fetchCart]);
+
+  const fetchRecommended = useCallback(async () => {
+    try {
+      const res = await axiosInstance.get(`${ApiURL}/getproducts`);
+      if (res.data.status === 1) {
+        setRecommendedProducts((res.data.data || []).slice(0, 5));
+      }
+    } catch (error) {
+      console.error("Error fetching recommended products:", error);
+    }
   }, []);
 
+  const fetchWishlist = useCallback(async () => {
+    const identifier = user?.u_id || getGuestId();
+    try {
+      const query = user?.u_id
+        ? `u_id=${identifier}`
+        : `guest_id=${identifier}`;
+      const res = await axiosInstance.get(`/getwishlist?${query}`);
+      if (res.data.status === 1) {
+        const items = res.data.data || [];
+        const map = {};
+        items.forEach((item) => {
+          const key = `${item.p_id}-${item.pcolor_id}`;
+          map[key] = {
+            wished: true,
+            w_id: item.w_id,
+          };
+        });
+        setWishlistMap(map);
+      }
+    } catch (err) {
+      console.error("Wishlist fetch failed", err);
+    }
+  }, [user?.u_id]);
+
+  useEffect(() => {
+    fetchRecommended();
+    fetchWishlist();
+  }, [fetchRecommended, fetchWishlist]);
+
   const updateCartQty = async (cart_id, quantity) => {
+    if (!isLoggedIn && typeof cart_id === 'string' && cart_id.startsWith('local-')) {
+      const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
+      const index = parseInt(cart_id.split('-')[1]);
+      if (localCart[index]) {
+        localCart[index].quantity = quantity;
+        localStorage.setItem('localCart', JSON.stringify(localCart));
+        window.dispatchEvent(new Event('cartUpdated'));
+        fetchCart();
+      }
+      return;
+    }
+
     try {
       const res = await axiosInstance.post(`${ApiURL}/updatecart`, {
         cart_id,
@@ -49,24 +112,37 @@ const Cart = () => {
       });
 
       if (res.data.status === 1) {
+        window.dispatchEvent(new Event('cartUpdated'));
         fetchCart();
       } else {
         toast.error(res.data.description || "Not enough stock");
       }
     } catch (error) {
-      toast.error("Failed to update quantity");
+      toast.error(error || "Failed to update quantity");
     }
   };
 
   const handleRemove = async (cart_id) => {
+    if (!isLoggedIn && typeof cart_id === 'string' && cart_id.startsWith('local-')) {
+      const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
+      const index = parseInt(cart_id.split('-')[1]);
+      localCart.splice(index, 1);
+      localStorage.setItem('localCart', JSON.stringify(localCart));
+      window.dispatchEvent(new Event('cartUpdated'));
+      fetchCart();
+      toast.success("Removed from cart");
+      return;
+    }
+
     try {
       const res = await axiosInstance.post(`${ApiURL}/removecart`, { cart_id });
       if (res.data.status === 1) {
         setCartItems((prev) => prev.filter((item) => item.cart_id !== cart_id));
+        window.dispatchEvent(new Event('cartUpdated'));
         toast.success("Removed from cart");
       }
     } catch (error) {
-      toast.error("Failed to remove");
+      toast.error(error || "Failed to remove");
     }
   };
 
@@ -90,11 +166,17 @@ const Cart = () => {
       return;
     }
 
+    if (!isLoggedIn) {
+      toast.error("Please login to proceed to checkout");
+      navigate("/login", { state: { from: location.pathname + location.search } });
+      return;
+    }
+
     navigate("/checkout", {
       state: {
         cartItems,
-        isGuest: !isLoggedIn,
-        guestId: !isLoggedIn ? getGuestId() : null,
+        isGuest: false,
+        guestId: null,
       },
     });
   };
@@ -107,93 +189,13 @@ const Cart = () => {
   const delivery = 0;
   const grandTotal = subtotal + taxes + delivery;
 
-  const dummyProducts = [
-    {
-      p_id: "d1",
-      name: "Black Burqa",
-      price: 132,
-      original_price: 188,
-      slug: "black-burqa-1",
-      productcolors: [
-        {
-          pcolor_id: "c1",
-          color: { color_name: "Black", color_code: "#1a1a1b" },
-          productimages: [{ image_url: categorie }]
-        },
-        { pcolor_id: "c2", color: { color_name: "Grey", color_code: "#565656" } },
-        { pcolor_id: "c3", color: { color_name: "Beige", color_code: "#9f8262" } },
-        { pcolor_id: "c4", color: { color_name: "Dark", color_code: "#2a2a2a" } }
-      ]
-    },
-    {
-      p_id: "d2",
-      name: "Black Burqa",
-      price: 132,
-      original_price: 188,
-      slug: "black-burqa-2",
-      productcolors: [
-        {
-          pcolor_id: "c5",
-          color: { color_name: "Black", color_code: "#1a1a1b" },
-          productimages: [{ image_url: categorie }]
-        },
-        { pcolor_id: "c6", color: { color_name: "Grey", color_code: "#565656" } },
-        { pcolor_id: "c7", color: { color_name: "Beige", color_code: "#9f8262" } },
-        { pcolor_id: "c8", color: { color_name: "Dark", color_code: "#2a2a2a" } }
-      ]
-    },
-    {
-      p_id: "d3",
-      name: "Black Burqa",
-      price: 132,
-      original_price: 188,
-      slug: "black-burqa-3",
-      productcolors: [
-        {
-          pcolor_id: "c9",
-          color: { color_name: "Black", color_code: "#1a1a1b" },
-          productimages: [{ image_url: categorie }]
-        },
-        { pcolor_id: "c10", color: { color_name: "Grey", color_code: "#565656" } },
-        { pcolor_id: "c11", color: { color_name: "Beige", color_code: "#9f8262" } },
-        { pcolor_id: "c12", color: { color_name: "Dark", color_code: "#2a2a2a" } }
-      ]
-    },
-    {
-      p_id: "d4",
-      name: "Black Burqa",
-      price: 132,
-      original_price: 188,
-      slug: "black-burqa-4",
-      productcolors: [
-        {
-          pcolor_id: "c13",
-          color: { color_name: "Black", color_code: "#1a1a1b" },
-          productimages: [{ image_url: categorie }]
-        },
-        { pcolor_id: "c14", color: { color_name: "Grey", color_code: "#565656" } },
-        { pcolor_id: "c15", color: { color_name: "Beige", color_code: "#9f8262" } },
-        { pcolor_id: "c16", color: { color_name: "Dark", color_code: "#2a2a2a" } }
-      ]
-    },
-    {
-      p_id: "d5",
-      name: "Black Burqa",
-      price: 132,
-      original_price: 188,
-      slug: "black-burqa-4",
-      productcolors: [
-        {
-          pcolor_id: "c17",
-          color: { color_name: "Black", color_code: "#1a1a1b" },
-          productimages: [{ image_url: categorie }]
-        },
-        { pcolor_id: "c18", color: { color_name: "Grey", color_code: "#565656" } },
-        { pcolor_id: "c19", color: { color_name: "Beige", color_code: "#9f8262" } },
-        { pcolor_id: "c20", color: { color_name: "Dark", color_code: "#2a2a2a" } }
-      ]
-    }
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f3f0ed] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1C2F2F]"></div>
+      </div>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (
@@ -249,7 +251,7 @@ const Cart = () => {
                           <div className="flex items-center gap-6">
                             <button
                               onClick={() => handleRemove(item.cart_id)}
-                              className="transition-colors"
+                              className="transition-colors cursor-pointer"
                             >
                               <X size={18} className="text-[#3D3D3D]" />
                             </button>
@@ -257,9 +259,6 @@ const Cart = () => {
                               src={`${ApiURL}/assets/Products/${item.image_url}`}
                               alt={item.product_name}
                               className="w-20 h-24 object-cover rounded"
-                              onError={(e) => {
-                                e.target.src = "https://via.placeholder.com/300?text=No+Image";
-                              }}
                             />
                             <div className="flex flex-col">
                               <span className="font-medium text-[#3D3D3D] font-[Oxygen] font-400 font-[18px]">{item.product_name}</span>
@@ -271,14 +270,14 @@ const Cart = () => {
                           </div>
                         </td>
                         <td className="py-8 px-6 text-center">
-                          <span className="text-[#949494] font-[Oxygen] font-400 font-[18px]">${item.price.toFixed(0)}</span>
+                          <span className="text-[#949494] font-[Oxygen] font-400 font-[18px]">₹{item.price.toFixed(0)}</span>
                         </td>
                         <td className="py-8 px-6">
                           <div className="flex items-center justify-center">
                             <div className="flex items-center border border-[#D7D7D7] rounded-full py-2 px-4 bg-white">
                               <button
                                 onClick={() => decreaseQty(item.cart_id, item.quantity)}
-                                className="text-[#414141]"
+                                className="text-[#414141] cursor-pointer"
                               >
                                 <Minus size={14} />
                               </button>
@@ -291,7 +290,7 @@ const Cart = () => {
                                     item.available_stock
                                   )
                                 }
-                                className="text-[#414141]"
+                                className="text-[#414141] cursor-pointer"
                               >
                                 <Plus size={14} />
                               </button>
@@ -300,7 +299,7 @@ const Cart = () => {
                         </td>
                         <td className="py-8 px-6 text-right">
                           <span className="text-[#949494] font-[Oxygen] font-400 font-[18px]">
-                            ${(item.price * item.quantity).toFixed(0)}
+                            ₹{(item.price * item.quantity).toFixed(0)}
                           </span>
                         </td>
                       </tr>
@@ -332,7 +331,7 @@ const Cart = () => {
                         </p>
 
                         <div className="flex items-center justify-between border-t border-gray-100 pt-4">
-                          <span className="text-gray-600 font-medium">${item.price.toFixed(0)}</span>
+                          <span className="text-gray-600 font-medium">₹{item.price.toFixed(0)}</span>
 
                           <div className="flex items-center border border-gray-200 rounded-full py-1 px-3">
                             <button onClick={() => decreaseQty(item.cart_id, item.quantity)} className="text-gray-400"><Minus size={14} /></button>
@@ -340,7 +339,7 @@ const Cart = () => {
                             <button onClick={() => increaseQty(item.cart_id, item.quantity, item.available_stock)} className="text-gray-400"><Plus size={14} /></button>
                           </div>
 
-                          <span className="font-semibold">${(item.price * item.quantity).toFixed(0)}</span>
+                          <span className="font-semibold">₹{(item.price * item.quantity).toFixed(0)}</span>
                         </div>
                       </div>
                     </div>
@@ -359,7 +358,7 @@ const Cart = () => {
                 <div className="flex flex-col">
                   <div className="flex justify-between items-center py-6 px-6">
                     <span className="uppercase tracking-wider text-sm font-medium text-[#4A4A4A] font-[Oxygen] font-400 font-[16px]">SUBTOTAL</span>
-                    <span className="text-[#949494] font-[Oxygen] font-400 font-[16px]">${subtotal.toFixed(0)}</span>
+                    <span className="text-[#949494] font-[Oxygen] font-400 font-[16px]">₹{subtotal.toFixed(0)}</span>
                   </div>
 
                   <div className="border-t border-gray-200 flex justify-between items-center py-6 px-6">
@@ -369,7 +368,7 @@ const Cart = () => {
 
                   <div className="border-t border-gray-200 flex justify-between items-center py-6 px-6">
                     <span className="uppercase tracking-wider text-sm font-medium text-[#4A4A4A] font-[Oxygen] font-400 font-[16px]">TOTAL</span>
-                    <span className="text-[#949494] font-[Oxygen] font-400 font-[16px]">${grandTotal.toFixed(0)}</span>
+                    <span className="text-[#949494] font-[Oxygen] font-400 font-[16px]">₹{grandTotal.toFixed(0)}</span>
                   </div>
 
                   <div className="">
@@ -386,63 +385,24 @@ const Cart = () => {
           </div>
 
           {/* You May Also Like Section */}
-          <div className="mt-16 sm:mt-18">
-            <h2 className="text-[20px] md:text-[34px] font-700 text-[#3D3D3D] font-[Oxygen] mb-8 md:mb-12">
-              You May Also Like
-            </h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
-              {dummyProducts.map((product) => (
-                <div key={product.p_id} className="group cursor-pointer">
-                  {/* Image Container */}
-                  <div className="relative aspect-[3.5/4.5] overflow-hidden rounded-2xl bg-[#E8E8E8] mb-3">
-                    <div className="absolute top-4 left-4 z-10">
-                      <span className="bg-white text-[#E11D48] px-3 py-1 rounded text-[12px] font-bold shadow-sm">
-                        30% off
-                      </span>
-                    </div>
-                    <img
-                      src={product.productcolors[0].productimages[0].image_url}
-                      alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                  </div>
-
-                  {/* Info */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-baseline">
-                      <h3 className="text-[14px] md:text-[16px] font-semibold text-[#1A1A1A] font-[Oxygen]">
-                        {product.name}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[12px] text-[#A1A1A1] line-through font-[Oxygen]">
-                          ${product.original_price}
-                        </span>
-                        <span className="text-[13px] md:text-[15px] font-bold text-[#1A1A1A] font-[Oxygen]">
-                          ${product.price}
-                        </span>
-                      </div>
-                    </div>
-
-                    <p className="text-[12px] md:text-[14px] text-[#949494] font-[Oxygen]">
-                      {product.productcolors[0].color.color_name}
-                    </p>
-
-                    {/* Swatches */}
-                    <div className="flex gap-2 pt-1">
-                      {product.productcolors.map((color, idx) => (
-                        <div
-                          key={idx}
-                          className="w-4 h-4 rounded-full border border-[#D1D1D1] cursor-pointer hover:scale-110 transition-transform"
-                          style={{ backgroundColor: color.color.color_code }}
-                          title={color.color.color_name}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
+          {recommendedProducts.length > 0 && (
+            <div className="mt-16 sm:mt-18">
+              <h2 className="text-[20px] md:text-[34px] font-700 text-[#3D3D3D] font-[Oxygen] mb-8 md:mb-12">
+                You May Also Like
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
+                {recommendedProducts.map((product) => (
+                  <ProductCard
+                    key={product.p_id}
+                    product={product}
+                    wishlistMap={wishlistMap}
+                    onWishlistChange={fetchWishlist}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
         </div>
       </div>
       <BrandBanner />

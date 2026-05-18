@@ -5,7 +5,7 @@ import {
   ArrowPathIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
@@ -30,7 +30,7 @@ const Fabrics = () => {
   // ✅ Fetch all categories
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`);
+      const response = await adminAxios.get(`${ApiURL}/getcategory`);
       setCategoryData(response?.data?.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -41,7 +41,7 @@ const Fabrics = () => {
 
   const fetchFabrics = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getfabrics`);
+      const response = await adminAxios.get(`${ApiURL}/getfabrics`);
       if (response?.data?.status) setFabricData(response?.data?.data);
       else setFabricData([]);
     } catch (error) {
@@ -65,13 +65,13 @@ const Fabrics = () => {
       }
 
       if (isEdit) {
-        const response = await axiosInstance.put(
+        const response = await adminAxios.put(
           `${ApiURL}/updatefabric`,
           formData
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
-        const response = await axiosInstance.post(
+        const response = await adminAxios.post(
           `${ApiURL}/addfabric`,
           formData
         );
@@ -83,8 +83,7 @@ const Fabrics = () => {
       setFormData({ name: "", f_id: null, cate_id: null });
       setIsEdit(false);
     } catch (error) {
-      console.log(error);
-      showToaster(0, "Error saving fabric");
+      showToaster(0, error?.response?.data?.description || "Error saving fabric");
     }
   };
 
@@ -94,9 +93,12 @@ const Fabrics = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/deletefabric`, {
-        f_id: deleteModal.f_id,
-      });
+      const response = await adminAxios.post(
+        `${ApiURL}/deletefabric`,
+        {
+          f_id: deleteModal.f_id,
+        }
+      );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status) fetchFabrics();
     } catch (error) {
@@ -131,7 +133,7 @@ const Fabrics = () => {
               setFormData({ name: "", f_id: null, cate_id: null });
               setIsModalOpen(true);
             }}
-            className="w-full flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             <span>Add Fabric</span>
@@ -182,13 +184,13 @@ const Fabrics = () => {
                         });
                         setIsModalOpen(true);
                       }}
-                      className="text-black mr-4"
+                      className="text-black mr-4 cursor-pointer"
                     >
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(fabric?.f_id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 cursor-pointer"
                     >
                       <TrashIcon className="h-5 w-5" />
                     </button>
@@ -251,13 +253,13 @@ const Fabrics = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 cursor-pointer"
                 >
                   {isEdit ? "Update" : "Create"}
                 </button>

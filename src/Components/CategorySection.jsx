@@ -5,13 +5,6 @@ import "swiper/css";
 import "swiper/css/pagination";
 import { Pagination, Autoplay } from "swiper/modules";
 
-import bgPattern from "../assets/images/transprantbg1.png";
-import frame from "../assets/images/frame1.png";
-import model from "../assets/images/categorie1.png";
-// import c1 from "../assets/images/c1.png";
-// import c2 from "../assets/images/c2.png";
-// import c3 from "../assets/images/c3.png";
-
 import axiosInstance from "../Axios/axios";
 import { ApiURL } from "../Variable";
 
@@ -22,7 +15,6 @@ const CategorySection = () => {
     const fetchCategories = async () => {
         try {
             const response = await axiosInstance.get(`${ApiURL}/getcategory`);
-            console.log("category response", response.data);
             if (response?.data?.status) {
                 setCategoryData(response?.data?.data);
             }
@@ -74,7 +66,7 @@ const CategorySection = () => {
                             <SwiperSlide key={category?.cate_id || index}>
                                 <div className="bottom-img-wrapper">
                                     <img
-                                        src={`${ApiURL}/assets/Category/${category?.cate_image}`}
+                                        src={`${category?.cate_image}`}
                                         alt={category?.cate_name}
                                         className="bottom-img"
                                     />

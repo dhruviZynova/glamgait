@@ -1,111 +1,4 @@
-// // // // src/hooks/useScrollRestoration.js
-// // // import { useEffect, useLayoutEffect } from "react";
-// // // import { useLocation } from "react-router-dom";
-
-// // // const scrollPositions = {};
-
-// // // export default function useScrollRestoration(pageKey) {
-// // //   const location = useLocation();
-
-// // //   // Save scroll before leaving page
-// // //   useEffect(() => {
-// // //     return () => {
-// // //       scrollPositions[pageKey] = window.scrollY;
-// // //     };
-// // //   }, [pageKey]);
-
-// // //   // Restore scroll as soon as layout is ready
-// // //   useLayoutEffect(() => {
-// // //     const savedY = scrollPositions[pageKey];
-// // //     if (savedY !== undefined) {
-// // //       // small delay helps ensure images and sections have loaded
-// // //       requestAnimationFrame(() => {
-// // //         window.scrollTo({
-// // //           top: savedY,
-// // //           behavior: "instant", // no animation
-// // //         });
-// // //       });
-// // //     }
-// // //   }, [location.pathname, pageKey]);
-// // // }
-
-
-
-// // // src/hooks/useScrollRestoration.js
-// // import { useEffect, useLayoutEffect } from "react";
-// // import { useLocation } from "react-router-dom";
-
-// // const scrollPositions = {};
-
-// // export default function useScrollRestoration(pageKey) {
-// //   const location = useLocation();
-// //   const currentPath = location.pathname;
-
-// //   // Routes where scroll MUST go to top
-// //   const scrollToTopPaths = ["/product/", "/shop", "/single-product"];
-
-// //   const shouldScrollToTop = scrollToTopPaths.some((p) =>
-// //     currentPath.startsWith(p)
-// //   );
-
-// //   // Restore or Scroll-to-Top
-// //   useLayoutEffect(() => {
-// //     if (shouldScrollToTop) {
-// //       window.scrollTo({ top: 0, behavior: "instant" });
-// //       return;
-// //     }
-
-// //     // Restore scroll for normal pages
-// //     const savedY = scrollPositions[pageKey];
-// //     if (savedY !== undefined) {
-// //       requestAnimationFrame(() => {
-// //         window.scrollTo({ top: savedY, behavior: "instant" });
-// //       });
-// //     }
-// //   }, [currentPath, pageKey]);
-
-// //   // Save scroll before leaving page
-// //   useEffect(() => {
-// //     return () => {
-// //       scrollPositions[pageKey] = window.scrollY;
-// //     };
-// //   }, [pageKey]);
-// // }
-
-
-// // src/hooks/useScrollRestoration.js
-// import { useEffect, useLayoutEffect } from "react";
-// import { useLocation } from "react-router-dom";
-
-// const scrollPositions = {};
-
-// export default function useScrollRestoration(pageKey) {
-//   const location = useLocation();
-
-//   // Save scroll before leaving page
-//   useEffect(() => {
-//     return () => {
-//       scrollPositions[pageKey] = window.scrollY;
-//     };
-//   }, [pageKey]);
-
-//   // Restore scroll as soon as layout is ready
-//   useLayoutEffect(() => {
-//     const savedY = scrollPositions[pageKey];
-//     if (savedY !== undefined) {
-//       requestAnimationFrame(() => {
-//         window.scrollTo({
-//           top: savedY,
-//           behavior: "instant",
-//         });
-//       });
-//     }
-//   }, [location.pathname, pageKey]);
-// }
-
-
-// src/hooks/useScrollRestoration.js
-import { useEffect, useLayoutEffect } from "react";
+import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 const scrollPositions = {};
@@ -118,15 +11,17 @@ export default function useScrollRestoration(pageKey) {
   const shouldRestore = allowedPages.includes(pathname);
 
   // Restore scroll position
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (shouldRestore) {
       const savedY = scrollPositions[pageKey];
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         window.scrollTo({ top: savedY || 0, behavior: "instant" });
-      });
+      }, 0);
     } else {
       // For all other pages → ALWAYS scroll to top
-      window.scrollTo({ top: 0, behavior: "instant" });
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }, 0);
     }
   }, [pathname, pageKey, shouldRestore]);
 

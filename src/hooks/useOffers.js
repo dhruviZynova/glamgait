@@ -16,7 +16,7 @@ const useOffers = () => {
           );
         }
       } catch (err) {
-        console.error("Offer fetch failed");
+        console.error(err, "Offer fetch failed");
       } finally {
         setLoading(false);
       }

@@ -11,7 +11,7 @@ const Topbar = ({ onMenuClick }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem("GlamGait");
+    localStorage.removeItem("GlamGaitAdmin");
     navigate("/admin/login");
   };
 
@@ -64,8 +64,8 @@ const Topbar = ({ onMenuClick }) => {
           {/* Profile dropdown */}
           <div className="ml-3 relative">
             <div className="flex items-center">
-              <span className="ml-2 text-sm font-medium text-gray-700 hidden md:block">
-                Glam Gait
+              <span className="text-sm font-medium text-gray-700 hidden md:block">
+                Kundrat
               </span>
             </div>
           </div>

@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import {
   PlusIcon,
-  ArrowPathIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { Trash2 } from "lucide-react";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
-import { Toaster } from "react-hot-toast";
 
 const Colors = () => {
   const [isEdit, setIsEdit] = useState(false);
@@ -28,7 +26,7 @@ const Colors = () => {
 
   const fetchColors = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcolor`);
+      const response = await adminAxios.get(`${ApiURL}/getcolor`);
       if (response?.data?.status) {
         setColorData(response?.data?.data);
       } else {
@@ -54,13 +52,13 @@ const Colors = () => {
       };
 
       if (isEdit) {
-        const response = await axiosInstance.put(
+        const response = await adminAxios.put(
           `${ApiURL}/updatecolor`,
           payload
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
-        const response = await axiosInstance.post(
+        const response = await adminAxios.post(
           `${ApiURL}/addcolor`,
           payload
         );
@@ -82,7 +80,7 @@ const Colors = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.delete(
+      const response = await adminAxios.delete(
         `${ApiURL}/deletecolor/${deleteModal.color_id}`
       );
       showToaster(response?.data?.status, response?.data?.description);
@@ -101,7 +99,6 @@ const Colors = () => {
 
   return (
     <div className="pb-8">
-      <Toaster />
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">Color Management</h1>
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
@@ -123,7 +120,7 @@ const Colors = () => {
               });
               setIsModalOpen(true);
             }}
-            className="w-full flex items-center justify-center gap-2 bg-black  text-white px-4 py-2 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-black  text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             <span>Add Color</span>
@@ -185,7 +182,7 @@ const Colors = () => {
                         });
                         setIsModalOpen(true);
                       }}
-                      className="text-black hover:text-gray-700 mr-4"
+                      className="text-black hover:text-gray-700 mr-4 cursor-pointer"
                       aria-label={`Edit color ${color.color_name}`}
                     >
                       <PencilSquareIcon className="h-5 w-5" />
@@ -194,7 +191,7 @@ const Colors = () => {
                       onClick={() =>
                         handleDelete(color.color_id, color.color_name)
                       }
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 cursor-pointer"
                       aria-label={`Delete color ${color.color_name}`}
                     >
                       <Trash2 className="h-5 w-5" />
@@ -261,14 +258,14 @@ const Colors = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
                   aria-label="Cancel color form"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 shadow-sm text-sm font-medium"
+                  className="px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
                   aria-label={isEdit ? "Update color" : "Create color"}
                 >
                   {isEdit ? "Update" : "Create"}

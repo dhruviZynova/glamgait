@@ -1,9 +1,8 @@
 // src/pages/Register.jsx
 import React, { useState } from "react";
-import fontimg from "../assets/images/fontimg.png";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
@@ -19,9 +18,18 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/";
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const validatePassword = (password) => {
+    if (password.length < 8) return "Password must be at least 8 characters";
+    if (!/[A-Z]/.test(password)) return "Password must contain at least one uppercase letter";
+    if (!/[0-9]/.test(password)) return "Password must contain at least one number";
+    return null;
   };
 
   const handleRegister = async (e) => {
@@ -35,17 +43,23 @@ const Register = () => {
       return;
     }
 
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      toast.error(passwordError);
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await axiosInstance.post("/userregister", formData);
       if (response.data.status === 1) {
         toast.success("Registration Successful!");
-        navigate("/login");
+        navigate("/login", { state: { from } });
       } else {
         toast.error(response.data.message || "Registration failed");
       }
     } catch (error) {
-      console.error("Registration error:", error);
-      toast.error("An error occurred during registration");
+      toast.error(error?.description || error?.message || "An error occurred during registration");
     } finally {
       setLoading(false);
     }
@@ -56,13 +70,13 @@ const Register = () => {
       <div className="w-full pt-6 pb-24 px-4 sm:px-6 md:px-12 lg:px-20 flex items-center justify-center overflow-hidden font-sans relative">
 
         {/* Register Card */}
-        <div className="relative z-20 w-full max-w-6xl mx-2 sm:mx-4 rounded-xl flex flex-col md:flex-row min-h-[500px] md:min-h-[600px] shadow-2xl">
+        <div className="relative z-20 w-full max-w-6xl mx-2 sm:mx-4 rounded-xl flex flex-col md:flex-row min-h-auto">
 
           {/* Left Side: Register Form */}
           <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 sm:p-8 lg:p-12 flex flex-col justify-center rounded-xl md:rounded-tr-none md:rounded-l-xl z-10 border border-white/20">
             <h1 className="text-2xl sm:text-3xl font-bold text-[#1A2C2C] mb-2 text-center md:text-left">Create Account</h1>
             <p className="text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8 text-center md:text-left">
-              Already Have An Account? <span onClick={() => navigate("/login")} className="text-[#1A2C2C] font-semibold underline cursor-pointer">Log In</span>
+              Already Have An Account? <span onClick={() => navigate("/login", { state: { from } })} className="text-[#1A2C2C] font-semibold underline cursor-pointer">Log In</span>
             </p>
 
             <form className="space-y-3 sm:space-y-4" onSubmit={handleRegister}>
@@ -74,7 +88,7 @@ const Register = () => {
                   placeholder="First Name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-300"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
@@ -86,7 +100,7 @@ const Register = () => {
                   placeholder="Last Name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-300"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
@@ -98,7 +112,7 @@ const Register = () => {
                   placeholder="Email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-300"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
@@ -108,10 +122,10 @@ const Register = () => {
                   <input
                     type={passwordVisible ? "text" : "password"}
                     name="password"
-                    placeholder="••••••"
+                    placeholder="Min 8 chars, 1 uppercase, 1 number"
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-300"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-400"
                   />
                   <button
                     type="button"
@@ -121,18 +135,19 @@ const Register = () => {
                     {passwordVisible ? <FaRegEyeSlash size={16} /> : <FaRegEye size={16} />}
                   </button>
                 </div>
+                <p className="text-[10px] text-gray-400 pl-2">Min 8 characters, 1 uppercase letter &amp; 1 number required</p>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#1A2C2C] text-white py-3 sm:py-4 rounded-full font-bold text-sm sm:text-lg hover:bg-opacity-90 transition-all duration-300 mt-3 sm:mt-4 shadow-lg disabled:bg-gray-400"
+                className="w-full bg-[#1A2C2C] text-white py-3 sm:py-4 rounded-full font-bold text-sm sm:text-lg hover:bg-opacity-90 transition-all duration-300 mt-3 sm:mt-4 shadow-lg disabled:bg-gray-400 cursor-pointer"
               >
                 {loading ? "Registering..." : "Register"}
               </button>
             </form>
 
-            <p className="text-[8px] sm:text-[10px] text-center text-gray-500 mt-4 sm:mt-6 leading-relaxed px-2">
+            <p className="text-[12px] text-center text-gray-500 mt-6 leading-relaxed px-2">
               By clicking Register you agree to <span className="underline cursor-pointer">Terms & Conditions</span> and <span className="underline cursor-pointer">Privacy Policy</span>.
             </p>
           </div>

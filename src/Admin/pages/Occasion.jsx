@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ApiURL, showToaster } from "../../Variable";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import {
   PlusIcon,
   TrashIcon,
@@ -30,7 +30,7 @@ const Occasions = () => {
 
   const fetchOccasions = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getoccasions`);
+      const response = await adminAxios.get(`${ApiURL}/getoccasions`);
       if (response?.data?.status) setOccasionData(response?.data?.data);
       else setOccasionData([]);
     } catch (error) {
@@ -40,7 +40,7 @@ const Occasions = () => {
   };
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`);
+      const response = await adminAxios.get(`${ApiURL}/getcategory`);
       setCategoryData(response?.data?.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -57,13 +57,13 @@ const Occasions = () => {
     e.preventDefault();
     try {
       if (isEdit) {
-        const response = await axiosInstance.put(
+        const response = await adminAxios.put(
           `${ApiURL}/updateoccasion`,
           formData
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
-        const response = await axiosInstance.post(
+        const response = await adminAxios.post(
           `${ApiURL}/addoccasion`,
           formData
         );
@@ -74,8 +74,7 @@ const Occasions = () => {
       setFormData({ name: "", occasion_id: null, cate_id: "" });
       setIsEdit(false);
     } catch (error) {
-      console.log(error);
-      showToaster(0, "Error saving occasion");
+      showToaster(0, error?.response?.data?.description || "Error saving occasion");
     }
   };
 
@@ -85,9 +84,12 @@ const Occasions = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/deleteoccasion`, {
-        occasion_id: deleteModal.occasion_id,
-      });
+      const response = await adminAxios.post(
+        `${ApiURL}/deleteoccasion`,
+        {
+          occasion_id: deleteModal.occasion_id,
+        }
+      );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status) fetchOccasions();
     } catch (error) {
@@ -122,7 +124,7 @@ const Occasions = () => {
               setFormData({ name: "", occasion_id: null });
               setIsModalOpen(true);
             }}
-            className="w-full flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             <span>Add Occasion</span>
@@ -175,13 +177,13 @@ const Occasions = () => {
                         });
                         setIsModalOpen(true);
                       }}
-                      className="text-black mr-4"
+                      className="text-black mr-4 cursor-pointer"
                     >
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(occasion?.occasion_id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 cursor-pointer"
                     >
                       <TrashIcon className="h-5 w-5" />
                     </button>
@@ -241,13 +243,13 @@ const Occasions = () => {
                   onClick={() => {
                     setIsModalOpen(false);
                   }}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black"
+                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer"
                 >
                   {isEdit ? "Update" : "Create"}
                 </button>

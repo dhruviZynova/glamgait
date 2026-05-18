@@ -25,7 +25,7 @@ const AdminLogin = () => {
 
             if (response.data.status === 1) {
                 const userData = response.data.data;
-                
+
                 if (userData.role === "admin") {
                     // Extract specific user data to store in localStorage
                     const userSessionData = {
@@ -38,13 +38,10 @@ const AdminLogin = () => {
                         phone: userData.phone || '',
                         ...userData
                     };
-                    
-                    localStorage.setItem("GlamGait", JSON.stringify(userSessionData));
+
+                    localStorage.setItem("GlamGaitAdmin", JSON.stringify(userSessionData));
                     toast.success("Login Successful");
-                    
-                    setTimeout(() => {
-                        window.location.href = "/admin";
-                    }, 1000);
+                    navigate("/admin");
                 } else {
                     toast.error("Access denied. Admin privileges required.");
                 }
@@ -83,7 +80,7 @@ const AdminLogin = () => {
             </div>
 
             {/* Grid Pattern Overlay */}
-            <div 
+            <div
                 className="absolute inset-0"
                 style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='grid' width='60' height='60' patternUnits='userSpaceOnUse'%3E%3Cpath d='M 60 0 L 0 0 0 60' fill='none' stroke='white' stroke-width='0.5' opacity='0.1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23grid)' /%3E%3C/svg%3E")`
@@ -95,12 +92,12 @@ const AdminLogin = () => {
                 <div className="relative">
                     {/* Glow Effect */}
                     <div className="absolute -inset-1 bg-amber-500/20 rounded-2xl blur-lg opacity-50"></div>
-                    
+
                     {/* Main Card */}
                     <div className="relative bg-[#1a1d23] backdrop-blur-xl rounded-2xl border border-white/5 shadow-2xl overflow-hidden">
                         {/* Header Accent */}
                         <div className="h-2 bg-amber-500"></div>
-                        
+
                         <div className="p-8">
                             {/* Logo Section with Animation */}
                             <div className="text-center mb-8">
@@ -132,7 +129,7 @@ const AdminLogin = () => {
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             required
-                                            placeholder="admin@glamgait.com"
+                                            placeholder="admin@kundrat.com"
                                             className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all duration-300 hover:bg-white/10 group-hover:border-amber-400/50"
                                         />
                                         <div className="absolute inset-0 rounded-lg bg-amber-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
@@ -157,7 +154,7 @@ const AdminLogin = () => {
                                         <button
                                             type="button"
                                             onClick={() => setPasswordVisible(!passwordVisible)}
-                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white focus:outline-none transition-colors duration-200"
+                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white focus:outline-none transition-colors duration-200 cursor-pointer"
                                         >
                                             {passwordVisible ? <FaRegEyeSlash size={18} /> : <FaRegEye size={18} />}
                                         </button>
@@ -174,7 +171,7 @@ const AdminLogin = () => {
                                         />
                                         <span className="ml-2 text-sm text-gray-300">Remember me</span>
                                     </label>
-                                    <button type="button" className="text-sm text-amber-400 hover:text-amber-300 transition-colors duration-200">
+                                    <button type="button" className="text-sm text-amber-400 hover:text-amber-300 transition-colors duration-200 cursor-pointer">
                                         Forgot password?
                                     </button>
                                 </div>
@@ -192,7 +189,7 @@ const AdminLogin = () => {
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                <span className="text-white">Authenticating...</span>
+                                                <span className="text-white">Login...</span>
                                             </>
                                         ) : (
                                             <span className="text-white">Sign In to Admin Panel</span>
@@ -204,9 +201,9 @@ const AdminLogin = () => {
                             {/* Footer */}
                             <div className="mt-8 pt-6 border-t border-white/10">
                                 <div className="flex items-center justify-between">
-                                    <button 
+                                    <button
                                         onClick={() => navigate("/")}
-                                        className="text-sm text-gray-300 hover:text-white transition-colors duration-200 flex items-center"
+                                        className="text-sm text-gray-300 hover:text-white transition-colors duration-200 flex items-center cursor-pointer"
                                     >
                                         <span className="mr-1">←</span>
                                         Return to website
@@ -218,14 +215,6 @@ const AdminLogin = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Additional Visual Elements */}
-                <div className="mt-8 text-center">
-                    <div className="inline-flex items-center space-x-2 text-xs text-gray-400">
-                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                        <span>System Status: Online</span>
                     </div>
                 </div>
             </div>

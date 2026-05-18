@@ -1,27 +1,29 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
 import { useLoader } from "../Context/LoaderContext";
 
-const NAV_FLASH_MS = 200;
-
 export default function GlobalLoader() {
-  const { isLoading, show, hide } = useLoader();
-  const location = useLocation();
-  const navTimerRef = useRef(null);
+  const { isLoading } = useLoader();
   const countIntervalRef = useRef(null);
-  const [count, setCount] = useState(0);
+  const safetyTimerRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const [fading, setFading] = useState(false);
 
-  // Flash the loader briefly on every route change.
+  // Safety timeout to ensure loader always fades out
   useEffect(() => {
-    show();
-    if (navTimerRef.current) clearTimeout(navTimerRef.current);
-    navTimerRef.current = setTimeout(hide, NAV_FLASH_MS);
+    if (visible) {
+      if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
+      safetyTimerRef.current = setTimeout(() => {
+        setFading(true);
+        setTimeout(() => {
+          setVisible(false);
+          setFading(false);
+        }, 700);
+      }, 5000); // Force fade out after 5 seconds
+    }
     return () => {
-      if (navTimerRef.current) clearTimeout(navTimerRef.current);
+      if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
     };
-  }, [location.pathname]);
+  }, [visible]);
 
   useEffect(() => {
     const clearCount = () => {
@@ -36,33 +38,12 @@ export default function GlobalLoader() {
       clearCount();
       setFading(false);
       setVisible(true);
-      setCount(0);
       countIntervalRef.current = setInterval(() => {
-        setCount(prev => {
-          if (prev >= 90) { clearCount(); return 90; }
-          return prev + 1;
-        });
       }, 25);
     } else {
       // Loading done — rush counter to 100, then fade out.
       clearCount();
       countIntervalRef.current = setInterval(() => {
-        setCount(prev => {
-          if (prev >= 100) {
-            clearCount();
-            // Pause at 100% for 400ms, then fade and unmount.
-            setTimeout(() => {
-              setFading(true);
-              setTimeout(() => {
-                setVisible(false);
-                setFading(false);
-                setCount(0);
-              }, 700);
-            }, 400);
-            return 100;
-          }
-          return prev + 1;
-        });
       }, 12);
     }
 
@@ -76,8 +57,8 @@ export default function GlobalLoader() {
 
       {/* Logo */}
       <div className="glamloader-logo">
-        GLAMGAIT
-        <div className="glamloader-logo-fill">GLAMGAIT</div>
+        KUNDRAT
+        <div className="glamloader-logo-fill">KUNDRAT</div>
       </div>
 
       {/* Morphing ring */}

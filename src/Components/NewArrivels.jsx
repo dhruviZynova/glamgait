@@ -1,5 +1,5 @@
 // NewArrivels.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ProductCard from "./ProductCard";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
@@ -16,8 +16,8 @@ const NewArrivels = () => {
     const fetchProducts = async () => {
       try {
         const [newArrivalsRes, bestSellerRes] = await Promise.all([
-          axiosInstance.post(`${ApiURL}/getproducts`, { limit: 8 }),
-          axiosInstance.post(`${ApiURL}/getproducts`, { limit: 8 }),
+          axiosInstance.get(`${ApiURL}/getproducts`, { limit: 8 }),
+          axiosInstance.get(`${ApiURL}/getproducts`, { limit: 8 }),
         ]);
         setNewArrivals(newArrivalsRes.data.data || []);
         setBestSeller(bestSellerRes.data.data || []);
@@ -93,7 +93,7 @@ const NewArrivels = () => {
     }
   };
 
-  const fetchAllReviewsSummary = async () => {
+  const fetchAllReviewsSummary = useCallback(async () => {
     if (currentProducts.length === 0) return;
 
     const productIds = currentProducts.map(p => p.p_id);
@@ -120,11 +120,11 @@ const NewArrivels = () => {
     } catch (err) {
       console.error("Reviews fetch failed", err);
     }
-  };
+  }, [currentProducts]);
 
   useEffect(() => {
     fetchAllReviewsSummary();
-  }, [currentProducts]);
+  }, [fetchAllReviewsSummary]);
 
   return (
     <section className="relative sm:pt-0 md:pt-16 md:px-4 bg-[#F3F0ED] overflow-hidden">
@@ -145,8 +145,8 @@ const NewArrivels = () => {
         <button
           onClick={() => setActiveTab("bestSeller")}
           className={`px-6 py-2 rounded-[10px] text-gray-800 text-[14px] lg:text-[16px]  transition ${activeTab === "bestSeller"
-              ? "bg-[#02382A] text-white"
-              : "bg-white shadow"
+            ? "bg-[#02382A] text-white"
+            : "bg-white shadow"
             }`}
         >
           BEST SELLER
@@ -154,15 +154,15 @@ const NewArrivels = () => {
         <button
           onClick={() => setActiveTab("newArrivals")}
           className={`px-6 py-2 rounded-[10px] text-gray-800 text-[14px] lg:text-[16px] transition ${activeTab === "newArrivals"
-              ? "bg-[#02382A] text-white"
-              : "bg-white shadow"
+            ? "bg-[#02382A] text-white"
+            : "bg-white shadow"
             }`}
         >
           NEW ARRIVALS
         </button>
       </div>
       <div className="max-w-7xl mx-auto relative z-20">
-        <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8 px-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8 px-4">
           {currentProducts?.map((product) => (
             <div key={product.p_id}>
               <ProductCard

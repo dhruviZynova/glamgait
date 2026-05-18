@@ -1,5 +1,5 @@
 // src/components/CategoryReviewSlider.jsx
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import CategoryReviewCard from "./CategoryReviewCard";
 import waves from "../assets/waves.png"; // Same wave as CustomersSay
 
@@ -13,16 +13,29 @@ const CategoryReviewSlider = ({
   const scrollerRef = useRef(null);
   const [start, setStart] = useState(false);
 
-  console.log(reviews, 'reviews');
-
-
   useEffect(() => {
     if (reviews.length === 0) return;
     addAnimation();
-  }, [reviews]);
+  }, [reviews, addAnimation]);
 
-  const addAnimation = () => {
+  const addAnimation = useCallback(() => {
     if (!containerRef.current || !scrollerRef.current) return;
+
+    const setScrollProperties = () => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      container.style.setProperty(
+        "--animation-direction",
+        direction === "left" ? "forwards" : "reverse"
+      );
+
+      const durations = { fast: "20s", normal: "40s", slow: "80s" };
+      container.style.setProperty(
+        "--animation-duration",
+        durations[speed] || "40s"
+      );
+    };
 
     const scrollerContent = Array.from(scrollerRef.current.children);
     scrollerContent.forEach((item) => {
@@ -32,23 +45,7 @@ const CategoryReviewSlider = ({
 
     setScrollProperties();
     setStart(true);
-  };
-
-  const setScrollProperties = () => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    container.style.setProperty(
-      "--animation-direction",
-      direction === "left" ? "forwards" : "reverse"
-    );
-
-    const durations = { fast: "20s", normal: "40s", slow: "80s" };
-    container.style.setProperty(
-      "--animation-duration",
-      durations[speed] || "40s"
-    );
-  };
+  }, [direction, speed]);
 
   if (reviews.length === 0) return null;
 

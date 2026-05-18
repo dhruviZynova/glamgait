@@ -10,7 +10,7 @@ import BrandBanner from "./BrandBanner";
 const Checkout = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { cartItems = [], isGuest, guestId: stateGuestId } = location.state || {};
+    const { cartItems = [], guestId: stateGuestId } = location.state || {};
 
     const [currentStep, setCurrentStep] = useState(1); // 1: Personal, 2: Billing, 3: Confirmation
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -92,12 +92,12 @@ const Checkout = () => {
         }));
     };
 
-    const subtotal = cartItems.reduce(
+    const subtotal = React.useMemo(() => cartItems.reduce(
         (acc, item) => acc + item.price * item.quantity,
         0
-    );
-    const shipping = 100; // Hardcoded as per UI design
-    const total = subtotal + shipping;
+    ), [cartItems]);
+    const shipping = location.state?.shippingCharge || 0;
+    const total = React.useMemo(() => subtotal + shipping, [subtotal, shipping]);
 
     const steps = [
         { id: 1, name: "Personal" },
@@ -251,63 +251,9 @@ const Checkout = () => {
             </div>
 
             {formData.paymentMethod === "online" && (
-                <>
-                    <div className="md:col-span-2 space-y-2">
-                        <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Name On Card*</label>
-                        <input
-                            type="text"
-                            name="cardName"
-                            value={formData.cardName}
-                            onChange={handleInputChange}
-                            className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                        />
-                    </div>
-                    <div className="md:col-span-2 space-y-2">
-                        <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Card Number*</label>
-                        <input
-                            type="text"
-                            name="cardNumber"
-                            value={formData.cardNumber}
-                            onChange={handleInputChange}
-                            className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Valid Through*</label>
-                        <input
-                            type="text"
-                            name="validThrough"
-                            placeholder="MM/YY"
-                            value={formData.validThrough}
-                            onChange={handleInputChange}
-                            className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">CVV*</label>
-                        <input
-                            type="password"
-                            name="cvv"
-                            maxLength="3"
-                            value={formData.cvv}
-                            onChange={handleInputChange}
-                            className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                        />
-                    </div>
-                    <div className="md:col-span-2 flex items-center gap-3">
-                        <input
-                            type="checkbox"
-                            id="saveAsDefault"
-                            name="saveAsDefault"
-                            checked={formData.saveAsDefault}
-                            onChange={handleInputChange}
-                            className="w-5 h-5 accent-[#1C2F2F] cursor-pointer"
-                        />
-                        <label htmlFor="saveAsDefault" className="text-[#3D3D3D] font-[Oxygen] text-sm md:text-base cursor-pointer">
-                            Save As Default Payment Method
-                        </label>
-                    </div>
-                </>
+                <div className="md:col-span-2 p-6 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-green-800 font-[Oxygen]">You have selected Online Payment. You will be redirected to the payment gateway to complete your transaction securely after clicking "Place Order".</p>
+                </div>
             )}
             {formData.paymentMethod === "COD" && (
                 <div className="md:col-span-2 p-6 bg-blue-50 border border-blue-200 rounded-lg">
@@ -334,7 +280,7 @@ const Checkout = () => {
                     <div className="flex justify-between text-[#3D3D3D] font-[Oxygen]">
                         <span>Payment Method:</span>
                         <span className="font-medium">
-                            {formData.paymentMethod === "COD" ? "Cash on Delivery" : `Card ending in ${formData.cardNumber.slice(-4) || "****"}`}
+                            {formData.paymentMethod === "COD" ? "Cash on Delivery" : "Online Payment"}
                         </span>
                     </div>
                 </div>
@@ -393,13 +339,6 @@ const Checkout = () => {
                 setIsProcessing(false);
             }
         } else if (currentStep === 2) {
-            // Validate Billing (if online)
-            if (formData.paymentMethod === "online") {
-                if (!formData.cardName || !formData.cardNumber || !formData.validThrough || !formData.cvv) {
-                    toast.error("Please fill all billing fields");
-                    return;
-                }
-            }
             setCurrentStep(3);
         } else {
             // Step 3: Place Order
@@ -407,24 +346,74 @@ const Checkout = () => {
         }
     };
 
-    const handlePlaceOrder = () => {
+    const handlePlaceOrder = async () => {
         // Validate form data before redirecting
-        if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || 
+        if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone ||
             !formData.streetAddress || !formData.townCity || !formData.postcodeZip) {
             toast.error("Please fill all required fields");
             return;
         }
 
-        // Navigate to SelectAddressPage with cart items and form data
-        navigate("/selectaddress", {
-            state: {
-                cartItems: cartItems,
-                formData: formData
+        if (!selectedAddressId) {
+            toast.error("Please select or save an address first.");
+            return;
+        }
+
+        setIsProcessing(true);
+        try {
+            const orderItems = cartItems.map((item) => ({
+                p_id: item.p_id,
+                pcolor_id: item.pcolor_id,
+                psize_id: item.psize_id || null,
+                quantity: item.quantity,
+                price: item.price,
+            }));
+
+            const orderData = {
+                u_id: u_id || null,
+                guest_id: u_id ? null : guestId,
+                cart_items: orderItems,
+                subtotal,
+                shipping: shipping,
+                total: total,
+                address_id: selectedAddressId,
+                add_id: selectedAddressId,
+                payment_method: formData.paymentMethod.toLowerCase(),
+            };
+
+            const res = await axiosInstance.post(`/createorder`, orderData);
+            const apiBody = res.data || res;
+
+            if (apiBody.status !== 1) {
+                throw new Error(apiBody.message || "Order failed");
             }
-        });
+
+            if (formData.paymentMethod === "online") {
+                const checkoutUrl = apiBody?.data?.checkoutUrl;
+                const paymentId = apiBody?.data?.paymentId || apiBody?.data?.id || apiBody?.data?.paymentIntentId;
+
+                if (paymentId) {
+                    sessionStorage.setItem('retryPaymentId', paymentId);
+                }
+
+                if (checkoutUrl) {
+                    window.location.href = checkoutUrl;
+                } else {
+                    toast.error('Failed to get payment checkout URL.');
+                    setIsProcessing(false);
+                }
+            } else {
+                // Show success modal upon successful order placement (COD)
+                setShowSuccessModal(true);
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error(err.message || "Failed to place order");
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
-    
     return (
         <>
             <div className="min-h-screen pt-12 pb-12 px-4 md:px-10 lg:px-20">
@@ -497,7 +486,7 @@ const Checkout = () => {
                                                     {item.quantity < 10 ? `0${item.quantity}` : item.quantity}
                                                 </span>
                                                 <span className="w-1/4 text-right">
-                                                    ${(item.price * item.quantity).toFixed(0)}
+                                                    ₹{(item.price * item.quantity).toFixed(0)}
                                                 </span>
                                             </div>
                                         ))}
@@ -509,21 +498,21 @@ const Checkout = () => {
                                     <div className="">
                                         <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6">
                                             <span className="text-md font-medium text-[#3D3D3D] uppercase tracking-wide">SUBTOTAL</span>
-                                            <span className="text-[#767676] text-lg">${subtotal.toFixed(0)}</span>
+                                            <span className="text-[#767676] text-lg">₹{subtotal.toFixed(0)}</span>
                                         </div>
 
                                         <div className="border-b border-dashed border-[#d7d4d4]"></div>
 
                                         <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6">
                                             <span className="text-md font-medium text-[#3D3D3D] uppercase tracking-wide">SHIPPING</span>
-                                            <span className="text-[#767676] text-lg">${shipping.toFixed(0)}</span>
+                                            <span className="text-[#767676] text-lg">{shipping > 0 ? `₹${shipping.toFixed(0)}` : "Free"}</span>
                                         </div>
 
                                         <div className="border-b border-dashed border-[#d7d4d4]"></div>
 
                                         <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6">
                                             <span className="text-md font-medium text-[#3D3D3D] tracking-wide">Total</span>
-                                            <span className="text-[#767676] text-2xl font-semibold">${total.toFixed(0)}</span>
+                                            <span className="text-[#767676] text-2xl font-semibold">₹{total.toFixed(0)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -611,7 +600,7 @@ const Checkout = () => {
                             </h2>
                             <div className="space-y-4 text-[#3D3D3D] font-[Oxygen] text-md md:text-lg max-w-lg mx-auto leading-relaxed">
                                 <p>
-                                    Thank You For Choosing Modimal, Your Order Will Be Generated Based On Your Delivery Request.
+                                    Thank You For Choosing Kundrat, Your Order Will Be Generated Based On Your Delivery Request.
                                 </p>
                                 <p>
                                     The Receipt Has Been Sent To Your Email
@@ -624,9 +613,9 @@ const Checkout = () => {
                                 Please Contact Us For Any Query
                             </p>
                             <div className="space-y-1 font-[Oxygen] text-[#3D3D3D]">
-                                <p className="text-lg">+1(929)460-3208</p>
+                                <p className="text-lg">+91 98765 43210</p>
                                 <p className="uppercase text-sm">OR</p>
-                                <p className="text-lg font-medium">Hello @ Modimal.Com</p>
+                                <p className="text-lg font-medium">Hello@Kundrat.Com</p>
                             </div>
                         </div>
                     </div>

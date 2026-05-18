@@ -49,8 +49,6 @@ const OrderConfirmation = () => {
         price: item.price,
       })),
     });
-
-    console.log("Purchase event fired:", order);
   }, [order]);
 
   // UI

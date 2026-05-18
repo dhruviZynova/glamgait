@@ -5,7 +5,7 @@ import {
   ArrowPathIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
@@ -28,7 +28,7 @@ const Sizes = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcategory`);
+      const response = await adminAxios.get(`${ApiURL}/getcategory`);
       if (response?.data?.status) {
         setCategories(response?.data?.data);
       } else {
@@ -42,7 +42,7 @@ const Sizes = () => {
 
   const fetchSizes = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getsize`);
+      const response = await adminAxios.get(`${ApiURL}/getsize`);
       if (response?.data?.status) setSizeData(response?.data?.data);
       else setSizeData([]);
     } catch (error) {
@@ -66,13 +66,13 @@ const Sizes = () => {
       };
 
       if (isEdit) {
-        const response = await axiosInstance.put(
+        const response = await adminAxios.put(
           `${ApiURL}/updatesize`,
           payload
         );
         showToaster(response?.data?.status, response?.data?.description);
       } else {
-        const response = await axiosInstance.post(`${ApiURL}/addsize`, payload);
+        const response = await adminAxios.post(`${ApiURL}/addsize`, payload);
         showToaster(response?.data?.status, response?.data?.description);
       }
       fetchSizes();
@@ -80,8 +80,7 @@ const Sizes = () => {
       setFormData({ size_name: "", cate_id: "", size_id: null });
       setIsEdit(false);
     } catch (error) {
-      console.log(error);
-      showToaster(0, "Error saving size");
+      showToaster(0, error?.response?.data?.description || "Error saving size");
     }
   };
 
@@ -91,12 +90,11 @@ const Sizes = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.delete(`${ApiURL}/deletesize/${deleteModal.size_id}`);
+      const response = await adminAxios.delete(`${ApiURL}/deletesize/${deleteModal.size_id}`);
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status) fetchSizes();
     } catch (error) {
-      console.log(error);
-      showToaster(0, "Error deleting size");
+      showToaster(0, error?.response?.data?.description || "Error deleting size");
     } finally {
       setDeleteModal({ isOpen: false, size_id: null, name: "" });
     }
@@ -130,7 +128,7 @@ const Sizes = () => {
               setFormData({ size_name: "", cate_id: "", size_id: null });
               setIsModalOpen(true);
             }}
-            className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap"
+            className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             <span>Add Size</span>
@@ -184,14 +182,14 @@ const Sizes = () => {
                         });
                         setIsModalOpen(true);
                       }}
-                      className="text-black hover:text-gray-700 mr-4"
+                      className="text-black hover:text-gray-700 mr-4 cursor-pointer"
                       aria-label={`Edit size ${size.size_name}`}
                     >
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(size?.size_id, size?.size_name)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 cursor-pointer"
                       aria-label={`Delete size ${size.size_name}`}
                     >
                       <TrashIcon className="h-5 w-5" />
@@ -205,7 +203,7 @@ const Sizes = () => {
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/30 bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               {isEdit ? "Edit Size" : "Add New Size"}
@@ -250,13 +248,13 @@ const Sizes = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  className="px-5 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-all duration-200 shadow-sm text-sm font-medium"
+                  className="px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-900 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
                 >
                   {isEdit ? "Update" : "Create"}
                 </button>

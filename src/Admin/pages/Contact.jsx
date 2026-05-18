@@ -10,8 +10,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import axiosInstance from "../../Axios/axios";
-import { ApiURL, userInfo } from "../../Variable";
+import { adminAxios } from "../../Axios/axios";
+import { ApiURL } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Contact = () => {
@@ -26,12 +26,10 @@ const Contact = () => {
     contactId: null,
     name: "",
   });
-  const userData = userInfo();
-  const token = userData?.token;
 
   const fetchContacts = async (page = 1, limit = itemsPerPage, search = searchTerm) => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcontacts`, {
+      const response = await adminAxios.get(`${ApiURL}/getcontacts`, {
         params: { page, limit, search },
       });
 
@@ -56,13 +54,8 @@ const Contact = () => {
 
   const confirmDelete = async () => {
     try {
-      await axiosInstance.delete(
-        `${ApiURL}/deletecontact/${deleteModal.contactId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      await adminAxios.delete(
+        `${ApiURL}/deletecontact/${deleteModal.contactId}`
       );
       toast.success("Request Deleted...");
       fetchContacts(currentPage);
@@ -182,7 +175,7 @@ const Contact = () => {
                             aria-hidden="true"
                           />
                           <div className="text-sm font-medium text-gray-900">
-                            {contact.first_name} {contact?.last_name}
+                            {contact.name}
                           </div>
                         </div>
                       </td>
@@ -214,7 +207,7 @@ const Contact = () => {
                           onClick={() =>
                             handleDelete(contact.contact_id, contact.name)
                           }
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 cursor-pointer"
                           aria-label={`Delete contact request from ${contact.name || "Unknown"
                             }`}
                         >
@@ -251,7 +244,7 @@ const Contact = () => {
                   disabled={currentPage === 1}
                   className={`px-3 py-1 border rounded flex items-center ${currentPage === 1
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-50"
+                    : "hover:bg-gray-50 cursor-pointer"
                     }`}
                   aria-label="Previous page"
                 >
@@ -274,7 +267,7 @@ const Contact = () => {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`px-3 py-1 border rounded ${currentPage === pageNum
+                        className={`px-3 py-1 border rounded cursor-pointer ${currentPage === pageNum
                           ? "bg-black text-white border-black"
                           : "hover:bg-gray-50"
                           }`}
@@ -302,7 +295,7 @@ const Contact = () => {
                     setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                   }
                   disabled={currentPage === totalPages}
-                  className={`px-3 py-1 border rounded flex items-center ${currentPage === totalPages
+                  className={`px-3 py-1 border rounded flex items-center cursor-pointer ${currentPage === totalPages
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:bg-gray-50"
                     }`}

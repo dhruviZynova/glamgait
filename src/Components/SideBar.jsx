@@ -17,13 +17,6 @@ const SideBar = ({ onMenuChange = () => { } }) => {
         ? "orders"
         : "";
 
-  const breadcrumbLabel =
-    activeMenu === "orders"
-      ? "My Orders"
-      : activeMenu === "info"
-        ? "Personal Info"
-        : "";
-
   const handleMenuClick = (menu) => {
     onMenuChange(menu);
 
@@ -41,7 +34,7 @@ const SideBar = ({ onMenuChange = () => { } }) => {
   return (
     <>
       {/* Mobile Header */}
-      <div className="md:hidden px-5 py-4 flex justify-between items-center shadow-sm sticky top-0 z-20">
+      <div className="md:hidden px-5 py-4 flex justify-between items-center sticky top-0 z-20">
         <h1 className="text-lg font-semibold text-gray-900">My Account</h1>
         <button onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X size={22} /> : <Menu size={22} />}
@@ -51,7 +44,7 @@ const SideBar = ({ onMenuChange = () => { } }) => {
       {/* Sidebar */}
       <div
         className={`${isOpen ? "block" : "hidden"
-          } md:block md:min-h-screen w-full p-6 md:p-8 font-inter sticky top-0 z-40 transition-all duration-300`}
+          } md:block h-fit w-full p-6 md:p-8 font-inter sticky top-20 z-40 transition-all duration-300`}
       >
         {/* Header */}
         <div className="mb-8">
@@ -119,13 +112,13 @@ const SideBar = ({ onMenuChange = () => { } }) => {
             <div className="flex justify-between gap-4 mt-4">
               <button
                 onClick={() => setShowLogoutModal(false)}
-                className="flex-1 py-2 px-4 bg-gray-200 rounded-md text-gray-700 hover:bg-gray-300 transition-colors"
+                className="flex-1 py-2 px-4 bg-gray-200 rounded-md text-gray-700 hover:bg-gray-300 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleLogout}
-                className="flex-1 py-2 px-4 bg-red-600 rounded-md text-white hover:bg-red-700 transition-colors"
+                className="flex-1 py-2 px-4 bg-red-600 rounded-md text-white hover:bg-red-700 transition-colors cursor-pointer"
               >
                 Logout
               </button>

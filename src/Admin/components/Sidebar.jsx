@@ -17,11 +17,12 @@ import {
   ListTree,
   Ruler,
 } from "lucide-react";
-import logo from "../../assets/logo.svg";
-import { userInfo } from "../../Variable";
+// import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo2.png";
+import { adminInfo } from "../../Variable";
 
 const Sidebar = ({ onClose }) => {
-  const userData = userInfo();
+  const userData = adminInfo();
   const adminName = userData?.first_name;
   const adminLastName = userData?.last_name;
   const adminEmail = userData?.email;
@@ -73,8 +74,8 @@ const Sidebar = ({ onClose }) => {
   return (
     <div className="h-full flex flex-col bg-[#0f1115] text-gray-400 shadow-2xl border-r border-white/5 overflow-hidden">
       {/* Logo Section */}
-      <div className="flex items-center justify-center py-8 px-6 border-b border-white/5">
-        <img src={logo} alt="Glam Gait Logo" className="h-10 w-auto brightness-0 invert opacity-90" />
+      <div className="flex items-center justify-center py-3 px-6 border-b border-white/5">
+        <img src={logo} alt="Glam Gait Logo" className="h-10 w-auto" />
       </div>
 
       {/* Mobile close button */}
@@ -82,7 +83,7 @@ const Sidebar = ({ onClose }) => {
         <div className="text-sm font-semibold tracking-wider text-white uppercase">Menu</div>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-white transition-colors p-1 rounded-md hover:bg-white/10"
+          className="text-gray-400 hover:text-white transition-colors p-1 rounded-md hover:bg-white/10 cursor-pointer"
         >
           <X className="h-5 w-5" />
         </button>

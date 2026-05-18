@@ -38,6 +38,11 @@ const AddAddress = ({
           fetchCityState(value);
         }
       }
+    } else if (name === "phone_number") {
+      // Only allow digits, max 15 digits
+      if (/^\d*$/.test(value) && value.length <= 15) {
+        setFormData({ ...formData, [name]: value });
+      }
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -93,10 +98,18 @@ const AddAddress = ({
       });
       setAddressType(editingAddress.address_type || "HOME");
     }
-  }, [editingAddress]);
+  }, [editingAddress, setAddressType]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate phone number length (10-15 digits)
+    const phoneDigits = formData.phone_number.replace(/\D/g, "");
+    if (phoneDigits.length < 10 || phoneDigits.length > 15) {
+      toast.error("Phone number must be between 10 and 15 digits");
+      return;
+    }
+
     try {
       const payload = {
         ...formData,
@@ -177,8 +190,10 @@ const AddAddress = ({
             type="tel"
             value={formData.phone_number}
             onChange={handleChange}
-            placeholder="Phone Number"
+            placeholder="Phone Number (10-15 digits)"
             required
+            minLength={10}
+            maxLength={15}
             className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
           />
 
@@ -219,21 +234,23 @@ const AddAddress = ({
             )}
           </div>
 
-          {/* State & City (Auto-filled) */}
+          {/* State & City */}
           <div className="flex gap-2">
             <input
               name="state"
               value={formData.state}
-              readOnly
-              placeholder="State (auto-filled)"
-              className="w-1/2 px-4 py-3 border rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+              onChange={handleChange}
+              placeholder="State"
+              className="w-1/2 px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
+              required
             />
             <input
               name="city"
               value={formData.city}
-              readOnly
-              placeholder="City (auto-filled)"
-              className="w-1/2 px-4 py-3 border rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+              onChange={handleChange}
+              placeholder="City"
+              className="w-1/2 px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
+              required
             />
           </div>
 

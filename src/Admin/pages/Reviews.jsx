@@ -6,12 +6,13 @@ import {
   XMarkIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import { ApiURL } from "../../Variable";
+import { ApiURL, adminInfo } from "../../Variable";
 import toast from "react-hot-toast";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Reviews = () => {
+  const adminData = adminInfo();
   const [reviews, setReviews] = useState([]);
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,11 +48,19 @@ const Reviews = () => {
   // Fetch Reviews
   const fetchReviews = async (page = 1) => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/getalluserreviews`, {
-        page,
-        perPage: reviewsPerPage,
-        search: searchTerm,
-      });
+      const response = await adminAxios.post(
+        `${ApiURL}/getalluserreviews`,
+        {
+          page,
+          perPage: reviewsPerPage,
+          search: searchTerm,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.auth_token || adminData?.token}`,
+          },
+        }
+      );
       if (response.data.status === 1) {
         const data = response.data.data;
         setReviews(data.reviews || []);
@@ -70,8 +79,8 @@ const Reviews = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axiosInstance.post(`${ApiURL}/getproducts`, {
-        limit: 100,
+      const res = await adminAxios.get(`${ApiURL}/getproducts`, {
+        params: { limit: 100 },
       });
       if (res.data.status === 1) setProducts(res.data.data || []);
     } catch (err) {
@@ -94,13 +103,13 @@ const Reviews = () => {
 
   const confirmDelete = async () => {
     try {
-      await axiosInstance.delete(
+      await adminAxios.delete(
         `${ApiURL}/deleteuserreview/${deleteModal.reviewId}`
       );
       toast.success("Review deleted");
       fetchReviews(currentPage);
     } catch (error) {
-      toast.error("Failed to delete");
+      toast.error(error.response?.data?.message || "Failed to delete");
     } finally {
       setDeleteModal({ isOpen: false, reviewId: null, name: "" });
     }
@@ -108,8 +117,8 @@ const Reviews = () => {
 
   const togglePublish = async (reviewId, currentStatus) => {
     try {
-      const newStatus = currentStatus ? 0 : 1;
-      await axiosInstance.post(`${ApiURL}/togglereviewpublish`, {
+      const newStatus = !currentStatus;
+      await adminAxios.post(`${ApiURL}/togglereviewpublish`, {
         r_id: reviewId,
         is_published: newStatus,
       });
@@ -173,10 +182,10 @@ const Reviews = () => {
       }
       if (modal.editMode) {
         formData.append("r_id", modal.reviewId);
-        await axiosInstance.post(`${ApiURL}/updateuserreview`, formData);
+        await adminAxios.post(`${ApiURL}/updateuserreview`, formData);
         toast.success("Review updated!");
       } else {
-        await axiosInstance.post(`${ApiURL}/addfakereview`, formData);
+        await adminAxios.post(`${ApiURL}/addfakereview`, formData);
         toast.success("Review added!");
       }
 
@@ -229,7 +238,7 @@ const Reviews = () => {
           />
           <button
             onClick={() => openModal(false)}
-            className="bg-black text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-800 transition"
+            className="bg-black text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-800 transition cursor-pointer"
           >
             Add Review
           </button>
@@ -253,7 +262,7 @@ const Reviews = () => {
                 {/* Image */}
                 {r.image_url && (
                   <img
-                    src={`${ApiURL}/assets/UserReviews/${r.image_url}`}
+                    src={r.image_url}
                     alt="review"
                     className="w-full h-40 object-cover rounded-lg mb-3"
                   />
@@ -307,13 +316,13 @@ const Reviews = () => {
                   <div className="flex gap-2 text-xs">
                     <button
                       onClick={() => openModal(true, r)}
-                      className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                      className="text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
                     >
                       <PencilSquareIcon className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(r.r_id, r.reviewer_name)}
-                      className="text-red-600 hover:text-red-800 flex items-center gap-1"
+                      className="text-red-600 hover:text-red-800 flex items-center gap-1 cursor-pointer"
                     >
                       <TrashIcon className="w-4 h-4" />
                     </button>
@@ -329,7 +338,6 @@ const Reviews = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Image</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Product</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Rating</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Comment</th>
@@ -351,13 +359,12 @@ const Reviews = () => {
                         "-"
                       )}
                     </td>
-                    <td className="px-6 py-3 font-medium">
-                      {r?.reviewer_name}
-                    </td>
                     <td className="px-6 py-3">{r.product_name || "N/A"}</td>
-                    <td className="px-6 py-3 flex items-center gap-1">
-                      {r.rating}
-                      <StarIcon className="w-4 h-4 text-yellow-500" />
+                    <td className="px-6 py-3">
+                      <div className="flex items-center justify-center gap-1">
+                        {r.rating}
+                        <StarIcon className="w-4 h-4 text-yellow-500" />
+                      </div>
                     </td>
                     <td className="px-6 py-3">{r.message}</td>
                     <td className="px-6 py-3 text-gray-500">
@@ -375,19 +382,19 @@ const Reviews = () => {
                             }
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
                         </label>
 
                         {/* Edit & Delete */}
-                        <button
+                        {/* <button
                           onClick={() => openModal(true, r)}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-blue-600 hover:text-blue-800 cursor-pointer"
                         >
                           <PencilSquareIcon className="w-5 h-5" />
-                        </button>
+                        </button> */}
                         <button
                           onClick={() => handleDelete(r.r_id, r.reviewer_name)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 cursor-pointer"
                         >
                           <TrashIcon className="w-5 h-5" />
                         </button>
@@ -443,7 +450,7 @@ const Reviews = () => {
                 onClick={() =>
                   setModal({ open: false, editMode: false, reviewId: null })
                 }
-                className="p-2 -mr-2 rounded-full hover:bg-gray-100 transition-colors"
+                className="p-2 -mr-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
               >
                 <XMarkIcon className="w-7 h-7 text-gray-500 hover:text-gray-700" />
               </button>
@@ -672,7 +679,7 @@ const Reviews = () => {
                         onClick={() =>
                           setForm({ ...form, image: null, preview: null })
                         }
-                        className="text-red-600 hover:text-red-800 underline text-sm mt-1"
+                        className="text-red-600 hover:text-red-800 underline text-sm mt-1 cursor-pointer"
                       >
                         Remove photo
                       </button>
@@ -689,7 +696,7 @@ const Reviews = () => {
                 onClick={() =>
                   setModal({ open: false, editMode: false, reviewId: null })
                 }
-                className="flex-1 py-3.5 px-6 rounded-xl font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 active:bg-gray-200 transition-colors order-2 sm:order-1"
+                className="flex-1 py-3.5 px-6 rounded-xl font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 active:bg-gray-200 transition-colors order-2 sm:order-1 cursor-pointer"
               >
                 Cancel
               </button>
@@ -697,7 +704,7 @@ const Reviews = () => {
               <button
                 disabled={submitting}
                 onClick={handleSubmit}
-                className={`flex-1 py-3.5 px-6 rounded-xl font-medium text-white transition-colors order-1 sm:order-2 ${submitting
+                className={`flex-1 py-3.5 px-6 rounded-xl font-medium text-white transition-colors order-1 sm:order-2 cursor-pointer ${submitting
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-black hover:bg-gray-900 active:bg-gray-900"
                   }`}

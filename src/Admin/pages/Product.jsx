@@ -1,19 +1,15 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Plus,
   Edit,
-  Trash2,
-  RefreshCw,
   ToggleRight,
   ToggleLeft,
   AlertCircle,
-  CheckCircle,
 } from "lucide-react";
 import { ApiURL } from "../../Variable";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import ProductModal from "./ProductModel";
 
 const Product = () => {
@@ -21,28 +17,51 @@ const Product = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const searchTimeoutRef = useRef(null);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 24;
 
+  // Debounce logic
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm]);
+
   const fetchProducts = async (page = 1, search = "") => {
     try {
-      const res = await axiosInstance.post(`${ApiURL}/getallproducts`, {
-        page,
-        perPage: itemsPerPage,
-        search,
+      const res = await adminAxios.get(`${ApiURL}/getallproducts`, {
+        params: {
+          page,
+          perPage: itemsPerPage,
+          search,
+        }
       });
 
       const { productData, totalCount } = res.data.data || {};
       const enhancedProducts = (productData || []).map((p) => {
         // Calculate total stock
         const totalStock =
-          p.productvariants?.reduce(
-            (sum, v) => sum + (v.remaining_qty || 0),
-            0
-          ) || 0;
+          p.total_stock !== undefined
+            ? p.total_stock
+            : p.productvariants?.reduce(
+              (sum, v) => sum + (v.remaining_qty || 0),
+              0
+            ) || 0;
         const hasStock = totalStock > 0;
-        const lowStock = hasStock && totalStock <= 5;
+        const lowStock = totalStock > 0 && totalStock <= 5;
 
         // Get first image
         const firstImage = p.productcolors?.[0]?.productimages?.[0]?.image_url;
@@ -53,7 +72,7 @@ const Product = () => {
           has_stock: hasStock,
           low_stock: lowStock,
           thumbnail: firstImage
-            ? `${ApiURL}/assets/Products/${firstImage}`
+            ? `${firstImage}`
             : null,
         };
       });
@@ -68,31 +87,27 @@ const Product = () => {
   };
 
   useEffect(() => {
-    fetchProducts(1, "");
-  }, []);
+    fetchProducts(1, debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
 
   const handleStatusToggle = async (product) => {
     try {
       const newStatus = product.p_status === 1 ? 0 : 1;
-      await axiosInstance.post(`${ApiURL}/changeproductstatus`, {
+      await adminAxios.post(`${ApiURL}/changeproductstatus`, {
         p_id: product.p_id,
         p_status: newStatus,
       });
       toast.success(`Product ${newStatus === 1 ? "activated" : "deactivated"}`);
-      fetchProducts(currentPage, searchTerm);
+      fetchProducts(currentPage, debouncedSearchTerm);
     } catch (error) {
       console.error("Error:", error);
       toast.error(error?.message || "Failed to update status");
     }
   };
 
-  const handleSearch = () => {
-    fetchProducts(1, searchTerm);
-  };
-
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
-      fetchProducts(page, searchTerm);
+      fetchProducts(page, debouncedSearchTerm);
     }
   };
 
@@ -112,14 +127,13 @@ const Product = () => {
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
           <button
             onClick={() => {
               setCurrentProduct(null);
               setIsModalOpen(true);
             }}
-            className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap"
+            className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap cursor-pointer"
           >
             <Plus className="w-5 h-5" />
             <span>Add Product</span>
@@ -128,7 +142,7 @@ const Product = () => {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6  gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {products.map((product) => (
           <div
             key={product.p_id}
@@ -136,62 +150,58 @@ const Product = () => {
           >
             <Link to={`/admin/product/${product.p_id}`} className="block">
               <div className="relative aspect-square overflow-hidden bg-gray-50">
-                {product.thumbnail ? (
-                  (() => {
-                    const mediaUrl = product.thumbnail;
-                    const isVideo = mediaUrl.match(/\.(mp4|webm|mov|avi)$/i);
+                {(() => {
+                  // API returns colors[].images[].image_url as a full URL
+                  const mediaUrl =
+                    product.colors?.[0]?.images?.[0]?.image_url || null;
 
-                    return isVideo ? (
-                      <div className="relative w-full h-full">
-                        <video
-                          src={mediaUrl}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          muted
-                          loop
-                          playsInline
-                        >
-                          <source src={mediaUrl} />
-                        </video>
-                        {/* Play icon overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                          <div className="bg-white/80 rounded-full p-3 shadow-lg">
-                            <svg
-                              className="w-8 h-8 text-black"
-                              fill="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </div>
+                  if (!mediaUrl) {
+                    return (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm font-medium bg-gray-100">
+                        No Media
+                      </div>
+                    );
+                  }
+
+                  const isVideo = mediaUrl.match(/\.(mp4|webm|mov|avi)$/i);
+
+                  return isVideo ? (
+                    <div className="relative w-full h-full">
+                      <video
+                        src={mediaUrl}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        muted
+                        loop
+                        playsInline
+                      >
+                        <source src={mediaUrl} />
+                      </video>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="bg-white/80 rounded-full p-3 shadow-lg">
+                          <svg className="w-8 h-8 text-black" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
                         </div>
                       </div>
-                    ) : (
-                      <img
-                        src={mediaUrl}
-                        alt={product.name}
-                        loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                    );
-                  })()
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm font-medium bg-gray-100">
-                    No Media
-                  </div>
-                )}
+                    </div>
+                  ) : (
+                    <img
+                      src={mediaUrl}
+                      alt={product.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  );
+                })()}
 
                 {/* Stock Badge - Top Left */}
                 <div className="absolute top-2 left-2 z-10">
                   {product.has_stock ? (
                     product.low_stock ? (
                       <span className="bg-orange-500 text-white px-2.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-                        <AlertCircle size={13} /> Only {product.total_stock}
+                        <AlertCircle size={13} /> Low Stock ({product.total_stock})
                       </span>
-                    ) : (
-                      <span className="bg-green-600 text-white px-2.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-                        <CheckCircle size={13} /> In Stock
-                      </span>
-                    )
+                    ) : null
                   ) : (
                     <span className="bg-red-600 text-white px-2.5 py-1.5 rounded-full text-xs font-bold shadow-lg">
                       Out of Stock
@@ -259,7 +269,7 @@ const Product = () => {
                     setCurrentProduct(product);
                     setIsModalOpen(true);
                   }}
-                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                  className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
                   title="Edit Product"
                 >
                   <Edit size={20} />
@@ -271,7 +281,7 @@ const Product = () => {
                     e.preventDefault();
                     handleStatusToggle(product);
                   }}
-                  className="transition-all"
+                  className="transition-all cursor-pointer"
                   title={product.p_status === 1 ? "Deactivate" : "Activate"}
                 >
                   {product.p_status === 1 ? (

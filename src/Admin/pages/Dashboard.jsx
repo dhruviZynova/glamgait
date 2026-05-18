@@ -28,7 +28,8 @@ import {
   Truck,
 } from "lucide-react";
 import { ApiURL } from "../../Variable";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
+import { ORDER_STATUS, STATUS_LABELS, STATUS_COLORS } from "../../utils/constants";
 
 const formatRevenue = (revenue) => {
   if (revenue >= 100000) {
@@ -71,7 +72,7 @@ const Dashboard = () => {
   // Fetch dashboard data
   const fetchDashboardData = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/stats`);
+      const res = await adminAxios.get(`${ApiURL}/stats`);
       setDashboardCount(res.data.data.stats);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -80,7 +81,7 @@ const Dashboard = () => {
 
   const fetchuserCount = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/usercount`);
+      const res = await adminAxios.get(`${ApiURL}/usercount`);
       setUserCount(res.data.data.count);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -90,7 +91,7 @@ const Dashboard = () => {
   // Fetch chart data
   const fetchChartData = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/chart-data`);
+      const res = await adminAxios.get(`${ApiURL}/chart-data`);
       setChartData(res.data.data.chartData);
     } catch (error) {
       console.error("Error fetching chart data:", error);
@@ -100,7 +101,7 @@ const Dashboard = () => {
   // Fetch order status data
   const fetchOrderStatusData = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/order-status-data`);
+      const res = await adminAxios.get(`${ApiURL}/order-status-data`);
       setOrderStatusData(res.data.data.orderStatusData);
     } catch (error) {
       console.error("Error fetching order status data:", error);
@@ -110,7 +111,7 @@ const Dashboard = () => {
   // Fetch recent orders
   const fetchRecentOrders = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/recent-orders`);
+      const res = await adminAxios.get(`${ApiURL}/recent-orders`);
       setRecentOrders(res.data.data.recentOrders);
     } catch (error) {
       console.error("Error fetching recent orders:", error);
@@ -119,14 +120,15 @@ const Dashboard = () => {
 
   // Check if order should contribute to revenue
   const isRevenueEligible = (status) => {
+    const statusId = parseInt(status);
     const eligibleStatuses = [
-      "pending",
-      "accepted",
-      "preparing",
-      "shipped",
-      "delivered",
+      ORDER_STATUS.PENDING,
+      ORDER_STATUS.ACCEPTED,
+      ORDER_STATUS.PREPARING,
+      ORDER_STATUS.SHIPPED,
+      ORDER_STATUS.DELIVERED,
     ];
-    return eligibleStatuses.includes(status);
+    return eligibleStatuses.includes(statusId);
   };
 
   useEffect(() => {
@@ -204,7 +206,7 @@ const Dashboard = () => {
           </div>
           <button
             onClick={fetchDashboardData}
-            className="mt-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-pink-600 transition-colors"
+            className="mt-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-pink-600 transition-colors cursor-pointer"
           >
             Refresh Data
           </button>
@@ -312,7 +314,7 @@ const Dashboard = () => {
                   <button
                     key={period}
                     onClick={() => setTimeframe(period)}
-                    className={`px-3 py-1 text-sm rounded-md capitalize transition-colors ${timeframe === period
+                    className={`px-3 py-1 text-sm rounded-md capitalize transition-colors cursor-pointer ${timeframe === period
                       ? "bg-pink-500 text-white"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
@@ -399,7 +401,7 @@ const Dashboard = () => {
                 <button
                   key={period}
                   onClick={() => setTimeframe(period)}
-                  className={`px-3 py-1 text-sm rounded-md capitalize transition-colors ${timeframe === period
+                  className={`px-3 py-1 text-sm rounded-md capitalize transition-colors cursor-pointer ${timeframe === period
                     ? "bg-pink-500 text-white"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     }`}
@@ -541,30 +543,9 @@ const Dashboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${parseInt(order.status) === 5
-                          ? "bg-green-100 text-green-800"
-                          : parseInt(order.status) === 4
-                            ? "bg-purple-100 text-purple-800"
-                            : parseInt(order.status) === 3
-                              ? "bg-blue-100 text-blue-800"
-                              : parseInt(order.status) === 2
-                                ? "bg-yellow-100 text-yellow-800"
-                                : parseInt(order.status) === 1
-                                  ? "bg-gray-100 text-gray-800"
-                                  : "bg-red-100 text-red-800"
-                          }`}
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${STATUS_COLORS[parseInt(order.status)] || STATUS_COLORS[ORDER_STATUS.CANCELLED]}`}
                       >
-                        {parseInt(order.status) === 1
-                          ? "Pending"
-                          : parseInt(order.status) === 2
-                            ? "Accepted"
-                            : parseInt(order.status) === 3
-                              ? "Preparing"
-                              : parseInt(order.status) === 4
-                                ? "Shipped"
-                                : parseInt(order.status) === 5
-                                  ? "Delivered"
-                                  : "Cancelled"}
+                        {STATUS_LABELS[parseInt(order.status)] || "Unknown"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">

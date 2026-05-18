@@ -1,5 +1,4 @@
 import frame2 from "../assets/images/frame2.png";
-import quoteLeft from "../assets/quoteLeft.png";
 import userPlaceholder from "../assets/images/profile1.jpg";
 
 const ReviewCard = ({ name, review, image }) => {
