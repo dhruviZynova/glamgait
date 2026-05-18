@@ -57,7 +57,7 @@ const Hero = () => {
                   {/* Main img image */}
                   <img
                     src={`${ApiURL}/assets/Sliders/${img?.image}`}
-                    alt="Glamgait imgs"
+                    alt="kundrat imgs"
                     className="w-full h-full object-contain"
                   />
                 </div>

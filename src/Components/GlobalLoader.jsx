@@ -57,8 +57,8 @@ export default function GlobalLoader() {
 
       {/* Logo */}
       <div className="glamloader-logo">
-        GLAMGAIT
-        <div className="glamloader-logo-fill">GLAMGAIT</div>
+        KUNDRAT
+        <div className="glamloader-logo-fill">KUNDRAT</div>
       </div>
 
       {/* Morphing ring */}

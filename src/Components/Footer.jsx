@@ -72,7 +72,7 @@ const Footer = () => {
             <div className="mb-6">
               <img src={logo} alt="Logo" className="h-12 md:h-14 lg:h-16 w-auto" />
               <p className="pt-4 text-[#F6F6F6] font-[Nunito Sans] text-sm lg:text-base leading-relaxed break-words">
-                Glamgait is your go-to destination for trendy, affordable, and high-quality fashion for women , crafted to bring style, comfort, and confidence into everyday life.
+                Kundrat is your go-to destination for trendy, affordable, and high-quality fashion for women , crafted to bring style, comfort, and confidence into everyday life.
               </p>
             </div>
             {/* Social Media Icons */}
@@ -202,7 +202,7 @@ const Footer = () => {
         {/* Copyright */}
         <div className="text-center md:text-left">
           <p className="text-[#F6F6F6] font-[Nunito Sans] text-sm lg:text-base">
-            © 2025 Glamgait - All rights reserved
+            © 2025 Kundrat - All rights reserved
           </p>
         </div>
       </div>

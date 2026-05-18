@@ -600,7 +600,7 @@ const Checkout = () => {
                             </h2>
                             <div className="space-y-4 text-[#3D3D3D] font-[Oxygen] text-md md:text-lg max-w-lg mx-auto leading-relaxed">
                                 <p>
-                                    Thank You For Choosing GlamGait, Your Order Will Be Generated Based On Your Delivery Request.
+                                    Thank You For Choosing Kundrat, Your Order Will Be Generated Based On Your Delivery Request.
                                 </p>
                                 <p>
                                     The Receipt Has Been Sent To Your Email
@@ -615,7 +615,7 @@ const Checkout = () => {
                             <div className="space-y-1 font-[Oxygen] text-[#3D3D3D]">
                                 <p className="text-lg">+91 98765 43210</p>
                                 <p className="uppercase text-sm">OR</p>
-                                <p className="text-lg font-medium">Hello @ GlamGait.Com</p>
+                                <p className="text-lg font-medium">Hello@Kundrat.Com</p>
                             </div>
                         </div>
                     </div>

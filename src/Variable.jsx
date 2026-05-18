@@ -21,7 +21,6 @@ export const userInfo = () => {
           : parsedData.name || parsedData.u_name || '',
         email: parsedData.email || '',
         auth_token: parsedData.token || parsedData.auth_token || '',
-        token: parsedData.token || parsedData.auth_token || '',
         role: parsedData.role || '',
         u_id: parsedData.u_id || '',
         phone: parsedData.phone || '',

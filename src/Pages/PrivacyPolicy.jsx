@@ -30,7 +30,7 @@ const PrivacyPolicy = () => {
           <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#F3F0ED] rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
         </div>
-        
+
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 font-[Judson]">Privacy Policy</h1>
           <div className="flex items-center justify-center gap-4 text-[#F3F0ED]/80 text-sm">
@@ -53,11 +53,10 @@ const PrivacyPolicy = () => {
                 <button
                   key={section.id}
                   onClick={() => scrollToSection(section.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
-                    activeSection === section.id
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${activeSection === section.id
                       ? "bg-[#1F352F] text-white shadow-lg translate-x-2"
                       : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-                  }`}
+                    }`}
                 >
                   {section.icon}
                   {section.title}
@@ -68,7 +67,7 @@ const PrivacyPolicy = () => {
 
           {/* Main Content */}
           <main className="lg:w-3/4 bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100 space-y-16 leading-relaxed text-gray-600">
-            
+
             <section id="collection" className="space-y-6 scroll-mt-32">
               <div className="flex items-center gap-4 text-gray-900">
                 <div className="p-3 bg-[#F3F0ED] rounded-2xl">
@@ -194,8 +193,8 @@ const PrivacyPolicy = () => {
               </div>
               <div className="bg-[#1F352F] text-white p-8 rounded-3xl text-center">
                 <p className="mb-6 opacity-90">Questions about our privacy practices? Our team is here to help.</p>
-                <a href="mailto:support@glamgait.com" className="inline-block px-8 py-4 bg-white text-[#1F352F] rounded-full font-bold hover:scale-105 transition-transform shadow-xl">
-                  support@glamgait.com
+                <a href="mailto:support@kundrat.com" className="inline-block px-8 py-4 bg-white text-[#1F352F] rounded-full font-bold hover:scale-105 transition-transform shadow-xl">
+                  support@kundrat.com
                 </a>
               </div>
             </section>

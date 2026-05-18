@@ -129,7 +129,7 @@ const AdminLogin = () => {
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             required
-                                            placeholder="admin@glamgait.com"
+                                            placeholder="admin@kundrat.com"
                                             className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all duration-300 hover:bg-white/10 group-hover:border-amber-400/50"
                                         />
                                         <div className="absolute inset-0 rounded-lg bg-amber-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>

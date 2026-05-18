@@ -169,22 +169,27 @@ const OrderDetails = () => {
               
               <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                 {/* Both buttons only show when status is DELIVERED */}
+                {[
+                  ORDER_STATUS.PENDING,
+                  ORDER_STATUS.ACCEPTED,
+                  ORDER_STATUS.PREPARING,
+                  ORDER_STATUS.SHIPPED,
+                ].includes(order.status) && (
+                  <button
+                    onClick={() => setShowCancelModal(true)}
+                    className="w-full sm:w-auto bg-white border-2 border-[#b32b2b] text-[#b32b2b] px-6 py-2.5 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition shadow-sm cursor-pointer text-sm"
+                  >
+                    Cancel Order
+                  </button>
+                )}
                 {order.status === ORDER_STATUS.DELIVERED && (
-                  <>
-                    <button
-                      onClick={() => setShowCancelModal(true)}
-                      className="w-full sm:w-auto bg-white border-2 border-[#b32b2b] text-[#b32b2b] px-6 py-2.5 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition shadow-sm cursor-pointer text-sm"
-                    >
-                      Cancel Order
-                    </button>
-                    <button
-                      onClick={() => setShowReturnModal(true)}
-                      className="w-full sm:w-auto bg-white border-2 border-[#004534] text-[#004534] px-6 py-2.5 rounded-lg font-bold hover:bg-[#004534] hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
-                    >
-                      <RefreshCcw size={18} />
-                      Return Order
-                    </button>
-                  </>
+                  <button
+                    onClick={() => setShowReturnModal(true)}
+                    className="w-full sm:w-auto bg-white border-2 border-[#004534] text-[#004534] px-6 py-2.5 rounded-lg font-bold hover:bg-[#004534] hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
+                  >
+                    <RefreshCcw size={18} />
+                    Return Order
+                  </button>
                 )}
 
                 {order.status === ORDER_STATUS.CANCELLED && (

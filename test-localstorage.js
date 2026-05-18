@@ -5,7 +5,7 @@
 const storedData = JSON.parse(localStorage.getItem('GlamGait'));
 
 if (!storedData) {
-  console.log('ℹ️ No active user session found in localStorage under key "GlamGait". Please log in first.');
+  console.log('ℹ️ No active user session found in localStorage under key "Kundrat". Please log in first.');
 } else {
   console.log('Found user session:', storedData);
 

@@ -20,10 +20,17 @@ const CustomersSay = () => {
 
   const fetchReviews = useCallback(async () => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/getalluserreviews`, {
-        page: 1,
-        perPage: 10,
-      });
+      const response = await axiosInstance.post(`${ApiURL}/getalluserreviews`,
+        {
+          page: 1,
+          perPage: 10,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${userData?.auth_token}`,
+          },
+        }
+      );
 
       if (response.data.status === 1) {
         setReviews(response.data.data.reviews || []);

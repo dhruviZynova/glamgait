@@ -51,6 +51,6 @@ export const blogsData = [
     date: "April 28, 2026",
     image: "https://images.unsplash.com/photo-1445205170230-053b830c6050?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     summary: "Get an exclusive look at the inspiration and craftsmanship behind our latest collection for the sunny days ahead.",
-    description: "Our upcoming Summer Collection is inspired by the vibrant colors of Mediterranean landscapes and the tranquility of coastal retreats. In this behind-the-scenes look, we take you into our design studio to see the initial sketches and fabric selections. Our designers focused on ultra-breathable linens and soft pastels to keep you cool and comfortable. We also highlight the sustainable practices we've integrated into our production process. Join us as we celebrate the craftsmanship that goes into every stitch of GlamGait apparel."
+    description: "Our upcoming Summer Collection is inspired by the vibrant colors of Mediterranean landscapes and the tranquility of coastal retreats. In this behind-the-scenes look, we take you into our design studio to see the initial sketches and fabric selections. Our designers focused on ultra-breathable linens and soft pastels to keep you cool and comfortable. We also highlight the sustainable practices we've integrated into our production process. Join us as we celebrate the craftsmanship that goes into every stitch of Kundrat apparel."
   }
 ];

@@ -17,7 +17,8 @@ import {
   ListTree,
   Ruler,
 } from "lucide-react";
-import logo from "../../assets/logo.svg";
+// import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo2.png";
 import { adminInfo } from "../../Variable";
 
 const Sidebar = ({ onClose }) => {
@@ -73,8 +74,8 @@ const Sidebar = ({ onClose }) => {
   return (
     <div className="h-full flex flex-col bg-[#0f1115] text-gray-400 shadow-2xl border-r border-white/5 overflow-hidden">
       {/* Logo Section */}
-      <div className="flex items-center justify-center py-8 px-6 border-b border-white/5">
-        <img src={logo} alt="Glam Gait Logo" className="h-10 w-auto brightness-0 invert opacity-90" />
+      <div className="flex items-center justify-center py-3 px-6 border-b border-white/5">
+        <img src={logo} alt="Glam Gait Logo" className="h-10 w-auto" />
       </div>
 
       {/* Mobile close button */}

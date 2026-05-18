@@ -175,7 +175,7 @@ const Contact = () => {
                             aria-hidden="true"
                           />
                           <div className="text-sm font-medium text-gray-900">
-                            {contact.first_name} {contact?.last_name}
+                            {contact.name}
                           </div>
                         </div>
                       </td>

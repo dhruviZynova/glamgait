@@ -175,7 +175,7 @@ const SelectAddressPage = () => {
                     key: razorpayKEY,
                     amount: amount * 100,
                     currency: "INR",
-                    name: "GlamGait",
+                    name: "Kundrat",
                     description: `Order #${newOrderId}`,
                     order_id: rzp_order_id,
                     handler: async (response) => {
@@ -228,8 +228,8 @@ const SelectAddressPage = () => {
             key={address.add_id}
             onClick={() => setSelectedAddressId(address.add_id)}
             className={`bg-white p-4 rounded-[10px] cursor-pointer transition-all ${selectedAddressId === address.add_id
-                    ? "border-[#E7E5E4]"
-                    : "border-[#E7E5E4] hover:border-[#E7E5E4]"
+                ? "border-[#E7E5E4]"
+                : "border-[#E7E5E4] hover:border-[#E7E5E4]"
                 }`}
         >
             <div className="flex items-start gap-3">
@@ -532,7 +532,7 @@ const SelectAddressPage = () => {
                             </h2>
                             <div className="space-y-4 text-[#3D3D3D] font-[Oxygen] text-md md:text-lg max-w-lg mx-auto leading-relaxed">
                                 <p>
-                                    Thank You For Choosing GlamGait, Your Order Will Be Generated Based On Your Delivery Request.
+                                    Thank You For Choosing Kundrat, Your Order Will Be Generated Based On Your Delivery Request.
                                 </p>
                                 <p>
                                     The Receipt Has Been Sent To Your Email
@@ -547,7 +547,7 @@ const SelectAddressPage = () => {
                             <div className="space-y-1 font-[Oxygen] text-[#3D3D3D]">
                                 <p className="text-lg">+91 98765 43210</p>
                                 <p className="uppercase text-sm">OR</p>
-                                <p className="text-lg font-medium">Hello @ GlamGait.Com</p>
+                                <p className="text-lg font-medium">Hello@kundrat.Com</p>
                             </div>
                         </div>
                     </div>

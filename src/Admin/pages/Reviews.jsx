@@ -6,12 +6,13 @@ import {
   XMarkIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import { ApiURL } from "../../Variable";
+import { ApiURL, adminInfo } from "../../Variable";
 import toast from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Reviews = () => {
+  const adminData = adminInfo();
   const [reviews, setReviews] = useState([]);
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,11 +48,19 @@ const Reviews = () => {
   // Fetch Reviews
   const fetchReviews = async (page = 1) => {
     try {
-      const response = await adminAxios.post(`${ApiURL}/getalluserreviews`, {
-        page,
-        perPage: reviewsPerPage,
-        search: searchTerm,
-      });
+      const response = await adminAxios.post(
+        `${ApiURL}/getalluserreviews`,
+        {
+          page,
+          perPage: reviewsPerPage,
+          search: searchTerm,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.auth_token || adminData?.token}`,
+          },
+        }
+      );
       if (response.data.status === 1) {
         const data = response.data.data;
         setReviews(data.reviews || []);

@@ -133,7 +133,7 @@ const Contact = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full md:w-auto min-w-[200px] bg-[#003124] text-white font-[Poppins] py-4 px-8 rounded-full font-semibold tracking-widest hover:bg-[#004d39] hover:shadow-lg hover:transform hover:-translate-y-1 transition-all disabled:opacity-50 disabled:translate-y-0"
+                className="w-full md:w-auto min-w-[200px] bg-[#003124] text-white font-[Poppins] py-4 px-8 rounded-full font-semibold tracking-widest hover:bg-[#004d39] hover:shadow-lg hover:transform hover:-translate-y-1 transition-all disabled:opacity-50 disabled:translate-y-0 cursor-pointer"
               >
                 {loading ? "SENDING..." : "SEND"}
               </button>

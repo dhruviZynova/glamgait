@@ -206,7 +206,7 @@ const SelectAddress = () => {
           key: razorpayKEY,
           amount: amount * 100,
           currency: "INR",
-          name: "GlamGait",
+          name: "Kundrat",
           description: `Order #${order_id}`,
           order_id: rzp_order_id,
           handler: async (response) => {

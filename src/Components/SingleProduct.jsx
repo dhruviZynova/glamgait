@@ -499,7 +499,7 @@ function SingleProduct() {
           }",  // add if you have manufacturer part number
       "brand": {
         "@type": "Brand",
-        "name": "${product.brand || "Glamgait"}"  // Use your actual brand name
+        "name": "${product.brand || "Kundrat"}"  // Use your actual brand name
       },
       "color": "${selectedColor?.color?.color_name || ""}",
       "size": "${selectedSize?.size?.size_name || "Free Size"}",
@@ -515,7 +515,7 @@ function SingleProduct() {
           }",
         "seller": {
           "@type": "Organization",
-          "name": "Glamgait"
+          "name": "Kundrat"
         }
       },
       "aggregateRating": ${reviewsSummary.average_rating

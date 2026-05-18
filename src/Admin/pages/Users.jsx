@@ -25,12 +25,28 @@ const Users = () => {
     first_name: "",
   });
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (pageNumber) => {
     try {
-      const response = await adminAxios.get(`${ApiURL}/getallusers`);
+      const page = typeof pageNumber === "number" ? pageNumber : currentPage;
+      const response = await adminAxios.get(`${ApiURL}/getusers`, {
+        params: {
+          page: page,
+          limit: itemsPerPage,
+          search: searchTerm,
+        },
+      });
       if (response?.data?.status) {
-        setUsers(response?.data?.data || []);
-        setTotalPages(Math.ceil((response?.data?.data?.length || 0) / itemsPerPage));
+        const responseData = response?.data?.data;
+        if (responseData && Array.isArray(responseData.users)) {
+          setUsers(responseData.users);
+          setTotalPages(responseData.totalPages || 1);
+        } else if (Array.isArray(responseData)) {
+          setUsers(responseData);
+          setTotalPages(Math.ceil(responseData.length / itemsPerPage));
+        } else {
+          setUsers([]);
+          setTotalPages(1);
+        }
       } else {
         setUsers([]);
         setTotalPages(1);
@@ -115,13 +131,13 @@ const Users = () => {
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       Email
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       Actions
-                    </th>
+                    </th> */}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-                  {users.map((user) => (
+                  {users.filter((user) => user.role === "user").map((user) => (
                     <tr
                       key={user.u_id}
                       className="hover:bg-gray-50 transition-all duration-200"
@@ -135,7 +151,7 @@ const Users = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         {user.email}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-right">
                         <button
                           onClick={() => handleDelete(user.u_id, user.first_name)}
                           className="text-red-600 hover:text-red-900 cursor-pointer"
@@ -143,7 +159,7 @@ const Users = () => {
                         >
                           <Trash2 className="h-5 w-5" />
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>

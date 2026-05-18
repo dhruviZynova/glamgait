@@ -218,10 +218,13 @@ const Profileorder = () => {
                     </div>
 
                     {/* Actions */}
-                    {/* Actions */}
                     <div className="flex flex-col sm:flex-row justify-end flex-wrap gap-3 w-full mt-6 sm:mt-0">
-                      {order.status === ORDER_STATUS.DELIVERED && (
-                        <>
+                      {[
+                        ORDER_STATUS.PENDING,
+                        ORDER_STATUS.ACCEPTED,
+                        ORDER_STATUS.PREPARING,
+                        ORDER_STATUS.SHIPPED,
+                      ].includes(order.status) && (
                           <button
                             onClick={() => {
                               setSelectedOrderId(order.orderId);
@@ -231,17 +234,18 @@ const Profileorder = () => {
                           >
                             Cancel Order
                           </button>
-                          <button
-                            onClick={() => {
-                              setSelectedOrderId(order.orderId);
-                              setShowReturnModal(true);
-                            }}
-                            className="w-full sm:w-auto bg-white border-2 border-[#004534] text-[#004534] px-6 py-2.5 rounded-lg font-bold hover:bg-[#004534] hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
-                          >
-                            <RefreshCcw size={16} />
-                            Return Order
-                          </button>
-                        </>
+                        )}
+                      {order.status === ORDER_STATUS.DELIVERED && (
+                        <button
+                          onClick={() => {
+                            setSelectedOrderId(order.orderId);
+                            setShowReturnModal(true);
+                          }}
+                          className="w-full sm:w-auto bg-white border-2 border-[#004534] text-[#004534] px-6 py-2.5 rounded-lg font-bold hover:bg-[#004534] hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
+                        >
+                          <RefreshCcw size={16} />
+                          Return Order
+                        </button>
                       )}
                       {order.status === ORDER_STATUS.CANCELLED && (
                         <div className="flex items-center justify-center gap-2 px-6 py-2.5 bg-red-50 text-red-600 rounded-lg font-bold border border-red-100 text-sm">
