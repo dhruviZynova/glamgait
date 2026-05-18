@@ -25,7 +25,7 @@ const Footer = () => {
     fetchCategories();
   }, []);
   return (
-    <footer className="relative lg:min-h-[550px] w-full bg-[#1C2F2F] font-inter text-white overflow-hidden px-4 md:px-10 lg:px-20">
+    <footer className="relative w-full bg-[#1C2F2F] font-inter text-white overflow-hidden px-4 md:px-10 lg:px-20">
 
       {/* Decorative Lamps */}
       <img
@@ -74,6 +74,45 @@ const Footer = () => {
               <p className="pt-4 text-[#F6F6F6] font-[Nunito Sans] text-sm lg:text-base leading-relaxed break-words">
                 Glamgait is your go-to destination for trendy, affordable, and high-quality fashion for women , crafted to bring style, comfort, and confidence into everyday life.
               </p>
+            </div>
+            {/* Social Media Icons */}
+            <div className="flex space-x-4">
+              <a
+                href="https://www.facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-gray-300 transition-colors cursor-pointer"
+                aria-label="Facebook"
+              >
+                <FaFacebook className="h-6 w-6 text-[#F6F6F6]" />
+              </a>
+              <a
+                href="https://dribbble.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-pink-400 transition-colors cursor-pointer"
+                aria-label="Dribbble"
+              >
+                <FaDribbble className="h-6 w-6 text-[#F6F6F6]" />
+              </a>
+              <a
+                href="https://www.instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-pink-400 transition-colors cursor-pointer"
+                aria-label="Instagram"
+              >
+                <FaInstagram className="h-6 w-6 text-[#F6F6F6]" />
+              </a>
+              <a
+                href="https://www.threads.net"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-gray-300 transition-colors cursor-pointer"
+                aria-label="Threads"
+              >
+                <FaThreads className="h-6 w-6 text-[#F6F6F6]" />
+              </a>
             </div>
           </div>
 
@@ -159,51 +198,12 @@ const Footer = () => {
       </div>
 
       {/* Bottom Section */}
-      <div className="w-full flex flex-col justify-center items-center gap-4 sm:my-8 mt-10 mb-32">
+      <div className="w-full flex flex-col justify-center items-center gap-4 sm:mt-8 mt-10 mb-2">
         {/* Copyright */}
         <div className="text-center md:text-left">
           <p className="text-[#F6F6F6] font-[Nunito Sans] text-sm lg:text-base">
             © 2025 Netural. Design by Zynova Solutions
           </p>
-        </div>
-        {/* Social Media Icons */}
-        <div className="flex space-x-4">
-          <a
-            href="https://www.facebook.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-gray-300 transition-colors cursor-pointer"
-            aria-label="Facebook"
-          >
-            <FaFacebook className="h-6 w-6 text-[#F6F6F6]" />
-          </a>
-          <a
-            href="https://dribbble.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-pink-400 transition-colors cursor-pointer"
-            aria-label="Dribbble"
-          >
-            <FaDribbble className="h-6 w-6 text-[#F6F6F6]" />
-          </a>
-          <a
-            href="https://www.instagram.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-pink-400 transition-colors cursor-pointer"
-            aria-label="Instagram"
-          >
-            <FaInstagram className="h-6 w-6 text-[#F6F6F6]" />
-          </a>
-          <a
-            href="https://www.threads.net"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-gray-300 transition-colors cursor-pointer"
-            aria-label="Threads"
-          >
-            <FaThreads className="h-6 w-6 text-[#F6F6F6]" />
-          </a>
         </div>
       </div>
     </footer>

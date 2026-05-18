@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect } from "react";
+import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 const scrollPositions = {};
@@ -11,15 +11,17 @@ export default function useScrollRestoration(pageKey) {
   const shouldRestore = allowedPages.includes(pathname);
 
   // Restore scroll position
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (shouldRestore) {
       const savedY = scrollPositions[pageKey];
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         window.scrollTo({ top: savedY || 0, behavior: "instant" });
-      });
+      }, 0);
     } else {
       // For all other pages → ALWAYS scroll to top
-      window.scrollTo({ top: 0, behavior: "instant" });
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }, 0);
     }
   }, [pathname, pageKey, shouldRestore]);
 
