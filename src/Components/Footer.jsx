@@ -202,7 +202,7 @@ const Footer = () => {
         {/* Copyright */}
         <div className="text-center md:text-left">
           <p className="text-[#F6F6F6] font-[Nunito Sans] text-sm lg:text-base">
-            © 2025 Netural. Design by Zynova Solutions
+            © 2025 Glamgait - All rights reserved
           </p>
         </div>
       </div>
