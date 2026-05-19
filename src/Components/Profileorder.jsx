@@ -4,13 +4,13 @@ import SideBar from "./SideBar";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
-import { Package, XCircle } from "lucide-react";
+import { Package, XCircle, RefreshCcw, Receipt, ArrowLeftRight } from "lucide-react";
 import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 import CancelOrderModal from "./CancelOrderModal";
 import ReturnOrderModal from "./ReturnOrderModal";
 import { ORDER_STATUS, STATUS_LABELS } from "../utils/constants";
-import { RefreshCcw } from "lucide-react";
+import InvoiceModal from "./InvoiceModal";
 
 const Profileorder = () => {
 
@@ -19,6 +19,30 @@ const Profileorder = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState(null);
+  const [isCreditNote, setIsCreditNote] = useState(false);
+
+  const canShowInvoice = (order) => {
+    if (!order) return false;
+    const payStatus = order.paymentStatus?.toLowerCase() || "";
+    if (payStatus.includes("failed") || payStatus.includes("pending")) return false;
+
+    return [
+      ORDER_STATUS.ACCEPTED,
+      ORDER_STATUS.PREPARING,
+      ORDER_STATUS.SHIPPED,
+      ORDER_STATUS.DELIVERED
+    ].includes(order.status);
+  };
+
+  const canShowCreditNote = (order) => {
+    if (!order) return false;
+    return [
+      ORDER_STATUS.CANCELLED,
+      ORDER_STATUS.RETURNED
+    ].includes(order.status);
+  };
   const navigate = useNavigate();
   const tabs = ["Active", "Completed", "Cancelled", "Returned"];
   const user = userInfo();
@@ -135,12 +159,12 @@ const Profileorder = () => {
             </h2>
 
             {/* Tabs */}
-            <div className="flex border-b-2 border-[#F6F6F6] mb-8 relative">
+            <div className="flex border-b-2 border-[#F6F6F6] mb-8 relative overflow-x-auto w-full scrollbar-none whitespace-nowrap">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`relative py-2 px-8 text-base sm:text-lg font-semibold transition-all duration-300 text-center rounded-[4px] cursor-pointer ${activeTab === tab
+                  className={`relative py-2 px-4 sm:px-8 text-sm sm:text-base md:text-lg font-semibold transition-all duration-300 text-center rounded-[4px] cursor-pointer border-none outline-none focus:outline-none focus:ring-0 flex-shrink-0 ${activeTab === tab
                     ? "text-[#3C4242] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#1a1a1a] bg-[#F6F6F6]"
                     : "text-[#3C4242] hover:text-[#1a1a1a]"
                     }`}
@@ -163,20 +187,20 @@ const Profileorder = () => {
                       <div>
                         <h3 className="text-lg font-semibold text-[#1a1a1a] mb-2">Order no: #{order.orderId}</h3>
                         <p className="text-sm">
-                          <span className="text-[#3C4242] font-[Causten] font-600">Order Date : </span><span className="text-[#3C4242] font-[Causten] font-600">{new Date(order.createdAt).toLocaleDateString()}</span>
+                          <span className="text-gray-500 font-[Causten] font-600">Order Date : </span><span className="text-[#3C4242] font-[Causten] font-600">{new Date(order.createdAt).toLocaleDateString()}</span>
                         </p>
                         <p className="text-sm">
-                          <span className="text-[#3C4242] font-[Causten] font-600">Estimated Delivery Date : </span><span className="text-[#3C4242] font-[Causten] font-600">{new Date(new Date(order.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}</span>
+                          <span className="text-gray-500 font-[Causten] font-600">Estimated Delivery Date : </span><span className="text-[#3C4242] font-[Causten] font-600">{new Date(new Date(order.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}</span>
                         </p>
                       </div>
                     </div>
 
                     <div className="text-left md:text-right space-y-1">
                       <p className="text-sm">
-                        <span className="text-[#3C4242] font-[Causten] font-600">Order Status : </span><span className={`font-[Causten] font-600 capitalize ${order.status === ORDER_STATUS.CANCELLED ? "text-red-500" : order.status === ORDER_STATUS.RETURNED ? "text-orange-500" : "text-[#3C4242]"}`}>{STATUS_LABELS[order.status] || "Unknown"}</span>
+                        <span className="text-gray-500 font-[Causten] font-600">Order Status : </span><span className={`font-[Causten] font-600 capitalize ${order.status === ORDER_STATUS.CANCELLED ? "text-red-500" : order.status === ORDER_STATUS.RETURNED ? "text-orange-500" : "text-[#3C4242]"}`}>{STATUS_LABELS[order.status] || "Unknown"}</span>
                       </p>
                       <p className="text-sm">
-                        <span className="text-[#3C4242] font-[Causten] font-600">Payment Method : </span><span className="text-[#3C4242] font-[Causten] font-600">{order.paymentStatus}</span>
+                        <span className="text-gray-500 font-[Causten] font-600">Payment Method : </span><span className="text-[#3C4242] font-[Causten] font-600">{order.paymentStatus}</span>
                       </p>
                     </div>
                   </div>
@@ -259,6 +283,32 @@ const Profileorder = () => {
                           <span>Returned</span>
                         </div>
                       )}
+                      {canShowInvoice(order) && (
+                        <button
+                          onClick={() => {
+                            setSelectedOrderForInvoice(order);
+                            setIsCreditNote(false);
+                            setShowInvoiceModal(true);
+                          }}
+                          className="w-full sm:w-auto bg-white border-2 border-emerald-600 text-emerald-600 px-6 py-2.5 rounded-lg font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
+                        >
+                          <Receipt size={16} />
+                          Invoice
+                        </button>
+                      )}
+                      {canShowCreditNote(order) && (
+                        <button
+                          onClick={() => {
+                            setSelectedOrderForInvoice(order);
+                            setIsCreditNote(true);
+                            setShowInvoiceModal(true);
+                          }}
+                          className="w-full sm:w-auto bg-white border-2 border-rose-600 text-rose-600 px-6 py-2.5 rounded-lg font-bold hover:bg-rose-600 hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
+                        >
+                          <ArrowLeftRight size={16} />
+                          Credit Note
+                        </button>
+                      )}
                       <button
                         onClick={() => navigate(`/orderdetails/${order.orderId}`)}
                         className="w-full sm:w-auto bg-[#004534] text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-[#00382e] transition shadow-md cursor-pointer text-sm"
@@ -289,6 +339,12 @@ const Profileorder = () => {
             onClose={() => setShowReturnModal(false)}
             onConfirm={handleReturnOrder}
             orderId={selectedOrderId}
+          />
+          <InvoiceModal
+            isOpen={showInvoiceModal}
+            onClose={() => setShowInvoiceModal(false)}
+            order={selectedOrderForInvoice}
+            isCreditNote={isCreditNote}
           />
         </div>
       </div>

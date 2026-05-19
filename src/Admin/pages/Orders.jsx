@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FaTrash,
   FaRupeeSign,
@@ -17,6 +17,20 @@ import { ORDER_STATUS, STATUS_LABELS, STATUS_COLORS } from "../../utils/constant
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
+  const [openDropdownKey, setOpenDropdownKey] = useState(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setOpenDropdownKey(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -177,7 +191,7 @@ const AdminOrders = () => {
   };
 
   return (
-    <div className="pb-8 min-h-screen bg-gray-50">
+    <div className="pb-8 min-h-screen bg-gray-50" ref={containerRef}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -459,28 +473,91 @@ const AdminOrders = () => {
                                 </button>
                               ) : (
                                 <div className="space-y-3">
-                                  <select
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm font-bold focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                                    onChange={(e) =>
-                                      setSelectedLogistic(
-                                        logistics.find(
-                                          (l) =>
-                                            String(l.logistic_id) ===
-                                            e.target.value,
-                                        ),
-                                      )
-                                    }
-                                  >
-                                    <option value="">Select Carrier</option>
-                                    {logistics.map((l) => (
-                                      <option
-                                        key={l.logistic_id}
-                                        value={l.logistic_id}
-                                      >
-                                        {l.logistic} – ₹{l.total}
-                                      </option>
-                                    ))}
-                                  </select>
+                                  <div className="relative">
+                                    <button
+                                      type="button"
+                                      onClick={() => setOpenDropdownKey(openDropdownKey === `carrier-${order.orderId}` ? null : `carrier-${order.orderId}`)}
+                                      className="flex items-center justify-between w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm font-bold focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all cursor-pointer"
+                                    >
+                                      <span>
+                                        {selectedLogistic ? `${selectedLogistic.logistic} – ₹${selectedLogistic.total}` : "Select Carrier"}
+                                      </span>
+                                      <FaChevronDown
+                                        className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+                                          openDropdownKey === `carrier-${order.orderId}` ? "rotate-180 text-[#0f1115]" : ""
+                                        }`}
+                                      />
+                                    </button>
+
+                                    {openDropdownKey === `carrier-${order.orderId}` && (
+                                      <div className="absolute left-0 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setSelectedLogistic(null);
+                                            setOpenDropdownKey(null);
+                                          }}
+                                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${
+                                            !selectedLogistic
+                                              ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                          }`}
+                                        >
+                                          <span>Select Carrier</span>
+                                          {!selectedLogistic && (
+                                            <svg
+                                              className="w-4 h-4 text-[#0f1115]"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              viewBox="0 0 24 24"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2.5"
+                                                d="M5 13l4 4L19 7"
+                                              />
+                                            </svg>
+                                          )}
+                                        </button>
+                                        {logistics.map((l) => {
+                                          const isSelected = selectedLogistic?.logistic_id === l.logistic_id;
+                                          return (
+                                            <button
+                                              key={l.logistic_id}
+                                              type="button"
+                                              onClick={() => {
+                                                setSelectedLogistic(l);
+                                                setOpenDropdownKey(null);
+                                              }}
+                                              className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${
+                                                isSelected
+                                                  ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                              }`}
+                                            >
+                                              <span>{l.logistic} – ₹{l.total}</span>
+                                              {isSelected && (
+                                                <svg
+                                                  className="w-4 h-4 text-[#0f1115]"
+                                                  fill="none"
+                                                  stroke="currentColor"
+                                                  viewBox="0 0 24 24"
+                                                >
+                                                  <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2.5"
+                                                    d="M5 13l4 4L19 7"
+                                                  />
+                                                </svg>
+                                              )}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
 
                                   {selectedLogistic && (
                                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
@@ -500,7 +577,7 @@ const AdminOrders = () => {
                                     disabled={
                                       !selectedLogistic || loadingLogistics
                                     }
-                                    className="w-full py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-sm active:scale-95"
+                                    className="w-full py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-sm active:scale-95 cursor-pointer"
                                   >
                                     {loadingLogistics ? (
                                       <FaSpinner size={14} className="animate-spin mx-auto" />
@@ -514,17 +591,62 @@ const AdminOrders = () => {
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">
                                   Update Status
                                 </span>
-                                <select
-                                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm font-bold focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                                  value={order.status}
-                                  onChange={(e) => updateOrderStatus(order.orderId, e.target.value)}
-                                >
-                                  {Object.values(ORDER_STATUS).map((value) => (
-                                    <option key={value} value={value}>
-                                      {STATUS_LABELS[value]}
-                                    </option>
-                                  ))}
-                                </select>
+                                <div className="relative">
+                                  <button
+                                    type="button"
+                                    onClick={() => setOpenDropdownKey(openDropdownKey === `status-${order.orderId}` ? null : `status-${order.orderId}`)}
+                                    className="flex items-center justify-between w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm font-bold focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all cursor-pointer"
+                                  >
+                                    <span>
+                                      {STATUS_LABELS[order.status] || "Unknown"}
+                                    </span>
+                                    <FaChevronDown
+                                      className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+                                        openDropdownKey === `status-${order.orderId}` ? "rotate-180 text-[#0f1115]" : ""
+                                      }`}
+                                    />
+                                  </button>
+
+                                  {openDropdownKey === `status-${order.orderId}` && (
+                                    <div className="absolute left-0 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
+                                      {Object.values(ORDER_STATUS).map((value) => {
+                                        const isSelected = order.status === value;
+                                        return (
+                                          <button
+                                            key={value}
+                                            type="button"
+                                            onClick={() => {
+                                              updateOrderStatus(order.orderId, value);
+                                              setOpenDropdownKey(null);
+                                            }}
+                                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${
+                                              isSelected
+                                                ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                            }`}
+                                          >
+                                            <span>{STATUS_LABELS[value]}</span>
+                                            {isSelected && (
+                                              <svg
+                                                className="w-4 h-4 text-[#0f1115]"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                              >
+                                                <path
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  strokeWidth="2.5"
+                                                  d="M5 13l4 4L19 7"
+                                                />
+                                              </svg>
+                                            )}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
 
                               <button

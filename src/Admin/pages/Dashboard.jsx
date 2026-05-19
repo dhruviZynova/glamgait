@@ -27,6 +27,7 @@ import {
   XCircle,
   Truck,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { ApiURL } from "../../Variable";
 import { adminAxios } from "../../Axios/axios";
 import { ORDER_STATUS, STATUS_LABELS, STATUS_COLORS } from "../../utils/constants";
@@ -502,8 +503,11 @@ const Dashboard = () => {
 
         {/* Recent Orders */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
+          <div className="flex  items-center justify-between p-6 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
+            <Link to="/admin/orders">
+              <button className="mt-2 px-4 py-2 text-black hover:text-gray-600 underline cursor-pointer">View All Orders</button>
+            </Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -530,10 +534,10 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {recentOrders?.map((order) => (
+                {recentOrders?.slice(0, 10).map((order) => (
                   <tr key={order.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">
-                      #{order.id}
+                      {order.id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {order.user?.fullName || order.user?.name || "N/A"}

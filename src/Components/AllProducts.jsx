@@ -9,6 +9,13 @@ import { getGuestId } from "../utils/guest";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import ProductCard from "./ProductCard";
 
+const sortOptions = [
+  { value: "a-z", label: "Alphabetical (A-Z)" },
+  { value: "z-a", label: "Alphabetical (Z-A)" },
+  { value: "low-high", label: "Price (Low to High)" },
+  { value: "high-low", label: "Price (High to Low)" },
+];
+
 const Allproducts = () => {
   ScrollToTop();
   const [searchTerm, setSearchTerm] = useState("");
@@ -75,6 +82,8 @@ const Allproducts = () => {
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [sortBy, setSortBy] = useState("a-z");
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   const [cateId, setCateId] = useState(null);
@@ -92,6 +101,18 @@ const Allproducts = () => {
   const navigate = useNavigate();
   const { user } = useUser();
 
+  // Close sort dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target)) {
+        setIsSortDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Set selected filters from URL filterValue (infer type by matching in filters)
 
@@ -517,9 +538,6 @@ const Allproducts = () => {
       console.error("Wishlist refresh failed", err);
     }
   };
-
-
-
 
   useEffect(() => {
     let title = "";
@@ -1065,20 +1083,60 @@ const Allproducts = () => {
                 </p>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 font-medium">Sort by:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => {
-                      setSortBy(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    className="bg-transparent border-none text-sm font-semibold text-gray-900 focus:ring-0 cursor-pointer outline-none"
-                  >
-                    <option value="a-z">Alphabetical (A-Z)</option>
-                    <option value="z-a">Alphabetical (Z-A)</option>
-                    <option value="low-high">Price (Low to High)</option>
-                    <option value="high-low">Price (High to Low)</option>
-                  </select>
+                  <span className="text-sm text-gray-500 font-medium font-[Oxygen]">Sort by:</span>
+                  <div className="relative" ref={sortDropdownRef}>
+                    <button
+                      onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                      className="flex items-center gap-1.5 text-sm font-[Oxygen] text-gray-900 cursor-pointer"
+                    >
+                      <span>
+                        {sortOptions.find((opt) => opt.value === sortBy)?.label || "Select Sort"}
+                      </span>
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-200 ${isSortDropdownOpen ? "rotate-180 text-[#73287E]" : ""
+                          }`}
+                      />
+                    </button>
+
+                    {isSortDropdownOpen && (
+                      <div className="absolute right-0 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-y-auto z-[100] transform origin-top-right transition-all duration-200">
+                        {sortOptions.map((option) => {
+                          const isSelected = option.value === sortBy;
+                          return (
+                            <button
+                              key={option.value}
+                              onClick={() => {
+                                setSortBy(option.value);
+                                setCurrentPage(1);
+                                setIsSortDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-[Oxygen] ${isSelected
+                                ? "bg-[#23403b]/10 text-[#23403b] font-semibold"
+                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                }`}
+                            >
+                              <span>{option.label}</span>
+                              {isSelected && (
+                                <svg
+                                  className="w-4 h-4 text-[#23403b]"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2.5"
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

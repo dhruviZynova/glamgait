@@ -115,9 +115,9 @@ const CollectionBanner = () => {
                   <span className="text-white text-1xl md:text-2xl font-700 font-bold mb-2 font-Playfair Display transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 tracking-wide">
                     {card.label}
                   </span>
-                  <button className="text-white/80 text-sm font-semibold uppercase tracking-widest flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
+                  {/* <button className="text-white/80 text-sm font-semibold uppercase tracking-widest flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
                     Shop Now <span className="text-lg">→</span>
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </div>
@@ -141,7 +141,7 @@ const CollectionBanner = () => {
             {/* Mobile Label Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-transparent to-transparent flex flex-col justify-end p-5">
               <span className="text-white text-xl font-700 font-bold mb-2 font-Playfair Display">{card.label}</span>
-              <span className="text-white/80 text-xs mt-1 uppercase tracking-wider">Shop Now</span>
+              {/* <span className="text-white/80 text-xs mt-1 uppercase tracking-wider">Shop Now</span> */}
             </div>
           </div>
         ))}

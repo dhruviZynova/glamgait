@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { ChevronDown } from "lucide-react";
 import {
   PlusIcon,
   TrashIcon,
@@ -13,6 +14,20 @@ const SubCategories = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [subCategoryData, setSubCategoryData] = useState([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const [categoryData, setCategoryData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mediaPreview, setMediaPreview] = useState(null);
@@ -320,23 +335,91 @@ const SubCategories = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Parent Category *
                 </label>
-                <select
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
-                  value={formData.cate_id || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, cate_id: e.target.value })
-                  }
-                  required
-                >
-                  <option value="" disabled>
-                    Select a category
-                  </option>
-                  {categoryData?.map((category) => (
-                    <option key={category.cate_id} value={category.cate_id}>
-                      {category.cate_name}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center justify-between w-full px-3 py-2 border rounded-lg text-sm text-gray-900 bg-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-black"
+                  >
+                    <span>
+                      {categoryData?.find(cat => String(cat.cate_id) === String(formData.cate_id))?.cate_name || "Select a category"}
+                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+                        isDropdownOpen ? "rotate-180 text-[#0f1115]" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {isDropdownOpen && (
+                    <div className="absolute left-0 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData({ ...formData, cate_id: "" });
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
+                          !formData.cate_id
+                            ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        }`}
+                      >
+                        <span>Select a category</span>
+                        {!formData.cate_id && (
+                          <svg
+                            className="w-4 h-4 text-[#0f1115]"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2.5"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                      {categoryData?.map((category) => {
+                        const isSelected = String(category.cate_id) === String(formData.cate_id);
+                        return (
+                          <button
+                            key={category.cate_id}
+                            type="button"
+                            onClick={() => {
+                              setFormData({ ...formData, cate_id: category.cate_id });
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
+                              isSelected
+                                ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                            }`}
+                          >
+                            <span>{category.cate_name}</span>
+                            {isSelected && (
+                              <svg
+                                className="w-4 h-4 text-[#0f1115]"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2.5"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* SEO Fields */}

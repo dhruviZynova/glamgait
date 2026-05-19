@@ -4,12 +4,12 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import { Pagination, Autoplay } from "swiper/modules";
+import { Link } from "react-router-dom";
 
 import axiosInstance from "../Axios/axios";
-import { ApiURL } from "../Variable";
+import { ApiURL, createSlug, getFullImageUrl } from "../Variable";
 
 const CategorySection = () => {
-    // const bottomImages = [c1, c2, c3, c1];
     const [categoryData, setCategoryData] = useState([]);
 
     const fetchCategories = async () => {
@@ -30,7 +30,6 @@ const CategorySection = () => {
     return (
         <section
             className="category-section"
-        // style={{ backgroundImage: `url(${bgPattern})` }}
         >
             <div className="container">
                 <div className="category-header">
@@ -50,32 +49,43 @@ const CategorySection = () => {
                             480: {
                                 slidesPerView: 2,
                                 spaceBetween: 20,
+                                slidesPerGroup: 1
                             },
                             768: {
                                 slidesPerView: 3,
                                 spaceBetween: 30,
+                                slidesPerGroup: 1
                             },
                             1024: {
                                 slidesPerView: 4,
                                 spaceBetween: 30,
+                                slidesPerGroup: 1
                             },
                         }}
                         className="bottom-swiper"
                     >
-                        {categoryData.length > 0 && categoryData.map((category, index) => (
-                            <SwiperSlide key={category?.cate_id || index}>
-                                <div className="bottom-img-wrapper">
-                                    <img
-                                        src={`${category?.cate_image}`}
-                                        alt={category?.cate_name}
-                                        className="bottom-img"
-                                    />
-                                    <div className="category-name-overlay">
-                                        <span>{category?.cate_name}</span>
-                                    </div>
-                                </div>
-                            </SwiperSlide>
-                        ))}
+                        {categoryData.length > 0 && categoryData.map((category, index) => {
+                            const imageUrl = category?.cate_image
+                                ? getFullImageUrl(category.cate_image, "Category")
+                                : "";
+                            const cateSlug = createSlug(category?.cate_name);
+                            return (
+                                <SwiperSlide key={category?.cate_id || index}>
+                                    <Link to={`/collections/${cateSlug}`} className="bottom-card-link">
+                                        <div className="bottom-img-wrapper">
+                                            <img
+                                                src={imageUrl}
+                                                alt={category?.cate_name}
+                                                className="bottom-img"
+                                            />
+                                            <div className="category-name-overlay">
+                                                <span>{category?.cate_name}</span>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </SwiperSlide>
+                            );
+                        })}
                     </Swiper>
                 </div>
             </div>

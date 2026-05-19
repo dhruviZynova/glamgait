@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 // src/pages/admin/PromotionsManagement.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { ChevronDown } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable"; // adjust path if needed
 import { adminAxios } from "../../Axios/axios";
 import {
@@ -17,6 +18,20 @@ const PromotionsManagement = () => {
   const [offers, setOffers] = useState([]);
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -318,17 +333,118 @@ const PromotionsManagement = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Offer Type
                     </label>
-                    <select
-                      name="offer_type"
-                      value={formData.offer_type || ""}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                      required
-                    >
-                      <option value="">Select type</option>
-                      <option value="QTY">Quantity Based</option>
-                      <option value="CART">Cart Amount Based</option>
-                    </select>
+                    <div className="relative" ref={dropdownRef}>
+                      <button
+                        type="button"
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className="flex items-center justify-between w-full px-3 py-2 border rounded-lg text-sm text-gray-900 bg-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-black"
+                      >
+                        <span>
+                          {formData.offer_type === "QTY"
+                            ? "Quantity Based"
+                            : formData.offer_type === "CART"
+                            ? "Cart Amount Based"
+                            : "Select type"}
+                        </span>
+                        <ChevronDown
+                          className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+                            isDropdownOpen ? "rotate-180 text-[#0f1115]" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {isDropdownOpen && (
+                        <div className="absolute left-0 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleChange({ target: { name: "offer_type", value: "" } });
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
+                              !formData.offer_type
+                                ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                            }`}
+                          >
+                            <span>Select type</span>
+                            {!formData.offer_type && (
+                              <svg
+                                className="w-4 h-4 text-[#0f1115]"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2.5"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleChange({ target: { name: "offer_type", value: "QTY" } });
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
+                              formData.offer_type === "QTY"
+                                ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                            }`}
+                          >
+                            <span>Quantity Based</span>
+                            {formData.offer_type === "QTY" && (
+                              <svg
+                                className="w-4 h-4 text-[#0f1115]"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2.5"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleChange({ target: { name: "offer_type", value: "CART" } });
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
+                              formData.offer_type === "CART"
+                                ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                            }`}
+                          >
+                            <span>Cart Amount Based</span>
+                            {formData.offer_type === "CART" && (
+                              <svg
+                                className="w-4 h-4 text-[#0f1115]"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2.5"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {formData.offer_type === "QTY" && (
