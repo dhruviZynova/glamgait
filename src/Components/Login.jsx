@@ -106,11 +106,11 @@ const Login = () => {
 
   return (
     <>
-      <div className="w-full pt-20 pb-16 px-6 md:px-12 lg:px-20 flex items-center justify-center overflow-hidden font-sans">
+      <div className="w-full pt-20 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center overflow-hidden font-sans">
         {/* Login Card */}
-        <div className="relative z-20 w-full max-w-5xl mx-4 rounded-xl flex flex-col md:flex-row min-h-auto">
+        <div className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
           {/* Left Side: Login Form */}
-          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
+          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2">Login</h1>
             <p className="text-sm text-gray-500 mb-8">
               Do not have an account, <span onClick={() => navigate("/register", { state: { from } })} className="underline cursor-pointer">create a new one.</span>

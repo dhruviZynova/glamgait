@@ -183,7 +183,7 @@ const AdminLogin = () => {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className={`relative w-full py-3 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-[1.02] bg-amber-600 hover:bg-amber-700 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`relative w-full py-3 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-[1.02] bg-amber-600 hover:bg-amber-700 cursor-pointer ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     <div className="relative flex items-center justify-center">
                                         {loading ? (

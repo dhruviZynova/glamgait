@@ -13,13 +13,13 @@ const WhatsAppIcon = () => {
       href={whatsappLink}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-50"
+      className="fixed bottom-16 md:fixed md:bottom-6 right-6 z-50"
       aria-label="Chat on WhatsApp"
     >
       <img
         src={whatsapp}
         alt="WhatsApp Chat"
-        className="w-12 h-12 md:w-12 md:h-12 hover:scale-110 transition-transform duration-300 rounded-full"
+        className="w-10 h-10 hover:scale-110 transition-transform duration-300 rounded-full"
       />
     </a>
   );

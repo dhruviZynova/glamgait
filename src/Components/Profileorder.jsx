@@ -145,7 +145,7 @@ const Profileorder = () => {
 
   return (
     <>
-      <div className="w-full lg:pt-0 pt-8 px-2 md:px-8 xl:px-24">
+      <div className="w-full lg:pt-0 pt-4 px-2 md:px-8 xl:px-24">
         <div className="flex flex-col md:flex-row font-inter">
           {/* Sidebar */}
           <div className="w-full md:w-1/4">
@@ -153,7 +153,7 @@ const Profileorder = () => {
           </div>
 
           {/* Main content */}
-          <div className="flex-1 p-4 sm:p-6 md:p-8">
+          <div className="flex-1 p-2 sm:p-6 md:p-8">
             <h2 className="text-3xl font-semibold mb-8 text-[#1a1a1a]">
               My Orders
             </h2>
@@ -179,7 +179,7 @@ const Profileorder = () => {
               {filteredOrders?.map((order) => (
                 <div
                   key={order.orderId}
-                  className="bg-white rounded-2xl p-6 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100"
+                  className="bg-white rounded-2xl p-4 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100"
                 >
                   {/* Header Info */}
                   <div className="flex flex-col md:flex-row justify-between gap-6 mb-6">

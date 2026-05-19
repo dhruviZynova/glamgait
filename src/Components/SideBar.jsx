@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { User, Package, Menu, X, LogOut, AlertTriangle } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { userInfo } from "../Variable";
 import { useUser } from "../Context/UserContext";
 
 const SideBar = ({ onMenuChange = () => { } }) => {
@@ -35,7 +34,7 @@ const SideBar = ({ onMenuChange = () => { } }) => {
   return (
     <>
       {/* Mobile Header */}
-      <div className="md:hidden px-5 py-4 flex justify-between items-center sticky top-0 z-20">
+      <div className="md:hidden px-2 py-4 flex justify-between items-center sticky top-0 z-20">
         <h1 className="text-lg font-semibold text-gray-900">My Account</h1>
         <button onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X size={22} /> : <Menu size={22} />}
