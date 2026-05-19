@@ -2,13 +2,14 @@ import { useState } from "react";
 import { User, Package, Menu, X, LogOut, AlertTriangle } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { userInfo } from "../Variable";
+import { useUser } from "../Context/UserContext";
 
 const SideBar = ({ onMenuChange = () => { } }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const user = userInfo();
+  const { user, logout } = useUser();
 
   const activeMenu =
     location.pathname === "/myinfo"
@@ -27,7 +28,7 @@ const SideBar = ({ onMenuChange = () => { } }) => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("GlamGait");
+    logout();
     navigate("/");
   };
 

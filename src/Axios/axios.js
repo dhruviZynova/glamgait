@@ -77,7 +77,7 @@ const setupInterceptors = (instance, infoGetter, storageKey) => {
 
       // Handle Token Expiry (401 Unauthorized)
       if (error?.response?.status === 401) {
-        localStorage.removeItem(storageKey);
+        sessionStorage.removeItem(storageKey);
         if (!window.location.pathname.includes('/login')) {
           window.location.href = '/login';
         }

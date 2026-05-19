@@ -10,7 +10,7 @@ export const SecretKey = import.meta.env.VITE_APP_SECRET_KEY;
 
 export const userInfo = () => {
   try {
-    const userData = localStorage.getItem("GlamGait");
+    const userData = sessionStorage.getItem("GlamGait");
     if (userData) {
       const parsedData = JSON.parse(userData);
 
@@ -30,14 +30,14 @@ export const userInfo = () => {
     }
     return null;
   } catch (error) {
-    console.log(error, "Error parsing UserData from Localstorage");
+    console.log(error, "Error parsing UserData from Sessionstorage");
     return null;
   }
 };
 
 export const adminInfo = () => {
   try {
-    const adminData = localStorage.getItem("GlamGaitAdmin");
+    const adminData = sessionStorage.getItem("GlamGaitAdmin");
     if (adminData) {
       const parsedData = JSON.parse(adminData);
 
@@ -58,7 +58,7 @@ export const adminInfo = () => {
     }
     return null;
   } catch (error) {
-    console.log(error, "Error parsing AdminData from Localstorage");
+    console.log(error, "Error parsing AdminData from Sessionstorage");
     return null;
   }
 };

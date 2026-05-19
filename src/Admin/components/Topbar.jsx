@@ -5,13 +5,15 @@ import {
 import { LogOut } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../../Context/UserContext";
 
 const Topbar = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { logout } = useUser();
 
   const handleLogout = () => {
-    localStorage.removeItem("GlamGaitAdmin");
+    logout();
     navigate("/admin/login");
   };
 

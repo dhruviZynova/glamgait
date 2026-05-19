@@ -7,6 +7,7 @@ import { ApiURL } from "../Variable";
 import toast from "react-hot-toast";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa"; // Importing eye icons if available, otherwise will fallback
 import BrandBanner from "./BrandBanner";
+import { useUser } from "../Context/UserContext";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { refreshUser } = useUser();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,10 +36,10 @@ const Login = () => {
         };
 
         try {
-          localStorage.setItem("GlamGait", JSON.stringify(userSessionData));
-
+          sessionStorage.setItem("GlamGait", JSON.stringify(userSessionData));
+          refreshUser();
         } catch (error) {
-          console.error("Error storing data in localStorage:", error);
+          console.error("Error storing data in sessionStorage:", error);
         }
 
         toast.success(response.data.description);
