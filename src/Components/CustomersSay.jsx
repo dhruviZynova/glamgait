@@ -24,11 +24,6 @@ const CustomersSay = () => {
         {
           page: 1,
           perPage: 10,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${userData?.auth_token}`,
-          },
         }
       );
 

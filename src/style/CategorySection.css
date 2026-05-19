@@ -9,11 +9,12 @@
     content: "";
     position: absolute;
     inset: 0;
-    background-image: url(/src/assets/images/transprantbg1.png);
+    background-image: url(../assets/images/transprantbg1.png);
     background-repeat: repeat-x;
     background-position: top center;
-    background-size: contain;
+    /* background-size: contain; */
     filter: grayscale(1);
+    background-size: auto 400px;
     opacity: 0.3;
     z-index: 0;
     pointer-events: none;
@@ -129,7 +130,8 @@
     max-height: 480px;
     overflow: hidden;
     border-radius: 12px;
-    background-color: #f3f4f6; /* Beautiful gray fallback when image is loading */
+    background-color: #f3f4f6;
+    /* Beautiful gray fallback when image is loading */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 

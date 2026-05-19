@@ -149,7 +149,7 @@ const ProductDetail = () => {
   return (
     <div className="pb-8">
       {/* Header */}
-      <div className="max-w-7xl mx-auto mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-700 hover:text-black cursor-pointer"
