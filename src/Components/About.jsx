@@ -12,7 +12,7 @@ import {
 import "../style/About.css";
 
 // Importing assets
-import leftlight from "../assets/leftlight.png";
+// import leftlight from "../assets/leftlight.png";
 // import rightlight from "../assets/rightlight.png";
 import aboutHeroNew from "../assets/images/indian_muslim_fashion_banner.png";
 import storyImg from "../assets/hero1.jpg";
@@ -57,7 +57,7 @@ const About = () => {
         </div>
 
         {/* Floating Decorators */}
-        <img src={leftlight} alt="" className="floating-decorator decorator-1" />
+        {/* <img src={leftlight} alt="" className="floating-decorator decorator-1" /> */}
         {/* <img src={rightlight} alt="" className="floating-decorator decorator-2" /> */}
       </section>
 
