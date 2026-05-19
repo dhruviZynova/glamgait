@@ -146,7 +146,7 @@ const Product = () => {
         {products.map((product) => (
           <div
             key={product.p_id}
-            className="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100"
+            className="group relative bg-white rounded-2xl overflow-hidden transition-all duration-300 border border-gray-100"
           >
             <Link to={`/admin/product/${product.p_id}`} className="block">
               <div className="relative aspect-square overflow-hidden bg-gray-50">

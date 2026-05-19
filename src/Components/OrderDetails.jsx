@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { ChevronLeft, Package, Truck, CheckCircle, MapPin, X, XCircle } from "lucide-react";
+import { ChevronLeft, Package, Truck, CheckCircle, MapPin, X, XCircle, RefreshCcw, Receipt, ArrowLeftRight } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import SideBar from "./SideBar";
 import axiosInstance from "../Axios/axios";
@@ -10,7 +10,7 @@ import CancelOrderModal from "./CancelOrderModal";
 import ReturnOrderModal from "./ReturnOrderModal";
 import { getGuestId } from "../utils/guest";
 import { ORDER_STATUS } from "../utils/constants";
-import { RefreshCcw } from "lucide-react";
+import InvoiceModal from "./InvoiceModal";
 
 const OrderDetails = () => {
   const navigate = useNavigate();
@@ -20,10 +20,33 @@ const OrderDetails = () => {
   const [loading, setLoading] = useState(true);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [isCreditNote, setIsCreditNote] = useState(false);
   const user = userInfo();
   const u_id = user?.u_id;
   const guestId = getGuestId();
   const isLoggedIn = !!u_id;
+
+  const canShowInvoice = () => {
+    if (!order) return false;
+    const payStatus = order.paymentStatus?.toLowerCase() || "";
+    if (payStatus.includes("failed") || payStatus.includes("pending")) return false;
+    
+    return [
+      ORDER_STATUS.ACCEPTED,
+      ORDER_STATUS.PREPARING,
+      ORDER_STATUS.SHIPPED,
+      ORDER_STATUS.DELIVERED
+    ].includes(order.status);
+  };
+
+  const canShowCreditNote = () => {
+    if (!order) return false;
+    return [
+      ORDER_STATUS.CANCELLED,
+      ORDER_STATUS.RETURNED
+    ].includes(order.status);
+  };
 
   // 1. Fetch Order Details
   useEffect(() => {
@@ -109,7 +132,7 @@ const OrderDetails = () => {
 
 
   const steps = ["Order Placed", "Inprogress", "shipped", "Delivered"];
-  
+
   const getStatusStep = (status) => {
     const s = status?.toLowerCase();
     if (s === "delivered") return 3;
@@ -166,7 +189,7 @@ const OrderDetails = () => {
                 />
                 <h2 className="text-3xl font-semibold">Order Details</h2>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                 {/* Both buttons only show when status is DELIVERED */}
                 {[
@@ -175,13 +198,13 @@ const OrderDetails = () => {
                   ORDER_STATUS.PREPARING,
                   ORDER_STATUS.SHIPPED,
                 ].includes(order.status) && (
-                  <button
-                    onClick={() => setShowCancelModal(true)}
-                    className="w-full sm:w-auto bg-white border-2 border-[#b32b2b] text-[#b32b2b] px-6 py-2.5 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition shadow-sm cursor-pointer text-sm"
-                  >
-                    Cancel Order
-                  </button>
-                )}
+                    <button
+                      onClick={() => setShowCancelModal(true)}
+                      className="w-full sm:w-auto bg-white border-2 border-[#b32b2b] text-[#b32b2b] px-6 py-2.5 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition shadow-sm cursor-pointer text-sm"
+                    >
+                      Cancel Order
+                    </button>
+                  )}
                 {order.status === ORDER_STATUS.DELIVERED && (
                   <button
                     onClick={() => setShowReturnModal(true)}
@@ -193,17 +216,43 @@ const OrderDetails = () => {
                 )}
 
                 {order.status === ORDER_STATUS.CANCELLED && (
-                   <div className="flex items-center justify-center gap-2 px-6 py-2.5 bg-red-50 text-red-600 rounded-lg font-bold border border-red-100 text-sm">
-                      <XCircle size={18} />
-                      <span>Cancelled</span>
-                   </div>
+                  <div className="flex items-center justify-center gap-2 px-6 py-2.5 bg-red-50 text-red-600 rounded-lg font-bold border border-red-100 text-sm">
+                    <XCircle size={18} />
+                    <span>Cancelled</span>
+                  </div>
                 )}
 
                 {order.status === ORDER_STATUS.RETURNED && (
-                   <div className="flex items-center justify-center gap-2 px-6 py-2.5 bg-orange-50 text-orange-600 rounded-lg font-bold border border-orange-100 text-sm">
-                      <RefreshCcw size={18} />
-                      <span>Returned</span>
-                   </div>
+                  <div className="flex items-center justify-center gap-2 px-6 py-2.5 bg-orange-50 text-orange-600 rounded-lg font-bold border border-orange-100 text-sm">
+                    <RefreshCcw size={18} />
+                    <span>Returned</span>
+                  </div>
+                )}
+
+                {canShowInvoice() && (
+                  <button
+                    onClick={() => {
+                      setIsCreditNote(false);
+                      setShowInvoiceModal(true);
+                    }}
+                    className="w-full sm:w-auto bg-white border-2 border-emerald-600 text-emerald-600 px-6 py-2.5 rounded-lg font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
+                  >
+                    <Receipt size={18} />
+                    Invoice
+                  </button>
+                )}
+
+                {canShowCreditNote() && (
+                  <button
+                    onClick={() => {
+                      setIsCreditNote(true);
+                      setShowInvoiceModal(true);
+                    }}
+                    className="w-full sm:w-auto bg-white border-2 border-rose-600 text-rose-600 px-6 py-2.5 rounded-lg font-bold hover:bg-rose-600 hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
+                  >
+                    <ArrowLeftRight size={18} />
+                    Credit Note
+                  </button>
                 )}
               </div>
             </div>
@@ -233,101 +282,99 @@ const OrderDetails = () => {
 
             {/* Stepper Tracking */}
             {order.status !== ORDER_STATUS.CANCELLED && (
-               <div className="mb-16 px-4">
-               <div className="relative max-w-4xl mx-auto">
-                 {/* Progress Bar Background */}
-                 <div className="absolute top-[10px] left-0 w-full h-1 bg-[#E0E0E0] rounded-full -translate-y-1/2"></div>
-                 
-                 {/* Progress Bar Active */}
-                 <div
-                   className="absolute top-[10px] left-0 h-1 bg-[#004534] rounded-full transition-all duration-700 ease-in-out -translate-y-1/2"
-                   style={{ width: `${progressWidth}%` }}
-                 ></div>
+              <div className="mb-16 px-4">
+                <div className="relative max-w-4xl mx-auto">
+                  {/* Progress Bar Background */}
+                  <div className="absolute top-[10px] left-0 w-full h-1 bg-[#E0E0E0] rounded-full -translate-y-1/2"></div>
 
-                 {/* Steps */}
-                 <div className="relative flex justify-between items-start">
-                   {steps.map((step, idx) => (
-                     <div key={idx} className="flex flex-col items-center w-24">
-                       <div 
-                         className={`w-5 h-5 rounded-full border-2 z-10 transition-colors duration-500 flex items-center justify-center ${
-                           idx <= currentStep 
-                             ? "bg-[#004534] border-[#004534]" 
-                             : "bg-white border-[#E0E0E0]"
-                         }`}
-                       >
-                         {idx < currentStep && <CheckCircle size={10} className="text-white" />}
-                         {idx === currentStep && <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />}
-                       </div>
-                       <p 
-                         className={`mt-4 text-[12px] sm:text-sm font-bold text-center capitalize transition-colors duration-500 ${
-                           idx <= currentStep ? "text-[#004534]" : "text-[#BEBCBD]"
-                         }`}
-                       >
-                         {step}
-                       </p>
-                     </div>
-                   ))}
-                 </div>
-               </div>
+                  {/* Progress Bar Active */}
+                  <div
+                    className="absolute top-[10px] left-0 h-1 bg-[#004534] rounded-full transition-all duration-700 ease-in-out -translate-y-1/2"
+                    style={{ width: `${progressWidth}%` }}
+                  ></div>
 
-               {/* Status Highlight Banner */}
-               <div className="mt-12 relative max-w-4xl mx-auto">
-                 {/* Pointer Arrow - Clamped to stay within banner bounds */}
-                 <div 
-                   className="absolute -top-2.5 w-5 h-5 bg-[#f9f9f9] rotate-45 -translate-x-1/2 border-l border-t border-[#807D7E33] hidden sm:block transition-all duration-700 ease-in-out z-0"
-                   style={{ 
-                     left: `${Math.min(Math.max(progressWidth, 5), 95)}%`
-                   }}
-                 ></div>
+                  {/* Steps */}
+                  <div className="relative flex justify-between items-start">
+                    {steps.map((step, idx) => (
+                      <div key={idx} className="flex flex-col items-center w-24">
+                        <div
+                          className={`w-5 h-5 rounded-full border-2 z-10 transition-colors duration-500 flex items-center justify-center ${idx <= currentStep
+                              ? "bg-[#004534] border-[#004534]"
+                              : "bg-white border-[#E0E0E0]"
+                            }`}
+                        >
+                          {idx < currentStep && <CheckCircle size={10} className="text-white" />}
+                          {idx === currentStep && <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />}
+                        </div>
+                        <p
+                          className={`mt-4 text-[12px] sm:text-sm font-bold text-center capitalize transition-colors duration-500 ${idx <= currentStep ? "text-[#004534]" : "text-[#BEBCBD]"
+                            }`}
+                        >
+                          {step}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-                 <div className="bg-[#f9f9f9] rounded-2xl p-6 border border-[#807D7E33] flex flex-col sm:flex-row justify-between items-center gap-6 relative z-10 shadow-[0_4px_15px_rgba(0,0,0,0.02)]">
-                   <div className="flex items-center gap-4">
-                     <div className="w-12 h-12 rounded-full bg-[#00453410] flex items-center justify-center text-[#004534] flex-shrink-0">
-                       <Package size={24} />
-                     </div>
-                     <div>
-                       <p className="text-[10px] text-[#807D7E] font-bold uppercase tracking-widest mb-0.5">Order Status</p>
-                       <p className="text-base text-[#3C4242] font-bold">{getStatusMessage(order.status_label)}</p>
-                     </div>
-                   </div>
-                   <div className="text-left sm:text-right flex-shrink-0">
-                     <p className="text-[10px] text-[#807D7E] font-bold uppercase tracking-widest mb-0.5">Last Update</p>
-                     <p className="text-sm text-[#1a1a1a] font-bold">
-                       {order.updatedAt 
-                         ? new Date(order.updatedAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                         : order.createdAt
-                           ? new Date(order.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                           : "N/A"
-                       }
-                     </p>
-                   </div>
-                 </div>
-               </div>
-             </div>
+                {/* Status Highlight Banner */}
+                <div className="mt-12 relative max-w-4xl mx-auto">
+                  {/* Pointer Arrow - Clamped to stay within banner bounds */}
+                  <div
+                    className="absolute -top-2.5 w-5 h-5 bg-[#f9f9f9] rotate-45 -translate-x-1/2 border-l border-t border-[#807D7E33] hidden sm:block transition-all duration-700 ease-in-out z-0"
+                    style={{
+                      left: `${Math.min(Math.max(progressWidth, 5), 95)}%`
+                    }}
+                  ></div>
+
+                  <div className="bg-[#f9f9f9] rounded-2xl p-6 border border-[#807D7E33] flex flex-col sm:flex-row justify-between items-center gap-6 relative z-10 shadow-[0_4px_15px_rgba(0,0,0,0.02)]">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-[#00453410] flex items-center justify-center text-[#004534] flex-shrink-0">
+                        <Package size={24} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-[#807D7E] font-bold uppercase tracking-widest mb-0.5">Order Status</p>
+                        <p className="text-base text-[#3C4242] font-bold">{getStatusMessage(order.status_label)}</p>
+                      </div>
+                    </div>
+                    <div className="text-left sm:text-right flex-shrink-0">
+                      <p className="text-[10px] text-[#807D7E] font-bold uppercase tracking-widest mb-0.5">Last Update</p>
+                      <p className="text-sm text-[#1a1a1a] font-bold">
+                        {order.updatedAt
+                          ? new Date(order.updatedAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                          : order.createdAt
+                            ? new Date(order.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                            : "N/A"
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
 
             {order.status === ORDER_STATUS.CANCELLED && (
-               <div className="mb-16 bg-red-50 p-8 rounded-2xl border border-red-100 flex flex-col items-center text-center max-w-4xl mx-auto shadow-sm">
-                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-red-600 mb-4">
-                     <XCircle size={40} />
-                  </div>
-                  <h3 className="text-2xl font-bold text-red-700 mb-2">Order Cancelled</h3>
-                  <p className="text-red-600 max-w-md mx-auto">
-                     This order was cancelled. If you have any questions or would like to re-order, please contact our support team.
-                  </p>
-               </div>
+              <div className="mb-16 bg-red-50 p-8 rounded-2xl border border-red-100 flex flex-col items-center text-center max-w-4xl mx-auto shadow-sm">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-red-600 mb-4">
+                  <XCircle size={40} />
+                </div>
+                <h3 className="text-2xl font-bold text-red-700 mb-2">Order Cancelled</h3>
+                <p className="text-red-600 max-w-md mx-auto">
+                  This order was cancelled. If you have any questions or would like to re-order, please contact our support team.
+                </p>
+              </div>
             )}
 
             {order.status === ORDER_STATUS.RETURNED && (
-               <div className="mb-16 bg-orange-50 p-8 rounded-2xl border border-orange-100 flex flex-col items-center text-center max-w-4xl mx-auto shadow-sm">
-                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 mb-4">
-                     <RefreshCcw size={40} />
-                  </div>
-                  <h3 className="text-2xl font-bold text-orange-700 mb-2">Order Returned</h3>
-                  <p className="text-orange-600 max-w-md mx-auto">
-                     A return request has been processed for this order. We will contact you shortly regarding the pickup and refund.
-                  </p>
-               </div>
+              <div className="mb-16 bg-orange-50 p-8 rounded-2xl border border-orange-100 flex flex-col items-center text-center max-w-4xl mx-auto shadow-sm">
+                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 mb-4">
+                  <RefreshCcw size={40} />
+                </div>
+                <h3 className="text-2xl font-bold text-orange-700 mb-2">Order Returned</h3>
+                <p className="text-orange-600 max-w-md mx-auto">
+                  A return request has been processed for this order. We will contact you shortly regarding the pickup and refund.
+                </p>
+              </div>
             )}
 
             {/* Products List */}
@@ -371,18 +418,25 @@ const OrderDetails = () => {
         </div>
       </div >
 
-      <CancelOrderModal 
+      <CancelOrderModal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
         onConfirm={handleCancelOrder}
         orderId={orderId}
       />
 
-      <ReturnOrderModal 
+      <ReturnOrderModal
         isOpen={showReturnModal}
         onClose={() => setShowReturnModal(false)}
         onConfirm={handleReturnOrder}
         orderId={orderId}
+      />
+
+      <InvoiceModal
+        isOpen={showInvoiceModal}
+        onClose={() => setShowInvoiceModal(false)}
+        order={order}
+        isCreditNote={isCreditNote}
       />
 
       <BrandBanner />

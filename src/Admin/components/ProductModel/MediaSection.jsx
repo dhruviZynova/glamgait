@@ -1,5 +1,5 @@
-import React from "react";
-import { PlusCircle, Trash2, X } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { PlusCircle, Trash2, X, ChevronDown } from "lucide-react";
 import { ApiURL } from "../../../Variable";
 
 const MediaSection = ({
@@ -10,31 +10,116 @@ const MediaSection = ({
   setExistingMedia,
   setDeletedMediaIds
 }) => {
+  const [openColorIndex, setOpenColorIndex] = useState(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setOpenColorIndex(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div className="bg-gray-50 p-6 rounded-xl">
+    <div className="bg-gray-50 p-6 rounded-xl" ref={containerRef}>
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         Colors & Media (Images + Videos)
       </h3>
       {formData.colors.map((color, i) => (
         <div key={i} className="bg-white p-4 rounded-lg border mb-4">
           <div className="flex gap-4 items-center">
-            <select
-              value={color.color_id}
-              onChange={(e) => {
-                const updated = [...formData.colors];
-                updated[i].color_id = e.target.value;
-                setFormData({ ...formData, colors: updated });
-              }}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-            >
-              <option value="">Select Color</option>
-              {colorsList.map((c) => (
-                <option key={c.color_id} value={c.color_id}>
-                  {c.color_name}
-                </option>
-              ))}
-            </select>
-            <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded">
+            <div className="relative flex-1">
+              <button
+                type="button"
+                onClick={() => setOpenColorIndex(openColorIndex === i ? null : i)}
+                className="flex items-center justify-between w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                <span>
+                  {colorsList.find(c => String(c.color_id) === String(color.color_id))?.color_name || "Select Color"}
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 text-gray-500 transition-transform duration-200 flex-shrink-0 ${openColorIndex === i ? "rotate-180 text-[#0f1115]" : ""
+                    }`}
+                />
+              </button>
+
+              {openColorIndex === i && (
+                <div className="absolute left-0 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = [...formData.colors];
+                      updated[i].color_id = "";
+                      setFormData({ ...formData, colors: updated });
+                      setOpenColorIndex(null);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${!color.color_id
+                      ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      }`}
+                  >
+                    <span>Select Color</span>
+                    {!color.color_id && (
+                      <svg
+                        className="w-4 h-4 text-[#0f1115]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2.5"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                  {colorsList.map((c) => {
+                    const isSelected = String(c.color_id) === String(color.color_id);
+                    return (
+                      <button
+                        key={c.color_id}
+                        type="button"
+                        onClick={() => {
+                          const updated = [...formData.colors];
+                          updated[i].color_id = c.color_id;
+                          setFormData({ ...formData, colors: updated });
+                          setOpenColorIndex(null);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${isSelected
+                          ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                          }`}
+                      >
+                        <span>{c.color_name}</span>
+                        {isSelected && (
+                          <svg
+                            className="w-4 h-4 text-[#0f1115]"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2.5"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <label className="cursor-pointer bg-black hover:bg-gray-800 text-white px-4 py-2 rounded">
               Upload Images / Videos
               <input
                 type="file"
@@ -218,7 +303,7 @@ const MediaSection = ({
             colors: [...prev.colors, { color_id: "", images: [] }],
           }))
         }
-        className="text-blue-600 flex items-center gap-2 cursor-pointer"
+        className="text-black flex items-center gap-2 cursor-pointer"
       >
         <PlusCircle /> Add Color
       </button>

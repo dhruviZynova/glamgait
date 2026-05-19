@@ -221,8 +221,8 @@ const SearchResults = () => {
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
                     className={`px-4 py-2 rounded-lg ${currentPage === i + 1
-                        ? "bg-black text-white"
-                        : "bg-gray-200 hover:bg-gray-300"
+                      ? "bg-black text-white"
+                      : "bg-gray-200 hover:bg-gray-300"
                       }`}
                   >
                     {i + 1}

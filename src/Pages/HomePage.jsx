@@ -46,11 +46,11 @@ const HomePage = () => {
             <p className="text-sm sm:text-base md:text-lg text-gray-800 mb-6 md:mb-8 max-w-md font-medium">
               Discover our exclusive range of elegant, comfortable, and beautifully crafted modest wear tailored just for you.
             </p>
-            <div>
+            {/* <div>
               <button className="px-8 py-3 bg-[#113d33] rounded-full text-white text-sm md:text-base font-medium hover:bg-[#0d2e26] transition duration-300 shadow-md">
                 Explore Collection
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>

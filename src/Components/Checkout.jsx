@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Check, X, Loader2 } from "lucide-react";
+import { Check, X, Loader2, ChevronDown } from "lucide-react";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
@@ -18,6 +18,8 @@ const Checkout = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [addresses, setAddresses] = useState([]);
     const [selectedAddressId, setSelectedAddressId] = useState(null);
+    const [isAddressDropdownOpen, setIsAddressDropdownOpen] = useState(false);
+    const addressDropdownRef = useRef(null);
 
     const user = userInfo();
     const u_id = user?.u_id;
@@ -75,6 +77,19 @@ const Checkout = () => {
         fetchAddresses();
     }, [u_id, guestId]);
 
+    // Close address dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (addressDropdownRef.current && !addressDropdownRef.current.contains(event.target)) {
+                setIsAddressDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     const fillFormFromAddress = (addr) => {
         setSelectedAddressId(addr.add_id);
         setFormData(prev => ({
@@ -110,21 +125,93 @@ const Checkout = () => {
             {addresses.length > 0 && (
                 <div className="md:col-span-2 space-y-2 mb-4">
                     <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base font-semibold">Select Saved Address</label>
-                    <select
-                        onChange={(e) => {
-                            const addr = addresses.find(a => a.add_id.toString() === e.target.value);
-                            if (addr) fillFormFromAddress(addr);
-                        }}
-                        value={selectedAddressId || ""}
-                        className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                    >
-                        <option value="">-- Select an address --</option>
-                        {addresses.map(addr => (
-                            <option key={addr.add_id} value={addr.add_id}>
-                                {addr.address}, {addr.city} ({addr.first_name})
-                            </option>
-                        ))}
-                    </select>
+                    <div className="relative w-full" ref={addressDropdownRef}>
+                        <button
+                            type="button"
+                            onClick={() => setIsAddressDropdownOpen(!isAddressDropdownOpen)}
+                            className="flex items-center justify-between w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 text-sm text-[#3D3D3D] font-[Oxygen] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#1C2F2F]"
+                        >
+                            <span>
+                                {(() => {
+                                    const addr = addresses.find(a => a.add_id === selectedAddressId);
+                                    return addr ? `${addr.address}, ${addr.city} (${addr.first_name})` : "-- Select an address --";
+                                })()}
+                            </span>
+                            <ChevronDown
+                                className={`w-4 h-4 transition-transform duration-200 ${isAddressDropdownOpen ? "rotate-180 text-[#23403b]" : ""
+                                    }`}
+                            />
+                        </button>
+
+                        {isAddressDropdownOpen && (
+                            <div className="absolute left-0 w-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectedAddressId(null);
+                                        setIsAddressDropdownOpen(false);
+                                    }}
+                                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-[Oxygen] ${!selectedAddressId
+                                        ? "bg-[#23403b]/10 text-[#23403b] font-semibold"
+                                        : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                        }`}
+                                >
+                                    <span>-- Select an address --</span>
+                                    {!selectedAddressId && (
+                                        <svg
+                                            className="w-4 h-4 text-[#23403b]"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2.5"
+                                                d="M5 13l4 4L19 7"
+                                            />
+                                        </svg>
+                                    )}
+                                </button>
+                                {addresses.map((addr) => {
+                                    const isSelected = addr.add_id === selectedAddressId;
+                                    return (
+                                        <button
+                                            key={addr.add_id}
+                                            type="button"
+                                            onClick={() => {
+                                                fillFormFromAddress(addr);
+                                                setIsAddressDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-[Oxygen] ${isSelected
+                                                ? "bg-[#23403b]/10 text-[#23403b] font-semibold"
+                                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                                }`}
+                                        >
+                                            <span>
+                                                {addr.address}, {addr.city} ({addr.first_name})
+                                            </span>
+                                            {isSelected && (
+                                                <svg
+                                                    className="w-4 h-4 text-[#23403b]"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2.5"
+                                                        d="M5 13l4 4L19 7"
+                                                    />
+                                                </svg>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
             <div className="space-y-2">
@@ -178,11 +265,11 @@ const Checkout = () => {
                 />
             </div>
             <div className="space-y-2">
-                <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Town / City*</label>
+                <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Country*</label>
                 <input
                     type="text"
-                    name="townCity"
-                    value={formData.townCity}
+                    name="country"
+                    value={formData.country}
                     onChange={handleInputChange}
                     className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
                 />
@@ -198,11 +285,11 @@ const Checkout = () => {
                 />
             </div>
             <div className="space-y-2">
-                <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Country*</label>
+                <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Town / City*</label>
                 <input
                     type="text"
-                    name="country"
-                    value={formData.country}
+                    name="townCity"
+                    value={formData.townCity}
                     onChange={handleInputChange}
                     className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
                 />

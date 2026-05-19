@@ -23,7 +23,7 @@ const FashionShowcase = () => {
           <div className="relative z-10 h-full flex flex-col justify-end items-start p-6 bg-gradient-to-t from-black/100 via-black/30 to-transparent">
             <h2 className="text-white text-xl sm:text-2xl md:text-3xl lg:text-5xl font-bold font-playfair mb-2">Embroidered Abaya</h2>
             <p className="text-white text-xs md:text-sm lg:text-base opacity-90 mb-4 max-w-lg font-montserrat">Exquisite embroidery patterns for a sophisticated and elegant modest Islamic look.</p>
-            <button className="bg-white/20 border border-white text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-white/40 transition">Shop now <span className="text-xl">↗</span></button>
+            {/* <button className="bg-white/20 border border-white text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-white/40 transition">Shop now <span className="text-xl">↗</span></button> */}
           </div>
         </div>
         {/* Bottom Left: Single Niqab Card */}

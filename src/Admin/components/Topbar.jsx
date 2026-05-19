@@ -51,24 +51,17 @@ const Topbar = ({ onMenuClick }) => {
           </div>
         </div>
 
-        <div className="ml-4 flex items-center md:ml-6">
+        <div className="ml-4 flex items-center gap-1.5 md:ml-6">
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-none cursor-pointer"
+            className="bg-white cursor-pointer flex items-center gap-1.5"
           >
-            <span className="sr-only">Logout</span>
             <LogOut className="h-5 w-5 text-black" />
+            <span className="text-sm font-medium hidden md:block bg-white">
+              Logout
+            </span>
           </button>
-
-          {/* Profile dropdown */}
-          <div className="ml-3 relative">
-            <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-700 hidden md:block">
-                Kundrat
-              </span>
-            </div>
-          </div>
         </div>
       </div>
       {isModalOpen && (

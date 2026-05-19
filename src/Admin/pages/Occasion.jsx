@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { ChevronDown } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable";
 import { adminAxios } from "../../Axios/axios";
 import {
@@ -12,6 +13,20 @@ import ConfirmDeleteModal from "./ConfirmDeleteModal";
 const Occasions = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [occasionData, setOccasionData] = useState([]);
@@ -221,21 +236,91 @@ const Occasions = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Select Category
                 </label>
-                <select
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
-                  value={formData?.cate_id || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, cate_id: e.target.value })
-                  }
-                  required
-                >
-                  <option value="">-- Select Category --</option>
-                  {categoryData?.map((cat) => (
-                    <option key={cat.cate_id} value={cat.cate_id}>
-                      {cat.cate_name}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center justify-between w-full px-3 py-2 border rounded-lg text-sm text-gray-900 bg-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-black"
+                  >
+                    <span>
+                      {categoryData.find(cat => String(cat.cate_id) === String(formData?.cate_id))?.cate_name || "-- Select Category --"}
+                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+                        isDropdownOpen ? "rotate-180 text-[#0f1115]" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {isDropdownOpen && (
+                    <div className="absolute left-0 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData({ ...formData, cate_id: "" });
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
+                          !formData?.cate_id
+                            ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        }`}
+                      >
+                        <span>-- Select Category --</span>
+                        {!formData?.cate_id && (
+                          <svg
+                            className="w-4 h-4 text-[#0f1115]"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2.5"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                      {categoryData.map((cat) => {
+                        const isSelected = String(cat.cate_id) === String(formData?.cate_id);
+                        return (
+                          <button
+                            key={cat.cate_id}
+                            type="button"
+                            onClick={() => {
+                              setFormData({ ...formData, cate_id: cat.cate_id });
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
+                              isSelected
+                                ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                            }`}
+                          >
+                            <span>{cat.cate_name}</span>
+                            {isSelected && (
+                              <svg
+                                className="w-4 h-4 text-[#0f1115]"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2.5"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex justify-end gap-3">
                 <button
