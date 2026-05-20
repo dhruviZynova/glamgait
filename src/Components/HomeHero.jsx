@@ -3,8 +3,8 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { Autoplay } from "swiper/modules";
 
-import image1 from "../assets/about_hero_new.png";
-import image2 from "../assets/images/ramadan_fashion_hero_banner.png";
+import image1 from "../assets/about_hero_new.webp";
+import image2 from "../assets/images/ramadan_fashion_hero_banner.webp";
 
 const slides = [
   {
@@ -48,6 +48,9 @@ const HomeHero = () => {
 
   return (
     <section className="w-full relative h-[60vh] md:h-[85vh]">
+      {/* React 19 Preload Link - hoisted automatically to document <head> for LCP optimization */}
+      <link rel="preload" as="image" href={image1} fetchPriority="high" />
+
       {/* Fixed Backgrounds Rendered Outside Swiper so bg-fixed works perfectly like the About page */}
       {slides.map((slide, index) => (
         <div

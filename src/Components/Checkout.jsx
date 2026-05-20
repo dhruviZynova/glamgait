@@ -20,6 +20,7 @@ const Checkout = () => {
     const [selectedAddressId, setSelectedAddressId] = useState(null);
     const [isAddressDropdownOpen, setIsAddressDropdownOpen] = useState(false);
     const addressDropdownRef = useRef(null);
+    const isPlacingOrderRef = useRef(false);
 
     const user = userInfo();
     const u_id = user?.u_id;
@@ -446,6 +447,8 @@ const Checkout = () => {
             return;
         }
 
+        if (isPlacingOrderRef.current) return;
+        isPlacingOrderRef.current = true;
         setIsProcessing(true);
         try {
             const orderItems = cartItems.map((item) => ({
@@ -478,16 +481,22 @@ const Checkout = () => {
             if (formData.paymentMethod === "online") {
                 const checkoutUrl = apiBody?.data?.checkoutUrl;
                 const paymentId = apiBody?.data?.paymentId || apiBody?.data?.id || apiBody?.data?.paymentIntentId;
+                const order_id = apiBody?.data?.order_id || apiBody?.data?.orderId;
 
                 if (paymentId) {
                     sessionStorage.setItem('retryPaymentId', paymentId);
                 }
 
                 if (checkoutUrl) {
+                    sessionStorage.setItem('lastCheckoutUrl', checkoutUrl);
+                    if (order_id) {
+                        sessionStorage.setItem('lastOrderId', order_id);
+                    }
                     window.location.href = checkoutUrl;
                 } else {
                     toast.error('Failed to get payment checkout URL.');
                     setIsProcessing(false);
+                    isPlacingOrderRef.current = false;
                 }
             } else {
                 // Show success modal upon successful order placement (COD)
@@ -496,8 +505,12 @@ const Checkout = () => {
         } catch (err) {
             console.error(err);
             toast.error(err.message || "Failed to place order");
+            isPlacingOrderRef.current = false;
         } finally {
             setIsProcessing(false);
+            if (formData.paymentMethod !== "online") {
+                isPlacingOrderRef.current = false;
+            }
         }
     };
 

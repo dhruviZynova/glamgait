@@ -17,6 +17,7 @@ const AdminLogin = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (loading) return;
         setLoading(true);
 
         try {
@@ -183,7 +184,7 @@ const AdminLogin = () => {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className={`relative w-full py-3 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-[1.02] bg-amber-600 hover:bg-amber-700 cursor-pointer ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className="relative w-full py-3 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-[1.02] bg-amber-600 hover:bg-amber-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:scale-100"
                                 >
                                     <div className="relative flex items-center justify-center">
                                         {loading ? (
@@ -195,7 +196,7 @@ const AdminLogin = () => {
                                                 <span className="text-white">Login...</span>
                                             </>
                                         ) : (
-                                            <span className="text-white">Sign In to Admin Panel</span>
+                                            <span className="text-white">Login</span>
                                         )}
                                     </div>
                                 </button>

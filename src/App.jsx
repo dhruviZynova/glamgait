@@ -27,6 +27,7 @@ const Register = lazy(() => import("./Components/Register"));
 const ForgotPassword = lazy(() => import("./Components/ForgotPassword"));
 const ResetPassword = lazy(() => import("./Components/ResetPassword"));
 const VerifyOTP = lazy(() => import("./Components/VerifyOTP"));
+const ProtectedRoute = lazy(() => import("./Components/ProtectedRoute"));
 const PersonalInfo = lazy(() => import("./Components/PersonalInfo"));
 const Profileorder = lazy(() => import("./Components/Profileorder"));
 const OrderDetails = lazy(() => import("./Components/OrderDetails"));
@@ -129,10 +130,13 @@ function App() {
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:id" element={<SingleBlog />} />
-                <Route path="/myorders" element={<Profileorder />} />
-                <Route path="/orderdetails/:orderId" element={<OrderDetails />} />
-                <Route path="/myinfo" element={<PersonalInfo />} />
-                <Route path="/selectaddress" element={<SelectAddressPage />} />
+                {/* Protected User Routes */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/myorders" element={<Profileorder />} />
+                  <Route path="/orderdetails/:orderId" element={<OrderDetails />} />
+                  <Route path="/myinfo" element={<PersonalInfo />} />
+                  <Route path="/selectaddress" element={<SelectAddressPage />} />
+                </Route>
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/shipping-policy" element={<ShippingPolicy />} />
                 <Route path="/refund-policy" element={<RefundPolicy />} />

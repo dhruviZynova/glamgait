@@ -1,4 +1,4 @@
-import fontimg from '../assets/images/fontimg.png';
+import fontimg from '../assets/images/fontimg.webp';
 
 const BrandBanner = () => {
     return (
@@ -8,6 +8,7 @@ const BrandBanner = () => {
                     src={fontimg}
                     alt="Brand Banner"
                     className="w-full h-auto block"
+                    loading="lazy"
                 />
             </div>
         </section>

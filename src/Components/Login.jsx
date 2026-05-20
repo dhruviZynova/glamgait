@@ -16,12 +16,15 @@ const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const { refreshUser } = useUser();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
 
     try {
+      setSubmitting(true);
       const response = await axiosInstance.post(`${ApiURL}/userlogin`, {
         email,
         password,
@@ -101,6 +104,8 @@ const Login = () => {
       }
     } catch (err) {
       toast.error(err?.description || err?.message || "Invalid email or password");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -156,9 +161,10 @@ const Login = () => {
 
               <button
                 type="submit"
-                className="w-full bg-[#1A2C2C] text-white py-4 rounded-full font-bold text-lg hover:bg-opacity-90 transition-all duration-300 mt-4 shadow-lg cursor-pointer"
+                disabled={submitting}
+                className="w-full bg-[#1A2C2C] text-white py-4 rounded-full font-bold text-lg hover:bg-opacity-90 transition-all duration-300 mt-4 shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Login
+                {submitting ? "Login..." : "Login"}
               </button>
             </form>
 

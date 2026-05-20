@@ -1,31 +1,44 @@
-import React from "react";
-import CustomersSay from "../Components/CustomersSay";
+import React, { lazy, Suspense } from "react";
 import HomeHero from "../Components/HomeHero";
-import CategorySection from "../Components/CategorySection";
-import BannerSection from "../Components/BannerSection";
-import LatestArrivalsByCategories from "../Components/LatestArrivalsByCategories";
-import CollectionBanner from "../Components/CollectionBanner";
-import FashionShowcase from "../Components/FashionShowcase";
-import HolidayBanner from "../Components/HolidayBanner";
-import BrandBanner from "../Components/BrandBanner";
-import FAQSection from "../Components/FAQSection";
 
-import bgImage from "../assets/images/bgimage3.png";
+// Lazy-loaded components below the fold to keep the initial main bundle light
+const CategorySection = lazy(() => import("../Components/CategorySection"));
+const BannerSection = lazy(() => import("../Components/BannerSection"));
+const LatestArrivalsByCategories = lazy(() => import("../Components/LatestArrivalsByCategories"));
+const FashionShowcase = lazy(() => import("../Components/FashionShowcase"));
+const CollectionBanner = lazy(() => import("../Components/CollectionBanner"));
+const CustomersSay = lazy(() => import("../Components/CustomersSay"));
+const HolidayBanner = lazy(() => import("../Components/HolidayBanner"));
+const BrandBanner = lazy(() => import("../Components/BrandBanner"));
+const FAQSection = lazy(() => import("../Components/FAQSection"));
+
+import bgImage from "../assets/images/bgimage3.webp";
+
+// Lightweight placeholder height matching for subcomponents to prevent layout shifts (CLS)
+const SectionPlaceholder = ({ height = "h-40" }) => (
+  <div className={`w-full ${height} bg-[#F3F0ED] animate-pulse flex items-center justify-center`}>
+    <div className="w-8 h-8 border-2 border-[#113d33]/20 border-t-[#113d33] rounded-full animate-spin"></div>
+  </div>
+);
 
 const HomePage = () => {
   return (
     <div className="overflow-x-hidden relative">
-      {/* <Hero /> */}
       <HomeHero />
 
-      {/* <Categories /> */}
-      <CategorySection />
+      <Suspense fallback={<SectionPlaceholder height="h-64" />}>
+        <CategorySection />
+      </Suspense>
 
-      <BannerSection />
+      <Suspense fallback={<SectionPlaceholder height="h-96" />}>
+        <BannerSection />
+      </Suspense>
 
-      <LatestArrivalsByCategories />
+      <Suspense fallback={<SectionPlaceholder height="h-[600px]" />}>
+        <LatestArrivalsByCategories />
+      </Suspense>
 
-      {/* === Category Section === */}
+      {/* === Category Background Banner Section === */}
       <section className="relative w-full overflow-hidden py-6 md:py-16">
         {/* Background Image */}
         <div
@@ -46,35 +59,36 @@ const HomePage = () => {
             <p className="text-sm sm:text-base md:text-lg text-gray-800 mb-6 md:mb-8 max-w-md font-medium">
               Discover our exclusive range of elegant, comfortable, and beautifully crafted modest wear tailored just for you.
             </p>
-            {/* <div>
-              <button className="px-8 py-3 bg-[#113d33] rounded-full text-white text-sm md:text-base font-medium hover:bg-[#0d2e26] transition duration-300 shadow-md">
-                Explore Collection
-              </button>
-            </div> */}
           </div>
         </div>
       </section>
 
-      {/* === Fashion Showcase Section === */}
-      <FashionShowcase />
+      <Suspense fallback={<SectionPlaceholder height="h-[500px]" />}>
+        <FashionShowcase />
+      </Suspense>
 
-      {/* === Collection Banner Section === */}
-      <CollectionBanner />
+      <Suspense fallback={<SectionPlaceholder height="h-[450px]" />}>
+        <CollectionBanner />
+      </Suspense>
 
-      {/* === Customers Say Section === */}
-      <CustomersSay />
+      <Suspense fallback={<SectionPlaceholder height="h-[300px]" />}>
+        <CustomersSay />
+      </Suspense>
 
-      {/* === Holiday Banner Section === */}
-      <HolidayBanner />
+      <Suspense fallback={<SectionPlaceholder height="h-[350px]" />}>
+        <HolidayBanner />
+      </Suspense>
 
-      {/* === Brand Banner Section === */}
-      <BrandBanner />
+      <Suspense fallback={<SectionPlaceholder height="h-32" />}>
+        <BrandBanner />
+      </Suspense>
 
-      {/* === FAQ Section === */}
-      <FAQSection />
-
+      <Suspense fallback={<SectionPlaceholder height="h-[400px]" />}>
+        <FAQSection />
+      </Suspense>
     </div>
   );
 };
 
 export default HomePage;
+
