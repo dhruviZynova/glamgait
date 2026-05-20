@@ -43,6 +43,7 @@ const SelectAddress = () => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [onlineDiscount, setOnlineDiscount] = useState(0);
   const hasInitiatedCheckout = useRef(false);
+  const isPlacingOrderRef = useRef(false);
 
   useEffect(() => {
     if (cartItems.length > 0) {
@@ -147,6 +148,8 @@ const SelectAddress = () => {
       return;
     }
 
+    if (isPlacingOrderRef.current) return;
+    isPlacingOrderRef.current = true;
     setIsProcessing(true);
 
     try {
@@ -202,6 +205,9 @@ const SelectAddress = () => {
 
       // 4. Payment flow
       if (paymentMethod === "online") {
+        sessionStorage.setItem('lastOrderId', order_id);
+        sessionStorage.setItem('lastCheckoutUrl', 'razorpay');
+
         const options = {
           key: razorpayKEY,
           amount: amount * 100,
@@ -223,14 +229,33 @@ const SelectAddress = () => {
 
               if (verifyRes.data.status === 1) {
                 toast.success("Payment successful!");
-                navigate("/order-confirmation", {
-                  state: { orderId: order_id },
+                sessionStorage.removeItem('lastCheckoutUrl');
+                navigate(`/order-confirmation?status=success&orderId=${order_id}`, {
+                  state: { orderId: order_id, status: "success" },
                 });
               } else {
-                toast.error("Payment failed");
+                toast.error("Payment verification failed");
+                navigate(`/order-confirmation?status=failed&orderId=${order_id}`, {
+                  state: { orderId: order_id, status: "failed" },
+                });
               }
             } catch (err) {
               toast.error(err.message || "Payment verification failed");
+              navigate(`/order-confirmation?status=failed&orderId=${order_id}`, {
+                state: { orderId: order_id, status: "failed" },
+              });
+            } finally {
+              isPlacingOrderRef.current = false;
+              setIsProcessing(false);
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              isPlacingOrderRef.current = false;
+              setIsProcessing(false);
+              navigate(`/order-confirmation?status=cancel&orderId=${order_id}`, {
+                state: { orderId: order_id, status: "cancel" },
+              });
             }
           },
           prefill: {
@@ -245,13 +270,19 @@ const SelectAddress = () => {
         rzp.open();
       } else {
         toast.success("Order placed successfully!");
-        navigate("/order-confirmation", { state: { orderId: order_id } });
+        navigate(`/order-confirmation?status=success&orderId=${order_id}`, {
+          state: { orderId: order_id, status: "success" },
+        });
       }
     } catch (error) {
       toast.error(error.message || "Something went wrong");
       console.error(error);
+      isPlacingOrderRef.current = false;
     } finally {
       setIsProcessing(false);
+      if (paymentMethod !== "online") {
+        isPlacingOrderRef.current = false;
+      }
     }
   };
 

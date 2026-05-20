@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Radio, Phone, MapPin, User, X, Check, Plus } from "lucide-react";
 import toast from "react-hot-toast";
@@ -13,6 +13,7 @@ const SelectAddressPage = () => {
     const user = userInfo();
     const u_id = user?.u_id;
     const guestId = getGuestId();
+    const isPlacingOrderRef = useRef(false);
 
     // Get data from checkout page
     const { cartItems = [], formData: checkoutFormData = {} } = location.state || {};
@@ -100,6 +101,8 @@ const SelectAddressPage = () => {
             return;
         }
 
+        if (isPlacingOrderRef.current) return;
+        isPlacingOrderRef.current = true;
         setIsProcessing(true);
 
         try {
@@ -171,6 +174,9 @@ const SelectAddressPage = () => {
 
             // Handle payment
             if (paymentMethod === "online") {
+                sessionStorage.setItem('lastOrderId', newOrderId);
+                sessionStorage.setItem('lastCheckoutUrl', 'razorpay');
+
                 const options = {
                     key: razorpayKEY,
                     amount: amount * 100,
@@ -189,12 +195,33 @@ const SelectAddressPage = () => {
 
                             if (verifyRes.data.status === 1) {
                                 toast.success("Payment successful!");
-                                setShowSuccessModal(true);
+                                sessionStorage.removeItem('lastCheckoutUrl');
+                                navigate(`/order-confirmation?status=success&orderId=${newOrderId}`, {
+                                    state: { orderId: newOrderId, status: "success" },
+                                });
                             } else {
                                 toast.error("Payment verification failed");
+                                navigate(`/order-confirmation?status=failed&orderId=${newOrderId}`, {
+                                    state: { orderId: newOrderId, status: "failed" },
+                                });
                             }
                         } catch {
                             toast.error("Payment verification failed");
+                            navigate(`/order-confirmation?status=failed&orderId=${newOrderId}`, {
+                                state: { orderId: newOrderId, status: "failed" },
+                            });
+                        } finally {
+                            isPlacingOrderRef.current = false;
+                            setIsProcessing(false);
+                        }
+                    },
+                    modal: {
+                        ondismiss: () => {
+                            isPlacingOrderRef.current = false;
+                            setIsProcessing(false);
+                            navigate(`/order-confirmation?status=cancel&orderId=${newOrderId}`, {
+                                state: { orderId: newOrderId, status: "cancel" },
+                            });
                         }
                     },
                     prefill: {
@@ -210,16 +237,24 @@ const SelectAddressPage = () => {
                     rzp.open();
                 } else {
                     toast.error("Razorpay SDK not loaded");
+                    isPlacingOrderRef.current = false;
+                    setIsProcessing(false);
                 }
             } else {
                 toast.success("Order placed successfully!");
-                setShowSuccessModal(true);
+                navigate(`/order-confirmation?status=success&orderId=${newOrderId}`, {
+                    state: { orderId: newOrderId, status: "success" },
+                });
             }
         } catch (error) {
             toast.error(error.message || "Failed to place order");
             console.error(error);
+            isPlacingOrderRef.current = false;
         } finally {
             setIsProcessing(false);
+            if (paymentMethod !== "online") {
+                isPlacingOrderRef.current = false;
+            }
         }
     };
 
