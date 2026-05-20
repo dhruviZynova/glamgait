@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
-import "swiper/css/effect-fade";
-import { Autoplay, EffectFade } from "swiper/modules";
+import { Autoplay } from "swiper/modules";
 
 import image1 from "../assets/about_hero_new.png";
 import image2 from "../assets/images/ramadan_fashion_hero_banner.png";
@@ -49,7 +48,7 @@ const HomeHero = () => {
 
   return (
     <section className="w-full relative h-[60vh] md:h-[85vh]">
-      {/* Fixed Backgrounds Rendered Outside Swiper so bg-fixed works */}
+      {/* Fixed Backgrounds Rendered Outside Swiper so bg-fixed works perfectly like the About page */}
       {slides.map((slide, index) => (
         <div
           key={`bg-${slide.id}`}
@@ -63,11 +62,10 @@ const HomeHero = () => {
       ))}
 
       <Swiper
-        modules={[Autoplay, EffectFade]}
-        effect="fade"
-        fadeEffect={{ crossFade: true }}
+        modules={[Autoplay]}
         autoplay={{ delay: 5000, disableOnInteraction: false }}
         loop={true}
+        speed={1000}
         onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
         className="w-full h-full relative z-10"
       >
@@ -80,20 +78,12 @@ const HomeHero = () => {
                   <span className={`block text-sm md:text-base font-semibold tracking-widest uppercase mb-3 ${slide.subColor}`}>
                     {slide.subtitle}
                   </span>
-                  <h1 className={`text-4xl md:text-6xl font-serif mb-6 leading-tight whitespace-pre-line ${slide.textColor}`}>
+                  <h1 className={`text-2xl md:text-6xl font-serif mb-2 md:mb-6 leading-tight whitespace-pre-line ${slide.textColor}`}>
                     {slide.title}
                   </h1>
-                  <p className={`text-base md:text-lg mb-8 leading-relaxed ${slide.descColor}`}>
+                  <p className={`text-sm md:text-lg mb-4 md:mb-8 leading-relaxed ${slide.descColor}`}>
                     {slide.description}
                   </p>
-                  {/* <div className="flex flex-wrap gap-4 justify-start">
-                    <button className={`px-8 py-3 rounded-none uppercase text-sm font-medium tracking-wider border transition duration-300 cursor-pointer ${slide.btnPrimary}`}>
-                      {slide.btnPrimaryText}
-                    </button>
-                    <button className={`px-8 py-3 rounded-none uppercase text-sm font-medium tracking-wider border transition duration-300 cursor-pointer ${slide.btnSecondary}`}>
-                      {slide.btnSecondaryText}
-                    </button>
-                  </div> */}
                 </div>
               </div>
             </div>
