@@ -146,7 +146,7 @@ const AddAddress = ({
           <h3 className="text-xl font-semibold">
             {editingAddress ? "Edit Address" : "Add New Address"}
           </h3>
-          <button onClick={onClose} className="text-gray-600 hover:text-black">
+          <button onClick={onClose} className="text-gray-600 hover:text-black cursor-pointer">
             <X size={24} />
           </button>
         </div>
@@ -259,22 +259,20 @@ const AddAddress = ({
             <button
               type="button"
               onClick={() => setAddressType("HOME")}
-              className={`px-6 py-2 rounded-md font-medium transition-all ${
-                addressType === "HOME"
-                  ? "bg-[#063d32] text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+              className={`px-6 py-2 rounded-md font-medium transition-all cursor-pointer ${addressType === "HOME"
+                ? "bg-[#063d32] text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
             >
               HOME
             </button>
             <button
               type="button"
               onClick={() => setAddressType("WORK")}
-              className={`px-6 py-2 rounded-md font-medium transition-all ${
-                addressType === "WORK"
-                  ? "bg-[#063d32] text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+              className={`px-6 py-2 rounded-md font-medium transition-all cursor-pointer ${addressType === "WORK"
+                ? "bg-[#063d32] text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
             >
               WORK
             </button>
@@ -284,7 +282,7 @@ const AddAddress = ({
           <button
             type="submit"
             disabled={pincodeLoading}
-            className="w-full bg-[#063d32] text-white py-3 rounded-lg hover:bg-[#052d25] transition font-medium mt-6 disabled:opacity-70"
+            className="w-full bg-[#063d32] text-white py-3 rounded-lg hover:bg-[#052d25] transition font-medium mt-6 disabled:opacity-70 cursor-pointer"
           >
             {editingAddress ? "UPDATE" : "ADD"}
           </button>
