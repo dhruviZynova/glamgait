@@ -3,7 +3,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { Autoplay } from "swiper/modules";
 
-import image1 from "../assets/about_hero_new.webp";
+import image1 from "../assets/images/bgimage5.png";
 import image2 from "../assets/images/ramadan_fashion_hero_banner.webp";
 
 const slides = [

@@ -15,7 +15,7 @@ import "../style/About.css";
 // import leftlight from "../assets/leftlight.png";
 // import rightlight from "../assets/rightlight.png";
 import aboutHeroNew from "../assets/images/indian_muslim_fashion_banner.png";
-import storyImg from "../assets/hero1.jpg";
+import storyImg from "../assets/images/hero1.jpg";
 import pattern from "../assets/pattern.png";
 
 const About = () => {
