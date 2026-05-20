@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import SideBar from "./SideBar";
 import AddAddress from "./AddAddress";
 import axiosInstance from "../Axios/axios";
@@ -8,6 +9,7 @@ import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 
 const PersonalInfo = () => {
+  const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [editingField, setEditingField] = useState("");
   const [inputValue, setInputValue] = useState("");
@@ -212,15 +214,21 @@ const PersonalInfo = () => {
 
                         {isLoggedIn && editingField !== field && (
                           <button
-                            className="text-base font-semibold text-[#807D7E] hover:text-[#807D7E] transition-colors"
-                            onClick={() => handleEdit(field)}
+                            className="text-base font-semibold text-[#807D7E] hover:text-[#807D7E] transition-colors cursor-pointer"
+                            onClick={() => {
+                              if (field === "password") {
+                                navigate("/forgot-password");
+                              } else {
+                                handleEdit(field);
+                              }
+                            }}
                           >
                             Change
                           </button>
                         )}
                         {!isLoggedIn && field !== "password" && (
                           <button
-                            className="text-base font-semibold text-[#807D7E] cursor-not-allowed"
+                            className="text-base font-semibold text-[#807D7E] cursor-not-allowed cursor-pointer"
                             disabled
                             title="Login to change"
                           >
@@ -229,7 +237,7 @@ const PersonalInfo = () => {
                         )}
                         {!isLoggedIn && field === "password" && (
                           <button
-                            className="text-base font-semibold text-[#807D7E] cursor-not-allowed"
+                            className="text-base font-semibold text-[#807D7E] cursor-not-allowed cursor-pointer"
                             disabled
                           >
                             Change
@@ -254,7 +262,7 @@ const PersonalInfo = () => {
                       setEditingAddress(null);
                       setIsModalOpen(true);
                     }}
-                    className="text-base font-semibold text-[#807D7E] hover:text-[#807D7E] transition-colors"
+                    className="text-base font-semibold text-[#807D7E] hover:text-[#807D7E] transition-colors cursor-pointer"
                   >
                     Add New
                   </button>

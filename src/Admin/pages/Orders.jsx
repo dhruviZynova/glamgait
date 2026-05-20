@@ -230,7 +230,7 @@ const AdminOrders = () => {
               return (
                 <div
                   key={order.orderId}
-                  className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300"
+                  className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300"
                 >
                   {/* Card Header/Row */}
                   <div
@@ -310,7 +310,7 @@ const AdminOrders = () => {
 
                   {/* Expanded Details */}
                   {openOrderId === order.orderId && (
-                    <div className="px-6 pb-8 bg-gray-50/30 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="px-6 pb-8 bg-gray-50/30 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-300 rounded-b-3xl">
                       <div className="grid lg:grid-cols-3 gap-6 mt-8">
                         {/* Shipping Info */}
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
@@ -472,7 +472,7 @@ const AdminOrders = () => {
                                     <button
                                       type="button"
                                       onClick={() => setOpenDropdownKey(openDropdownKey === `carrier-${order.orderId}` ? null : `carrier-${order.orderId}`)}
-                                      className="flex items-center justify-between w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm font-bold focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all cursor-pointer"
+                                      className="flex items-center justify-between w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm font-bold focus:outline-none transition-all cursor-pointer"
                                     >
                                       <span>
                                         {selectedLogistic ? `${selectedLogistic.logistic} – ₹${selectedLogistic.total}` : "Select Carrier"}
@@ -491,7 +491,7 @@ const AdminOrders = () => {
                                             setSelectedLogistic(null);
                                             setOpenDropdownKey(null);
                                           }}
-                                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${!selectedLogistic
+                                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-semibold ${!selectedLogistic
                                             ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
                                             : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                                             }`}
@@ -580,14 +580,14 @@ const AdminOrders = () => {
                                 </div>
                               )}
                               <div className="pt-2">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">
+                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest block mb-2">
                                   Update Status
                                 </span>
                                 <div className="relative">
                                   <button
                                     type="button"
                                     onClick={() => setOpenDropdownKey(openDropdownKey === `status-${order.orderId}` ? null : `status-${order.orderId}`)}
-                                    className="flex items-center justify-between w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm font-bold focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all cursor-pointer"
+                                    className="flex items-center justify-between w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm font-bold focus:outline-none transition-all cursor-pointer"
                                   >
                                     <span>
                                       {STATUS_LABELS[order.status] || "Unknown"}
@@ -610,7 +610,7 @@ const AdminOrders = () => {
                                               updateOrderStatus(order.orderId, value);
                                               setOpenDropdownKey(null);
                                             }}
-                                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${isSelected
+                                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-semibold ${isSelected
                                               ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
                                               : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                                               }`}
