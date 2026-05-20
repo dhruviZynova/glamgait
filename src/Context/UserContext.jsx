@@ -32,8 +32,8 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   const logout = () => {
-    localStorage.removeItem('GlamGait');
-    localStorage.removeItem('GlamGaitAdmin');
+    sessionStorage.removeItem('GlamGait');
+    sessionStorage.removeItem('GlamGaitAdmin');
     setUser(null);
     setAdmin(null);
     window.dispatchEvent(new Event('storage'));

@@ -29,6 +29,21 @@ const Navbar = () => {
   const [megaMenuCache, setMegaMenuCache] = useState({});
   const [showAuthChoice, setShowAuthChoice] = useState(false);
 
+  const isAccountActive =
+    location.pathname === "/myorders" ||
+    location.pathname === "/myinfo" ||
+    location.pathname === "/login" ||
+    location.pathname === "/register" ||
+    location.pathname.startsWith("/orderdetails");
+
+  const isWishlistActive = location.pathname === "/wishlist";
+
+  const isCartActive =
+    location.pathname === "/cart" ||
+    location.pathname === "/checkout" ||
+    location.pathname === "/selectaddress" ||
+    location.pathname === "/order-confirmation";
+
   const desktopSearchRef = useRef(null);
   const navRef = useRef(null);
 
@@ -290,7 +305,7 @@ const Navbar = () => {
             </button>
 
             {/* 2. Heart/Wishlist Icon */}
-            <Link to="/wishlist" className="relative" aria-label={`Wishlist, ${wishlistCount} items`}>
+            <Link to="/wishlist" className="hidden lg:block relative" aria-label={`Wishlist, ${wishlistCount} items`}>
               <Heart className="cursor-pointer text-[#767676] hover:text-[#1C2F2F]" />
               <span className="absolute -top-2 -right-2 bg-[#1C2F2F] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                 {wishlistCount}
@@ -298,7 +313,7 @@ const Navbar = () => {
             </Link>
 
             {/* 3. Shopping Cart Icon */}
-            <Link to="/cart" className="relative" aria-label={`Shopping cart, ${cartCount} items`}>
+            <Link to="/cart" className="hidden lg:block relative" aria-label={`Shopping cart, ${cartCount} items`}>
               <ShoppingCart className="cursor-pointer text-[#767676] hover:text-[#1C2F2F]" />
               <span className="absolute -top-2 -right-2 bg-[#1C2F2F] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                 {cartCount}
@@ -307,7 +322,7 @@ const Navbar = () => {
 
             {/* 4. Custom User Icon */}
             <div
-              className="flex items-center gap-1 cursor-pointer text-[#767676] hover:text-black"
+              className="hidden lg:flex items-center gap-1 cursor-pointer text-[#767676] hover:text-black"
               aria-label={u_id && token ? "Account" : "Login"}
               role="button"
               onClick={() => {
@@ -323,7 +338,7 @@ const Navbar = () => {
                   {getUserInitials(user?.name)}
                 </div>
               ) : (
-                <FaUserCircle />
+                <FaUserCircle className="text-xl" />
               )}
             </div>
 
@@ -580,6 +595,58 @@ const Navbar = () => {
           </div>
         </>
       )}
+
+      {/* Premium iOS-Style Curved Glass Bottom Bar for Mobile */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200/50 shadow-[0_-8px_30px_rgba(28,47,47,0.05)] rounded-t-[28px] flex justify-around items-center py-2 px-4 z-[999]">
+        {/* Account / Profile Link */}
+        <div
+          className={`flex flex-col items-center justify-center cursor-pointer px-4 py-1.5 transition-colors duration-200 ${isAccountActive ? "text-[#1C2F2F]" : "text-[#767676]"}`}
+          onClick={() => {
+            if (u_id && token) {
+              navigate("/myorders");
+            } else {
+              navigate("/login", { state: { from: location.pathname + location.search } });
+            }
+          }}
+        >
+          {u_id && token ? (
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold mb-0.5 ${isAccountActive ? "bg-[#1C2F2F] text-white" : "bg-[#767676] text-white"}`}>
+              {getUserInitials(user?.name)}
+            </div>
+          ) : (
+            <FaUserCircle size={22} className="mb-0.5" />
+          )}
+          <span className={`text-[10px] tracking-wide ${isAccountActive ? "font-semibold" : "font-medium"}`}>Account</span>
+        </div>
+
+        {/* Wishlist Link */}
+        <Link
+          to="/wishlist"
+          className={`flex flex-col items-center justify-center relative px-4 py-1.5 transition-colors duration-200 ${isWishlistActive ? "text-[#1C2F2F]" : "text-[#767676]"}`}
+        >
+          <div className="relative">
+            <Heart size={22} className={`mb-0.5 transition-all duration-300 ${isWishlistActive ? "text-[#1C2F2F] fill-[#1C2F2F] scale-110" : "text-[#767676]"}`} />
+            <span className={`absolute -top-1.5 -right-2.5 bg-[#1C2F2F] text-white text-[9px] w-4.5 h-4.5 flex items-center justify-center rounded-full font-semibold transition-all duration-300 ${isWishlistActive ? "ring-2 ring-white scale-110" : ""}`}>
+              {wishlistCount}
+            </span>
+          </div>
+          <span className={`text-[10px] tracking-wide ${isWishlistActive ? "font-semibold" : "font-medium"}`}>Wishlist</span>
+        </Link>
+
+        {/* Cart Link */}
+        <Link
+          to="/cart"
+          className={`flex flex-col items-center justify-center relative px-4 py-1.5 transition-colors duration-200 ${isCartActive ? "text-[#1C2F2F]" : "text-[#767676]"}`}
+        >
+          <div className="relative">
+            <ShoppingCart size={22} className="mb-0.5" />
+            <span className="absolute -top-1.5 -right-2.5 bg-[#1C2F2F] text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-semibold">
+              {cartCount}
+            </span>
+          </div>
+          <span className={`text-[10px] tracking-wide ${isCartActive ? "font-semibold" : "font-medium"}`}>Cart</span>
+        </Link>
+      </div>
     </>
   );
 };

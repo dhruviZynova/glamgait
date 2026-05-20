@@ -19,7 +19,7 @@ import {
   Users,
   Package,
   TrendingUp,
-  DollarSign,
+  IndianRupee,
   Calendar,
   Clock,
   CheckCircle,
@@ -218,7 +218,7 @@ const Dashboard = () => {
           <StatCard
             title="Total Revenue"
             value={formatRevenue(dashboardCount.totalRevenue)} // Updated
-            icon={DollarSign}
+            icon={IndianRupee}
             color="green"
             subtitle="Excluding cancelled orders only"
           />
@@ -534,7 +534,7 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {recentOrders?.slice(0, 10).map((order) => (
+                {recentOrders?.slice(10).map((order) => (
                   <tr key={order.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">
                       {order.id}

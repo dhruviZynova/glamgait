@@ -36,15 +36,19 @@ const BackToTopButton = () => {
 
 const StyledWrapper = styled.div`
   position: fixed;
-  bottom: 30px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 999;
   transition: opacity 0.3s ease-in-out;
 
+  @media (max-width: 991px) {
+    bottom: 65px;
+  }
+
   .button {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     border-radius: 100%;
     background-color: #02382A;
     border: 2px double #e9e9e9;

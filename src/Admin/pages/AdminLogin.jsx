@@ -5,6 +5,7 @@ import { ApiURL } from "../../Variable";
 import toast from "react-hot-toast";
 import { FaRegEye, FaRegEyeSlash, FaShieldAlt, FaLock, FaUser } from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi";
+import { useUser } from "../../Context/UserContext";
 
 const AdminLogin = () => {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ const AdminLogin = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const { refreshUser } = useUser();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -39,7 +41,8 @@ const AdminLogin = () => {
                         ...userData
                     };
 
-                    localStorage.setItem("GlamGaitAdmin", JSON.stringify(userSessionData));
+                    sessionStorage.setItem("GlamGaitAdmin", JSON.stringify(userSessionData));
+                    refreshUser();
                     toast.success("Login Successful");
                     navigate("/admin");
                 } else {
@@ -180,7 +183,7 @@ const AdminLogin = () => {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className={`relative w-full py-3 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-[1.02] bg-amber-600 hover:bg-amber-700 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`relative w-full py-3 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-[1.02] bg-amber-600 hover:bg-amber-700 cursor-pointer ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     <div className="relative flex items-center justify-center">
                                         {loading ? (

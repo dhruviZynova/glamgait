@@ -1,9 +1,9 @@
 import React from "react";
-import sareeWide from "../assets/images/img1.png";
 import hijabModern from "../assets/images/img2.png";
 import lehengaCholi from "../assets/images/img3.png";
 import abayaTall from "../assets/images/img4.png";
 import longLight from "../assets/images/longlight.png";
+import fusion from "../assets/images/homeherofusion_copy.png";
 
 const FashionShowcase = () => {
   return (
@@ -11,10 +11,10 @@ const FashionShowcase = () => {
       <div className="mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 md:grid-rows-6 gap-4 xl:gap-8 relative z-10">
         {/* Top Left: Large Couple Niqab Card */}
         <div className="relative rounded-2xl overflow-hidden group shadow-lg sm:col-span-2 md:row-span-3 md:col-span-2 flex flex-col justify-end min-h-[220px] md:min-h-[350px]">
-          <img src={sareeWide} alt="Traditional Silk Saree" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 absolute inset-0" />
+          <img src={fusion} alt="Traditional Silk Saree" className="w-full h-full object-top object-cover group-hover:scale-105 transition-transform duration-300 absolute inset-0" />
           <div className="relative z-10 h-full flex flex-col justify-end p-6 bg-gradient-to-t from-black/100 via-black/30 to-transparent">
-            <h2 className="text-white text-xl sm:text-2xl md:text-3xl lg:text-5xl font-bold font-playfair mb-2">Traditional Silk Saree</h2>
-            <p className="text-white text-xs md:text-sm lg:text-base opacity-90 mb-4 max-w-lg font-montserrat">Our exclusive Saree collection features exquisite designs and rich patterns, perfectly blending Hindu tradition with timeless elegance.</p>
+            <h2 className="text-white text-xl sm:text-2xl md:text-3xl lg:text-5xl font-bold font-playfair mb-2">Indian & Muslim Fashion</h2>
+            <p className="text-white text-xs md:text-sm lg:text-base opacity-90 mb-4 max-w-lg font-montserrat">A stunning collection blending rich traditional Indian aesthetics with elegant Muslim modest wear.</p>
           </div>
         </div>
         {/* Top Right: Embroidery Burqa Card (Right Side - Full Height) */}

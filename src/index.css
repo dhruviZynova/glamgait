@@ -313,6 +313,12 @@ body {
   background-color: #F3F0ED;
 }
 
+@media (max-width: 991px) {
+  body {
+    padding-bottom: 80px;
+  }
+}
+
 .poppins-font {
   font-family: 'Poppins', sans-serif !important;
   font-weight: 500 !important;

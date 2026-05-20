@@ -31,7 +31,7 @@ const OrderDetails = () => {
     if (!order) return false;
     const payStatus = order.paymentStatus?.toLowerCase() || "";
     if (payStatus.includes("failed") || payStatus.includes("pending")) return false;
-    
+
     return [
       ORDER_STATUS.ACCEPTED,
       ORDER_STATUS.PREPARING,
@@ -172,7 +172,7 @@ const OrderDetails = () => {
 
   return (
     <>
-      <div className="w-full lg:pt-0 pt-8 px-2 md:px-8 xl:px-24">
+      <div className="w-full lg:pt-0 pt-4 px-2 md:px-8 xl:px-24">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row font-inter">
           <div className="w-full md:w-1/4">
             <SideBar />
@@ -299,8 +299,8 @@ const OrderDetails = () => {
                       <div key={idx} className="flex flex-col items-center w-24">
                         <div
                           className={`w-5 h-5 rounded-full border-2 z-10 transition-colors duration-500 flex items-center justify-center ${idx <= currentStep
-                              ? "bg-[#004534] border-[#004534]"
-                              : "bg-white border-[#E0E0E0]"
+                            ? "bg-[#004534] border-[#004534]"
+                            : "bg-white border-[#E0E0E0]"
                             }`}
                         >
                           {idx < currentStep && <CheckCircle size={10} className="text-white" />}

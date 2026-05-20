@@ -145,7 +145,7 @@ const PersonalInfo = () => {
     <>
       {(
         <div className="">
-          <div className="w-full lg:pt-0 pt-8 px-2 md:px-8 xl:px-24 flex flex-col md:flex-row font-inter">
+          <div className="w-full lg:pt-0 pt-4 px-2 md:px-8 xl:px-24 flex flex-col md:flex-row font-inter">
             {/* Left Sidebar */}
             <div className="md:w-1/3 lg:w-1/4">
               <SideBar />

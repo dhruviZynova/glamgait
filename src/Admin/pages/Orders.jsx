@@ -192,7 +192,7 @@ const AdminOrders = () => {
 
   return (
     <div className="pb-8 min-h-screen bg-gray-50" ref={containerRef}>
-      <div className="max-w-7xl mx-auto">
+      <div>
         {/* Header */}
         <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
@@ -483,9 +483,8 @@ const AdminOrders = () => {
                                         {selectedLogistic ? `${selectedLogistic.logistic} – ₹${selectedLogistic.total}` : "Select Carrier"}
                                       </span>
                                       <FaChevronDown
-                                        className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-                                          openDropdownKey === `carrier-${order.orderId}` ? "rotate-180 text-[#0f1115]" : ""
-                                        }`}
+                                        className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${openDropdownKey === `carrier-${order.orderId}` ? "rotate-180 text-[#0f1115]" : ""
+                                          }`}
                                       />
                                     </button>
 
@@ -497,11 +496,10 @@ const AdminOrders = () => {
                                             setSelectedLogistic(null);
                                             setOpenDropdownKey(null);
                                           }}
-                                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${
-                                            !selectedLogistic
+                                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${!selectedLogistic
                                               ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
                                               : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                                          }`}
+                                            }`}
                                         >
                                           <span>Select Carrier</span>
                                           {!selectedLogistic && (
@@ -530,11 +528,10 @@ const AdminOrders = () => {
                                                 setSelectedLogistic(l);
                                                 setOpenDropdownKey(null);
                                               }}
-                                              className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${
-                                                isSelected
+                                              className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${isSelected
                                                   ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
                                                   : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                                              }`}
+                                                }`}
                                             >
                                               <span>{l.logistic} – ₹{l.total}</span>
                                               {isSelected && (
@@ -601,9 +598,8 @@ const AdminOrders = () => {
                                       {STATUS_LABELS[order.status] || "Unknown"}
                                     </span>
                                     <FaChevronDown
-                                      className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-                                        openDropdownKey === `status-${order.orderId}` ? "rotate-180 text-[#0f1115]" : ""
-                                      }`}
+                                      className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${openDropdownKey === `status-${order.orderId}` ? "rotate-180 text-[#0f1115]" : ""
+                                        }`}
                                     />
                                   </button>
 
@@ -619,11 +615,10 @@ const AdminOrders = () => {
                                               updateOrderStatus(order.orderId, value);
                                               setOpenDropdownKey(null);
                                             }}
-                                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${
-                                              isSelected
+                                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${isSelected
                                                 ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
                                                 : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                                            }`}
+                                              }`}
                                           >
                                             <span>{STATUS_LABELS[value]}</span>
                                             {isSelected && (
