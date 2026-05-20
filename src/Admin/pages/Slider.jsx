@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { Pencil, PlusCircle, Trash2 } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
-import { Toaster } from "react-hot-toast";
 
 const Sliders = () => {
   const { reset } = useForm();
@@ -99,6 +98,9 @@ const Sliders = () => {
       );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status === 1) {
+        setSliderList((prev) =>
+          prev.filter((img) => img.image_id !== deleteModal.image_id)
+        );
         getSlidersFunction();
       }
     } catch (error) {
@@ -134,7 +136,6 @@ const Sliders = () => {
 
   return (
     <>
-      <Toaster />
       <div className="min-h-screen text-gray-800 pb-8">
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Images</h2>
@@ -144,7 +145,7 @@ const Sliders = () => {
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className=" text-black placeholder-gray-400 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-black p-2 rounded-md w-full "
+              className=" text-black placeholder-gray-400 border border-gray-600 focus:outline-none p-2 rounded-md w-full "
             />
             <Button
               onClick={handleAddImages}

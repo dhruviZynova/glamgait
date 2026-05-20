@@ -138,7 +138,7 @@ const Fabrics = () => {
           <input
             type="text"
             placeholder="Search fabrics..."
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -180,10 +180,10 @@ const Fabrics = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filterFabrics?.map((fabric) => (
                 <tr key={fabric?.f_id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">
                     {fabric?.name}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">
                     {categoryData?.find(
                       (cat) => cat.cate_id === fabric?.cate_id
                     )?.cate_name || "—"}
@@ -233,7 +233,8 @@ const Fabrics = () => {
                 <input
                   autoFocus
                   type="text"
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+                  placeholder="Enter Fabric Name"
+                  className="w-full px-3 py-2 capitalize border border-gray-200 rounded-lg focus:outline-none"
                   value={formData?.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
@@ -251,15 +252,14 @@ const Fabrics = () => {
                   <button
                     type="button"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center justify-between w-full px-3 py-2 border rounded-lg text-sm text-gray-900 bg-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-black"
+                    className="flex items-center justify-between w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white cursor-pointer focus:outline-none"
                   >
                     <span>
                       {categoryData.find(cat => String(cat.cate_id) === String(formData?.cate_id))?.cate_name || "-- Select Category --"}
                     </span>
                     <ChevronDown
-                      className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-                        isDropdownOpen ? "rotate-180 text-[#0f1115]" : ""
-                      }`}
+                      className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-[#0f1115]" : ""
+                        }`}
                     />
                   </button>
 
@@ -271,11 +271,10 @@ const Fabrics = () => {
                           setFormData({ ...formData, cate_id: "" });
                           setIsDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
-                          !formData?.cate_id
-                            ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        }`}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${!formData?.cate_id
+                          ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                          }`}
                       >
                         <span>-- Select Category --</span>
                         {!formData?.cate_id && (
@@ -304,11 +303,10 @@ const Fabrics = () => {
                               setFormData({ ...formData, cate_id: cat.cate_id });
                               setIsDropdownOpen(false);
                             }}
-                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
-                              isSelected
-                                ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                            }`}
+                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${isSelected
+                              ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                              }`}
                           >
                             <span>{cat.cate_name}</span>
                             {isSelected && (

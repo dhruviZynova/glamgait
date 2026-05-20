@@ -337,19 +337,18 @@ const PromotionsManagement = () => {
                       <button
                         type="button"
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="flex items-center justify-between w-full px-3 py-2 border rounded-lg text-sm text-gray-900 bg-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-black"
+                        className="flex items-center justify-between w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white cursor-pointer focus:outline-none"
                       >
                         <span>
                           {formData.offer_type === "QTY"
                             ? "Quantity Based"
                             : formData.offer_type === "CART"
-                            ? "Cart Amount Based"
-                            : "Select type"}
+                              ? "Cart Amount Based"
+                              : "Select type"}
                         </span>
                         <ChevronDown
-                          className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-                            isDropdownOpen ? "rotate-180 text-[#0f1115]" : ""
-                          }`}
+                          className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-[#0f1115]" : ""
+                            }`}
                         />
                       </button>
 
@@ -361,11 +360,10 @@ const PromotionsManagement = () => {
                               handleChange({ target: { name: "offer_type", value: "" } });
                               setIsDropdownOpen(false);
                             }}
-                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
-                              !formData.offer_type
-                                ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                            }`}
+                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${!formData.offer_type
+                              ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                              }`}
                           >
                             <span>Select type</span>
                             {!formData.offer_type && (
@@ -390,11 +388,10 @@ const PromotionsManagement = () => {
                               handleChange({ target: { name: "offer_type", value: "QTY" } });
                               setIsDropdownOpen(false);
                             }}
-                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
-                              formData.offer_type === "QTY"
-                                ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                            }`}
+                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${formData.offer_type === "QTY"
+                              ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                              }`}
                           >
                             <span>Quantity Based</span>
                             {formData.offer_type === "QTY" && (
@@ -419,11 +416,10 @@ const PromotionsManagement = () => {
                               handleChange({ target: { name: "offer_type", value: "CART" } });
                               setIsDropdownOpen(false);
                             }}
-                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
-                              formData.offer_type === "CART"
-                                ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                            }`}
+                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${formData.offer_type === "CART"
+                              ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                              }`}
                           >
                             <span>Cart Amount Based</span>
                             {formData.offer_type === "CART" && (
@@ -457,7 +453,7 @@ const PromotionsManagement = () => {
                         name="min_qty"
                         value={formData.min_qty || ""}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                         min="1"
                         required
                       />
@@ -474,7 +470,7 @@ const PromotionsManagement = () => {
                         name="min_amount"
                         value={formData.min_amount || ""}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                         min="0"
                         required
                       />
@@ -490,7 +486,7 @@ const PromotionsManagement = () => {
                       name="discount_percent"
                       value={formData.discount_percent || ""}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                       min="1"
                       max="100"
                       required
@@ -509,7 +505,7 @@ const PromotionsManagement = () => {
                         name="code"
                         value={formData.code || ""}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black uppercase"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none uppercase"
                         placeholder="SUMMER25"
                         required
                       />
@@ -525,7 +521,7 @@ const PromotionsManagement = () => {
                       name="discount_percent"
                       value={formData.discount_percent || ""}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                       min="1"
                       max="100"
                       required
@@ -541,7 +537,7 @@ const PromotionsManagement = () => {
                       name="min_amount"
                       value={formData.min_amount || 0}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                       min="0"
                     />
                   </div>
@@ -556,7 +552,7 @@ const PromotionsManagement = () => {
                         name="start_date"
                         value={formData.start_date?.split("T")[0] || ""}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                         required
                       />
                     </div>
@@ -569,7 +565,7 @@ const PromotionsManagement = () => {
                         name="end_date"
                         value={formData.end_date?.split("T")[0] || ""}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                         required
                       />
                     </div>
@@ -585,7 +581,7 @@ const PromotionsManagement = () => {
                     name="is_active"
                     checked={formData.is_active !== false}
                     onChange={handleChange}
-                    className="h-4 w-4 text-black border-gray-300 rounded"
+                    className="h-4 w-4 text-black border-gray-200 rounded-lg focus:outline-none"
                   />
                   <span className="text-sm font-medium text-gray-700">
                     Active

@@ -153,7 +153,7 @@ const Categories = () => {
           <input
             type="text"
             placeholder="Search categories..."
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -203,7 +203,7 @@ const Categories = () => {
             <tbody>
               {filteredCategories?.map((category) => (
                 <tr key={category?.cate_id}>
-                  <td className="px-6 py-4 text-sm text-gray-700">{category?.cate_name}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700 capitalize">{category?.cate_name}</td>
 
                   <td className="px-6 py-4">
                     {category?.image || category?.cate_image ? (
@@ -311,7 +311,8 @@ const Categories = () => {
                 <label className="block mb-1">Category Name</label>
                 <input
                   type="text"
-                  className="w-full border px-3 py-2 rounded"
+                  placeholder="Enter Category Name"
+                  className="w-full border border-gray-200 px-3 py-2 rounded capitalize focus:outline-none"
                   value={formData.cate_name}
                   onChange={(e) =>
                     setFormData({ ...formData, cate_name: e.target.value })
@@ -328,7 +329,7 @@ const Categories = () => {
                 <input
                   type="file"
                   accept="image/*,video/*"
-                  className="w-full border px-3 py-2 rounded"
+                  className="w-full border border-gray-200 px-3 py-2 rounded focus:outline-none"
                   onChange={handleMediaChange}
                 />
 
@@ -349,7 +350,7 @@ const Categories = () => {
                 <input
                   type="file"
                   accept="image/*"
-                  className="w-full border px-3 py-2 rounded"
+                  className="w-full border border-gray-200 px-3 py-2 rounded focus:outline-none"
                   onChange={handleChartChange}
                 />
 

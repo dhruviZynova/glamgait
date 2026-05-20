@@ -124,7 +124,7 @@ const Contact = () => {
           <input
             type="text"
             placeholder="Search contacts..."
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);

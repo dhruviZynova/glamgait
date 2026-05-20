@@ -219,7 +219,7 @@ const Reviews = () => {
   };
 
   return (
-    <div className="container mx-auto pb-8 max-w-7xl">
+    <div className="container mx-auto pb-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h2 className="text-2xl font-bold text-gray-800">
@@ -229,7 +229,7 @@ const Reviews = () => {
           <input
             type="text"
             placeholder="Search reviews..."
-            className="flex-1 sm:w-64 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-sm"
+            className="flex-1 sm:w-64 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none text-sm"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -467,7 +467,7 @@ const Reviews = () => {
                   <button
                     type="button"
                     onClick={() => setProductDropdownOpen(!productDropdownOpen)}
-                    className="w-full flex items-center justify-between px-4 py-3.5 border border-gray-300 rounded-xl bg-white hover:border-gray-400 focus:border-black focus:ring-2 focus:ring-black/20 transition text-left text-sm sm:text-base"
+                    className="w-full flex items-center justify-between px-4 py-2 border border-gray-300 rounded-xl bg-white focus:outline-none transition text-left text-sm sm:text-base"
                   >
                     {form.product ? (
                       <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -495,7 +495,7 @@ const Reviews = () => {
 
                   {/* Dropdown - important mobile fix */}
                   {productDropdownOpen && (
-                    <div className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-2xl max-h-[45vh] sm:max-h-72 overflow-y-auto">
+                    <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-2xl max-h-[45vh] sm:max-h-72 overflow-y-auto">
                       {products.length === 0 ? (
                         <div className="px-5 py-8 text-center text-gray-500 text-sm">
                           No products available
@@ -554,12 +554,12 @@ const Reviews = () => {
                       key={star}
                       type="button"
                       onClick={() => setForm({ ...form, rating: star })}
-                      className={`p-1.5 transition-transform active:scale-95 sm:hover:scale-110 ${star <= form.rating
+                      className={`p-1.5 transition-transform ${star <= form.rating
                         ? "text-yellow-500"
                         : "text-gray-200"
                         }`}
                     >
-                      <StarIcon className="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-sm" />
+                      <StarIcon className="w-8 h-8 sm:w-9 sm:h-9 drop-shadow-sm" />
                     </button>
                   ))}
                 </div>
@@ -577,7 +577,7 @@ const Reviews = () => {
                     setForm({ ...form, comment: e.target.value })
                   }
                   placeholder="Write your honest review here..."
-                  className="w-full px-4 py-3.5 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black resize-none placeholder-gray-400"
+                  className="w-full px-4 py-3.5 text-base border border-gray-300 rounded-xl focus:outline-none resize-none placeholder-gray-400"
                 />
               </div>
 
@@ -591,7 +591,7 @@ const Reviews = () => {
                   placeholder="John Doe"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-4 py-3.5 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black placeholder-gray-400"
+                  className="w-full px-4 py-3.5 text-base border border-gray-300 rounded-xl focus:outline-none placeholder-gray-400"
                 />
               </div>
 
@@ -610,7 +610,7 @@ const Reviews = () => {
                       customCreatedAt: e.target.value || null,
                     })
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none"
                 />
                 <p className="mt-1 text-xs text-gray-500">
                   {modal.editMode && !form.is_fake

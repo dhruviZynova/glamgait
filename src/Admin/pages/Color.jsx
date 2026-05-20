@@ -105,7 +105,7 @@ const Colors = () => {
           <input
             type="text"
             placeholder="Search colors..."
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full px-4 py-2 capitalize border rounded-lg focus:outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             aria-label="Search colors"
@@ -218,7 +218,8 @@ const Colors = () => {
                 <input
                   autoFocus
                   type="text"
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+                  placeholder="Enter Color Name"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                   value={formData?.color_name}
                   onChange={(e) =>
                     setFormData({ ...formData, color_name: e.target.value })
@@ -244,7 +245,7 @@ const Colors = () => {
                   />
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                     value={formData?.color_code}
                     onChange={(e) =>
                       setFormData({ ...formData, color_code: e.target.value })

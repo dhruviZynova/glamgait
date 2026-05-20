@@ -11,8 +11,8 @@ const VideoCard = ({ product }) => {
     product?.productcolors?.flatMap((c) => c.productimages) || [];
 
   // Pick first mp4 if exists, otherwise first image
-  const videoFile = allMedia.find((img) => img.image_url.endsWith(".mp4"));
-  const imageFile = allMedia.find((img) => !img.image_url.endsWith(".mp4"));
+  const videoFile = allMedia.find((img) => img?.image_url?.endsWith(".mp4"));
+  const imageFile = allMedia.find((img) => !img?.image_url?.endsWith(".mp4"));
 
   const mediaSrc = videoFile?.image_url || imageFile?.image_url || "";
 

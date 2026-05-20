@@ -1,5 +1,8 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import HomeHero from "../Components/HomeHero";
+import axiosInstance from "../Axios/axios";
+import { ApiURL, createSlug } from "../Variable";
 
 // Lazy-loaded components below the fold to keep the initial main bundle light
 const CategorySection = lazy(() => import("../Components/CategorySection"));
@@ -22,6 +25,24 @@ const SectionPlaceholder = ({ height = "h-40" }) => (
 );
 
 const HomePage = () => {
+  const [firstCategorySlug, setFirstCategorySlug] = useState("");
+
+  useEffect(() => {
+    const fetchFirstCategory = async () => {
+      try {
+        const response = await axiosInstance.get(`${ApiURL}/getcategory`);
+        if (response?.data?.status && response?.data?.data && response.data.data.length > 0) {
+          const firstCat = response.data.data[0];
+          const slug = createSlug(firstCat.cate_name);
+          setFirstCategorySlug(slug);
+        }
+      } catch (err) {
+        console.error("Error fetching first category for Shop Now button:", err);
+      }
+    };
+    fetchFirstCategory();
+  }, []);
+
   return (
     <div className="overflow-x-hidden relative">
       <HomeHero />
@@ -59,6 +80,12 @@ const HomePage = () => {
             <p className="text-sm sm:text-base md:text-lg text-gray-800 mb-6 md:mb-8 max-w-md font-medium">
               Discover our exclusive range of elegant, comfortable, and beautifully crafted modest wear tailored just for you.
             </p>
+            <Link
+              to={firstCategorySlug ? `/collections/${firstCategorySlug}` : "/collections/lehengas"}
+              className="w-fit px-6 py-3 bg-[#1C2F2F] text-white rounded-lg hover:bg-[#1C2F2F]/80 transition-colors"
+            >
+              Shop Now
+            </Link>
           </div>
         </div>
       </section>

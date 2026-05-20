@@ -8,6 +8,9 @@ const multipartAPIs = [
   "/addcategory",
   "/updatecategory",
   "/adddynamicimages",
+  "/addinstaimage",
+  "/addslider",
+  "/updateslider",
 ];
 
 const publicAPIs = [
@@ -22,6 +25,8 @@ const publicAPIs = [
   "/getalluserreviews",
   "/getproducts",
   "/getproductdetails",
+  "/getsliders",
+  "/getinstaimages",
 ];
 
 // Normalize ApiURL: Remove trailing slash if present to prevent double-slashes in requests
@@ -58,7 +63,10 @@ const setupInterceptors = (instance, infoGetter, storageKey) => {
       }
 
       // Handle Multipart APIs
-      if (config.url && multipartAPIs.some((api) => config.url.includes(api))) {
+      if (
+        (config.url && multipartAPIs.some((api) => config.url.includes(api))) ||
+        config.data instanceof FormData
+      ) {
         config.headers["Content-Type"] = "multipart/form-data";
       }
 

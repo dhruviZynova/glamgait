@@ -23,7 +23,7 @@ const CustomSelect = ({
         <button
           type="button"
           onClick={onToggle}
-          className={`flex items-center justify-between w-full bg-white text-gray-900 cursor-pointer focus:outline-none ${className || "px-4 py-2.5 border border-black rounded text-sm focus:ring-2 focus:ring-gray-500"
+          className={`flex items-center justify-between w-full bg-white text-gray-900 cursor-pointer focus:outline-none ${className || "px-4 py-2.5 border border-gray-200 rounded-lg text-sm"
             }`}
         >
           <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
@@ -34,7 +34,7 @@ const CustomSelect = ({
         </button>
 
         {isOpen && (
-          <div className="absolute left-0 w-full mt-1.5 bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
+          <div className="absolute left-0 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
             {placeholder && (
               <button
                 type="button"
@@ -141,7 +141,8 @@ const BasicDetailsSection = ({
           name="name"
           value={formData.name}
           onChange={handleInputChange}
-          className="w-full px-4 py-2.5 border border-black rounded focus:ring-2 focus:ring-gray-500 outline-none"
+          className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none"
+          placeholder="Enter Product Name"
           required
         />
       </div>
@@ -175,7 +176,7 @@ const BasicDetailsSection = ({
         placeholder="Select"
         isOpen={openDropdown === "fabric"}
         onToggle={() => setOpenDropdown(openDropdown === "fabric" ? null : "fabric")}
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-500"
+        className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none"
       />
       <CustomSelect
         label="Work *"
@@ -186,7 +187,7 @@ const BasicDetailsSection = ({
         placeholder="Select"
         isOpen={openDropdown === "work"}
         onToggle={() => setOpenDropdown(openDropdown === "work" ? null : "work")}
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-500"
+        className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none"
       />
       <CustomSelect
         label="Occasion *"
@@ -197,7 +198,7 @@ const BasicDetailsSection = ({
         placeholder="Select"
         isOpen={openDropdown === "occasion"}
         onToggle={() => setOpenDropdown(openDropdown === "occasion" ? null : "occasion")}
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-500"
+        className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none"
       />
       <CustomSelect
         label="Style *"
@@ -208,7 +209,7 @@ const BasicDetailsSection = ({
         placeholder="Select"
         isOpen={openDropdown === "style"}
         onToggle={() => setOpenDropdown(openDropdown === "style" ? null : "style")}
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-500"
+        className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none"
       />
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -219,7 +220,7 @@ const BasicDetailsSection = ({
           name="price"
           value={formData.price}
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
           required
         />
       </div>
@@ -232,7 +233,7 @@ const BasicDetailsSection = ({
           name="original_price"
           value={formData.original_price}
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
         />
       </div>
       <div>
@@ -244,7 +245,7 @@ const BasicDetailsSection = ({
           name="sku"
           value={formData.sku}
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
           required
         />
       </div>
@@ -258,7 +259,7 @@ const BasicDetailsSection = ({
           placeholder="Weight in Kg"
           value={formData.weight}
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
         />
       </div>
       <div>
@@ -271,7 +272,7 @@ const BasicDetailsSection = ({
           placeholder="length in cm"
           value={formData.length}
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
         />
       </div>
       <div>
@@ -284,7 +285,7 @@ const BasicDetailsSection = ({
           placeholder="width in cm"
           value={formData.width}
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
         />
       </div>
       <div>
@@ -297,7 +298,7 @@ const BasicDetailsSection = ({
           placeholder="height in cm"
           value={formData.height}
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
         />
       </div>
     </div>

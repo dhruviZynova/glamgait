@@ -16,7 +16,7 @@ const MetadataSection = ({
             name="meta_title"
             value={formData.meta_title}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none"
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
           />
         </div>
         <div>
@@ -28,7 +28,7 @@ const MetadataSection = ({
             name="keywords"
             value={formData.keywords}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none"
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
           />
         </div>
       </div>
@@ -40,7 +40,7 @@ const MetadataSection = ({
           name="meta_description"
           value={formData.meta_description}
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none min-h-[80px]"
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none min-h-[80px]"
         />
       </div>
       <div>
@@ -51,7 +51,7 @@ const MetadataSection = ({
           name="description"
           value={formData.description}
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none min-h-[100px]"
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none min-h-[100px]"
         />
       </div>
       <div className="md:col-span-2">
@@ -61,7 +61,7 @@ const MetadataSection = ({
             name="is_expert_choice"
             checked={formData.is_expert_choice}
             onChange={handleInputChange}
-            className="mr-2 h-4 w-4 text-black border-gray-300 rounded focus:ring-black"
+            className="mr-2 h-4 w-4 text-black border-gray-200 rounded focus:outline-none"
           />
           Add To Reel Section
         </label>

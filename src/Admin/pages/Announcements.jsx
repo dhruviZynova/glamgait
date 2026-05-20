@@ -103,7 +103,7 @@ const Announcement = () => {
           <input
             type="text"
             placeholder="Search announcements..."
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -190,7 +190,8 @@ const Announcement = () => {
                 <textarea
                   autoFocus
                   rows={3}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+                  placeholder="Enter announcement text..."
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                   value={formData?.text}
                   onChange={(e) =>
                     setFormData({ ...formData, text: e.target.value })

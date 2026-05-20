@@ -69,15 +69,11 @@ const About = () => {
           </div>
           <div className="content-area">
             <span className="content-label">Our Story</span>
-            <h2 className="content-title">Empowering Women Through Modest Fashion.</h2>
+            <h2 className="content-title">Empowering Women through Indian & Muslim Modest Fashion.</h2>
             <p className="content-text">
-              Kundrat was born in January 2020 with a singular vision: to create a sanctuary where modesty meets high-end fashion.
-              What started as a small boutique in <strong>Surat, India</strong>, has grown into a global destination for
-              women who refuse to compromise on their values or their style.
+              Kundrat was born in January 2020 with a singular vision: to create a sanctuary where elegance meets high-end modest fashion, harmoniously blending deep-rooted Indian heritage with timeless Islamic values. What started as a small boutique in <strong>Surat, India</strong>, has grown into a global destination for Indian and Muslim women who refuse to compromise on their faith, cultural values, or style.
               <br /><br />
-              We specialize in premium Niqabs, Burqas, Sarees, and ethnic wear that celebrate the beauty of modesty.
-              Our brand stands for sophistication, quality, and the empowerment of every woman to express her unique
-              identity through timeless designs.
+              We specialize in premium Niqabs, Hijabs, Burqas, designer Sarees, Kurtis, and ethnic wear that celebrate the diverse and rich beauty of modesty. Our brand stands for sophistication, quality, and the empowerment of every woman to express her unique identity through timeless, high-fidelity designs.
             </p>
           </div>
         </div>

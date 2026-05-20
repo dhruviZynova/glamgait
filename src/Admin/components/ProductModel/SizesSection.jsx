@@ -44,15 +44,14 @@ const SizesSection = ({
               <button
                 type="button"
                 onClick={() => setOpenSizeIndex(openSizeIndex === i ? null : i)}
-                className="flex items-center justify-between w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="flex items-center justify-between w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white cursor-pointer focus:outline-none"
               >
                 <span>
                   {selectedSize ? selectedSize.size_name : "Select Size"}
                 </span>
                 <ChevronDown
-                  className={`w-4 h-4 text-gray-500 transition-transform duration-200 flex-shrink-0 ${
-                    openSizeIndex === i ? "rotate-180 text-[#0f1115]" : ""
-                  }`}
+                  className={`w-4 h-4 text-gray-500 transition-transform duration-200 flex-shrink-0 ${openSizeIndex === i ? "rotate-180 text-[#0f1115]" : ""
+                    }`}
                 />
               </button>
 
@@ -71,11 +70,10 @@ const SizesSection = ({
                       });
                       setOpenSizeIndex(null);
                     }}
-                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
-                      !size.size_id
-                        ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                        : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    }`}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${!size.size_id
+                      ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      }`}
                   >
                     <span>Select Size</span>
                     {!size.size_id && (
@@ -111,11 +109,10 @@ const SizesSection = ({
                           });
                           setOpenSizeIndex(null);
                         }}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${
-                          isSelected
-                            ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        }`}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${isSelected
+                          ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                          }`}
                       >
                         <span>{s.size_name}</span>
                         {isSelected && (
