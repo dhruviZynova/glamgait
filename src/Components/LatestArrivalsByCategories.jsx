@@ -11,8 +11,8 @@ const ErrorFallback = ({ message, onRetry }) => (
         <div className="w-10 h-10 bg-red-100 text-red-700 rounded-full flex items-center justify-center mb-4 text-lg font-bold font-serif">!</div>
         <h3 className="text-gray-900 font-serif text-lg font-bold mb-2">Unable to Load Latest Arrivals</h3>
         <p className="text-gray-600 font-sans text-sm mb-6 max-w-xs leading-relaxed">{message || "We encountered a temporary network issue. Please try again."}</p>
-        <button 
-            onClick={onRetry} 
+        <button
+            onClick={onRetry}
             className="px-6 py-2.5 bg-[#02382A] text-[#fbf9f6] text-xs font-semibold uppercase tracking-widest rounded-full hover:bg-[#034f3b] transition duration-300 shadow-md transform active:scale-95 cursor-pointer"
         >
             Retry Connection
@@ -23,9 +23,6 @@ const ErrorFallback = ({ message, onRetry }) => (
 // Premium stylized Empty state
 const EmptyState = ({ message }) => (
     <div className="flex flex-col items-center justify-center p-8 py-14 bg-[#F3F0ED]/40 border border-[#F3F0ED] rounded-2xl max-w-lg mx-auto my-4 text-center">
-        <svg className="w-10 h-10 text-gray-400 mb-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
         <h3 className="text-gray-900 font-serif text-lg font-bold mb-2">Products Not Found</h3>
         <p className="text-gray-600 font-sans text-sm max-w-xs leading-relaxed">{message || "No latest arrivals found. Please check back later."}</p>
     </div>
@@ -101,7 +98,7 @@ const LatestArrivalsByCategories = () => {
                                             loading="lazy"
                                             onError={(e) => {
                                                 e.target.onerror = null;
-                                                e.target.src = "/placeholder.png"; 
+                                                e.target.src = "/placeholder.png";
                                             }}
                                         />
                                     </div>

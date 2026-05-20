@@ -4,7 +4,6 @@ import { adminAxios } from "../../Axios/axios";
 import { Upload, Trash2, Loader2 } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
-import toast, { Toaster } from "react-hot-toast";
 
 const InstagramSection = () => {
   const [error, setError] = useState("");
@@ -96,6 +95,9 @@ const InstagramSection = () => {
         `${ApiURL}/deleteinstaimage/${deleteModal.insta_id}`
       );
       if (response?.data?.status) {
+        setMedia((prevMedia) =>
+          prevMedia.filter((item) => item.insta_id !== deleteModal.insta_id)
+        );
         fetchImages();
         setError("");
         setSuccess("Media deleted successfully");
@@ -130,6 +132,9 @@ const InstagramSection = () => {
 
   useEffect(() => {
     fetchImages();
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
@@ -137,7 +142,6 @@ const InstagramSection = () => {
 
   return (
     <div className="pb-8 min-h-screen ">
-      <Toaster />
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Manage Instagram Section
       </h1>
@@ -153,7 +157,7 @@ const InstagramSection = () => {
                 type="file"
                 accept="image/*,video/*"
                 onChange={handleFileChange}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-black focus:border-black outline-none transition-all duration-300"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:outline-none transition-all duration-300"
                 aria-label="Upload image or video"
               />
             </div>
@@ -166,7 +170,7 @@ const InstagramSection = () => {
                 value={instaLink}
                 onChange={(e) => setInstaLink(e.target.value)}
                 placeholder="Enter Instagram Link (e.g., https://instagram.com/p/xyz)"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-black focus:border-black outline-none transition-all duration-300"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:outline-none transition-all duration-300"
                 aria-label="Instagram link"
               />
             </div>
@@ -187,11 +191,6 @@ const InstagramSection = () => {
             {error && (
               <p className="text-red-500 text-sm mt-2" role="alert">
                 {error}
-              </p>
-            )}
-            {success && (
-              <p className="text-green-500 text-sm mt-2" role="status">
-                {success}
               </p>
             )}
           </div>
@@ -248,7 +247,7 @@ const InstagramSection = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl">
           {media?.length === 0 ? (
             <p className="text-gray-500 text-center col-span-full">
               No Instagram media available.
@@ -260,9 +259,9 @@ const InstagramSection = () => {
                 className="bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden group transform transition-all duration-300 hover:scale-105 animate-fade-in"
               >
                 <div className="w-full aspect-[9/14] bg-gray-200">
-                  {item?.image_url.endsWith(".mp4") ||
-                    item?.image_url.endsWith(".webm") ||
-                    item?.image_url.endsWith(".ogg") ? (
+                  {item?.image_url?.endsWith(".mp4") ||
+                    item?.image_url?.endsWith(".webm") ||
+                    item?.image_url?.endsWith(".ogg") ? (
                     <video
                       src={`${item?.image_url}`}
                       controls

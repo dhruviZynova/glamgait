@@ -3,7 +3,6 @@ import {
   FaTrash,
   FaRupeeSign,
   FaChevronDown,
-  FaSearch,
   FaSpinner,
   FaTruck,
   FaBoxOpen,
@@ -205,14 +204,10 @@ const AdminOrders = () => {
           </div>
 
           <div className="relative group w-full md:w-96">
-            <FaSearch
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-black transition-colors"
-              size={18}
-            />
             <input
               type="text"
               placeholder="Search by ID, name, phone..."
-              className="w-full pl-11 pr-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all duration-200 text-sm font-medium"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -497,8 +492,8 @@ const AdminOrders = () => {
                                             setOpenDropdownKey(null);
                                           }}
                                           className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${!selectedLogistic
-                                              ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                            ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                                             }`}
                                         >
                                           <span>Select Carrier</span>
@@ -529,8 +524,8 @@ const AdminOrders = () => {
                                                 setOpenDropdownKey(null);
                                               }}
                                               className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${isSelected
-                                                  ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                                                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                                ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                                                 }`}
                                             >
                                               <span>{l.logistic} – ₹{l.total}</span>
@@ -616,8 +611,8 @@ const AdminOrders = () => {
                                               setOpenDropdownKey(null);
                                             }}
                                             className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${isSelected
-                                                ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                              ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                                               }`}
                                           >
                                             <span>{STATUS_LABELS[value]}</span>
