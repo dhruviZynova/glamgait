@@ -1,5 +1,5 @@
 import React from "react";
-import bgImage from "../assets/images/banner_section_image.webp";
+import bgImage from "../assets/images/bgimage4.png";
 
 const BannerSection = () => {
     return (

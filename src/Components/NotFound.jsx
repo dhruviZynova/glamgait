@@ -2,8 +2,8 @@ import { BiUndo } from "react-icons/bi";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import faceImg from "../assets/images/404img.png";
-import lanternImg from "../assets/images/longlight.png";
-import fontimg from "../assets/images/fontimg.png";
+import lanternImg from "../assets/images/longlight.webp";
+import fontimg from "../assets/images/fontimg.webp";
 
 const NotFound = () => {
   const navigate = useNavigate();

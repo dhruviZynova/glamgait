@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import longlight from "../assets/images/longlight.png";
-import faqbgimg from "../assets/images/faqbgimg.png";
+import longlight from "../assets/images/longlight.webp";
+import faqbgimg from "../assets/images/faqbgimg.webp";
 import location from "../assets/location.svg";
 import phone from "../assets/phone.svg";
 import mail from "../assets/mail.svg";
