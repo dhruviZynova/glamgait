@@ -1,5 +1,5 @@
 import React from 'react';
-import img5 from '../assets/images/img5.png';
+import img5 from '../assets/images/img5.webp';
 
 const HolidayBanner = () => {
     return (
@@ -15,11 +15,6 @@ const HolidayBanner = () => {
                         our exclusive 50% off sale and discover unbearable deals on the most
                         coveted styles.
                     </p>
-                    {/* <div className="pt-2">
-                        <button className="px-6 py-2 border-2 border-white rounded-full text-white font-[Montserrat] font-500 text-sm md:text-base hover:bg-white hover:text-[#1A2C2B] transition-colors duration-300 cursor-pointer">
-                            Shop Now
-                        </button>
-                    </div> */}
                 </div>
 
                 {/* Right Image Area */}
@@ -28,6 +23,7 @@ const HolidayBanner = () => {
                         src={img5}
                         alt="Holiday Sale"
                         className="w-full h-full object-cover object-top"
+                        loading="lazy"
                     />
                 </div>
             </div>

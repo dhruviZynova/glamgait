@@ -1,9 +1,9 @@
 import React from 'react';
 
-import img1 from '../assets/images/collection1.png';
-import img2 from '../assets/images/collection2.png';
-import img3 from '../assets/images/collection3.png';
-import img4 from '../assets/images/collection4.png';
+import img1 from '../assets/images/collection1.webp';
+import img2 from '../assets/images/collection2.webp';
+import img3 from '../assets/images/collection3.webp';
+import img4 from '../assets/images/collection4.webp';
 
 /*
   KEY CONCEPT:
@@ -109,6 +109,7 @@ const CollectionBanner = () => {
                   alt={card.alt}
                   className="w-full object-cover block group-hover:scale-110 transition-transform duration-700"
                   style={{ aspectRatio: '3/4' }}
+                  loading="lazy"
                 />
                 {/* Overlay with Label */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
@@ -137,6 +138,7 @@ const CollectionBanner = () => {
               alt={card.alt}
               className="w-full object-cover block"
               style={{ aspectRatio: '5/4' }}
+              loading="lazy"
             />
             {/* Mobile Label Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-transparent to-transparent flex flex-col justify-end p-5">

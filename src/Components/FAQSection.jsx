@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import faqbgimg from '../assets/images/faqbgimg.png';
+import faqbgimg from '../assets/images/faqbgimg.webp';
 
 const FAQItem = ({ question, answer, isOpen, onClick }) => {
     return (
@@ -80,6 +80,7 @@ const FAQSection = () => {
                 src={faqbgimg}
                 alt="FAQ Illustration"
                 className="absolute bottom-0 left-0 z-[-1] w-full max-w-[450px] object-contain"
+                loading="lazy"
             />
             {/* </div> */}
 
