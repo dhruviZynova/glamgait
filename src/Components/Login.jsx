@@ -9,6 +9,8 @@ import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import BrandBanner from "./BrandBanner";
 import { useUser } from "../Context/UserContext";
 import { Loader2 } from "lucide-react";
+import { useLogin } from "../hooks/useAuth";
+
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,97 +19,26 @@ const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const { refreshUser } = useUser();
 
-  const handleSubmit = async (e) => {
+  const loginMutation = useLogin();
+  const submitting = loginMutation.isPending;
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (submitting) return;
 
-    try {
-      setSubmitting(true);
-      const response = await axiosInstance.post(`${ApiURL}/userlogin`, {
-        email,
-        password,
-      });
-
-      if (response.data.status === 1) {
-        const userData = response.data.data;
-
-        // Extract specific user data to store in localStorage
-        const userSessionData = {
-          ...userData
-        };
-
-        try {
-          sessionStorage.setItem("GlamGait", JSON.stringify(userSessionData));
-          refreshUser();
-        } catch (error) {
-          console.error("Error storing data in sessionStorage:", error);
-        }
-
-        toast.success(response.data.description);
-        const localCart = JSON.parse(localStorage.getItem("localCart") || "[]");
-        const localWishlist = JSON.parse(localStorage.getItem("localWishlist") || "[]");
-
-        if (localCart.length > 0) {
-          try {
-            await Promise.all(localCart.map(item =>
-              axiosInstance.post(
-                `${ApiURL}/createcart`,
-                {
-                  p_id: item.p_id,
-                  pcolor_id: item.pcolor_id,
-                  psize_id: item.psize_id || null,
-                  quantity: item.quantity || 1,
-                  u_id: userData.u_id,
-                  guest_id: null
-                },
-                { headers: { Authorization: `Bearer ${userData.auth_token}` } }
-              )
-            ));
-            // localStorage.removeItem("localCart"); // Persist local cart
-          } catch (error) {
-            console.error("Local cart sync failed:", error);
-          }
-        }
-
-        if (localWishlist.length > 0) {
-          try {
-            await Promise.all(localWishlist.map(item =>
-              axiosInstance.post(
-                `${ApiURL}/addtowishlist`,
-                {
-                  p_id: item.p_id,
-                  sc_id: item.sc_id || null,
-                  pcolor_id: item.pcolor_id,
-                  psize_id: item.psize_id || null,
-                  u_id: userData.u_id,
-                  guest_id: null
-                },
-                { headers: { Authorization: `Bearer ${userData.auth_token}` } }
-              )
-            ));
-            // localStorage.removeItem("localWishlist"); // Persist local wishlist
-          } catch (error) {
-            console.error("Local wishlist sync failed:", error);
-          }
-        }
-
-        // Redirection Hardening: Ensure 'from' is a safe relative path
-        const safeFrom = (from && from.startsWith('/') && !from.startsWith('//')) ? from : "/";
-        navigate(safeFrom, { replace: true });
-
-        setEmail("");
-        setPassword("");
-      } else {
-        toast.error(response.data.description || "Invalid email or password");
+    loginMutation.mutate(
+      { email, password },
+      {
+        onSuccess: () => {
+          // Redirection Hardening: Ensure 'from' is a safe relative path
+          const safeFrom = from && from.startsWith("/") && !from.startsWith("//") ? from : "/";
+          navigate(safeFrom, { replace: true });
+          setEmail("");
+          setPassword("");
+        },
       }
-    } catch (err) {
-      toast.error(err?.description || err?.message || "Invalid email or password");
-    } finally {
-      setSubmitting(false);
-    }
+    );
   };
 
   return (

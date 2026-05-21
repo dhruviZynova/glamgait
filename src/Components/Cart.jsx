@@ -3,58 +3,29 @@ import { X, Plus, Minus, Loader2 } from "lucide-react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import cartempty from "../assets/cartempty.png";
 import axiosInstance from "../Axios/axios";
-import { ApiURL, userInfo } from "../Variable";
+import { ApiURL } from "../Variable";
 import toast from "react-hot-toast";
 import BrandBanner from "./BrandBanner";
 import ProductCard from "./ProductCard";
 import { getGuestId } from "../utils/guest";
 import CartSkeleton from "./skeletons/CartSkeleton";
+import { useCart, useUpdateCartQty, useRemoveFromCart } from "../hooks/useCart";
+import { useUser } from "../Context/UserContext";
 
 const Cart = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const user = userInfo();
-  const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useUser();
+  const { data: cartItems = [], isLoading: loading } = useCart();
+  const updateQtyMutation = useUpdateCartQty();
+  const removeCartMutation = useRemoveFromCart();
+
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [wishlistMap, setWishlistMap] = useState({});
   // Per-item action loading sets
   const [removingIds, setRemovingIds] = useState(new Set());
   const [updatingIds, setUpdatingIds] = useState(new Set());
   const isLoggedIn = !!user?.u_id && !!user?.auth_token;
-
-  const fetchCart = useCallback(async () => {
-    try {
-      if (!isLoggedIn) {
-        const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
-        const mappedLocalCart = localCart.map((item, index) => ({
-          ...item,
-          cart_id: `local-${index}`
-        }));
-        setCartItems(mappedLocalCart);
-        setLoading(false);
-        return;
-      }
-      const identifier = user.u_id;
-      const query = `u_id=${identifier}`;
-      const res = await axiosInstance.get(`${ApiURL}/getcart?${query}`);
-
-      if (res.data.status === 1) {
-        setCartItems(res.data.data || []);
-      } else {
-        setCartItems([]);
-      }
-    } catch (error) {
-      console.error("Fetch cart error:", error);
-      setCartItems([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [isLoggedIn, user?.u_id]);
-
-  useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
 
   const fetchRecommended = useCallback(async () => {
     try {
@@ -99,63 +70,34 @@ const Cart = () => {
   const updateCartQty = async (cart_id, quantity) => {
     if (updatingIds.has(cart_id)) return; // prevent duplicate
     setUpdatingIds((prev) => new Set(prev).add(cart_id));
-    try {
-      if (!isLoggedIn && typeof cart_id === 'string' && cart_id.startsWith('local-')) {
-        const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
-        const index = parseInt(cart_id.split('-')[1]);
-        if (localCart[index]) {
-          localCart[index].quantity = quantity;
-          localStorage.setItem('localCart', JSON.stringify(localCart));
-          window.dispatchEvent(new Event('cartUpdated'));
-          fetchCart();
-        }
-        return;
+    
+    updateQtyMutation.mutate(
+      { cart_id, quantity },
+      {
+        onSettled: () => {
+          setUpdatingIds((prev) => {
+            const next = new Set(prev);
+            next.delete(cart_id);
+            return next;
+          });
+        },
       }
-
-      const res = await axiosInstance.post(`${ApiURL}/updatecart`, {
-        cart_id,
-        quantity,
-      });
-
-      if (res.data.status === 1) {
-        window.dispatchEvent(new Event('cartUpdated'));
-        fetchCart();
-      } else {
-        toast.error(res.data.description || "Not enough stock");
-      }
-    } catch (error) {
-      toast.error(error || "Failed to update quantity");
-    } finally {
-      setUpdatingIds((prev) => { const n = new Set(prev); n.delete(cart_id); return n; });
-    }
+    );
   };
 
   const handleRemove = async (cart_id) => {
     if (removingIds.has(cart_id)) return; // prevent duplicate
     setRemovingIds((prev) => new Set(prev).add(cart_id));
-    try {
-      if (!isLoggedIn && typeof cart_id === 'string' && cart_id.startsWith('local-')) {
-        const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
-        const index = parseInt(cart_id.split('-')[1]);
-        localCart.splice(index, 1);
-        localStorage.setItem('localCart', JSON.stringify(localCart));
-        window.dispatchEvent(new Event('cartUpdated'));
-        fetchCart();
-        toast.success("Removed from cart");
-        return;
-      }
-
-      const res = await axiosInstance.post(`${ApiURL}/removecart`, { cart_id });
-      if (res.data.status === 1) {
-        setCartItems((prev) => prev.filter((item) => item.cart_id !== cart_id));
-        window.dispatchEvent(new Event('cartUpdated'));
-        toast.success("Removed from cart");
-      }
-    } catch (error) {
-      toast.error(error || "Failed to remove");
-    } finally {
-      setRemovingIds((prev) => { const n = new Set(prev); n.delete(cart_id); return n; });
-    }
+    
+    removeCartMutation.mutate(cart_id, {
+      onSettled: () => {
+        setRemovingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(cart_id);
+          return next;
+        });
+      },
+    });
   };
 
   const increaseQty = (cart_id, currentQty, availableStock) => {

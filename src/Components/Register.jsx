@@ -3,11 +3,11 @@ import React, { useState } from "react";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
 import { useNavigate, useLocation } from "react-router-dom";
-import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import BrandBanner from "./BrandBanner";
 import { Loader2 } from "lucide-react";
+import { useSignup } from "../hooks/useAuth";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -16,11 +16,13 @@ const Register = () => {
     email: "",
     password: "",
   });
-  const [loading, setLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || "/";
+
+  const signupMutation = useSignup();
+  const loading = signupMutation.isPending;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -36,34 +38,25 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     if (loading) return; // prevent duplicate submission
-    setLoading(true);
 
     const { first_name, last_name, email, password } = formData;
     if (!first_name || !last_name || !email || !password) {
       toast.error("Please fill all fields");
-      setLoading(false);
       return;
     }
 
     const passwordError = validatePassword(password);
     if (passwordError) {
       toast.error(passwordError);
-      setLoading(false);
       return;
     }
 
     try {
-      const response = await axiosInstance.post("/userregister", formData);
-      if (response.data.status === 1) {
-        toast.success("Registration Successful!");
-        navigate("/login", { state: { from } });
-      } else {
-        toast.error(response.data.message || "Registration failed");
-      }
+      await signupMutation.mutateAsync(formData);
+      toast.success("Registration Successful!");
+      navigate("/login", { state: { from } });
     } catch (error) {
       toast.error(error?.description || error?.message || "An error occurred during registration");
-    } finally {
-      setLoading(false);
     }
   };
 
