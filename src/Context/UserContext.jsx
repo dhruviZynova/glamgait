@@ -7,7 +7,8 @@ const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [admin, setAdmin] = useState(null);
-  const [loading, setLoading] = useState(true);
+  /** authChecked = true once the initial session-storage read is done */
+  const [authChecked, setAuthChecked] = useState(false);
 
   const refreshUser = () => {
     const info = userInfo();
@@ -18,7 +19,7 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     refreshUser();
-    setLoading(false);
+    setAuthChecked(true);
 
     // Sync across tabs
     const handleStorageChange = (e) => {
@@ -40,7 +41,7 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={{ user, admin, loading, refreshUser, logout }}>
+    <UserContext.Provider value={{ user, admin, authChecked, refreshUser, logout }}>
       {children}
     </UserContext.Provider>
   );

@@ -9,6 +9,7 @@ import {
   AlertCircle,
   CheckCircle,
   Heart,
+  Loader2,
 } from "lucide-react";
 import { FaChevronRight } from "react-icons/fa";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -23,12 +24,14 @@ import ReletedProduct from "../Components/ReletedProduct";
 import { getGuestId } from "../utils/guest";
 import toast from "react-hot-toast";
 import Review from "./Review";
+import SingleProductSkeleton from "./skeletons/SingleProductSkeleton";
 
 import { Helmet } from "@dr.pogodin/react-helmet";
 
 function SingleProduct() {
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
+  const [productLoading, setProductLoading] = useState(true);
 
   const [mainIndex, setMainIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -43,6 +46,11 @@ function SingleProduct() {
 
   const [activeTab, setActiveTab] = useState("description");
   const [wishlistMap, setWishlistMap] = useState({});
+
+  // Per-action loading states
+  const [addToCartLoading, setAddToCartLoading] = useState(false);
+  const [buyNowLoading, setBuyNowLoading] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   const navigate = useNavigate();
   const { user } = useUser();
@@ -78,6 +86,7 @@ function SingleProduct() {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      setProductLoading(true);
       try {
         const res = await axiosInstance.get(
           `${ApiURL}/getproductbyname/${slug}`,
@@ -141,6 +150,8 @@ function SingleProduct() {
         }
       } catch (err) {
         toast.error(err.message || "Product not found");
+      } finally {
+        setProductLoading(false);
       }
     };
     fetchProduct();
@@ -201,6 +212,7 @@ function SingleProduct() {
   };
 
   const handleAddToCart = async () => {
+    if (addToCartLoading) return;
     window.dataLayer.push({
       event: "add_to_cart",
       content_name: product.name,
@@ -208,59 +220,51 @@ function SingleProduct() {
       value: product.price,
       currency: "INR",
     });
-    if (!selectedColor) {
-      toast.error("Please select a color");
-      return;
-    }
-    if (product?.has_sizes && !selectedSize) {
-      toast.error("Please select a size");
-      return;
-    }
-    if (availableStock < quantity) {
-      toast.error(`Only ${availableStock} left in stock`);
-      return;
-    }
+    if (!selectedColor) { toast.error("Please select a color"); return; }
+    if (product?.has_sizes && !selectedSize) { toast.error("Please select a size"); return; }
+    if (availableStock < quantity) { toast.error(`Only ${availableStock} left in stock`); return; }
 
-    if (!user?.u_id) {
-      const cartItems = JSON.parse(localStorage.getItem('localCart') || '[]');
-      const existingItemIndex = cartItems.findIndex(item =>
-        item.p_id === product.p_id &&
-        item.pcolor_id === selectedColor.pcolor_id &&
-        item.psize_id === (selectedSize?.psize_id || null)
-      );
-      if (existingItemIndex !== -1) {
-        cartItems[existingItemIndex].quantity += quantity;
-      } else {
-        cartItems.push({
-          p_id: product.p_id,
-          pcolor_id: selectedColor.pcolor_id,
-          psize_id: selectedSize?.psize_id || null,
-          quantity,
-          product_name: product.name,
-          price: product.price,
-          original_price: product.original_price,
-          image_url: selectedColor.productimages?.[0]?.image_url || '',
-          color_name: selectedColor.color.color_name,
-          size_name: selectedSize?.size?.size_name || null,
-          available_stock: availableStock
-        });
-      }
-      localStorage.setItem('localCart', JSON.stringify(cartItems));
-      window.dispatchEvent(new Event('cartUpdated'));
-      toast.success("Added to cart!");
-      return;
-    }
-
-    const payload = {
-      u_id: user.u_id,
-      guest_id: null,
-      p_id: product.p_id,
-      pcolor_id: selectedColor.pcolor_id,
-      psize_id: selectedSize?.psize_id || null,
-      quantity,
-    };
-
+    setAddToCartLoading(true);
     try {
+      if (!user?.u_id) {
+        const cartItems = JSON.parse(localStorage.getItem('localCart') || '[]');
+        const existingItemIndex = cartItems.findIndex(item =>
+          item.p_id === product.p_id &&
+          item.pcolor_id === selectedColor.pcolor_id &&
+          item.psize_id === (selectedSize?.psize_id || null)
+        );
+        if (existingItemIndex !== -1) {
+          cartItems[existingItemIndex].quantity += quantity;
+        } else {
+          cartItems.push({
+            p_id: product.p_id,
+            pcolor_id: selectedColor.pcolor_id,
+            psize_id: selectedSize?.psize_id || null,
+            quantity,
+            product_name: product.name,
+            price: product.price,
+            original_price: product.original_price,
+            image_url: selectedColor.productimages?.[0]?.image_url || '',
+            color_name: selectedColor.color.color_name,
+            size_name: selectedSize?.size?.size_name || null,
+            available_stock: availableStock
+          });
+        }
+        localStorage.setItem('localCart', JSON.stringify(cartItems));
+        window.dispatchEvent(new Event('cartUpdated'));
+        toast.success("Added to cart!");
+        return;
+      }
+
+      const payload = {
+        u_id: user.u_id,
+        guest_id: null,
+        p_id: product.p_id,
+        pcolor_id: selectedColor.pcolor_id,
+        psize_id: selectedSize?.psize_id || null,
+        quantity,
+      };
+
       const res = await axiosInstance.post(`${ApiURL}/createcart`, payload);
       if (res.data.status === 1) {
         toast.success("Added to cart!");
@@ -270,31 +274,24 @@ function SingleProduct() {
       }
     } catch (err) {
       toast.error(err.message || "Something went wrong");
+    } finally {
+      setAddToCartLoading(false);
     }
   };
 
   const handleBuyNow = async () => {
-    // Validation
-    if (!selectedColor) {
-      toast.error("Please select a color");
-      return;
-    }
-    if (product.has_sizes && !selectedSize) {
-      toast.error("Please select a size");
-      return;
-    }
-    if (availableStock < quantity) {
-      toast.error(`Only ${availableStock} left`);
-      return;
-    }
+    if (buyNowLoading) return;
+    if (!selectedColor) { toast.error("Please select a color"); return; }
+    if (product.has_sizes && !selectedSize) { toast.error("Please select a size"); return; }
+    if (availableStock < quantity) { toast.error(`Only ${availableStock} left`); return; }
 
-    // Yeh payload ab 100% sahi jayega
+    setBuyNowLoading(true);
     const payload = {
       u_id: user?.u_id || null,
       guest_id: user?.u_id ? null : getGuestId(),
       p_id: product.p_id,
-      pcolor_id: selectedColor.pcolor_id, // ← Ye ab sahi jayega
-      psize_id: product.has_sizes ? selectedSize.psize_id : null, // ← Size na ho to null
+      pcolor_id: selectedColor.pcolor_id,
+      psize_id: product.has_sizes ? selectedSize.psize_id : null,
       quantity,
     };
 
@@ -308,9 +305,7 @@ function SingleProduct() {
           quantity,
           image_url: selectedColor.productimages[0]?.image_url,
           color_name: selectedColor.color.color_name,
-          size_name: product.has_sizes
-            ? selectedSize.size.size_name
-            : "Free Size",
+          size_name: product.has_sizes ? selectedSize.size.size_name : "Free Size",
           pcolor_id: selectedColor.pcolor_id,
           psize_id: product.has_sizes ? selectedSize.psize_id : null,
         };
@@ -318,6 +313,8 @@ function SingleProduct() {
       }
     } catch (err) {
       toast.error(err.message || "Buy Now failed");
+    } finally {
+      setBuyNowLoading(false);
     }
   };
 
@@ -369,6 +366,7 @@ function SingleProduct() {
 
   const toggleWishlist = async (e) => {
     e.stopPropagation();
+    if (wishlistLoading) return;
 
     if (!selectedColor) {
       toast.error("Please select a color");
@@ -380,46 +378,42 @@ function SingleProduct() {
     const isWished = !!wishlistData;
     const wishlistId = wishlistData?.w_id || null;
 
-    if (!user?.u_id) {
-      let localWishlist = JSON.parse(localStorage.getItem('localWishlist') || '[]');
-      const payload = {
-        p_id: product.p_id,
-        sc_id: product.sc_id,
-        pcolor_id: selectedColor.pcolor_id,
-        psize_id: selectedSize?.psize_id || null,
-        product_name: product.name,
-        price: product.price,
-        original_price: product.original_price,
-        image_url: selectedColor.productimages?.[0]?.image_url || '',
-        color_name: selectedColor.color.color_name,
-        size_name: selectedSize?.size?.size_name || null,
-        stock_qty: availableStock
-      };
-
-      const existingIndex = localWishlist.findIndex(item => item.p_id === product.p_id && item.pcolor_id === payload.pcolor_id);
-
-      if (isWished || existingIndex !== -1) {
-        if (existingIndex !== -1) localWishlist.splice(existingIndex, 1);
-        localStorage.setItem('localWishlist', JSON.stringify(localWishlist));
-        window.dispatchEvent(new Event('wishlistUpdated'));
-        toast.success("Removed from wishlist");
-        fetchWishlist();
-      } else {
-        localWishlist.push(payload);
-        localStorage.setItem('localWishlist', JSON.stringify(localWishlist));
-        window.dispatchEvent(new Event('wishlistUpdated'));
-        toast.success("Added to wishlist");
-        fetchWishlist();
-      }
-      return;
-    }
-
+    setWishlistLoading(true);
     try {
-      if (isWished && wishlistId) {
-        const res = await axiosInstance.post(`${ApiURL}/removewishlist`, {
-          w_id: wishlistId,
-        });
+      if (!user?.u_id) {
+        let localWishlist = JSON.parse(localStorage.getItem('localWishlist') || '[]');
+        const localPayload = {
+          p_id: product.p_id,
+          sc_id: product.sc_id,
+          pcolor_id: selectedColor.pcolor_id,
+          psize_id: selectedSize?.psize_id || null,
+          product_name: product.name,
+          price: product.price,
+          original_price: product.original_price,
+          image_url: selectedColor.productimages?.[0]?.image_url || '',
+          color_name: selectedColor.color.color_name,
+          size_name: selectedSize?.size?.size_name || null,
+          stock_qty: availableStock
+        };
+        const existingIndex = localWishlist.findIndex(item => item.p_id === product.p_id && item.pcolor_id === localPayload.pcolor_id);
+        if (isWished || existingIndex !== -1) {
+          if (existingIndex !== -1) localWishlist.splice(existingIndex, 1);
+          localStorage.setItem('localWishlist', JSON.stringify(localWishlist));
+          window.dispatchEvent(new Event('wishlistUpdated'));
+          toast.success("Removed from wishlist");
+          fetchWishlist();
+        } else {
+          localWishlist.push(localPayload);
+          localStorage.setItem('localWishlist', JSON.stringify(localWishlist));
+          window.dispatchEvent(new Event('wishlistUpdated'));
+          toast.success("Added to wishlist");
+          fetchWishlist();
+        }
+        return;
+      }
 
+      if (isWished && wishlistId) {
+        const res = await axiosInstance.post(`${ApiURL}/removewishlist`, { w_id: wishlistId });
         if (res.data.status === 1) {
           toast.success("Removed from wishlist");
           window.dispatchEvent(new Event('wishlistUpdated'));
@@ -434,12 +428,7 @@ function SingleProduct() {
           pcolor_id: selectedColor.pcolor_id,
           psize_id: selectedSize?.psize_id || null,
         };
-
-        const res = await axiosInstance.post(
-          `${ApiURL}/addtowishlist`,
-          payload,
-        );
-
+        const res = await axiosInstance.post(`${ApiURL}/addtowishlist`, payload);
         if (res.data.status === 1) {
           toast.success("Added to wishlist");
           window.dispatchEvent(new Event('wishlistUpdated'));
@@ -451,9 +440,12 @@ function SingleProduct() {
     } catch (err) {
       toast.error("Wishlist action failed");
       console.error(err);
+    } finally {
+      setWishlistLoading(false);
     }
   };
 
+  if (productLoading) return <SingleProductSkeleton />;
   if (!product) return null;
 
   // Final image list (from selected color or fallback)
@@ -627,14 +619,17 @@ function SingleProduct() {
                 </div>
                 <button
                   onClick={toggleWishlist}
-                  className="transition bg-none cursor-pointer"
+                  disabled={wishlistLoading}
+                  className="transition bg-none cursor-pointer disabled:opacity-60"
                 >
-                  <Heart
-                    className={`${wishlistMap[`${product.p_id}-${selectedColor?.pcolor_id}`]
-                      ? "fill-red-500 text-red-500"
-                      : "text-[#AEAEAE]"
-                      }`}
-                  />
+                  {wishlistLoading
+                    ? <Loader2 size={20} className="animate-spin text-[#AEAEAE]" />
+                    : <Heart
+                        className={`${wishlistMap[`${product.p_id}-${selectedColor?.pcolor_id}`]
+                          ? "fill-red-500 text-red-500"
+                          : "text-[#AEAEAE]"
+                        }`}
+                      />}
                 </button>
               </div>
 
@@ -762,18 +757,22 @@ function SingleProduct() {
                   {/* Add to Cart Button */}
                   <button
                     onClick={handleAddToCart}
-                    className="w-full sm:flex-1 bg-[#1F352F] text-white py-4 px-8 rounded-full font-semibold hover:bg-[#152521] transition shadow-md flex items-center justify-center cursor-pointer"
+                    disabled={addToCartLoading || availableStock <= 0}
+                    className="w-full sm:flex-1 bg-[#1F352F] text-white py-4 px-8 rounded-full font-semibold hover:bg-[#152521] transition shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    Add to Cart
+                    {addToCartLoading && <Loader2 size={18} className="animate-spin" />}
+                    {addToCartLoading ? "Adding..." : "Add to Cart"}
                   </button>
                 </div>
 
                 {/* Buy Now Button */}
                 <button
                   onClick={handleBuyNow}
-                  className="w-full border-1 border-[#1A1A1A] text-[#1A1A1A] py-4 rounded-full font-bold bg-white hover:bg-gray-50 transition cursor-pointer"
+                  disabled={buyNowLoading || availableStock <= 0}
+                  className="w-full border-1 border-[#1A1A1A] text-[#1A1A1A] py-4 rounded-full font-bold bg-white hover:bg-gray-50 transition cursor-pointer flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  Buy Now
+                  {buyNowLoading && <Loader2 size={18} className="animate-spin" />}
+                  {buyNowLoading ? "Processing..." : "Buy Now"}
                 </button>
               </div>
 

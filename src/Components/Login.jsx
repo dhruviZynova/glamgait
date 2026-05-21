@@ -5,9 +5,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import { ApiURL } from "../Variable";
 import toast from "react-hot-toast";
-import { FaRegEye, FaRegEyeSlash } from "react-icons/fa"; // Importing eye icons if available, otherwise will fallback
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import BrandBanner from "./BrandBanner";
 import { useUser } from "../Context/UserContext";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -162,9 +163,10 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-[#1A2C2C] text-white py-4 rounded-full font-bold text-lg hover:bg-opacity-90 transition-all duration-300 mt-4 shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#1A2C2C] text-white py-4 rounded-full font-bold text-lg hover:bg-opacity-90 transition-all duration-300 mt-4 shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {submitting ? "Login..." : "Login"}
+                {submitting && <Loader2 size={18} className="animate-spin" />}
+                {submitting ? "Logging in..." : "Login"}
               </button>
             </form>
 

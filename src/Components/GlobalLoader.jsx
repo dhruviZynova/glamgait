@@ -1,60 +1,55 @@
 import { useEffect, useRef, useState } from "react";
 import { useLoader } from "../Context/LoaderContext";
 
+/**
+ * GlobalLoader — full-page overlay shown ONLY during the initial auth check.
+ * Regular API calls no longer trigger this loader; they use local skeleton
+ * states or per-button spinners instead.
+ */
 export default function GlobalLoader() {
-  const { isLoading } = useLoader();
-  const countIntervalRef = useRef(null);
+  const { initialLoad } = useLoader();
   const safetyTimerRef = useRef(null);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(true); // starts visible on mount
   const [fading, setFading] = useState(false);
 
-  // Safety timeout to ensure loader always fades out
+  // When initialLoad transitions false → start fade-out
   useEffect(() => {
-    if (visible) {
+    if (!initialLoad) {
       if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
+      // Short delay so the app has painted before we fade
       safetyTimerRef.current = setTimeout(() => {
         setFading(true);
         setTimeout(() => {
           setVisible(false);
           setFading(false);
         }, 700);
-      }, 5000); // Force fade out after 5 seconds
+      }, 120);
     }
     return () => {
       if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
     };
-  }, [visible]);
+  }, [initialLoad]);
 
+  // Safety net — never block UI for more than 3 seconds regardless
   useEffect(() => {
-    const clearCount = () => {
-      if (countIntervalRef.current) {
-        clearInterval(countIntervalRef.current);
-        countIntervalRef.current = null;
-      }
-    };
-
-    if (isLoading) {
-      // Show loader and slowly count up to 90.
-      clearCount();
-      setFading(false);
-      setVisible(true);
-      countIntervalRef.current = setInterval(() => {
-      }, 25);
-    } else {
-      // Loading done — rush counter to 100, then fade out.
-      clearCount();
-      countIntervalRef.current = setInterval(() => {
-      }, 12);
-    }
-
-    return clearCount;
-  }, [isLoading]);
+    const id = setTimeout(() => {
+      setFading(true);
+      setTimeout(() => {
+        setVisible(false);
+        setFading(false);
+      }, 700);
+    }, 3000);
+    return () => clearTimeout(id);
+  }, []);
 
   if (!visible) return null;
 
   return (
-    <div className={`glamloader-overlay${fading ? ' glamloader-overlay--fade' : ''}`} aria-label="Loading" role="status">
-
+    <div
+      className={`glamloader-overlay${fading ? " glamloader-overlay--fade" : ""}`}
+      aria-label="Loading"
+      role="status"
+    >
       {/* Logo */}
       <div className="glamloader-logo">
         KUNDRAT
@@ -70,7 +65,6 @@ export default function GlobalLoader() {
         </svg>
         <div className="glamloader-ring-dot" />
       </div>
-
     </div>
   );
 }

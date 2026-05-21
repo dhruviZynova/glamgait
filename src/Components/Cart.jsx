@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { X, Plus, Minus } from "lucide-react";
+import { X, Plus, Minus, Loader2 } from "lucide-react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import cartempty from "../assets/cartempty.png";
 import axiosInstance from "../Axios/axios";
@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import BrandBanner from "./BrandBanner";
 import ProductCard from "./ProductCard";
 import { getGuestId } from "../utils/guest";
+import CartSkeleton from "./skeletons/CartSkeleton";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -17,6 +18,9 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [wishlistMap, setWishlistMap] = useState({});
+  // Per-item action loading sets
+  const [removingIds, setRemovingIds] = useState(new Set());
+  const [updatingIds, setUpdatingIds] = useState(new Set());
   const isLoggedIn = !!user?.u_id && !!user?.auth_token;
 
   const fetchCart = useCallback(async () => {
@@ -93,19 +97,21 @@ const Cart = () => {
   }, [fetchRecommended, fetchWishlist]);
 
   const updateCartQty = async (cart_id, quantity) => {
-    if (!isLoggedIn && typeof cart_id === 'string' && cart_id.startsWith('local-')) {
-      const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
-      const index = parseInt(cart_id.split('-')[1]);
-      if (localCart[index]) {
-        localCart[index].quantity = quantity;
-        localStorage.setItem('localCart', JSON.stringify(localCart));
-        window.dispatchEvent(new Event('cartUpdated'));
-        fetchCart();
-      }
-      return;
-    }
-
+    if (updatingIds.has(cart_id)) return; // prevent duplicate
+    setUpdatingIds((prev) => new Set(prev).add(cart_id));
     try {
+      if (!isLoggedIn && typeof cart_id === 'string' && cart_id.startsWith('local-')) {
+        const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
+        const index = parseInt(cart_id.split('-')[1]);
+        if (localCart[index]) {
+          localCart[index].quantity = quantity;
+          localStorage.setItem('localCart', JSON.stringify(localCart));
+          window.dispatchEvent(new Event('cartUpdated'));
+          fetchCart();
+        }
+        return;
+      }
+
       const res = await axiosInstance.post(`${ApiURL}/updatecart`, {
         cart_id,
         quantity,
@@ -119,22 +125,26 @@ const Cart = () => {
       }
     } catch (error) {
       toast.error(error || "Failed to update quantity");
+    } finally {
+      setUpdatingIds((prev) => { const n = new Set(prev); n.delete(cart_id); return n; });
     }
   };
 
   const handleRemove = async (cart_id) => {
-    if (!isLoggedIn && typeof cart_id === 'string' && cart_id.startsWith('local-')) {
-      const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
-      const index = parseInt(cart_id.split('-')[1]);
-      localCart.splice(index, 1);
-      localStorage.setItem('localCart', JSON.stringify(localCart));
-      window.dispatchEvent(new Event('cartUpdated'));
-      fetchCart();
-      toast.success("Removed from cart");
-      return;
-    }
-
+    if (removingIds.has(cart_id)) return; // prevent duplicate
+    setRemovingIds((prev) => new Set(prev).add(cart_id));
     try {
+      if (!isLoggedIn && typeof cart_id === 'string' && cart_id.startsWith('local-')) {
+        const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
+        const index = parseInt(cart_id.split('-')[1]);
+        localCart.splice(index, 1);
+        localStorage.setItem('localCart', JSON.stringify(localCart));
+        window.dispatchEvent(new Event('cartUpdated'));
+        fetchCart();
+        toast.success("Removed from cart");
+        return;
+      }
+
       const res = await axiosInstance.post(`${ApiURL}/removecart`, { cart_id });
       if (res.data.status === 1) {
         setCartItems((prev) => prev.filter((item) => item.cart_id !== cart_id));
@@ -143,6 +153,8 @@ const Cart = () => {
       }
     } catch (error) {
       toast.error(error || "Failed to remove");
+    } finally {
+      setRemovingIds((prev) => { const n = new Set(prev); n.delete(cart_id); return n; });
     }
   };
 
@@ -191,8 +203,8 @@ const Cart = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f3f0ed] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1C2F2F]"></div>
+      <div className="min-h-screen bg-[#f3f0ed] pt-16 px-4 md:px-10 lg:px-20">
+        <CartSkeleton count={3} />
       </div>
     );
   }
@@ -251,9 +263,12 @@ const Cart = () => {
                           <div className="flex items-center gap-6">
                             <button
                               onClick={() => handleRemove(item.cart_id)}
-                              className="transition-colors cursor-pointer"
+                              disabled={removingIds.has(item.cart_id)}
+                              className="transition-colors cursor-pointer disabled:opacity-50"
                             >
-                              <X size={18} className="text-[#3D3D3D]" />
+                              {removingIds.has(item.cart_id)
+                                ? <Loader2 size={16} className="animate-spin text-[#3D3D3D]" />
+                                : <X size={18} className="text-[#3D3D3D]" />}
                             </button>
                             <img
                               src={`${ApiURL}/assets/Products/${item.image_url}`}
@@ -277,20 +292,20 @@ const Cart = () => {
                             <div className="flex items-center border border-[#D7D7D7] rounded-full py-2 px-4 bg-white">
                               <button
                                 onClick={() => decreaseQty(item.cart_id, item.quantity)}
-                                className="text-[#414141] cursor-pointer"
+                                disabled={updatingIds.has(item.cart_id) || item.quantity <= 1}
+                                className="text-[#414141] cursor-pointer disabled:opacity-40"
                               >
                                 <Minus size={14} />
                               </button>
-                              <span className="mx-6 w-4 text-center text-[#3D3D3D]">{item.quantity}</span>
+                              <span className="mx-6 w-4 text-center text-[#3D3D3D]">
+                                {updatingIds.has(item.cart_id)
+                                  ? <Loader2 size={12} className="animate-spin inline" />
+                                  : item.quantity}
+                              </span>
                               <button
-                                onClick={() =>
-                                  increaseQty(
-                                    item.cart_id,
-                                    item.quantity,
-                                    item.available_stock
-                                  )
-                                }
-                                className="text-[#414141] cursor-pointer"
+                                onClick={() => increaseQty(item.cart_id, item.quantity, item.available_stock)}
+                                disabled={updatingIds.has(item.cart_id)}
+                                className="text-[#414141] cursor-pointer disabled:opacity-40"
                               >
                                 <Plus size={14} />
                               </button>

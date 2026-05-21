@@ -1,14 +1,18 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { userInfo, ApiURL } from "../Variable";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
 import wishlistempty from "../assets/wishlistempty.png";
+import WishlistSkeleton from "./skeletons/WishlistSkeleton";
 
 const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Per-item action loading sets
+  const [removingIds, setRemovingIds] = useState(new Set());
+  const [movingIds, setMovingIds] = useState(new Set());
   const userDataRaw = userInfo();
   const userData = React.useMemo(() => userDataRaw, [JSON.stringify(userDataRaw)]);
 
@@ -53,63 +57,69 @@ const Wishlist = () => {
   }, [fetchWishlist]);
 
   const handleRemove = async (w_id) => {
-    if (!userData?.u_id && typeof w_id === 'string' && w_id.startsWith('local-')) {
-      const localWishlist = JSON.parse(localStorage.getItem('localWishlist') || '[]');
-      const index = parseInt(w_id.split('-')[1]);
-      localWishlist.splice(index, 1);
-      localStorage.setItem('localWishlist', JSON.stringify(localWishlist));
-      window.dispatchEvent(new Event('wishlistUpdated'));
-      fetchWishlist();
-      return;
-    }
+    if (removingIds.has(w_id)) return; // prevent duplicate
+    setRemovingIds((prev) => new Set(prev).add(w_id));
 
     try {
-      const res = await axiosInstance.post(`${ApiURL}/removewishlist`, {
-        w_id,
-      });
+      if (!userData?.u_id && typeof w_id === 'string' && w_id.startsWith('local-')) {
+        const localWishlist = JSON.parse(localStorage.getItem('localWishlist') || '[]');
+        const index = parseInt(w_id.split('-')[1]);
+        localWishlist.splice(index, 1);
+        localStorage.setItem('localWishlist', JSON.stringify(localWishlist));
+        window.dispatchEvent(new Event('wishlistUpdated'));
+        fetchWishlist();
+        return;
+      }
+
+      const res = await axiosInstance.post(`${ApiURL}/removewishlist`, { w_id });
       if (res.data.status === 1) {
         setWishlistItems((prev) => prev.filter((item) => item.w_id !== w_id));
         window.dispatchEvent(new Event('wishlistUpdated'));
-        // toast.success("Removed from wishlist");
       }
     } catch (err) {
       toast.error(err.message || "Failed to remove");
+    } finally {
+      setRemovingIds((prev) => { const n = new Set(prev); n.delete(w_id); return n; });
     }
   };
 
   const handleMoveToCart = async (item) => {
-    if (!userData?.u_id) {
-      const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
-      const existingItemIndex = localCart.findIndex(cartItem =>
-        cartItem.p_id === item.p_id &&
-        cartItem.pcolor_id === item.pcolor_id &&
-        cartItem.psize_id === (item.psize_id || null)
-      );
-      if (existingItemIndex !== -1) {
-        localCart[existingItemIndex].quantity += 1;
-      } else {
-        localCart.push({
-          p_id: item.p_id,
-          pcolor_id: item.pcolor_id,
-          psize_id: item.psize_id || null,
-          quantity: 1,
-          product_name: item.product_name,
-          price: item.price,
-          original_price: item.original_price,
-          image_url: item.image_url,
-          color_name: item.color_name,
-          size_name: item.size_name,
-          available_stock: item.stock_qty || item.available_stock
-        });
-      }
-      localStorage.setItem('localCart', JSON.stringify(localCart));
-      window.dispatchEvent(new Event('cartUpdated'));
-      toast.success("Moved to cart!");
-      handleRemove(item.w_id);
-      return;
-    }
+    const key = item.w_id;
+    if (movingIds.has(key)) return; // prevent duplicate
+    setMovingIds((prev) => new Set(prev).add(key));
 
     try {
+      if (!userData?.u_id) {
+        const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
+        const existingItemIndex = localCart.findIndex(cartItem =>
+          cartItem.p_id === item.p_id &&
+          cartItem.pcolor_id === item.pcolor_id &&
+          cartItem.psize_id === (item.psize_id || null)
+        );
+        if (existingItemIndex !== -1) {
+          localCart[existingItemIndex].quantity += 1;
+        } else {
+          localCart.push({
+            p_id: item.p_id,
+            pcolor_id: item.pcolor_id,
+            psize_id: item.psize_id || null,
+            quantity: 1,
+            product_name: item.product_name,
+            price: item.price,
+            original_price: item.original_price,
+            image_url: item.image_url,
+            color_name: item.color_name,
+            size_name: item.size_name,
+            available_stock: item.stock_qty || item.available_stock
+          });
+        }
+        localStorage.setItem('localCart', JSON.stringify(localCart));
+        window.dispatchEvent(new Event('cartUpdated'));
+        toast.success("Moved to cart!");
+        handleRemove(item.w_id);
+        return;
+      }
+
       const payload = {
         p_id: item.p_id,
         pcolor_id: item.pcolor_id,
@@ -128,12 +138,14 @@ const Wishlist = () => {
       if (res.data.status === 1) {
         toast.success("Moved to cart!");
         window.dispatchEvent(new Event('cartUpdated'));
-        handleRemove(item.w_id); // Auto-remove from wishlist
+        handleRemove(item.w_id);
       } else {
         toast.error(res.data.description || "Out of stock");
       }
     } catch (err) {
       toast.error(err.message || "Failed to move to cart");
+    } finally {
+      setMovingIds((prev) => { const n = new Set(prev); n.delete(key); return n; });
     }
   };
 
@@ -141,7 +153,7 @@ const Wishlist = () => {
     <div className="bg-[#f3f0ed] min-h-screen px-4 md:px-10 py-10 ">
       <div className="max-w-7xl mx-auto">
         {loading ? (
-          <p className="text-center text-gray-600 mt-10">Loading...</p>
+          <WishlistSkeleton count={3} />
         ) : wishlistItems.length > 0 ? (
           <div>
             <h2 className="text-2xl font-semibold mb-6">My Wishlist</h2>
@@ -154,9 +166,12 @@ const Wishlist = () => {
                   >
                     <button
                       onClick={() => handleRemove(item.w_id)}
-                      className="absolute top-3 right-3 text-gray-600 hover:text-black cursor-pointer"
+                      disabled={removingIds.has(item.w_id)}
+                      className="absolute top-3 right-3 text-gray-600 hover:text-black cursor-pointer disabled:opacity-50"
                     >
-                      <X size={18} />
+                      {removingIds.has(item.w_id)
+                        ? <Loader2 size={16} className="animate-spin" />
+                        : <X size={18} />}
                     </button>
 
                     <div className="flex items-center justify-center">
@@ -199,12 +214,14 @@ const Wishlist = () => {
                     <div className="flex items-center md:ml-4">
                       <button
                         onClick={() => handleMoveToCart(item)}
-                        disabled={item.stock_qty === 0}
-                        className={`border px-3 py-2 text-sm rounded-md transition whitespace-nowrap cursor-pointer ${item.stock_qty > 0
-                          ? "hover:bg-[#02382A] hover:text-white"
-                          : "opacity-60 cursor-not-allowed"
-                          }`}
+                        disabled={item.stock_qty === 0 || movingIds.has(item.w_id)}
+                        className={`border px-3 py-2 text-sm rounded-md transition whitespace-nowrap cursor-pointer flex items-center gap-2 ${
+                          item.stock_qty > 0 && !movingIds.has(item.w_id)
+                            ? "hover:bg-[#02382A] hover:text-white"
+                            : "opacity-60 cursor-not-allowed"
+                        }`}
                       >
+                        {movingIds.has(item.w_id) && <Loader2 size={14} className="animate-spin" />}
                         {item.stock_qty > 0 ? "MOVE TO CART" : "UNAVAILABLE"}
                       </button>
                     </div>

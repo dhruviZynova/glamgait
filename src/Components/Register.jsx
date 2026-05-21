@@ -7,6 +7,7 @@ import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import BrandBanner from "./BrandBanner";
+import { Loader2 } from "lucide-react";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -34,6 +35,7 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (loading) return; // prevent duplicate submission
     setLoading(true);
 
     const { first_name, last_name, email, password } = formData;
@@ -141,9 +143,10 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#1A2C2C] text-white py-3 sm:py-4 rounded-full font-bold text-sm sm:text-lg hover:bg-opacity-90 transition-all duration-300 mt-3 sm:mt-4 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="w-full bg-[#1A2C2C] text-white py-3 sm:py-4 rounded-full font-bold text-sm sm:text-lg hover:bg-opacity-90 transition-all duration-300 mt-3 sm:mt-4 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
               >
-                {loading ? "Register..." : "Register"}
+                {loading && <Loader2 size={18} className="animate-spin" />}
+                {loading ? "Creating Account..." : "Register"}
               </button>
             </form>
 
