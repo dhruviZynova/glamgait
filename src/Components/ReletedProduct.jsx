@@ -10,18 +10,31 @@ const ReletedProduct = ({ cate_name, currentProductId, cate_id }) => {
   const [reviewsSummary, setReviewsSummary] = useState({});
 
   const fetchProducts = useCallback(async () => {
+    if (!cate_id) return;
     try {
-      const response = await axiosInstance.get(
-        `/productbycategory/${cate_name}`,
-        { limit: 5, cate_id }
+      // Use /getallproducts with cate_id filter — same proven endpoint as AllProducts.jsx
+      const response = await axiosInstance.get("/getallproducts", {
+        params: {
+          cate_id,
+          page: 1,
+          limit: 20,
+          sort_by: "name_asc",
+        },
+      });
+
+      // /getallproducts uses productData (not products)
+      const allProducts = response?.data?.data?.productData || [];
+
+      // Filter out current product only if there are other products available
+      const othersOnly = allProducts.filter(
+        (item) => String(item.p_id) !== String(currentProductId)
       );
 
-      const filteredProducts =
-        response?.data?.data?.products?.filter(
-          (item) => item.p_id !== currentProductId
-        ) || [];
+      // If filtering leaves nothing, show all (fallback); otherwise show up to 5 others
+      const filteredProducts = (othersOnly.length > 0 ? othersOnly : allProducts).slice(0, 5);
 
       setRelatedProducts(filteredProducts);
+
 
       // Fetch reviews immediately after getting products
       if (filteredProducts.length > 0) {
@@ -51,9 +64,9 @@ const ReletedProduct = ({ cate_name, currentProductId, cate_id }) => {
         }
       }
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("Error fetching related products:", error);
     }
-  }, [cate_name, cate_id, currentProductId]);
+  }, [cate_id, currentProductId]);
 
   useEffect(() => {
     fetchProducts();
