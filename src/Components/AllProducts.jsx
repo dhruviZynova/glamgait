@@ -198,7 +198,7 @@ const Allproducts = () => {
           setCateId(res.data.data.cate_id);
           setCategoryDisplayName(res.data.data.cate_name || cate_name);
         } else {
-          console.log("cate_not found");
+          // Category not found — no action needed, UI handles empty state
         }
       } catch (err) {
         console.error("Category not found:", err);

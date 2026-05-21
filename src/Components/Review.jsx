@@ -37,6 +37,11 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
   );
 
   const handleLike = () => {
+    // ❌ Prevent owner from liking their own review
+    if (isAuthor) {
+      toast.error("You cannot like your own review.");
+      return;
+    }
     if (isToggling) return;
     if (!currentUser?.u_id) {
       toast.error("Please login to like reviews");
@@ -60,6 +65,11 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
   };
 
   const handleDislike = () => {
+    // ❌ Prevent owner from disliking their own review
+    if (isAuthor) {
+      toast.error("You cannot dislike your own review.");
+      return;
+    }
     if (isToggling) return;
     if (!currentUser?.u_id) {
       toast.error("Please login to dislike reviews");
@@ -123,9 +133,12 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
           )}
 
           <div className="flex items-center gap-5 text-[#3D3D3D] text-xs sm:text-sm font-medium">
+
+            {/* ✅ Like Button - Always visible, disabled for owner */}
             <button
               onClick={handleLike}
-              disabled={isToggling}
+              disabled={isAuthor || isToggling}
+              title={isAuthor ? "You cannot react to your own review" : "Like this review"}
               className={`flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${liked ? "text-black" : "text-[#AEAEAE] hover:text-black"
                 }`}
             >
@@ -133,9 +146,11 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
               {likeCount > 0 && <span>{likeCount}</span>}
             </button>
 
+            {/* ✅ Dislike Button - Always visible, disabled for owner */}
             <button
               onClick={handleDislike}
-              disabled={isToggling}
+              disabled={isAuthor || isToggling}
+              title={isAuthor ? "You cannot react to your own review" : "Dislike this review"}
               className={`flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${disliked ? "text-black" : "text-[#AEAEAE] hover:text-black"
                 }`}
             >
@@ -143,6 +158,7 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
               {dislikeCount > 0 && <span>{dislikeCount}</span>}
             </button>
 
+            {/* ✅ Edit/Delete - Only visible for owner */}
             {isAuthor && onEdit && (
               <button
                 onClick={() => onEdit(review)}

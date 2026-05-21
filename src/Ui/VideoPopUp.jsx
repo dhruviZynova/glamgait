@@ -7,8 +7,8 @@ const VideoPopUp = ({ videoSrc, autoPlay = true }) => {
 
   useEffect(() => {
     if (videoRef.current && autoPlay) {
-      videoRef.current.play().catch((error) => {
-        console.log("Autoplay prevented:", error);
+      videoRef.current.play().catch(() => {
+        // Autoplay blocked by browser policy — expected on mobile/silent mode
       });
     }
   }, [videoSrc, autoPlay]);

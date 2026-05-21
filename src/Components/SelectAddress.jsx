@@ -296,7 +296,7 @@ const SelectAddress = () => {
         setOffers(offerRes.data.data || []);
         setCoupons(couponRes.data.data || []);
       } catch (err) {
-        console.log(err.message || "Error fetching offers/coupons");
+        // Non-critical — offers/coupons unavailable, continue silently
       }
     };
 
