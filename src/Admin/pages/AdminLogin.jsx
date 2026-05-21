@@ -53,7 +53,6 @@ const AdminLogin = () => {
                 toast.error(response?.data?.description || "Login failed");
             }
         } catch (err) {
-            console.error(err);
             toast.error("Something went wrong");
         } finally {
             setLoading(false);
@@ -120,7 +119,7 @@ const AdminLogin = () => {
                             </div>
 
                             {/* Form with Enhanced Styling */}
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                            <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
                                 {/* Email Field */}
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-gray-200 flex items-center">

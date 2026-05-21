@@ -120,6 +120,7 @@ const Register = () => {
                     placeholder="Min 8 chars, 1 uppercase, 1 number"
                     value={formData.password}
                     onChange={handleChange}
+                    autoComplete="off"
                     className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
                   />
                   <button

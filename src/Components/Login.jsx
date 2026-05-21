@@ -2,12 +2,8 @@ import React, { useState } from "react";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
 import { useNavigate, useLocation } from "react-router-dom";
-import axiosInstance from "../Axios/axios";
-import { ApiURL } from "../Variable";
-import toast from "react-hot-toast";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import BrandBanner from "./BrandBanner";
-import { useUser } from "../Context/UserContext";
 import { Loader2 } from "lucide-react";
 import { useLogin } from "../hooks/useAuth";
 
@@ -63,6 +59,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  autoComplete="off"
                   placeholder="michael.joe@xmail.com"
                   className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
                 />
@@ -78,6 +75,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    autoComplete="off"
                     placeholder="••••••"
                     className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
                   />

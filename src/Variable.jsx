@@ -30,7 +30,7 @@ export const userInfo = () => {
     }
     return null;
   } catch (error) {
-    console.log(error, "Error parsing UserData from Sessionstorage");
+    // Silently handle storage parse errors in production
     return null;
   }
 };
@@ -58,7 +58,7 @@ export const adminInfo = () => {
     }
     return null;
   } catch (error) {
-    console.log(error, "Error parsing AdminData from Sessionstorage");
+    // Silently handle storage parse errors in production
     return null;
   }
 };
@@ -71,7 +71,7 @@ export const orderInfo = () => {
     }
     return null;
   } catch (error) {
-    console.log(error, "Error parsing UserData from Localstorage");
+    // Silently handle storage parse errors in production
     return null;
   }
 };
