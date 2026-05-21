@@ -45,23 +45,23 @@ const ForgotPassword = () => {
 
   return (
     <>
-      <div className="w-full pt-28 pb-20 px-6 md:px-12 lg:px-20 flex items-center justify-center font-sans">
+      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-sans">
         {/* Forgot Password Card */}
-        <div className="relative z-20 w-full max-w-5xl mx-4 rounded-2xl flex flex-col md:flex-row min-h-auto">
+        <div className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
 
           {/* Left Side: Form */}
-          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
+          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <div className="absolute top-8 left-8 lg:left-14">
               <button
                 onClick={() => navigate("/login", { state: { from } })}
-                className="flex items-center justify-start gap-3 text-sm font-medium text-gray-400 hover:text-[#1A2C2C] transition-all duration-300 cursor-pointer group"
+                className="flex items-center justify-start gap-3 pb-4 text-sm font-medium text-gray-400 hover:text-[#1A2C2C] transition-all duration-300 cursor-pointer group"
               >
                 <FaArrowLeft className="text-[10px]" />
                 Back
               </button>
             </div>
 
-            <div className="mt-4">
+            <div className="pt-8">
               <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2">Forgot Password?</h1>
               <p className="text-sm text-gray-500 mb-8">
                 Don't worry! It happens. Please enter the email address associated with your account.
@@ -85,7 +85,7 @@ const ForgotPassword = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#1A2C2C] text-white py-4 rounded-full font-bold text-lg hover:bg-opacity-90 transition-all duration-300 mt-4 shadow-lg cursor-pointer"
+                  className="w-full bg-[#1A2C2C] text-white py-4 rounded-full font-bold text-lg hover:bg-opacity-90 transition-all duration-300 shadow-lg cursor-pointer"
                 >
                   <span className="relative z-10 flex items-center justify-center">
                     {loading ? (
@@ -97,7 +97,7 @@ const ForgotPassword = () => {
                 </button>
               </form>
 
-              <div className="pt-8 text-center">
+              <div className="pt-2 text-center">
                 <p className="text-[12px] text-center text-gray-500 mt-4 sm:mt-6 leading-relaxed px-2">
                   Remember password?{" "}
                   <span

@@ -111,7 +111,7 @@ const Login = () => {
 
   return (
     <>
-      <div className="w-full pt-20 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center overflow-hidden font-sans">
+      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-sans">
         {/* Login Card */}
         <div className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
           {/* Left Side: Login Form */}

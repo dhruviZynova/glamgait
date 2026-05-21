@@ -67,57 +67,57 @@ const Register = () => {
 
   return (
     <>
-      <div className="w-full pt-6 pb-24 px-4 sm:px-6 md:px-12 lg:px-20 flex items-center justify-center overflow-hidden font-sans relative">
+      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-sans">
 
         {/* Register Card */}
-        <div className="relative z-20 w-full max-w-6xl mx-2 sm:mx-4 rounded-xl flex flex-col md:flex-row min-h-auto">
+        <div className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
 
           {/* Left Side: Register Form */}
-          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 sm:p-8 lg:p-12 flex flex-col justify-center rounded-xl md:rounded-tr-none md:rounded-l-xl z-10 border border-white/20">
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#1A2C2C] mb-2 text-center md:text-left">Create Account</h1>
-            <p className="text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8 text-center md:text-left">
+          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#1A2C2C] mb-2">Create Account</h1>
+            <p className="text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8">
               Already Have An Account? <span onClick={() => navigate("/login", { state: { from } })} className="text-[#1A2C2C] font-semibold underline cursor-pointer">Log In</span>
             </p>
 
             <form className="space-y-3 sm:space-y-4" onSubmit={handleRegister}>
               <div className="space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-gray-700 block">First Name</label>
+                <label className="text-sm font-medium text-gray-700 block">First Name</label>
                 <input
                   type="text"
                   name="first_name"
                   placeholder="First Name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-gray-700 block">Last Name</label>
+                <label className="text-sm font-medium text-gray-700 block">Last Name</label>
                 <input
                   type="text"
                   name="last_name"
                   placeholder="Last Name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-gray-700 block">Email</label>
+                <label className="text-sm font-medium text-gray-700 block">Email</label>
                 <input
                   type="email"
                   name="email"
                   placeholder="Email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-gray-700 block">Password</label>
+                <label className="text-sm font-medium text-gray-700 block">Password</label>
                 <div className="relative">
                   <input
                     type={passwordVisible ? "text" : "password"}
@@ -125,7 +125,7 @@ const Register = () => {
                     placeholder="Min 8 chars, 1 uppercase, 1 number"
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-xs sm:text-sm text-gray-600 placeholder-gray-400"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
                   />
                   <button
                     type="button"

@@ -52,12 +52,12 @@ const ResetPassword = () => {
 
   return (
     <>
-      <div className="w-full pt-28 pb-20 px-6 md:px-12 lg:px-20 flex items-center justify-center">
+      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-sans">
         {/* Reset Password Card */}
-        <div className="relative z-20 w-full max-w-5xl mx-4 rounded-2xl flex flex-col md:flex-row min-h-auto">
+        <div className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
 
           {/* Left Side: Form */}
-          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
+          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <div className="mt-4">
               <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2">Set New Password</h1>
               <p className="text-sm text-gray-500 mb-8">
