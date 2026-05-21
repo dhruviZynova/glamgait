@@ -5,6 +5,9 @@ import { ApiURL, userInfo } from "../Variable";
 import { Star, ChevronRight, ShoppingBag, CheckCircle, ImagePlus, X, ThumbsUp, ThumbsDown, Pencil, Trash2, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { ORDER_STATUS } from "../utils/constants";
+import { useReviews, useSubmitReview, useEditReview, useDeleteReview } from "../hooks/useReviews";
+import { useOrders } from "../hooks/useOrders";
+
 
 const getInitials = (name) => {
   if (!name) return "?";
@@ -145,10 +148,7 @@ const Review = ({ p_id, productName, onReviewChange }) => {
   const [selectedStars, setSelectedStars] = useState(5);
   const [reviewContent, setReviewContent] = useState("");
   const [uploadedImages, setUploadedImages] = useState([]);
-  const [reviews, setReviews] = useState([]);
   const [visibleCount, setVisibleCount] = useState(3);
-  const [hasOrders, setHasOrders] = useState(null); // null = still loading
-  const [alreadyReviewed, setAlreadyReviewed] = useState(false);
   const location = useLocation();
   const userRaw = userInfo();
 
@@ -161,83 +161,45 @@ const Review = ({ p_id, productName, onReviewChange }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingReviewId, setEditingReviewId] = useState(null);
 
+  // TanStack Queries & Mutations
+  const { data: reviews = [], isLoading: isLoadingReviews } = useReviews(p_id);
+  const { data: orders = [], isLoading: isLoadingOrders } = useOrders();
+
+  const submitReviewMutation = useSubmitReview(p_id);
+  const editReviewMutation = useEditReview(p_id);
+  const deleteReviewMutation = useDeleteReview(p_id);
+
+  const [deletingReviewId, setDeletingReviewId] = useState(null);
+  const [deletingConfirm, setDeletingConfirm] = useState(false);
+
+  const alreadyReviewed = useMemo(() => {
+    if (!user?.u_id) return false;
+    return reviews.some((r) => String(r.u_id || r.user_id) === String(user.u_id));
+  }, [reviews, user?.u_id]);
+
+  const hasOrders = useMemo(() => {
+    if (!user?.u_id) return false;
+    if (isLoadingOrders) return null; // null = still loading
+
+    return orders.some(order =>
+      (parseInt(order.status) === ORDER_STATUS.DELIVERED || order.status_label === "Delivered") &&
+      order.orderItems && order.orderItems.some(item => {
+        const itemId = item.p_id || item.product_id || item.pid || item.id || item.productId;
+        const idMatch = itemId && String(itemId) === String(p_id);
+        const nameMatch = productName && item.productName &&
+          String(item.productName).trim().toLowerCase() === String(productName).trim().toLowerCase();
+
+        return idMatch || nameMatch;
+      })
+    );
+  }, [orders, isLoadingOrders, user?.u_id, p_id, productName]);
+
   useEffect(() => {
     if (user && !isEditing) {
       setReviewerName(user.first_name || user.name || "");
       setReviewerEmail(user.email || "");
     }
   }, [user?.u_id, user?.email, isEditing]);
-
-  // ── 1. Fetch reviews for this product ────────────────────────────────────
-  const fetchReviews = useCallback(async () => {
-    if (!p_id) return;
-    try {
-      const res = await axiosInstance.post("/getuserreviews", { p_id });
-      if (res.data.status === 1) {
-        const data = res.data.data || [];
-        setReviews(data);
-
-        // Check if logged-in user already reviewed this product
-        if (user?.u_id) {
-          const userReview = data.find((r) => String(r.u_id || r.user_id) === String(user.u_id));
-          setAlreadyReviewed(!!userReview);
-        } else {
-          setAlreadyReviewed(false);
-        }
-      } else {
-        setReviews([]);
-        setAlreadyReviewed(false);
-      }
-    } catch (err) {
-      console.error("Error fetching reviews:", err);
-      setReviews([]);
-      setAlreadyReviewed(false);
-    }
-  }, [p_id, user?.u_id, user?.email, reviewerName, reviewerEmail]);
-
-  // ── 2. Check if logged-in user has ordered THIS specific product ────────
-  const checkUserOrders = useCallback(async () => {
-    if (!user?.u_id) {
-      setHasOrders(false);
-      return;
-    }
-    try {
-      const res = await axiosInstance.get(
-        `${ApiURL}/getorder?u_id=${user.u_id}`
-      );
-      if (
-        res.data.status === 1 &&
-        Array.isArray(res.data.data)
-      ) {
-        // Find if any order contains this specific product (by ID or Name)
-        const hasBoughtThisProduct = res.data.data.some(order =>
-          (parseInt(order.status) === ORDER_STATUS.DELIVERED || order.status_label === "Delivered") &&
-          order.orderItems && order.orderItems.some(item => {
-            const itemId = item.p_id || item.product_id || item.pid || item.id || item.productId;
-            const idMatch = itemId && String(itemId) === String(p_id);
-            // Fallback to name matching if IDs don't match or are missing
-            const nameMatch = productName && item.productName &&
-              String(item.productName).trim().toLowerCase() === String(productName).trim().toLowerCase();
-
-            return idMatch || nameMatch;
-          })
-        );
-        setHasOrders(hasBoughtThisProduct);
-      } else {
-        setHasOrders(false);
-      }
-    } catch (err) {
-      console.error("Error checking orders:", err);
-      setHasOrders(false);
-    }
-  }, [user?.u_id, p_id, productName]);
-
-  useEffect(() => {
-    if (p_id) {
-      fetchReviews();
-      checkUserOrders();
-    }
-  }, [p_id, fetchReviews, checkUserOrders]);
 
   // ── Submit handler ────────────────────────────────────────────────────────
   const handleEdit = (review) => {
@@ -266,45 +228,31 @@ const Review = ({ p_id, productName, onReviewChange }) => {
     setUploadedImages([]);
   };
 
-  const [deletingReviewId, setDeletingReviewId] = useState(null);
-  const [deletingConfirm, setDeletingConfirm] = useState(false);
-
   const handleDelete = (reviewId) => {
     setDeletingReviewId(reviewId);
   };
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (!deletingReviewId || deletingConfirm) return;
     setDeletingConfirm(true);
-    try {
-      const res = await axiosInstance.delete(`/deleteuserreview/${deletingReviewId}`);
-      if (res.data.status === 1) {
-        toast.success("Review deleted successfully!");
-        setAlreadyReviewed(false);
-        setReviews((prev) => prev.filter((r) => (r.r_id || r.review_id) !== deletingReviewId));
-        fetchReviews();
+
+    deleteReviewMutation.mutate(deletingReviewId, {
+      onSuccess: () => {
+        setDeletingReviewId(null);
         if (onReviewChange) {
           onReviewChange();
         }
-      } else {
-        toast.error(res.data.description || "Failed to delete review");
+      },
+      onSettled: () => {
+        setDeletingConfirm(false);
       }
-    } catch (err) {
-      console.error("Error deleting review:", err);
-      toast.error(
-        err.response?.data?.description ||
-        "An error occurred while deleting the review"
-      );
-    } finally {
-      setDeletingReviewId(null);
-      setDeletingConfirm(false);
-    }
+    });
   };
 
-  const [submitting, setSubmitting] = useState(false);
+  const submitting = submitReviewMutation.isPending || editReviewMutation.isPending;
 
   // ── 3. Submit review (Add or Update) ──────────────────────────────────────
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!p_id || submitting) return;
 
@@ -313,55 +261,36 @@ const Review = ({ p_id, productName, onReviewChange }) => {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const formData = new FormData();
-      if (isEditing) {
-        formData.append("r_id", editingReviewId);
+    const formData = new FormData();
+    if (isEditing) {
+      formData.append("r_id", editingReviewId);
+    }
+    formData.append("p_id", p_id);
+    formData.append("rating", selectedStars);
+    formData.append("message", reviewContent);
+    formData.append("reviewer_name", reviewerName);
+    formData.append("reviewer_email", reviewerEmail);
+
+    // Handle images
+    uploadedImages.forEach((img) => {
+      if (img instanceof File) {
+        formData.append("userReviewImage", img);
       }
-      formData.append("p_id", p_id);
-      formData.append("rating", selectedStars);
-      formData.append("message", reviewContent);
-      formData.append("reviewer_name", reviewerName);
-      formData.append("reviewer_email", reviewerEmail);
+    });
 
-      // Handle images
-      uploadedImages.forEach((img) => {
-        if (img instanceof File) {
-          formData.append("userReviewImage", img);
-        }
-      });
-
-      const endpoint = isEditing ? "/updateuserreview" : "/adduserreview";
-      const res = await axiosInstance.post(endpoint, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      if (res.data.status === 1) {
-        toast.success(isEditing ? "Review updated successfully!" : "Review added successfully!");
+    const mutation = isEditing ? editReviewMutation : submitReviewMutation;
+    mutation.mutate(formData, {
+      onSuccess: () => {
         setSelectedStars(5);
         setReviewContent("");
         setUploadedImages([]);
         setIsEditing(false);
         setEditingReviewId(null);
-        fetchReviews();
         if (onReviewChange) {
           onReviewChange();
         }
-      } else {
-        toast.error(res.data.description || "Failed to submit review");
       }
-    } catch (err) {
-      console.error(err);
-      const errMsg =
-        err.response?.data?.description ||
-        err.response?.data?.message ||
-        (typeof err.response?.data === "string" ? err.response.data : null) ||
-        "An error occurred";
-      toast.error(errMsg);
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   const toggleVisible = () => {

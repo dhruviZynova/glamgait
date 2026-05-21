@@ -14,6 +14,7 @@ const ProductCard = ({
   onWishlistChange,
 }) => {
   const navigate = useNavigate();
+  const { user } = useUser();
 
   // Support both API shapes:
   // /productbycategory → product.colors[]
@@ -45,8 +46,6 @@ const ProductCard = ({
       toast.error("Please select a color");
       return;
     }
-
-    const { user } = useUser();
 
     if (!user?.u_id) {
       let localWishlist = JSON.parse(localStorage.getItem('localWishlist') || '[]');

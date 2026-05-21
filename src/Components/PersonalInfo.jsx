@@ -9,68 +9,36 @@ import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 import ProfileInfoSkeleton from "./skeletons/ProfileInfoSkeleton";
 import { Loader2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useProfile, useUpdateProfile, useAddresses, useDeleteAddress } from "../hooks/useProfile";
+
 
 const PersonalInfo = () => {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState(null);
-  const [dataLoading, setDataLoading] = useState(true);
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [deletingAddress, setDeletingAddress] = useState(false);
+  const queryClient = useQueryClient();
+
   const [editingField, setEditingField] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   const [addressType, setAddressType] = useState("HOME");
-  const [addresses, setAddresses] = useState([]);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState(null);
+
   const user = userInfo();
   const u_id = user?.u_id;
-  const guestId = getGuestId(); // ← Guest ID from localStorage (same as cart)
   const isLoggedIn = !!u_id;
-  // Fetch user data and addresses
-  const fetchUser = useCallback(async () => {
-    if (!isLoggedIn) {
-      return;
-    }
-    try {
-      const res = await axiosInstance.get(`/user/${u_id}`);
-      if (res.data.status === 1) setUserData(res.data.data);
-    } catch (err) {
-      console.error("Error fetching user:", err);
-    }
-  }, [isLoggedIn, u_id]);
 
-  const fetchAddress = useCallback(async () => {
-    try {
-      const payload = isLoggedIn ? { u_id } : { guest_id: guestId };
-      const res = await axiosInstance.post(`/getaddress`, payload);
+  // TanStack Queries & Mutations
+  const { data: userData, isLoading: isLoadingProfile } = useProfile();
+  const { data: addresses = [], isLoading: isLoadingAddresses } = useAddresses();
 
-      if (res.data.status === 1) {
-        setAddresses(res.data.data || []);
-      } else {
-        setAddresses([]);
-      }
-    } catch (err) {
-      console.error("Error fetching addresses:", err);
-      toast.error("Failed to load addresses");
-      setAddresses([]);
-    }
-  }, [isLoggedIn, u_id, guestId]);
+  const updateProfileMutation = useUpdateProfile();
+  const deleteAddressMutation = useDeleteAddress();
 
-  // Fetch all data and set loading to false when done
-  const fetchAllData = useCallback(async () => {
-    setDataLoading(true);
-    await Promise.all([
-      fetchUser(),
-      fetchAddress()
-    ]);
-    setDataLoading(false);
-  }, [fetchUser, fetchAddress]);
-
-  useEffect(() => {
-    fetchAllData();
-  }, [fetchAllData]);
+  const dataLoading = (isLoggedIn && isLoadingProfile) || isLoadingAddresses;
+  const savingProfile = updateProfileMutation.isPending;
+  const deletingAddress = deleteAddressMutation.isPending;
 
   // Edit & Save user info
   const handleEdit = (field) => {
@@ -79,65 +47,43 @@ const PersonalInfo = () => {
       return;
     }
     setEditingField(field);
-    setInputValue(userData[field] || "");
+    setInputValue(userData ? userData[field] || "" : "");
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!isLoggedIn || savingProfile) return;
-    setSavingProfile(true);
-    try {
-      const res = await axiosInstance.put(`${ApiURL}/user/${u_id}`, {
-        [editingField]: inputValue,
-      });
-      if (res.data.status === 1) {
-        setUserData((prev) => ({ ...prev, [editingField]: inputValue }));
-        setEditingField("");
-        toast.success("Profile updated successfully!");
-      } else {
-        toast.error(res.data.description || "Failed to update");
+    updateProfileMutation.mutate(
+      { [editingField]: inputValue },
+      {
+        onSuccess: () => {
+          setEditingField("");
+        },
+        onError: (err) => {
+          toast.error(err.message || "Failed to update profile");
+        },
       }
-    } catch (err) {
-      if (err.response?.status === 400 && err.response?.data?.description) {
-        toast.error(err.response.data.description);
-      } else {
-        toast.error("Something went wrong while updating your profile");
-      }
-      console.error(err);
-    } finally {
-      setSavingProfile(false);
-    }
+    );
   };
 
   // DELETE address
-  const handleDeleteAddress = async (add_id) => {
+  const handleDeleteAddress = (add_id) => {
     setAddressToDelete(add_id);
     setDeleteModalOpen(true);
   };
 
-  const confirmDeleteAddress = async () => {
+  const confirmDeleteAddress = () => {
     if (!addressToDelete || deletingAddress) return;
-    setDeletingAddress(true);
-    try {
-      const res = await axiosInstance.delete(
-        `${ApiURL}/deleteaddress/${addressToDelete}`
-      );
-      if (res.data.status === 1) {
-        toast.success("Address deleted successfully");
-        fetchAddress();
-      } else {
-        toast.error(res.data.description || "Failed to delete address");
-      }
-    } catch (err) {
-      if (err.response?.status === 400 && err.response?.data?.description) {
-        toast.error(err.response.data.description);
-      } else {
-        toast.error("Something went wrong while deleting the address");
-      }
-    } finally {
-      setDeletingAddress(false);
-      setDeleteModalOpen(false);
-      setAddressToDelete(null);
-    }
+    deleteAddressMutation.mutate(addressToDelete, {
+      onSuccess: () => {
+        setDeleteModalOpen(false);
+        setAddressToDelete(null);
+      },
+      onError: (err) => {
+        toast.error(err.message || "Failed to delete address");
+        setDeleteModalOpen(false);
+        setAddressToDelete(null);
+      },
+    });
   };
 
   const cancelDelete = () => {
@@ -358,7 +304,7 @@ const PersonalInfo = () => {
           onClose={() => setIsModalOpen(false)}
           addressType={addressType}
           setAddressType={setAddressType}
-          refreshAddresses={fetchAddress}
+          refreshAddresses={() => queryClient.invalidateQueries({ queryKey: ["addresses"] })}
           editingAddress={editingAddress}
         />
       )}

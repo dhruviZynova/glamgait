@@ -5,10 +5,10 @@ import { userInfo, adminInfo } from '../Variable';
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [admin, setAdmin] = useState(null);
+  const [user, setUser] = useState(() => userInfo());
+  const [admin, setAdmin] = useState(() => adminInfo());
   /** authChecked = true once the initial session-storage read is done */
-  const [authChecked, setAuthChecked] = useState(false);
+  const [authChecked, setAuthChecked] = useState(true);
 
   const refreshUser = () => {
     const info = userInfo();
@@ -18,9 +18,6 @@ export const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    refreshUser();
-    setAuthChecked(true);
-
     // Sync across tabs
     const handleStorageChange = (e) => {
       if (e.key === 'GlamGait' || e.key === 'GlamGaitAdmin') {

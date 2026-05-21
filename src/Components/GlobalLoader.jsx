@@ -9,7 +9,7 @@ import { useLoader } from "../Context/LoaderContext";
 export default function GlobalLoader() {
   const { initialLoad } = useLoader();
   const safetyTimerRef = useRef(null);
-  const [visible, setVisible] = useState(true); // starts visible on mount
+  const [visible, setVisible] = useState(initialLoad); // starts visible only if initial auth check is pending
   const [fading, setFading] = useState(false);
 
   // When initialLoad transitions false → start fade-out

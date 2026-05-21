@@ -7,147 +7,88 @@ import toast from "react-hot-toast";
 import wishlistempty from "../assets/wishlistempty.png";
 import WishlistSkeleton from "./skeletons/WishlistSkeleton";
 
+import { useWishlist, useRemoveFromWishlist } from "../hooks/useWishlist";
+import { useAddToCart } from "../hooks/useCart";
+
 const Wishlist = () => {
-  const [wishlistItems, setWishlistItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: wishlistItems = [], isLoading: loading } = useWishlist();
+  const removeWishlistMutation = useRemoveFromWishlist();
+  const addToCartMutation = useAddToCart();
+
   // Per-item action loading sets
   const [removingIds, setRemovingIds] = useState(new Set());
   const [movingIds, setMovingIds] = useState(new Set());
-  const userDataRaw = userInfo();
-  const userData = React.useMemo(() => userDataRaw, [JSON.stringify(userDataRaw)]);
 
-  const isFetchingRef = useRef(false);
-  const fetchWishlist = useCallback(async () => {
-    try {
-      if (!userData?.u_id) {
-        const localWishlist = JSON.parse(localStorage.getItem('localWishlist') || '[]');
-        const mappedLocalWishlist = localWishlist.map((item, index) => ({
-          ...item,
-          w_id: `local-${index}`
-        }));
-        setWishlistItems(mappedLocalWishlist);
-        setLoading(false);
-        return;
-      }
-
-      if (isFetchingRef.current) return;
-      isFetchingRef.current = true;
-
-      const identifier = userData.u_id;
-      const query = `u_id=${identifier}`;
-
-      const res = await axiosInstance.get(`${ApiURL}/getwishlist?${query}`);
-
-      if (res.data.status === 1) {
-        setWishlistItems(res.data.data || []);
-      } else {
-        setWishlistItems([]);
-      }
-    } catch (err) {
-      console.error(err);
-      setWishlistItems([]);
-    } finally {
-      setLoading(false);
-      isFetchingRef.current = false;
-    }
-  }, [userData?.u_id]);
-
-  useEffect(() => {
-    fetchWishlist();
-  }, [fetchWishlist]);
-
-  const handleRemove = async (w_id) => {
+  const handleRemove = (w_id) => {
     if (removingIds.has(w_id)) return; // prevent duplicate
     setRemovingIds((prev) => new Set(prev).add(w_id));
 
-    try {
-      if (!userData?.u_id && typeof w_id === 'string' && w_id.startsWith('local-')) {
-        const localWishlist = JSON.parse(localStorage.getItem('localWishlist') || '[]');
-        const index = parseInt(w_id.split('-')[1]);
-        localWishlist.splice(index, 1);
-        localStorage.setItem('localWishlist', JSON.stringify(localWishlist));
-        window.dispatchEvent(new Event('wishlistUpdated'));
-        fetchWishlist();
-        return;
-      }
-
-      const res = await axiosInstance.post(`${ApiURL}/removewishlist`, { w_id });
-      if (res.data.status === 1) {
-        setWishlistItems((prev) => prev.filter((item) => item.w_id !== w_id));
-        window.dispatchEvent(new Event('wishlistUpdated'));
-      }
-    } catch (err) {
-      toast.error(err.message || "Failed to remove");
-    } finally {
-      setRemovingIds((prev) => { const n = new Set(prev); n.delete(w_id); return n; });
-    }
+    removeWishlistMutation.mutate(w_id, {
+      onSettled: () => {
+        setRemovingIds((prev) => {
+          const n = new Set(prev);
+          n.delete(w_id);
+          return n;
+        });
+      },
+    });
   };
 
-  const handleMoveToCart = async (item) => {
+  const handleMoveToCart = (item) => {
     const key = item.w_id;
     if (movingIds.has(key)) return; // prevent duplicate
     setMovingIds((prev) => new Set(prev).add(key));
 
-    try {
-      if (!userData?.u_id) {
-        const localCart = JSON.parse(localStorage.getItem('localCart') || '[]');
-        const existingItemIndex = localCart.findIndex(cartItem =>
-          cartItem.p_id === item.p_id &&
-          cartItem.pcolor_id === item.pcolor_id &&
-          cartItem.psize_id === (item.psize_id || null)
-        );
-        if (existingItemIndex !== -1) {
-          localCart[existingItemIndex].quantity += 1;
-        } else {
-          localCart.push({
-            p_id: item.p_id,
-            pcolor_id: item.pcolor_id,
-            psize_id: item.psize_id || null,
-            quantity: 1,
-            product_name: item.product_name,
-            price: item.price,
-            original_price: item.original_price,
-            image_url: item.image_url,
-            color_name: item.color_name,
-            size_name: item.size_name,
-            available_stock: item.stock_qty || item.available_stock
+    const product = {
+      p_id: item.p_id,
+      sc_id: item.sc_id || null,
+      name: item.product_name,
+      price: item.price,
+      original_price: item.original_price,
+    };
+    const selectedColor = {
+      pcolor_id: item.pcolor_id,
+      productimages: [{ image_url: item.image_url }],
+      color: { color_name: item.color_name },
+    };
+    const selectedSize = item.psize_id
+      ? { psize_id: item.psize_id, size: { size_name: item.size_name } }
+      : null;
+    const quantity = 1;
+    const availableStock = item.stock_qty !== undefined ? item.stock_qty : (item.available_stock || 99);
+
+    addToCartMutation.mutate(
+      {
+        product,
+        selectedColor,
+        selectedSize,
+        quantity,
+        availableStock,
+      },
+      {
+        onSuccess: () => {
+          // Toast for addition is already handled by useAddToCart hook, now delete from wishlist
+          removeWishlistMutation.mutate(item.w_id, {
+            onSettled: () => {
+              setMovingIds((prev) => {
+                const n = new Set(prev);
+                n.delete(key);
+                return n;
+              });
+            },
           });
-        }
-        localStorage.setItem('localCart', JSON.stringify(localCart));
-        window.dispatchEvent(new Event('cartUpdated'));
-        toast.success("Moved to cart!");
-        handleRemove(item.w_id);
-        return;
+        },
+        onError: () => {
+          setMovingIds((prev) => {
+            const n = new Set(prev);
+            n.delete(key);
+            return n;
+          });
+        },
       }
-
-      const payload = {
-        p_id: item.p_id,
-        pcolor_id: item.pcolor_id,
-        psize_id: item.psize_id || null,
-        quantity: 1,
-        u_id: userData.u_id,
-        guest_id: null,
-      };
-
-      const res = await axiosInstance.post(
-        `${ApiURL}/createcart`,
-        payload,
-        { headers: { Authorization: `Bearer ${userData.auth_token}` } }
-      );
-
-      if (res.data.status === 1) {
-        toast.success("Moved to cart!");
-        window.dispatchEvent(new Event('cartUpdated'));
-        handleRemove(item.w_id);
-      } else {
-        toast.error(res.data.description || "Out of stock");
-      }
-    } catch (err) {
-      toast.error(err.message || "Failed to move to cart");
-    } finally {
-      setMovingIds((prev) => { const n = new Set(prev); n.delete(key); return n; });
-    }
+    );
   };
+
 
   return (
     <div className="bg-[#f3f0ed] min-h-screen px-4 md:px-10 py-10 ">

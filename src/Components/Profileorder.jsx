@@ -12,14 +12,11 @@ import ReturnOrderModal from "./ReturnOrderModal";
 import { ORDER_STATUS, STATUS_LABELS } from "../utils/constants";
 import InvoiceModal from "./InvoiceModal";
 import OrdersSkeleton from "./skeletons/OrdersSkeleton";
+import { useOrders, useCancelOrder, useReturnOrder } from "../hooks/useOrders";
+
 
 const Profileorder = () => {
-
   const [activeTab, setActiveTab] = useState("Active");
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [cancellingId, setCancellingId] = useState(null);
-  const [returningId, setReturningId] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
@@ -47,100 +44,47 @@ const Profileorder = () => {
       ORDER_STATUS.RETURNED
     ].includes(order.status);
   };
+
   const navigate = useNavigate();
   const tabs = ["Active", "Completed", "Cancelled", "Returned"];
   const user = userInfo();
   const u_id = user?.u_id;
   const guestId = getGuestId();
-
   const isLoggedIn = !!u_id;
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true);
-      try {
-        let url = `${ApiURL}/getorder?`;
-        if (isLoggedIn) {
-          url += `u_id=${u_id}`;
-        } else {
-          url += `guest_id=${guestId}`;
-        }
+  // TanStack Queries & Mutations
+  const { data: orders = [], isLoading: loading } = useOrders();
 
-        const res = await axiosInstance.get(url);
+  const cancelOrderMutation = useCancelOrder();
+  const returnOrderMutation = useReturnOrder();
 
-        if (res.data.status === 1) {
-          setOrders(res.data.data || []);
-        } else {
-          setOrders([]);
-        }
-      } catch (err) {
-        console.error("Error fetching orders:", err);
-        setOrders([]);
-        toast.error("Failed to load orders");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const cancellingId = cancelOrderMutation.isPending ? selectedOrderId : null;
+  const returningId = returnOrderMutation.isPending ? selectedOrderId : null;
 
-    fetchOrders();
-  }, [u_id, isLoggedIn, guestId]);
-
-  const handleCancelOrder = async (reason) => {
+  const handleCancelOrder = (reason) => {
     if (cancellingId) return;
-    setCancellingId(selectedOrderId);
-    try {
-      const res = await axiosInstance.put(`${ApiURL}/cancelorder`, {
-        order_id: selectedOrderId,
-        reason: reason,
-        ...(!isLoggedIn && { guest_id: guestId }),
-      });
-
-      if (res.data.status === 1) {
-        toast.success("Order cancelled successfully!");
-        setOrders((prev) =>
-          prev.map((o) =>
-            o.orderId === selectedOrderId ? { ...o, status: ORDER_STATUS.CANCELLED } : o,
-          ),
-        );
-      } else {
-        toast.error(res.data.message || "Failed to cancel");
+    cancelOrderMutation.mutate({
+      order_id: selectedOrderId,
+      reason: reason,
+      ...(!isLoggedIn && { guest_id: guestId }),
+    }, {
+      onSettled: () => {
+        setShowCancelModal(false);
       }
-    } catch (err) {
-      toast.error("Something went wrong");
-      console.error(err);
-    } finally {
-      setCancellingId(null);
-      setShowCancelModal(false);
-    }
+    });
   };
 
-  const handleReturnOrder = async (reason) => {
+  const handleReturnOrder = (reason) => {
     if (returningId) return;
-    setReturningId(selectedOrderId);
-    try {
-      const res = await axiosInstance.put(`${ApiURL}/returnorder`, {
-        order_id: selectedOrderId,
-        reason: reason,
-        ...(!isLoggedIn && { guest_id: guestId }),
-      });
-
-      if (res.data.status === 1) {
-        toast.success("Return request submitted successfully!");
-        setOrders((prev) =>
-          prev.map((o) =>
-            o.orderId === selectedOrderId ? { ...o, status: ORDER_STATUS.RETURNED } : o,
-          ),
-        );
-      } else {
-        toast.error(res.data.message || "Failed to submit return request");
+    returnOrderMutation.mutate({
+      order_id: selectedOrderId,
+      reason: reason,
+      ...(!isLoggedIn && { guest_id: guestId }),
+    }, {
+      onSettled: () => {
+        setShowReturnModal(false);
       }
-    } catch (err) {
-      toast.error("Something went wrong");
-      console.error(err);
-    } finally {
-      setReturningId(null);
-      setShowReturnModal(false);
-    }
+    });
   };
 
   const filteredOrders = orders.filter((order) => {

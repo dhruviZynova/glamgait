@@ -75,6 +75,23 @@ const ProductAttributes = lazy(() => import("./Admin/pages/ProductAttributes"));
 // Misc
 const NotFound = lazy(() => import("./Components/NotFound"));
 
+const SuspenseLoader = () => (
+  <div className="glamloader-overlay" aria-label="Loading" role="status">
+    <div className="glamloader-logo">
+      KUNDRAT
+      <div className="glamloader-logo-fill">KUNDRAT</div>
+    </div>
+    <div className="glamloader-ring">
+      <svg viewBox="0 0 72 72">
+        <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+        <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+        <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+      </svg>
+      <div className="glamloader-ring-dot" />
+    </div>
+  </div>
+);
+
 function App() {
   return (
     <UserProvider>
@@ -102,7 +119,7 @@ function App() {
         <BrowserRouter>
           <GlobalLoader />
           <SmartScrollManager />
-          <Suspense fallback={<div className="h-screen w-screen flex items-center justify-center bg-[#F3F0ED]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1C2F2F]"></div></div>}>
+          <Suspense fallback={<SuspenseLoader />}>
             <Routes>
               {/* Client Routes */}
               <Route
