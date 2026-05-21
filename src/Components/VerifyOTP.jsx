@@ -103,28 +103,28 @@ const VerifyOTP = () => {
 
   return (
     <>
-      <div className="w-full pt-28 pb-20 px-6 md:px-12 lg:px-20 flex items-center justify-center font-sans">
-        <div className="relative z-20 w-full max-w-5xl mx-4 rounded-2xl flex flex-col md:flex-row min-h-auto">
+      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-sans">
+        <div className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
           {/* Left Side: OTP Verification */}
-          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
+          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <div className="absolute top-8 left-8 lg:left-14">
               <button
                 onClick={() => navigate("/forgot-password")}
-                className="flex items-center justify-start gap-3 text-sm font-medium text-gray-400 hover:text-[#1A2C2C] transition-all duration-300 cursor-pointer group"
+                className="flex items-center justify-start gap-3 pb-4 text-sm font-medium text-gray-400 hover:text-[#1A2C2C] transition-all duration-300 cursor-pointer group"
               >
                 <FaArrowLeft className="text-[10px]" />
                 Back
               </button>
             </div>
 
-            <div className="mt-4">
+            <div className="pt-8">
               <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2">Verify OTP</h1>
               <p className="text-sm text-gray-500 mb-8">
                 We've sent a 6-digit code to <span className="font-semibold text-[#1A2C2C]">{email}</span>. Please enter it below.
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="flex justify-between gap-2 max-w-sm mx-auto">
+                <div className="flex justify-between gap-1.5 sm:gap-2 max-w-sm mx-auto">
                   {otp.map((digit, index) => (
                     <input
                       key={index}
@@ -134,7 +134,7 @@ const VerifyOTP = () => {
                       value={digit}
                       onChange={(e) => handleChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(index, e)}
-                      className="w-12 h-12 md:w-14 md:h-14 text-center text-xl font-bold border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-gray-700 bg-gray-50/50"
+                      className="w-9 h-9 xs:w-10 xs:h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-center text-lg sm:text-xl font-bold border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-gray-700 bg-gray-50/50"
                     />
                   ))}
                 </div>
