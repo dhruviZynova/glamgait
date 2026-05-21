@@ -185,7 +185,7 @@ const PersonalInfo = () => {
                                 type={field === "password" ? "password" : "text"}
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
-                                className="w-full border-b-2 border-gray-300 focus:border-[#807D7E] outline-none bg-transparent py-1 transition-colors"
+                                className="w-full capitalize border-b-2 border-gray-300 focus:border-[#807D7E] outline-none bg-transparent py-1 transition-colors"
                                 autoFocus
                               />
                               <div className="flex gap-4 mt-3">
@@ -204,7 +204,7 @@ const PersonalInfo = () => {
                               </div>
                             </div>
                           ) : (
-                            <p className="text-lg font-semibold text-[#3C4242]">
+                            <p className={`text-lg font-semibold text-[#3C4242] ${field === "first_name" || field === "last_name" ? "capitalize" : ""}`}>
                               {field === "password"
                                 ? "•••••••"
                                 : userData && userData[field]}
@@ -275,7 +275,7 @@ const PersonalInfo = () => {
                         key={addr.add_id}
                         className="bg-[#f9f9f9] rounded-2xl p-6 lg:p-8 shadow-sm border border-transparent transition-all"
                       >
-                        <p className="text-xl font-semibold text-[#3C4242] mb-1">
+                        <p className="text-xl font-semibold text-[#3C4242] mb-1 capitalize">
                           {addr.first_name} {addr.last_name}
                         </p>
                         <p className="text-base text-[#807D7E] mb-4 font-semibold">

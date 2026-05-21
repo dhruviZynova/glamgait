@@ -2,11 +2,10 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
-import { Star, ChevronRight, ShoppingBag, CheckCircle, ImagePlus, X, ThumbsUp, ThumbsDown, Pencil } from "lucide-react";
+import { Star, ChevronRight, ShoppingBag, CheckCircle, ImagePlus, X, ThumbsUp, ThumbsDown, Pencil, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { ORDER_STATUS } from "../utils/constants";
 
-// Extracts up to 2 initials from a full name  e.g. "Dhruv Gajjar" → "DG"
 const getInitials = (name) => {
   if (!name) return "?";
   return name
@@ -17,17 +16,14 @@ const getInitials = (name) => {
     .join("") || "?";
 };
 
-const ReviewCard = ({ review, displayDate, currentUser, onEdit }) => {
+const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete }) => {
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
   const [likeCount, setLikeCount] = useState(review?.likes || 0);
   const [dislikeCount, setDislikeCount] = useState(review?.dislikes || 0);
 
   const isAuthor = currentUser?.u_id && (
-    String(review.u_id || review.user_id) === String(currentUser.u_id) ||
-    (review.reviewer_email && review.reviewer_email === currentUser.email) ||
-    ((review.reviewer_name || review.name || review.u_name)?.toLowerCase().trim() === (currentUser.name || `${currentUser.first_name} ${currentUser.last_name}`).toLowerCase().trim()) ||
-    ((review.reviewer_name || review.name || review.u_name)?.toLowerCase().trim() === currentUser.first_name?.toLowerCase().trim())
+    String(review.u_id || review.user_id) === String(currentUser.u_id)
   );
 
   const handleLike = () => {
@@ -66,7 +62,7 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit }) => {
         </div>
         <div className="flex-1">
           <div className="flex justify-between items-center mb-3">
-            <h4 className="text-[#3D3D3D] font-semibold text-base sm:text-lg font-[oxygen]">
+            <h4 className="text-[#3D3D3D] font-semibold text-base sm:text-lg font-[oxygen] capitalize">
               {review?.reviewer_name}
             </h4>
             <div className="flex items-center gap-0.5">
@@ -101,7 +97,7 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit }) => {
           <div className="flex items-center gap-5 text-[#3D3D3D] text-xs sm:text-sm font-medium">
             <button
               onClick={handleLike}
-              className={`flex items-center gap-1.5 transition-colors ${liked ? "text-black" : "text-[#AEAEAE] hover:text-black"
+              className={`flex items-center gap-1.5 transition-colors cursor-pointer ${liked ? "text-black" : "text-[#AEAEAE] hover:text-black"
                 }`}
             >
               <ThumbsUp size={16} className={liked ? "fill-black" : ""} />
@@ -110,7 +106,7 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit }) => {
 
             <button
               onClick={handleDislike}
-              className={`flex items-center gap-1.5 transition-colors ${disliked ? "text-black" : "text-[#AEAEAE] hover:text-black"
+              className={`flex items-center gap-1.5 transition-colors cursor-pointer ${disliked ? "text-black" : "text-[#AEAEAE] hover:text-black"
                 }`}
             >
               <ThumbsDown size={16} className={disliked ? "fill-black" : ""} />
@@ -120,10 +116,20 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit }) => {
             {isAuthor && onEdit && (
               <button
                 onClick={() => onEdit(review)}
-                className="p-1.5 rounded-full bg-gray-50 text-gray-400 hover:text-black hover:bg-gray-200 transition-all"
+                className="p-1.5 rounded-full bg-gray-50 text-gray-400 hover:text-black hover:bg-gray-200 transition-all cursor-pointer"
                 title="Edit your review"
               >
                 <Pencil size={16} />
+              </button>
+            )}
+
+            {isAuthor && onDelete && (
+              <button
+                onClick={() => onDelete(review.r_id || review.review_id)}
+                className="p-1.5 rounded-full bg-gray-50 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+                title="Delete your review"
+              >
+                <Trash2 size={16} />
               </button>
             )}
 
@@ -135,7 +141,7 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit }) => {
   );
 };
 
-const Review = ({ p_id, productName }) => {
+const Review = ({ p_id, productName, onReviewChange }) => {
   const [selectedStars, setSelectedStars] = useState(5);
   const [reviewContent, setReviewContent] = useState("");
   const [uploadedImages, setUploadedImages] = useState([]);
@@ -145,7 +151,7 @@ const Review = ({ p_id, productName }) => {
   const [alreadyReviewed, setAlreadyReviewed] = useState(false);
   const location = useLocation();
   const userRaw = userInfo();
-  
+
   // Memoize user to prevent infinite loops since userInfo() returns a new object on every call
   const user = useMemo(() => userRaw, [JSON.stringify(userRaw)]);
 
@@ -173,22 +179,19 @@ const Review = ({ p_id, productName }) => {
 
         // Check if logged-in user already reviewed this product
         if (user?.u_id) {
-          const userReview = data.find((r) => {
-            const userIdMatch = String(r.u_id || r.user_id) === String(user.u_id);
-            const accountNameMatch = (r.reviewer_name || r.name || r.u_name)?.toLowerCase().trim() === (user.name || `${user.first_name} ${user.last_name}`).toLowerCase().trim();
-            const firstNameMatch = (r.reviewer_name || r.name || r.u_name)?.toLowerCase().trim() === user.first_name?.toLowerCase().trim();
-            const formNameMatch = (r.reviewer_name || r.name || r.u_name)?.toLowerCase().trim() === reviewerName.toLowerCase().trim();
-            const emailMatch = (r.reviewer_email || r.email)?.toLowerCase().trim() === (user.email || reviewerEmail).toLowerCase().trim();
-
-            return userIdMatch || accountNameMatch || firstNameMatch || formNameMatch || (emailMatch && (user.email || reviewerEmail));
-          });
+          const userReview = data.find((r) => String(r.u_id || r.user_id) === String(user.u_id));
           setAlreadyReviewed(!!userReview);
+        } else {
+          setAlreadyReviewed(false);
         }
       } else {
         setReviews([]);
+        setAlreadyReviewed(false);
       }
     } catch (err) {
       console.error("Error fetching reviews:", err);
+      setReviews([]);
+      setAlreadyReviewed(false);
     }
   }, [p_id, user?.u_id, user?.email, reviewerName, reviewerEmail]);
 
@@ -263,6 +266,40 @@ const Review = ({ p_id, productName }) => {
     setUploadedImages([]);
   };
 
+  const [deletingReviewId, setDeletingReviewId] = useState(null);
+
+  const handleDelete = (reviewId) => {
+    setDeletingReviewId(reviewId);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingReviewId) return;
+    try {
+      const res = await axiosInstance.delete(`/deleteuserreview/${deletingReviewId}`);
+      if (res.data.status === 1) {
+        toast.success("Review deleted successfully!");
+        setAlreadyReviewed(false);
+        // Optimistically remove the deleted review from UI state instantly
+        setReviews((prev) => prev.filter((r) => (r.r_id || r.review_id) !== deletingReviewId));
+        
+        fetchReviews();
+        if (onReviewChange) {
+          onReviewChange();
+        }
+      } else {
+        toast.error(res.data.description || "Failed to delete review");
+      }
+    } catch (err) {
+      console.error("Error deleting review:", err);
+      toast.error(
+        err.response?.data?.description ||
+        "An error occurred while deleting the review"
+      );
+    } finally {
+      setDeletingReviewId(null);
+    }
+  };
+
   // ── 3. Submit review (Add or Update) ──────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -304,6 +341,9 @@ const Review = ({ p_id, productName }) => {
         setIsEditing(false);
         setEditingReviewId(null);
         fetchReviews();
+        if (onReviewChange) {
+          onReviewChange();
+        }
       } else {
         toast.error(res.data.description || "Failed to submit review");
       }
@@ -387,7 +427,7 @@ const Review = ({ p_id, productName }) => {
               value={reviewerName}
               onChange={(e) => setReviewerName(e.target.value)}
               placeholder="Enter your name"
-              className="w-full bg-[#FAFAFA] border border-[#00000026] rounded-full px-6 py-4 text-[#414141] capitalize outline-none focus:border-black transition"
+              className="w-full bg-[#FAFAFA] border border-[#00000026] rounded-full px-6 py-4 text-[#414141] capitalize focus:outline-none transition"
             />
           </div>
           <div className="space-y-2 flex flex-col gap-2">
@@ -399,7 +439,7 @@ const Review = ({ p_id, productName }) => {
               value={reviewerEmail}
               onChange={(e) => setReviewerEmail(e.target.value)}
               placeholder="Enter your email"
-              className="w-full bg-[#FAFAFA] border border-[#00000026] rounded-full px-6 py-4 text-[#414141] outline-none focus:border-black transition"
+              className="w-full bg-[#FAFAFA] border border-[#00000026] rounded-full px-6 py-4 text-[#414141] focus:outline-none transition"
             />
           </div>
         </div>
@@ -410,7 +450,7 @@ const Review = ({ p_id, productName }) => {
             value={reviewContent}
             onChange={(e) => setReviewContent(e.target.value)}
             placeholder="Write your review..."
-            className="w-full bg-[#FAFAFA] border border-[#00000026] rounded-[22px] px-6 py-4 min-h-[150px] text-[#414141] outline-none focus:border-black transition resize-none"
+            className="w-full bg-[#FAFAFA] border border-[#00000026] rounded-[22px] px-6 py-4 min-h-[150px] text-[#414141] focus:outline-none transition resize-none"
             required
           />
         </div>
@@ -456,7 +496,7 @@ const Review = ({ p_id, productName }) => {
                     onClick={() =>
                       setUploadedImages((prev) => prev.filter((_, i) => i !== idx))
                     }
-                    className="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full p-0.5 hover:bg-black transition"
+                    className="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full p-0.5 hover:bg-black transition cursor-pointer"
                   >
                     <X size={12} />
                   </button>
@@ -477,7 +517,7 @@ const Review = ({ p_id, productName }) => {
                   key={star}
                   type="button"
                   onClick={() => setSelectedStars(star)}
-                  className="transition-transform hover:scale-110"
+                  className="transition-transform hover:scale-110 cursor-pointer"
                 >
                   <Star
                     size={24}
@@ -497,7 +537,7 @@ const Review = ({ p_id, productName }) => {
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="text-gray-500 font-medium hover:text-red-500 transition-colors"
+                className="text-gray-500 font-medium hover:text-red-500 transition-colors cursor-pointer"
               >
                 Cancel Edit
               </button>
@@ -525,11 +565,12 @@ const Review = ({ p_id, productName }) => {
         ) : (
           reviews?.slice(0, visibleCount).map((review, index) => (
             <ReviewCard
-              key={index}
+              key={review.r_id || review.review_id || index}
               review={review}
               displayDate={displayDate}
               currentUser={user}
               onEdit={handleEdit}
+              onDelete={handleDelete}
             />
           ))
         )}
@@ -563,6 +604,49 @@ const Review = ({ p_id, productName }) => {
                 </div>
               )}
               {renderReviewFormArea()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Delete Confirmation Modal */}
+      {deletingReviewId && (
+        <div className="fixed inset-0 z-[999] bg-[#00000080] backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white border border-[#D3D3D3] rounded-[22px] max-w-sm w-full p-6 sm:p-8 shadow-2xl animate-fadeIn relative">
+            <button 
+              onClick={() => setDeletingReviewId(null)}
+              className="absolute top-4 right-4 text-[#AEAEAE] hover:text-black transition cursor-pointer"
+            >
+              <X size={20} />
+            </button>
+            
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500 mb-4">
+                <Trash2 size={24} />
+              </div>
+              
+              <h3 className="font-[Exo] text-xl font-bold text-[#1C2F2F] mb-2">
+                Delete Review?
+              </h3>
+              
+              <p className="font-[oxygen] text-[#777] text-sm sm:text-base mb-6 leading-relaxed">
+                Are you sure you want to delete your review? This action cannot be undone.
+              </p>
+              
+              <div className="flex items-center gap-4 w-full justify-center">
+                <button
+                  onClick={() => setDeletingReviewId(null)}
+                  className="flex-1 max-w-[120px] py-3 rounded-full border border-[#D3D3D3] text-[#3D3D3D] font-semibold font-[oxygen] hover:bg-gray-50 transition cursor-pointer text-center text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="flex-1 max-w-[120px] py-3 rounded-full bg-[#1C2F2F] text-white font-semibold font-[oxygen] hover:bg-black transition cursor-pointer text-center text-sm"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         </div>
