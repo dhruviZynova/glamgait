@@ -82,6 +82,9 @@ function App() {
       <CartProvider>
         <Toaster
           position="top-right"
+          containerStyle={{
+            zIndex: 99999,
+          }}
           toastOptions={{
             duration: 2000, // Slightly increased for better UX
             style: {

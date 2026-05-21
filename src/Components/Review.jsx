@@ -309,7 +309,12 @@ const Review = ({ p_id, productName }) => {
       }
     } catch (err) {
       console.error(err);
-      toast.error("An error occurred");
+      const errMsg =
+        err.response?.data?.description ||
+        err.response?.data?.message ||
+        (typeof err.response?.data === "string" ? err.response.data : null) ||
+        "An error occurred";
+      toast.error(errMsg);
     }
   };
 
