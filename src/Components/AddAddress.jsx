@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { X, Loader2 } from "lucide-react";
-import axios from "axios";
+import { X } from "lucide-react";
+import axios from "axios"; // <-- Add this import
 import axiosInstance from "../Axios/axios";
 import { userInfo } from "../Variable";
 import toast from "react-hot-toast";
@@ -26,7 +26,6 @@ const AddAddress = ({
   });
 
   const [pincodeLoading, setPincodeLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -103,7 +102,6 @@ const AddAddress = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (submitting) return;
 
     // Validate phone number length (10-15 digits)
     const phoneDigits = formData.phone_number.replace(/\D/g, "");
@@ -112,7 +110,6 @@ const AddAddress = ({
       return;
     }
 
-    setSubmitting(true);
     try {
       const payload = {
         ...formData,
@@ -138,8 +135,6 @@ const AddAddress = ({
     } catch (err) {
       toast.error("Something went wrong");
       console.error(err);
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -286,11 +281,10 @@ const AddAddress = ({
           {/* Submit */}
           <button
             type="submit"
-            disabled={pincodeLoading || submitting}
-            className="w-full bg-[#063d32] text-white py-3 rounded-lg hover:bg-[#052d25] transition font-medium mt-6 disabled:opacity-70 cursor-pointer flex items-center justify-center gap-2"
+            disabled={pincodeLoading}
+            className="w-full bg-[#063d32] text-white py-3 rounded-lg hover:bg-[#052d25] transition font-medium mt-6 disabled:opacity-70 cursor-pointer"
           >
-            {submitting && <Loader2 size={16} className="animate-spin" />}
-            {submitting ? "Saving..." : (editingAddress ? "UPDATE" : "ADD")}
+            {editingAddress ? "UPDATE" : "ADD"}
           </button>
         </form>
       </div>

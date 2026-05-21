@@ -4,22 +4,18 @@ import SideBar from "./SideBar";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
-import { Package, XCircle, RefreshCcw, Receipt, ArrowLeftRight, Loader2 } from "lucide-react";
+import { Package, XCircle, RefreshCcw, Receipt, ArrowLeftRight } from "lucide-react";
 import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 import CancelOrderModal from "./CancelOrderModal";
 import ReturnOrderModal from "./ReturnOrderModal";
 import { ORDER_STATUS, STATUS_LABELS } from "../utils/constants";
 import InvoiceModal from "./InvoiceModal";
-import OrdersSkeleton from "./skeletons/OrdersSkeleton";
 
 const Profileorder = () => {
 
   const [activeTab, setActiveTab] = useState("Active");
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [cancellingId, setCancellingId] = useState(null);
-  const [returningId, setReturningId] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
@@ -57,7 +53,6 @@ const Profileorder = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      setLoading(true);
       try {
         let url = `${ApiURL}/getorder?`;
         if (isLoggedIn) {
@@ -77,8 +72,6 @@ const Profileorder = () => {
         console.error("Error fetching orders:", err);
         setOrders([]);
         toast.error("Failed to load orders");
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -86,12 +79,10 @@ const Profileorder = () => {
   }, [u_id, isLoggedIn, guestId]);
 
   const handleCancelOrder = async (reason) => {
-    if (cancellingId) return;
-    setCancellingId(selectedOrderId);
     try {
       const res = await axiosInstance.put(`${ApiURL}/cancelorder`, {
         order_id: selectedOrderId,
-        reason: reason,
+        reason: reason, // Passing the reason for cancellation
         ...(!isLoggedIn && { guest_id: guestId }),
       });
 
@@ -109,14 +100,11 @@ const Profileorder = () => {
       toast.error("Something went wrong");
       console.error(err);
     } finally {
-      setCancellingId(null);
       setShowCancelModal(false);
     }
   };
 
   const handleReturnOrder = async (reason) => {
-    if (returningId) return;
-    setReturningId(selectedOrderId);
     try {
       const res = await axiosInstance.put(`${ApiURL}/returnorder`, {
         order_id: selectedOrderId,
@@ -138,7 +126,6 @@ const Profileorder = () => {
       toast.error("Something went wrong");
       console.error(err);
     } finally {
-      setReturningId(null);
       setShowReturnModal(false);
     }
   };
@@ -189,9 +176,7 @@ const Profileorder = () => {
 
             {/* Orders List */}
             <div className="space-y-8">
-              {loading ? (
-                <OrdersSkeleton count={3} />
-              ) : filteredOrders?.map((order) => (
+              {filteredOrders?.map((order) => (
                 <div
                   key={order.orderId}
                   className="bg-white rounded-2xl p-4 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100"
@@ -269,10 +254,8 @@ const Profileorder = () => {
                               setSelectedOrderId(order.orderId);
                               setShowCancelModal(true);
                             }}
-                            disabled={cancellingId === order.orderId}
-                            className="w-full sm:w-auto bg-white border-2 border-[#b32b2b] text-[#b32b2b] px-6 py-2.5 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition shadow-sm cursor-pointer text-sm flex items-center justify-center gap-2 disabled:opacity-60"
+                            className="w-full sm:w-auto bg-white border-2 border-[#b32b2b] text-[#b32b2b] px-6 py-2.5 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition shadow-sm cursor-pointer text-sm"
                           >
-                            {cancellingId === order.orderId && <Loader2 size={14} className="animate-spin" />}
                             Cancel Order
                           </button>
                         )}
@@ -282,12 +265,9 @@ const Profileorder = () => {
                             setSelectedOrderId(order.orderId);
                             setShowReturnModal(true);
                           }}
-                          disabled={returningId === order.orderId}
-                          className="w-full sm:w-auto bg-white border-2 border-[#004534] text-[#004534] px-6 py-2.5 rounded-lg font-bold hover:bg-[#004534] hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm disabled:opacity-60"
+                          className="w-full sm:w-auto bg-white border-2 border-[#004534] text-[#004534] px-6 py-2.5 rounded-lg font-bold hover:bg-[#004534] hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
                         >
-                          {returningId === order.orderId
-                            ? <Loader2 size={16} className="animate-spin" />
-                            : <RefreshCcw size={16} />}
+                          <RefreshCcw size={16} />
                           Return Order
                         </button>
                       )}
@@ -340,7 +320,7 @@ const Profileorder = () => {
                 </div>
               ))}
 
-              {!loading && filteredOrders.length === 0 && (
+              {filteredOrders.length === 0 && (
                 <div className="bg-white/50 border-2 border-dashed border-gray-200 rounded-2xl py-20 text-center">
                   <Package size={48} className="mx-auto text-[#004534] mb-4" />
                   <p className="text-[#004534] font-medium">No {activeTab.toLowerCase()} orders found.</p>

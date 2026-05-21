@@ -7,19 +7,14 @@ import { ApiURL, userInfo } from "../Variable";
 import toast from "react-hot-toast";
 import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
-import ProfileInfoSkeleton from "./skeletons/ProfileInfoSkeleton";
-import { Loader2 } from "lucide-react";
 
 const PersonalInfo = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
-  const [dataLoading, setDataLoading] = useState(true);
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [deletingAddress, setDeletingAddress] = useState(false);
   const [editingField, setEditingField] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingAddress, setEditingAddress] = useState(null);
+  const [editingAddress, setEditingAddress] = useState(null); // NEW: address being edited
   const [addressType, setAddressType] = useState("HOME");
   const [addresses, setAddresses] = useState([]);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -60,12 +55,11 @@ const PersonalInfo = () => {
 
   // Fetch all data and set loading to false when done
   const fetchAllData = useCallback(async () => {
-    setDataLoading(true);
     await Promise.all([
       fetchUser(),
       fetchAddress()
     ]);
-    setDataLoading(false);
+
   }, [fetchUser, fetchAddress]);
 
   useEffect(() => {
@@ -83,8 +77,7 @@ const PersonalInfo = () => {
   };
 
   const handleSave = async () => {
-    if (!isLoggedIn || savingProfile) return;
-    setSavingProfile(true);
+    if (!isLoggedIn) return;
     try {
       const res = await axiosInstance.put(`${ApiURL}/user/${u_id}`, {
         [editingField]: inputValue,
@@ -103,8 +96,6 @@ const PersonalInfo = () => {
         toast.error("Something went wrong while updating your profile");
       }
       console.error(err);
-    } finally {
-      setSavingProfile(false);
     }
   };
 
@@ -115,8 +106,7 @@ const PersonalInfo = () => {
   };
 
   const confirmDeleteAddress = async () => {
-    if (!addressToDelete || deletingAddress) return;
-    setDeletingAddress(true);
+    if (!addressToDelete) return;
     try {
       const res = await axiosInstance.delete(
         `${ApiURL}/deleteaddress/${addressToDelete}`
@@ -125,16 +115,17 @@ const PersonalInfo = () => {
         toast.success("Address deleted successfully");
         fetchAddress();
       } else {
+        // Handle error responses from backend
         toast.error(res.data.description || "Failed to delete address");
       }
     } catch (err) {
+      // Check if it's a 400 error with response data
       if (err.response?.status === 400 && err.response?.data?.description) {
         toast.error(err.response.data.description);
       } else {
         toast.error("Something went wrong while deleting the address");
       }
     } finally {
-      setDeletingAddress(false);
       setDeleteModalOpen(false);
       setAddressToDelete(null);
     }
@@ -165,11 +156,6 @@ const PersonalInfo = () => {
             {/* Right Content */}
             <div className="flex-1 p-4 sm:p-6 md:p-8">
               <h1 className="text-3xl font-semibold text-[#3C4242] mb-8">My Info</h1>
-
-              {dataLoading ? (
-                <ProfileInfoSkeleton />
-              ) : (
-              <div>
 
               {/* Contact Details */}
               <div className="mb-12">
@@ -204,11 +190,9 @@ const PersonalInfo = () => {
                               />
                               <div className="flex gap-4 mt-3">
                                 <button
-                                  className="text-sm font-semibold text-green-600 hover:text-green-800 transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
+                                  className="text-sm font-semibold text-green-600 hover:text-green-800 transition-colors cursor-pointer"
                                   onClick={handleSave}
-                                  disabled={savingProfile}
                                 >
-                                  {savingProfile && <Loader2 size={14} className="animate-spin" />}
                                   Save
                                 </button>
                                 <button
@@ -345,8 +329,6 @@ const PersonalInfo = () => {
                   )}
                 </div>
               </div>
-              </div>
-              )}
             </div>
           </div>
           <BrandBanner />
@@ -378,11 +360,9 @@ const PersonalInfo = () => {
                 Cancel
               </button>
               <button
-                className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-800 transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
+                className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-800 transition-colors cursor-pointer"
                 onClick={confirmDeleteAddress}
-                disabled={deletingAddress}
               >
-                {deletingAddress && <Loader2 size={14} className="animate-spin" />}
                 Delete
               </button>
             </div>

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
-import { Star, ChevronRight, ShoppingBag, CheckCircle, ImagePlus, X, ThumbsUp, ThumbsDown, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Star, ChevronRight, ShoppingBag, CheckCircle, ImagePlus, X, ThumbsUp, ThumbsDown, Pencil, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { ORDER_STATUS } from "../utils/constants";
 
@@ -267,21 +267,21 @@ const Review = ({ p_id, productName, onReviewChange }) => {
   };
 
   const [deletingReviewId, setDeletingReviewId] = useState(null);
-  const [deletingConfirm, setDeletingConfirm] = useState(false);
 
   const handleDelete = (reviewId) => {
     setDeletingReviewId(reviewId);
   };
 
   const confirmDelete = async () => {
-    if (!deletingReviewId || deletingConfirm) return;
-    setDeletingConfirm(true);
+    if (!deletingReviewId) return;
     try {
       const res = await axiosInstance.delete(`/deleteuserreview/${deletingReviewId}`);
       if (res.data.status === 1) {
         toast.success("Review deleted successfully!");
         setAlreadyReviewed(false);
+        // Optimistically remove the deleted review from UI state instantly
         setReviews((prev) => prev.filter((r) => (r.r_id || r.review_id) !== deletingReviewId));
+        
         fetchReviews();
         if (onReviewChange) {
           onReviewChange();
@@ -297,23 +297,19 @@ const Review = ({ p_id, productName, onReviewChange }) => {
       );
     } finally {
       setDeletingReviewId(null);
-      setDeletingConfirm(false);
     }
   };
-
-  const [submitting, setSubmitting] = useState(false);
 
   // ── 3. Submit review (Add or Update) ──────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!p_id || submitting) return;
+    if (!p_id) return;
 
     if (selectedStars === 0) {
       toast.error("Please select a rating");
       return;
     }
 
-    setSubmitting(true);
     try {
       const formData = new FormData();
       if (isEditing) {
@@ -359,8 +355,6 @@ const Review = ({ p_id, productName, onReviewChange }) => {
         (typeof err.response?.data === "string" ? err.response.data : null) ||
         "An error occurred";
       toast.error(errMsg);
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -550,12 +544,9 @@ const Review = ({ p_id, productName, onReviewChange }) => {
             )}
             <button
               type="submit"
-              disabled={submitting}
-              className="bg-[#000000] text-white px-8 py-3 rounded-full font-[Exo] font-500 text-md flex items-center gap-2 cursor-pointer transition self-end sm:self-auto disabled:opacity-70"
+              className="bg-[#000000] text-white px-8 py-3 rounded-full font-[Exo] font-500 text-md flex items-center gap-2 cursor-pointer transition self-end sm:self-auto"
             >
-              {submitting && <Loader2 size={16} className="animate-spin" />}
-              {submitting ? "Posting..." : (isEditing ? "Update Review" : "Post Review")}
-              {!submitting && <ChevronRight size={20} />}
+              {isEditing ? "Update Review" : "Post Review"} <ChevronRight size={20} />
             </button>
           </div>
         </div>
