@@ -149,16 +149,8 @@ const Navbar = () => {
     return () => clearInterval(interval);
   }, [announcements]);
 
-  // Pre-fetch filters for all categories to know if they have subcategories
-  useEffect(() => {
-    if (categories.length > 0) {
-      categories.forEach(cat => {
-        if (!megaMenuCache[cat.cate_id]) {
-          fetchCategoryFilters(cat.cate_id);
-        }
-      });
-    }
-  }, [categories, fetchCategoryFilters, megaMenuCache]);
+
+
 
   useEffect(() => {
     const handleScroll = () => {

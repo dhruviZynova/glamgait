@@ -5,7 +5,7 @@ import { ApiURL, userInfo } from "../Variable";
 import { Star, ChevronRight, ShoppingBag, CheckCircle, ImagePlus, X, ThumbsUp, ThumbsDown, Pencil, Trash2, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { ORDER_STATUS } from "../utils/constants";
-import { useReviews, useSubmitReview, useEditReview, useDeleteReview } from "../hooks/useReviews";
+import { useReviews, useSubmitReview, useEditReview, useDeleteReview, useToggleReviewLike } from "../hooks/useReviews";
 import { useOrders } from "../hooks/useOrders";
 
 
@@ -19,17 +19,30 @@ const getInitials = (name) => {
     .join("") || "?";
 };
 
-const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete }) => {
-  const [liked, setLiked] = useState(false);
-  const [disliked, setDisliked] = useState(false);
-  const [likeCount, setLikeCount] = useState(review?.likes || 0);
-  const [dislikeCount, setDislikeCount] = useState(review?.dislikes || 0);
+const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onToggleLike, isToggling }) => {
+  const [liked, setLiked] = useState(review?.liked || review?.userAction === "like" || false);
+  const [disliked, setDisliked] = useState(review?.disliked || review?.userAction === "dislike" || false);
+  const [likeCount, setLikeCount] = useState(review?.likes ?? review?.like_count ?? 0);
+  const [dislikeCount, setDislikeCount] = useState(review?.dislikes ?? review?.dislike_count ?? 0);
+
+  useEffect(() => {
+    setLiked(review?.liked || review?.userAction === "like" || false);
+    setDisliked(review?.disliked || review?.userAction === "dislike" || false);
+    setLikeCount(review?.likes ?? review?.like_count ?? 0);
+    setDislikeCount(review?.dislikes ?? review?.dislike_count ?? 0);
+  }, [review]);
 
   const isAuthor = currentUser?.u_id && (
     String(review.u_id || review.user_id) === String(currentUser.u_id)
   );
 
   const handleLike = () => {
+    if (isToggling) return;
+    if (!currentUser?.u_id) {
+      toast.error("Please login to like reviews");
+      return;
+    }
+    // Optimistic UI updates
     if (liked) {
       setLiked(false);
       setLikeCount((c) => c - 1);
@@ -41,9 +54,18 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete }) => {
         setDislikeCount((c) => c - 1);
       }
     }
+    if (onToggleLike) {
+      onToggleLike(review.r_id || review.review_id, "like");
+    }
   };
 
   const handleDislike = () => {
+    if (isToggling) return;
+    if (!currentUser?.u_id) {
+      toast.error("Please login to dislike reviews");
+      return;
+    }
+    // Optimistic UI updates
     if (disliked) {
       setDisliked(false);
       setDislikeCount((c) => c - 1);
@@ -54,6 +76,9 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete }) => {
         setLiked(false);
         setLikeCount((c) => c - 1);
       }
+    }
+    if (onToggleLike) {
+      onToggleLike(review.r_id || review.review_id, "dislike");
     }
   };
 
@@ -100,19 +125,21 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete }) => {
           <div className="flex items-center gap-5 text-[#3D3D3D] text-xs sm:text-sm font-medium">
             <button
               onClick={handleLike}
-              className={`flex items-center gap-1.5 transition-colors cursor-pointer ${liked ? "text-black" : "text-[#AEAEAE] hover:text-black"
+              disabled={isToggling}
+              className={`flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${liked ? "text-black" : "text-[#AEAEAE] hover:text-black"
                 }`}
             >
-              <ThumbsUp size={16} className={liked ? "fill-black" : ""} />
+              <ThumbsUp size={16} fill={liked ? "currentColor" : "none"} className={isToggling ? "animate-pulse" : ""} />
               {likeCount > 0 && <span>{likeCount}</span>}
             </button>
 
             <button
               onClick={handleDislike}
-              className={`flex items-center gap-1.5 transition-colors cursor-pointer ${disliked ? "text-black" : "text-[#AEAEAE] hover:text-black"
+              disabled={isToggling}
+              className={`flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${disliked ? "text-black" : "text-[#AEAEAE] hover:text-black"
                 }`}
             >
-              <ThumbsDown size={16} className={disliked ? "fill-black" : ""} />
+              <ThumbsDown size={16} fill={disliked ? "currentColor" : "none"} className={isToggling ? "animate-pulse" : ""} />
               {dislikeCount > 0 && <span>{dislikeCount}</span>}
             </button>
 
@@ -166,6 +193,7 @@ const Review = ({ p_id, productName, onReviewChange }) => {
   const { data: orders = [], isLoading: isLoadingOrders } = useOrders();
 
   const submitReviewMutation = useSubmitReview(p_id);
+  const toggleLikeMutation = useToggleReviewLike(p_id, user?.u_id);
   const editReviewMutation = useEditReview(p_id);
   const deleteReviewMutation = useDeleteReview(p_id);
 
@@ -201,7 +229,15 @@ const Review = ({ p_id, productName, onReviewChange }) => {
     }
   }, [user?.u_id, user?.email, isEditing]);
 
-  // ── Submit handler ────────────────────────────────────────────────────────
+  // ── Toggle Like handler ──────────────────────────────────────────────────
+  const handleToggleLike = (r_id, action) => {
+    if (!user?.u_id) {
+      toast.error(`Please login to ${action} reviews`);
+      return;
+    }
+    toggleLikeMutation.mutate({ r_id, action });
+  };
+
   const handleEdit = (review) => {
     setIsEditing(true);
     setEditingReviewId(review.r_id || review.review_id);
@@ -509,6 +545,8 @@ const Review = ({ p_id, productName, onReviewChange }) => {
               currentUser={user}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onToggleLike={handleToggleLike}
+              isToggling={toggleLikeMutation.isPending && toggleLikeMutation.variables?.r_id === (review.r_id || review.review_id)}
             />
           ))
         )}
@@ -551,26 +589,26 @@ const Review = ({ p_id, productName, onReviewChange }) => {
       {deletingReviewId && (
         <div className="fixed inset-0 z-[999] bg-[#00000080] backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
           <div className="bg-white border border-[#D3D3D3] rounded-[22px] max-w-sm w-full p-6 sm:p-8 shadow-2xl animate-fadeIn relative">
-            <button 
+            <button
               onClick={() => setDeletingReviewId(null)}
               className="absolute top-4 right-4 text-[#AEAEAE] hover:text-black transition cursor-pointer"
             >
               <X size={20} />
             </button>
-            
+
             <div className="flex flex-col items-center text-center">
               <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500 mb-4">
                 <Trash2 size={24} />
               </div>
-              
+
               <h3 className="font-[Exo] text-xl font-bold text-[#1C2F2F] mb-2">
                 Delete Review?
               </h3>
-              
+
               <p className="font-[oxygen] text-[#777] text-sm sm:text-base mb-6 leading-relaxed">
                 Are you sure you want to delete your review? This action cannot be undone.
               </p>
-              
+
               <div className="flex items-center gap-4 w-full justify-center">
                 <button
                   onClick={() => setDeletingReviewId(null)}
