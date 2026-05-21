@@ -49,28 +49,30 @@ function SingleProduct() {
 
 
 
-  useEffect(() => {
+  const fetchReviewsSummary = useCallback(async () => {
     if (!product?.p_id) return;
+    try {
+      const res = await axiosInstance.post(
+        `${ApiURL}/getreviewsformultiple`,
+        {
+          p_ids: [product.p_id],
+        },
+      );
 
-    const fetchReviewsSummary = async () => {
-      try {
-        const res = await axiosInstance.post(
-          `${ApiURL}/getreviewsformultiple`,
-          {
-            p_ids: [product.p_id],
-          },
-        );
-
-        if (res.data.status === 1 && res.data.data[product.p_id]) {
-          setReviewsSummary(res.data.data[product.p_id]);
-        }
-      } catch (err) {
-        console.error("Failed to load reviews summary", err);
+      if (res.data.status === 1 && res.data.data && res.data.data[product.p_id]) {
+        setReviewsSummary(res.data.data[product.p_id]);
+      } else {
+        setReviewsSummary({ average_rating: 0, total_reviews: 0 });
       }
-    };
-
-    fetchReviewsSummary();
+    } catch (err) {
+      console.error("Failed to load reviews summary", err);
+      setReviewsSummary({ average_rating: 0, total_reviews: 0 });
+    }
   }, [product?.p_id]);
+
+  useEffect(() => {
+    fetchReviewsSummary();
+  }, [fetchReviewsSummary]);
 
 
 
@@ -790,7 +792,7 @@ function SingleProduct() {
                     <Package size={24} className="text-[#B9B9B9]" />
                   </div>
                   <div>
-                    <p className="text-sm text-[#424242] font-medium">Delivers in: 3-7 Working Days <Link to="/shipping-policy" className="underline cursor-pointer ml-1">Shipping & Return</Link></p>
+                    <p className="text-sm text-[#424242] font-medium">Delivers in: 3-7 Working Days <span onClick={() => setShowPopup(true)} className="underline cursor-pointer ml-1">Shipping & Return</span></p>
                   </div>
                 </div>
               </div>
@@ -831,7 +833,7 @@ function SingleProduct() {
               </div>
             ) : (
               <div className="animate-fadeIn">
-                <Review p_id={product.p_id} productName={product.name} />
+                <Review p_id={product.p_id} productName={product.name} onReviewChange={fetchReviewsSummary} />
               </div>
             )}
           </div>
@@ -846,6 +848,7 @@ function SingleProduct() {
           />
         )}
         {showPopup && <ReturnsDetails onClose={() => setShowPopup(false)} />}
+
         {showSizePopup && product?.category?.cate_chart && (
           <ImagePop
             onClose={() => setShowSizePopup(false)}
