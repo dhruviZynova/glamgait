@@ -35,8 +35,8 @@ const Topbar = ({ onMenuClick }) => {
       </button>
 
       {/* Search bar */}
-      <div className="flex-1 px-4 flex justify-between sm:px-6 lg:px-8">
-        <div className="flex-1 flex items-center">
+      <div className="flex-1 px-4 flex justify-end sm:px-6 lg:px-8">
+        {/* <div className="flex-1 flex items-center">
           <div className="w-full flex md:ml-0">
             <div className="relative w-full text-gray-400 focus-within:text-gray-600">
               <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
@@ -51,7 +51,7 @@ const Topbar = ({ onMenuClick }) => {
               />
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="ml-4 flex items-center gap-1.5 md:ml-6">
           <button
@@ -60,7 +60,7 @@ const Topbar = ({ onMenuClick }) => {
             className="bg-white cursor-pointer flex items-center gap-1.5"
           >
             <LogOut className="h-5 w-5 text-black" />
-            <span className="text-sm font-medium hidden md:block bg-white">
+            <span className="text-sm font-medium bg-white">
               Logout
             </span>
           </button>
