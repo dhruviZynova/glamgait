@@ -625,11 +625,11 @@ function SingleProduct() {
                   {wishlistLoading
                     ? <Loader2 size={20} className="animate-spin text-[#AEAEAE]" />
                     : <Heart
-                        className={`${wishlistMap[`${product.p_id}-${selectedColor?.pcolor_id}`]
-                          ? "fill-red-500 text-red-500"
-                          : "text-[#AEAEAE]"
+                      className={`${wishlistMap[`${product.p_id}-${selectedColor?.pcolor_id}`]
+                        ? "fill-red-500 text-red-500"
+                        : "text-[#AEAEAE]"
                         }`}
-                      />}
+                    />}
                 </button>
               </div>
 
@@ -800,8 +800,8 @@ function SingleProduct() {
         </div>
 
         {/* ================= TABS SECTION - DESCRIPTION & REVIEWS ================= */}
-        <div className="px-4 py-6 md:py-16 md:px-10 lg:px-20 bg-[#f8f8f8]">
-          <div className="flex items-center gap-6 mb-10 text-2xl font-light">
+        <div className="px-2 py-6 md:py-16 md:px-10 lg:px-20 bg-[#f8f8f8]">
+          <div className="flex items-center gap-6 mb-8 md:mb-10 text-2xl font-light">
             <button
               onClick={() => setActiveTab("description")}
               className={`pb-1 transition-all cursor-pointer ${activeTab === "description"

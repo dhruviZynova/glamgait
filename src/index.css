@@ -22,7 +22,9 @@
 
 /* ── Button loading spinner ── */
 @keyframes btn-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .btn-spinner {
@@ -337,8 +339,8 @@ body {
 }
 
 @media (max-width: 991px) {
-  body {
-    padding-bottom: 80px;
+  body:not(.admin-body) {
+    padding-bottom: 40px;
   }
 }
 

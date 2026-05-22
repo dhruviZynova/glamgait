@@ -93,7 +93,7 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
   };
 
   return (
-    <div className="border border-[#D3D3D3] rounded-[14px] p-6 sm:p-8 mb-6 relative group">
+    <div className="border border-[#D3D3D3] rounded-[14px] p-4 md:p-6 mb-6 relative group">
       <div className="flex gap-4 sm:gap-6">
         <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#D9D9D9] flex items-center justify-center text-[#555] text-sm sm:text-base font-semibold select-none">
           {getInitials(review?.reviewer_name)}
@@ -547,7 +547,7 @@ const Review = ({ p_id, productName, onReviewChange }) => {
   return (
     <div id="reviews" className="">
       {/* Review List */}
-      <div className="mb-12">
+      <div className="mb-6 md:mb-12">
         {reviews?.length === 0 ? (
           <div className="text-center py-10">
             <p className="text-[#949494] font-[oxygen] text-lg">No reviews yet. Be the first to share your experience!</p>
@@ -581,7 +581,7 @@ const Review = ({ p_id, productName, onReviewChange }) => {
 
       {/* Write a Review Section */}
       {((!alreadyReviewed && hasOrders !== false) || isEditing || !user?.u_id) && (
-        <div id="review-form-section" className="border border-[#D3D3D3] rounded-[14px] p-6 sm:p-8 mb-6">
+        <div id="review-form-section" className="border border-[#D3D3D3] rounded-[14px] p-4 md:p-8 mb-6">
           <div className="flex gap-6">
             <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#D9D9D9] flex items-center justify-center text-[#555] text-sm sm:text-base font-semibold select-none">
               {getInitials(user?.first_name

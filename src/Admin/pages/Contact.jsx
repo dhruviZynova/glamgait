@@ -118,8 +118,8 @@ const Contact = () => {
 
   return (
     <div className="pb-8">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Contact Requests</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-gray-800 text-left">Contact Requests</h1>
         <div className="relative flex-grow max-w-md">
           <input
             type="text"

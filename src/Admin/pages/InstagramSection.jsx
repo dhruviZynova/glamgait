@@ -247,7 +247,7 @@ const InstagramSection = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl">
           {media?.length === 0 ? (
             <p className="text-gray-500 text-center col-span-full">
               No Instagram media available.
@@ -256,9 +256,9 @@ const InstagramSection = () => {
             media?.map((item) => (
               <div
                 key={item?.insta_id}
-                className="bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden group transform transition-all duration-300 hover:scale-105 animate-fade-in"
+                className="bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden group transform transition-all"
               >
-                <div className="w-full aspect-[9/14] bg-gray-200">
+                <div className="w-full aspect-square sm:aspect-[9/14] bg-gray-200">
                   {item?.image_url?.endsWith(".mp4") ||
                     item?.image_url?.endsWith(".webm") ||
                     item?.image_url?.endsWith(".ogg") ? (

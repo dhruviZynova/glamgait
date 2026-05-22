@@ -77,7 +77,8 @@ const VerifyOTP = () => {
         toast.error(response.data.description || "Invalid OTP");
       }
     } catch (err) {
-      toast.error(err?.description || err?.message || "Error verifying OTP");
+      const errMsg = err.response?.data?.description || err.response?.data?.message || err.message || "Error verifying OTP";
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -97,7 +98,8 @@ const VerifyOTP = () => {
         toast.error(response.data.description || "Failed to resend OTP");
       }
     } catch (err) {
-      toast.error(err?.description || err?.message || "Error resending OTP");
+      const errMsg = err.response?.data?.description || err.response?.data?.message || err.message || "Error resending OTP";
+      toast.error(errMsg);
     }
   };
 

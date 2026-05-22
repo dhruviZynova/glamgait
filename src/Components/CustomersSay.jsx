@@ -91,10 +91,10 @@ const CustomersSay = () => {
   }, [fetchReviews]);
 
   return (
-    <section className="relative py-8 overflow-hidden w-full">
+    <section className="relative py-10 md:py-16 overflow-hidden w-full">
       {/* Title & Description */}
-      <div className="text-center max-w-2xl mx-auto mb-16 relative z-10 px-4">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
+      <div className="text-center max-w-2xl mx-auto mb-8 md:mb-16 relative z-10 px-4">
+        <h2 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
           What Customers Saying
         </h2>
         <p className="text-[#767676] font-Poppins font-400 text-base max-w-2xl mx-auto">

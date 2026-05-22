@@ -63,7 +63,7 @@ const HomePage = () => {
       <section className="relative w-full overflow-hidden py-6 md:py-16">
         {/* Background Image */}
         <div
-          className="relative w-full h-[280px] sm:h-[350px] md:h-[400px] lg:h-[500px] xl:h-[630px] bg-fixed bg-cover bg-top"
+          className="relative w-full h-[480px] sm:h-[350px] md:h-[400px] lg:h-[500px] xl:h-[630px] bg-fixed bg-cover bg-top"
           style={{ backgroundImage: `url(${bgImage})` }}
         >
           <div
@@ -72,7 +72,7 @@ const HomePage = () => {
           ></div>
 
           {/* Text Content */}
-          <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-16 lg:px-24 w-full md:w-2/3 lg:w-1/2">
+          <div className="absolute inset-0 flex flex-col justify-center px-2 md:px-16 lg:px-24 w-full md:w-2/3 lg:w-1/2">
             <h3 className="text-green-800 text-sm md:text-base font-semibold tracking-widest uppercase mb-2">New Collection</h3>
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4" style={{ fontFamily: "serif" }}>
               Modesty is the <br /> New Beauty

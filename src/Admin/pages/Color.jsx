@@ -99,8 +99,8 @@ const Colors = () => {
 
   return (
     <div className="pb-8">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Color Management</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-gray-800 text-left">Color Management</h1>
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <input
             type="text"

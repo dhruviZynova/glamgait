@@ -92,8 +92,8 @@ const Users = () => {
   return (
     <div className="pb-8">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-gray-800 text-left">
           User Management
         </h1>
         <div className="flex w-full md:w-1/3 relative">

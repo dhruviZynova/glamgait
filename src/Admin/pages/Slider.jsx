@@ -137,8 +137,8 @@ const Sliders = () => {
   return (
     <>
       <div className="min-h-screen text-gray-800 pb-8">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Images</h2>
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-6 sm:items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 text-left">Images</h2>
           <div className="md:flex justify-items-center w-full sm:w-auto space-y-2 md:space-y-0 gap-2">
             <input
               type="text"

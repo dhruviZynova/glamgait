@@ -242,7 +242,7 @@ const Navbar = () => {
         )}
       </div>
       <nav ref={navRef} className="sticky bg-white shadow-md top-0 z-50">
-        <div className="mx-auto px-4 md:px-10 lg:px-20 py-3 flex justify-between items-center">
+        <div className="mx-auto px-2 md:px-10 lg:px-20 py-3 flex justify-between items-center">
           <Link to="/">
             <img src={logo} alt="Logo" className="h-12 md:h-14 lg:h-16 w-auto" />
           </Link>

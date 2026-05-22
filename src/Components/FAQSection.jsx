@@ -6,7 +6,7 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => {
     return (
         <div className={`border border-gray-300 rounded-2xl mb-4 overflow-hidden transition-all duration-300 bg-[#ffffffcc]`}>
             <button
-                className="w-full px-6 py-5 flex justify-between items-center text-left focus:outline-none"
+                className="w-full px-4 md:px-6 py-5 flex justify-between items-center text-left focus:outline-none"
                 onClick={onClick}
             >
                 <span className="text-[#333333] font-Montserrat font-medium text-base md:text-lg pr-4">
@@ -19,7 +19,7 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => {
                 )}
             </button>
             <div
-                className={`px-6 transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'
+                className={`px-4 md:px-6 transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'
                     } overflow-hidden`}
             >
                 <p className="text-gray-600 font-Montserrat text-sm md:text-base leading-relaxed">
@@ -73,7 +73,7 @@ const FAQSection = () => {
     ];
 
     return (
-        <section className="py-6 md:py-16 px-4 md:px-10 lg:px-20 relative overflow-hidden">
+        <section className="py-10 md:py-16 px-2 md:px-10 lg:px-20 relative overflow-hidden">
             {/* Illustration Image */}
             {/* <div className="relative mt-8 lg:mt-16 flex justify-center lg:justify-start"> */}
             <img
@@ -84,17 +84,15 @@ const FAQSection = () => {
             />
             {/* </div> */}
 
-            <div className="mx-auto flex flex-col lg:flex-row items-start gap-12 lg:gap-20">
+            <div className="mx-auto flex flex-col lg:flex-row items-start lg:gap-20">
                 {/* Left Side Content */}
-                <div className="w-full lg:w-[40%] space-y-8">
-                    <div className="space-y-4">
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-['Oxygen'] font-bold font-700">
-                            Frequently Asked Questions
-                        </h2>
-                        <p className="text-[#666666] font-['Oxygen'] font-400 text-base max-w-md leading-relaxed">
-                            Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet.
-                        </p>
-                    </div>
+                <div className="text-center max-w-2xl mx-auto md:text-left mb-8 md:mb-16 relative z-10 px-4 md:px-0">
+                    <h2 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
+                        Frequently Asked Questions
+                    </h2>
+                    <p className="text-[#767676] font-Poppins font-400 text-base max-w-2xl mx-auto">
+                        Got questions? We've got answers. Find helpful information about our premium modest wear, shipping timelines, payment methods, returns, and custom stitching services below.
+                    </p>
                 </div>
 
                 {/* Right Side Accordion */}

@@ -193,8 +193,8 @@ const AdminOrders = () => {
     <div className="pb-8 min-h-screen bg-gray-50" ref={containerRef}>
       <div>
         {/* Header */}
-        <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>
+        <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="text-left">
             <h1 className="text-2xl font-bold text-gray-800">
               Order Management
             </h1>

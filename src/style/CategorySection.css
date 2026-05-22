@@ -51,8 +51,12 @@
 }
 
 @media (max-width: 480px) {
+    .category-section .category-header {
+        padding: 50px 10px 30px;
+    }
+
     .category-section .title {
-        font-size: 22px;
+        font-size: 28px;
     }
 }
 
@@ -181,6 +185,7 @@
 
 @media (max-width: 768px) {
     .category-bottom-container {
-        padding: 0 20px 30px;
+        padding: 0 10px 30px;
+        margin-top: 20px;
     }
 }

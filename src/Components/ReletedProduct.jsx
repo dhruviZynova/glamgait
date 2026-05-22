@@ -137,7 +137,7 @@ const ReletedProduct = ({ cate_name, currentProductId, cate_id }) => {
   return (
     <>
       {relatedProducts?.length > 0 && (
-        <section className="px-4 py-6 md:py-16 md:px-10 lg:px-20">
+        <section className="px-2 py-6 md:py-16 md:px-10 lg:px-20">
           {/* Section Title */}
           <div className="text-start mb-8">
             <h2 className="text-[30px] md:text-[34px] xl:text-[34px] font-700 font-[oxygen] text-[#3D3D3D] mb-2">

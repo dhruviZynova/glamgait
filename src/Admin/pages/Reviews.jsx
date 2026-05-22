@@ -219,17 +219,17 @@ const Reviews = () => {
   };
 
   return (
-    <div className="container mx-auto pb-8">
+    <div className="pb-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h2 className="text-2xl font-bold text-gray-800">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h2 className="text-2xl font-bold text-gray-800 text-left">
           Review Management
         </h2>
-        <div className="flex gap-3 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <input
             type="text"
             placeholder="Search reviews..."
-            className="flex-1 sm:w-64 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none text-sm"
+            className="w-full sm:w-64 px-4 py-2 border rounded-lg focus:outline-none"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -238,7 +238,7 @@ const Reviews = () => {
           />
           <button
             onClick={() => openModal(false)}
-            className="bg-black text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-800 transition cursor-pointer"
+            className="w-full sm:w-auto bg-black text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-800 transition cursor-pointer"
           >
             Add Review
           </button>
@@ -253,7 +253,7 @@ const Reviews = () => {
       ) : (
         <>
           {/* Mobile Cards */}
-          <div className="block lg:hidden grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="grid md:hidden grid-cols-1 sm:grid-cols-2 gap-4">
             {reviews.map((r) => (
               <div
                 key={r.r_id}
@@ -262,7 +262,7 @@ const Reviews = () => {
                 {/* Image */}
                 {r.image_url && (
                   <img
-                    src={r.image_url}
+                    src={`${ApiURL}/assets/UserReviews/${r.image_url}`}
                     alt="review"
                     className="w-full h-40 object-cover rounded-lg mb-3"
                   />

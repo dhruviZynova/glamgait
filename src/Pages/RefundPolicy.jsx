@@ -24,7 +24,7 @@ const RefundPolicy = () => {
   return (
     <div className="min-h-screen bg-[#FDFCFB]">
       {/* Hero Header */}
-      <div className="bg-[#1F352F] py-20 px-4 relative overflow-hidden">
+      <div className="bg-[#1F352F] py-20 px-2 md:px-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#F3F0ED] rounded-full -translate-x-1/3 translate-y-1/3 blur-3xl"></div>
@@ -32,17 +32,17 @@ const RefundPolicy = () => {
 
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 font-[Judson]">Refund & Returns</h1>
-          <div className="flex items-center justify-center gap-4 text-[#F3F0ED]/80 text-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-[#F3F0ED]/80 text-sm">
             <span className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4" /> Buyer Protection
             </span>
-            <span className="w-1 h-1 bg-white/30 rounded-full"></span>
+            <span className="hidden sm:inline-block w-1 h-1 bg-white/30 rounded-full"></span>
             <span>Easy Replacements</span>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-2 md:px-4 py-12">
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Sticky Navigation */}
           <aside className="lg:w-1/4">
@@ -65,7 +65,7 @@ const RefundPolicy = () => {
           </aside>
 
           {/* Main Content */}
-          <main className="lg:w-3/4 bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100 space-y-16 leading-relaxed text-gray-600 text-justify">
+          <main className="lg:w-3/4 bg-white rounded-3xl p-4 md:p-12 shadow-sm border border-gray-100 space-y-16 leading-relaxed text-gray-600">
 
             <section id="cancellation" className="space-y-6 scroll-mt-32">
               <div className="flex items-center gap-4 text-gray-900 text-left">
@@ -78,7 +78,7 @@ const RefundPolicy = () => {
                 <p>
                   We make every effort to fulfill all orders placed. However, please note that there may be certain orders that we are unable to process and must cancel due to limitations on quantities available, inaccuracies in product/pricing information, or fraud prevention.
                 </p>
-                <div className="p-6 bg-red-50 border-l-4 border-red-400 rounded-r-2xl">
+                <div className="p-4 md:p-6 bg-red-50 border-l-4 border-red-400 rounded-r-2xl">
                   <p className="text-red-800 text-sm">
                     Orders can only be cancelled if they have not been processed or shipped. Once an order enters the shipping phase (often within an hour), cancellation is no longer possible.
                   </p>
@@ -184,9 +184,10 @@ const RefundPolicy = () => {
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold font-[Judson]">NEED ASSISTANCE?</h2>
               </div>
-              <div className="bg-[#1F352F] text-white p-8 rounded-3xl text-center shadow-xl">
-                <p className="mb-6 opacity-90">Our support team is ready to help with your return or exchange.</p>
-                <a href="mailto:support@kundrat.com" className="inline-block px-8 py-4 bg-white text-[#1F352F] rounded-full font-bold hover:scale-105 transition-transform">
+              <div className="bg-[#1F352F] text-white p-4 py-8 md:p-8 rounded-3xl text-center shadow-xl">
+                <p className="mb-6 opacity-90 text-sm md:text-base">Our support team is ready to help with your return or exchange.</p>
+                <a href="mailto:support@kundrat.com" className="inline-flex items-center gap-2 px-4 md:px-8 py-3 md:py-4 bg-white text-[#1F352F] rounded-full font-bold hover:scale-105 transition-transform text-sm md:text-base shadow-lg">
+                  <Mail className="w-4 h-4 md:w-5 md:h-5" />
                   support@kundrat.com
                 </a>
               </div>

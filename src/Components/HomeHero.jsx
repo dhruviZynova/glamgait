@@ -14,15 +14,16 @@ const slides = [
     title: "The Timeless \n Heritage Saree",
     description: "Experience the allure of hand-woven luxury. Crafted with premium silk and intricate zari embroidery, our signature sarees are designed for your most celebrated moments.",
     align: "left",
-    textColor: "text-gray-900",
-    subColor: "text-gray-600",
-    descColor: "text-gray-800",
+    subColor: "text-gray-700",
+    textColor: "text-black",
+    descColor: "text-black-700",
     btnPrimary: "bg-gray-900 text-white hover:bg-gray-800 border-gray-900",
     btnSecondary: "bg-transparent border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white",
     btnPrimaryText: "Shop Sarees",
     btnSecondaryText: "Our Heritage",
     bgClass: "bg-[75%_center] md:bg-center",
-    gradient: "linear-gradient(90deg, rgba(252, 249, 245, 0.95) 0%, rgba(252, 249, 245, 0.5) 50%, rgba(252, 249, 245, 0) 100%)"
+    gradientMobile: "linear-gradient(60deg, rgba(252, 249, 245, 0.69) 0%, rgba(252, 249, 245, 0.37) 100%)",
+    gradientDesktop: "linear-gradient(90deg, rgba(252, 249, 245, 0.95) 0%, rgba(252, 249, 245, 0.5) 50%, rgba(252, 249, 245, 0) 100%)"
   },
   {
     id: 2,
@@ -31,15 +32,16 @@ const slides = [
     title: "Elegance in \n Modest Wear",
     description: "Discover a refined collection of designer abayas and modest gowns. Flowing silhouettes tailored in premium, breathable fabrics, embellished with delicate gold artistry.",
     align: "right",
-    textColor: "text-white",
     subColor: "text-amber-200 font-medium",
+    textColor: "text-white",
     descColor: "text-gray-200",
     btnPrimary: "bg-amber-500 text-gray-950 hover:bg-amber-400 border-amber-500",
     btnSecondary: "bg-transparent border-white text-white hover:bg-white hover:text-gray-950",
     btnPrimaryText: "Shop Modest Wear",
     btnSecondaryText: "Explore Styles",
     bgClass: "bg-[28%_top] md:bg-top",
-    gradient: "linear-gradient(270deg, rgba(24, 18, 15, 0.95) 0%, rgba(24, 18, 15, 0.5) 50%, rgba(24, 18, 15, 0) 100%)"
+    gradientMobile: "linear-gradient(180deg, rgba(24, 18, 15, 0.45) 0%, rgba(32, 28, 26, 0.44) 100%)",
+    gradientDesktop: "linear-gradient(270deg, rgba(24, 18, 15, 0.95) 0%, rgba(24, 18, 15, 0.5) 50%, rgba(24, 18, 15, 0) 100%)"
   }
 ];
 
@@ -51,7 +53,7 @@ const HomeHero = () => {
       {/* React 19 Preload Link - hoisted automatically to document <head> for LCP optimization */}
       <link rel="preload" as="image" href={image1} fetchPriority="high" />
 
-      {/* Fixed Backgrounds Rendered Outside Swiper so bg-fixed works perfectly like the About page */}
+      {/* Backgrounds Rendered Outside Swiper so parallax works perfectly on desktop */}
       {slides.map((slide, index) => (
         <div
           key={`bg-${slide.id}`}
@@ -59,8 +61,17 @@ const HomeHero = () => {
             }`}
           style={{ backgroundImage: `url(${slide.image})` }}
         >
-          {/* Dynamic Light/Dark luxury overlay tailored to the image */}
-          <div className="absolute inset-0" style={{ background: slide.gradient }}></div>
+          {/* Mobile Overlay - covers entire mobile view cleanly */}
+          <div
+            className="absolute inset-0 block md:hidden"
+            style={{ background: slide.gradientMobile }}
+          ></div>
+
+          {/* Desktop Overlay - fades elegantly for desktop viewports */}
+          <div
+            className="absolute inset-0 hidden md:block"
+            style={{ background: slide.gradientDesktop }}
+          ></div>
         </div>
       ))}
 
@@ -76,7 +87,7 @@ const HomeHero = () => {
           <SwiperSlide key={slide.id}>
             <div className={`w-full h-full relative flex items-center ${slide.align === 'right' ? 'justify-end' : 'justify-start'}`}>
               {/* Hero Content */}
-              <div className="relative z-10 px-6 md:px-16 lg:px-24 w-full">
+              <div className="relative z-10 px-2 md:px-16 lg:px-24 w-full">
                 <div className={`max-w-xl text-left ${slide.align === 'right' ? 'ml-auto' : 'mr-auto'}`}>
                   <span className={`block text-sm md:text-base font-semibold tracking-widest uppercase mb-3 ${slide.subColor}`}>
                     {slide.subtitle}

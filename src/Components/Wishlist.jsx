@@ -91,7 +91,7 @@ const Wishlist = () => {
 
 
   return (
-    <div className="bg-[#f3f0ed] min-h-screen px-4 md:px-10 py-10 ">
+    <div className="bg-[#f3f0ed] min-h-screen px-2 md:px-10 py-10">
       <div className="max-w-7xl mx-auto">
         {loading ? (
           <WishlistSkeleton count={3} />
@@ -156,11 +156,10 @@ const Wishlist = () => {
                       <button
                         onClick={() => handleMoveToCart(item)}
                         disabled={item.stock_qty === 0 || movingIds.has(item.w_id)}
-                        className={`border px-3 py-2 text-sm rounded-md transition whitespace-nowrap cursor-pointer flex items-center gap-2 ${
-                          item.stock_qty > 0 && !movingIds.has(item.w_id)
-                            ? "hover:bg-[#02382A] hover:text-white"
-                            : "opacity-60 cursor-not-allowed"
-                        }`}
+                        className={`border px-3 py-2 text-sm rounded-md transition whitespace-nowrap cursor-pointer flex items-center gap-2 ${item.stock_qty > 0 && !movingIds.has(item.w_id)
+                          ? "hover:bg-[#02382A] hover:text-white"
+                          : "opacity-60 cursor-not-allowed"
+                          }`}
                       >
                         {movingIds.has(item.w_id) && <Loader2 size={14} className="animate-spin" />}
                         {item.stock_qty > 0 ? "MOVE TO CART" : "UNAVAILABLE"}
