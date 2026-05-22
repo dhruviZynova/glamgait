@@ -55,7 +55,7 @@ const Footer = () => {
       /> */}
 
       {/* Background Image */}
-      <div className="absolute inset-0 z-0 lg:h-full">
+      <div className="absolute bottom-0 left-0 right-0 z-0 h-[480px] md:h-[680px] lg:h-full">
         <img
           src={footerbgimg}
           alt="Footer Background"
@@ -64,8 +64,8 @@ const Footer = () => {
       </div>
 
       {/* Footer Content */}
-      <div className="relative z-10 container mt-24 mb-0 sm:mb-24 max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 lg:gap-12">
+      <div className="relative z-10 w-full mt-24 mb-0 sm:mb-24 max-w-7xl mx-auto py-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 lg:gap-12 w-full">
 
           {/* Brand Section */}
           <div className="lg:col-span-1">
@@ -116,7 +116,7 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="flex gap-6 lg:gap-12">
+          <div className="flex md:flex-row flex-col gap-6 lg:gap-12">
             {/* Quick Links Section */}
             <div>
               <h3 className="text-lg lg:text-xl font-semibold text-[#F6F6F6] font-[Nunito Sans] mb-4">
