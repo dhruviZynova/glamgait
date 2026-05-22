@@ -70,6 +70,10 @@ export function useLogin() {
       queryClient.clear();
       queryClient.invalidateQueries();
     },
+    onError: (error) => {
+      const errMsg = error.response?.data?.description || error.response?.data?.message || error.message || "Invalid email or password";
+      toast.error(errMsg);
+    },
   });
 }
 

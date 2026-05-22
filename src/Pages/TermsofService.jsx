@@ -26,7 +26,7 @@ const TermsofService = () => {
   return (
     <div className="min-h-screen bg-[#FDFCFB]">
       {/* Hero Header */}
-      <div className="bg-[#1F352F] py-20 px-4 relative overflow-hidden">
+      <div className="bg-[#1F352F] py-20 px-2 md:px-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#F3F0ED] rounded-full -translate-x-1/3 translate-y-1/3 blur-3xl"></div>
@@ -34,17 +34,17 @@ const TermsofService = () => {
 
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 font-[Judson]">Terms of Service</h1>
-          <div className="flex items-center justify-center gap-4 text-[#F3F0ED]/80 text-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-[#F3F0ED]/80 text-sm">
             <span className="flex items-center gap-2">
               <Scale className="w-4 h-4" /> Legal Agreement
             </span>
-            <span className="w-1 h-1 bg-white/30 rounded-full"></span>
+            <span className="hidden sm:inline-block w-1 h-1 bg-white/30 rounded-full"></span>
             <span>Last updated: June 27, 2025</span>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-2 md:px-4 py-12">
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Sticky Navigation */}
           <aside className="lg:w-1/4">
@@ -67,20 +67,20 @@ const TermsofService = () => {
           </aside>
 
           {/* Main Content */}
-          <main className="lg:w-3/4 bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100 space-y-16 leading-relaxed text-gray-600">
+          <main className="lg:w-3/4 bg-white rounded-3xl p-4 md:p-12 shadow-sm border border-gray-100 space-y-16 leading-relaxed text-gray-600">
 
             <section id="general" className="space-y-6 scroll-mt-32">
               <div className="flex items-center gap-4 text-gray-900">
                 <div className="p-3 bg-[#F3F0ED] rounded-2xl">
                   <Info className="w-6 h-6 text-[#1F352F]" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold font-[Judson]">OVERVIEW & GENERAL CONDITIONS</h2>
+                <h2 className="text-xl md:text-3xl font-bold font-[Judson]">OVERVIEW & GENERAL CONDITIONS</h2>
               </div>
               <div className="space-y-4">
                 <p>
                   This website is operated by Kundrat. Throughout the site, the terms “we”, “us” and “our” refer to Kundrat. Kundrat offers this website, including all information, tools and services available from this site to you, the user, conditioned upon your acceptance of all terms, conditions, policies and notices stated here.
                 </p>
-                <div className="p-6 bg-amber-50 border-l-4 border-amber-400 rounded-r-2xl">
+                <div className="p-4 md:p-6 bg-amber-50 border-l-4 border-amber-400 rounded-r-2xl">
                   <p className="text-amber-800 text-sm font-medium">
                     By visiting our site and/ or purchasing something from us, you engage in our “Service” and agree to be bound by the following terms and conditions.
                   </p>
@@ -93,7 +93,7 @@ const TermsofService = () => {
                 <div className="p-3 bg-[#F3F0ED] rounded-2xl">
                   <Globe className="w-6 h-6 text-[#1F352F]" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold font-[Judson]">SECTION 1 – ONLINE STORE TERMS</h2>
+                <h2 className="text-xl md:text-3xl font-bold font-[Judson]">SECTION 1 – ONLINE STORE TERMS</h2>
               </div>
               <div className="space-y-4">
                 <p>
@@ -119,14 +119,14 @@ const TermsofService = () => {
                 <div className="p-3 bg-[#F3F0ED] rounded-2xl">
                   <CreditCard className="w-6 h-6 text-[#1F352F]" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold font-[Judson]">SECTION 4 – MODIFICATIONS TO PRICES</h2>
+                <h2 className="text-xl md:text-3xl font-bold font-[Judson]">SECTION 4 – MODIFICATIONS TO PRICES</h2>
               </div>
               <div className="grid md:grid-cols-2 gap-6">
-                <div className="p-8 bg-gray-50 rounded-3xl border border-gray-100">
+                <div className="p-4 md:p-8 bg-gray-50 rounded-3xl border border-gray-100">
                   <h4 className="font-bold text-gray-900 mb-2">Price Changes</h4>
                   <p className="text-sm">Prices for our products are subject to change without notice at any time.</p>
                 </div>
-                <div className="p-8 bg-gray-50 rounded-3xl border border-gray-100">
+                <div className="p-4 md:p-8 bg-gray-50 rounded-3xl border border-gray-100">
                   <h4 className="font-bold text-gray-900 mb-2">Service Continuity</h4>
                   <p className="text-sm">We reserve the right to modify or discontinue the Service without notice.</p>
                 </div>
@@ -138,12 +138,12 @@ const TermsofService = () => {
                 <div className="p-3 bg-[#F3F0ED] rounded-2xl">
                   <CheckCircle2 className="w-6 h-6 text-[#1F352F]" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold font-[Judson]">SECTION 5 – PRODUCTS OR SERVICES</h2>
+                <h2 className="text-xl md:text-3xl font-bold font-[Judson]">SECTION 5 – PRODUCTS OR SERVICES</h2>
               </div>
               <p>
                 Certain products or services may be available exclusively online through the website. These products or services may have limited quantities and are subject to return or exchange only according to our Return Policy.
               </p>
-              <div className="bg-[#1F352F]/5 p-8 rounded-3xl">
+              <div className="bg-[#1F352F]/5 p-4 md:p-8 rounded-3xl">
                 <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-amber-600" />
                   Color Disclaimer
@@ -157,7 +157,7 @@ const TermsofService = () => {
                 <div className="p-3 bg-[#F3F0ED] rounded-2xl">
                   <Scale className="w-6 h-6 text-[#1F352F]" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold font-[Judson]">SECTION 6 – BILLING ACCURACY</h2>
+                <h2 className="text-xl md:text-3xl font-bold font-[Judson]">SECTION 6 – BILLING ACCURACY</h2>
               </div>
               <p>
                 We reserve the right to refuse any order you place with us. We may, in our sole discretion, limit or cancel quantities purchased per person, per household or per order.
@@ -169,7 +169,7 @@ const TermsofService = () => {
                 <div className="p-3 bg-[#F3F0ED] rounded-2xl">
                   <Ban className="w-6 h-6 text-[#1F352F]" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold font-[Judson]">SECTION 12 – PROHIBITED USES</h2>
+                <h2 className="text-xl md:text-3xl font-bold font-[Judson]">SECTION 12 – PROHIBITED USES</h2>
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 {[
@@ -195,7 +195,7 @@ const TermsofService = () => {
                 <div className="p-3 bg-[#F3F0ED] rounded-2xl">
                   <ShieldAlert className="w-6 h-6 text-[#1F352F]" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold font-[Judson]">SECTION 13 – LIMITATION OF LIABILITY</h2>
+                <h2 className="text-xl md:text-3xl font-bold font-[Judson]">SECTION 13 – LIMITATION OF LIABILITY</h2>
               </div>
               <p className="italic">
                 "We do not guarantee, represent or warrant that your use of our service will be uninterrupted, timely, secure or error-free."
@@ -210,12 +210,12 @@ const TermsofService = () => {
                 <div className="p-3 bg-[#F3F0ED] rounded-2xl">
                   <Mail className="w-6 h-6 text-[#1F352F]" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold font-[Judson]">CONTACT INFORMATION</h2>
+                <h2 className="text-xl md:text-3xl font-bold font-[Judson]">CONTACT INFORMATION</h2>
               </div>
-              <div className="bg-[#1F352F] text-white p-8 rounded-3xl text-center shadow-xl">
-                <p className="mb-6 opacity-90">Questions about the Terms of Service should be sent to our support team.</p>
-                <a href="mailto:support@kundrat.com" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#1F352F] rounded-full font-bold hover:scale-105 transition-transform">
-                  <Mail className="w-5 h-5" />
+              <div className="bg-[#1F352F] text-white p-4 py-8 md:p-8 rounded-3xl text-center shadow-xl">
+                <p className="mb-6 opacity-90 text-sm md:text-base">Questions about the Terms of Service should be sent to our support team.</p>
+                <a href="mailto:support@kundrat.com" className="inline-flex items-center gap-2 px-4 md:px-8 py-3 md:py-4 bg-white text-[#1F352F] rounded-full font-bold hover:scale-105 transition-transform text-sm md:text-base shadow-lg">
+                  <Mail className="w-4 h-4 md:w-5 md:h-5" />
                   support@kundrat.com
                 </a>
               </div>

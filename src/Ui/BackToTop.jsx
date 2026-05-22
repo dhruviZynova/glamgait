@@ -43,7 +43,7 @@ const StyledWrapper = styled.div`
   transition: opacity 0.3s ease-in-out;
 
   @media (max-width: 991px) {
-    bottom: 65px;
+    bottom: 70px;
   }
 
   .button {

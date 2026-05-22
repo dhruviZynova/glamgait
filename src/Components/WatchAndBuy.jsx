@@ -31,7 +31,7 @@ const WatchAndBuy = () => {
   };
 
   return (
-    <section className="relative bg-[#F3F0ED] pb-16 overflow-visible">
+    <section className="relative bg-[#F3F0ED] py-16 overflow-visible">
       <div className="text-center max-w-2xl mx-auto mb-12 relative z-10">
         <h2 className="text-[30px] md:text-[34px] font-bold text-gray-800 mb-2">
           Watch & Buy

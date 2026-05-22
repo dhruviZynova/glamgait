@@ -56,7 +56,8 @@ const Register = () => {
       toast.success("Registration Successful!");
       navigate("/login", { state: { from } });
     } catch (error) {
-      toast.error(error?.description || error?.message || "An error occurred during registration");
+      const errMsg = error.response?.data?.description || error.response?.data?.message || error.message || "An error occurred during registration";
+      toast.error(errMsg);
     }
   };
 

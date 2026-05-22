@@ -353,7 +353,7 @@ const Checkout = () => {
 
     const renderConfirmationStep = () => (
         <div className="space-y-8 animate-fadeIn">
-            <div className="bg-[#f9f9f9a1] p-6 rounded-[8px] border border-[#E9E9E9]">
+            <div className="bg-[#f9f9f9a1] p-4 md:p-6 rounded-[8px] border border-[#E9E9E9]">
                 <h3 className="text-lg font-medium text-[#1C2F2F] font-[Oxygen] mb-4">Order Summary</h3>
                 <div className="space-y-3">
                     <div className="flex justify-between text-[#3D3D3D] font-[Oxygen]">
@@ -516,7 +516,7 @@ const Checkout = () => {
 
     return (
         <>
-            <div className="min-h-screen pt-12 pb-12 px-4 md:px-10 lg:px-20">
+            <div className="bg-[#f3f0ed] min-h-screen px-2 md:px-10 py-10">
                 <div className="">
                     <div className="flex flex-col lg:flex-row gap-8">
 
@@ -539,7 +539,7 @@ const Checkout = () => {
                             </div>
 
                             {/* Form Content */}
-                            <div className="p-6 md:p-10">
+                            <div className="p-4 md:p-10">
                                 {currentStep === 1 && renderPersonalFields()}
                                 {currentStep === 2 && renderBillingFields()}
                                 {currentStep === 3 && renderConfirmationStep()}

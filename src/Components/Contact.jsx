@@ -49,7 +49,7 @@ const Contact = () => {
   return (
     <div className="min-h-screen font-sans overflow-hidden relative">
       {/* Main Contact Section */}
-      <section className="relative pt-24 pb-16 px-6 md:px-12 lg:px-20 z-20">
+      <section className="relative pt-24 pb-16 px-2 md:px-12 lg:px-20 z-20">
         {/* Hanging Lantern (Top Left) */}
         <div className="absolute -top-12 -lg-top-14 left-0 md:left-4 -lg:left-8 z-20 pointer-events-none">
           <img
@@ -64,7 +64,7 @@ const Contact = () => {
           <h1 className="text-[42px] md:text-[42px] lg:text-[46px] font-[Judson] text-[#000000] tracking-tight">
             Get In Touch
           </h1>
-          <p className="text-[#8A8A8A] font-[Poppins] max-w-2xl mx-auto text-[16px] md:text-lg leading-relaxed px-4">
+          <p className="text-[#8A8A8A] font-[Poppins] max-w-2xl mx-auto text-[16px] md:text-lg leading-relaxed px-2 md:px-4">
             If you have any query or any type of suggestion, you can contact us here. We would love to hear from you.
           </p>
         </div>
@@ -72,7 +72,7 @@ const Contact = () => {
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-8 relative z-10 items-start">
           {/* Left Column - Form */}
-          <div className="bg-white/50 backdrop-blur-sm p-6 md:p-10 rounded-2xl shadow-xl shadow-gray-200/50">
+          <div className="bg-white/50 backdrop-blur-sm px-4 py-10 md:p-10 rounded-2xl shadow-xl shadow-gray-200/50">
             <h2 className="text-2xl md:text-3xl font-[Judson] text-[#000000] mb-8 border-l-4 border-[#003124] pl-4">
               Leave us a message
             </h2>
@@ -141,37 +141,37 @@ const Contact = () => {
           </div>
 
           {/* Right Column - Info */}
-          <div className="flex flex-col justify-center space-y-12 lg:pl-10 py-8 lg:py-0">
-            <div className="space-y-8">
-              <div className="flex items-center gap-5 group">
-                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center transition-transform">
-                  <img src={location} alt="Location" className="w-6 h-6 object-contain" />
+          <div className="flex flex-col justify-center space-y-6 md:space-y-12 lg:pl-10 py-8 lg:py-0">
+            <div className="space-y-2 md:space-y-8">
+              <div className="flex items-center gap-2 md:gap-5 group">
+                <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center transition-transform">
+                  <img src={location} alt="Location" className="w-4 h-4 md:w-6 md:h-6 object-contain" />
                 </div>
                 <div>
-                  <p className="text-[#0F001A] font-poppins text-lg leading-snug">
+                  <p className="text-[#0F001A] font-poppins text-md md:text-lg leading-snug">
                     Infomation technologies building, <br />
                     Victoria Island, Lagos, Nigeria.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-5 group">
-                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center transition-transform">
-                  <img src={phone} alt="Phone" className="w-6 h-6 object-contain" />
+              <div className="flex items-center gap-2 md:gap-5 group">
+                <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center transition-transform">
+                  <img src={phone} alt="Phone" className="w-4 h-4 md:w-6 md:h-6 object-contain" />
                 </div>
                 <div>
-                  <p className="text-[#0F001A] font-poppins text-lg">
+                  <p className="text-[#0F001A] font-poppins text-md md:text-lg">
                     +234 081-1236-4568
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-5 group">
-                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center transition-transform">
-                  <img src={mail} alt="Email" className="w-6 h-6 object-contain" />
+              <div className="flex items-center gap-2 md:gap-5 group">
+                <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center transition-transform">
+                  <img src={mail} alt="Email" className="w-4 h-4 md:w-6 md:h-6 object-contain" />
                 </div>
                 <div>
-                  <p className="text-[#0F001A] font-poppins text-lg">
+                  <p className="text-[#0F001A] font-poppins text-md md:text-lg">
                     hello@info.com.ng
                   </p>
                 </div>
@@ -190,7 +190,7 @@ const Contact = () => {
                   <a
                     key={idx}
                     href="#"
-                    className="w-12 h-12 bg-[#003124] rounded-full flex items-center justify-center text-white hover:bg-white hover:text-[#003124] border-2 border-[#003124] transition-all group"
+                    className="w-10 h-10 md:w-12 md:h-12 bg-[#003124] rounded-full flex items-center justify-center text-white hover:bg-white hover:text-[#003124] border-2 border-[#003124] transition-all group"
                   >
                     {social.icon}
                   </a>

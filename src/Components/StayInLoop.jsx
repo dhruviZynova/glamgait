@@ -11,7 +11,7 @@ const StayInLoop = () => {
   };
 
   return (
-    <section className="relative bg-white py-6 overflow-hidden">
+    <section className="relative bg-white py-16 overflow-hidden">
       {/* Left Pattern */}
       <div className="">
         <img

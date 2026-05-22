@@ -1,5 +1,5 @@
 .latest-arrivals-section {
-    padding: 0 0 20px;
+    padding: 0 0 50px;
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -20,6 +20,7 @@
     text-align: center;
     position: relative;
     min-height: 300px;
+    padding: 0 10px;
     margin: 0;
 }
 
@@ -29,6 +30,9 @@
     font-weight: 700;
     font-family: "Judson", "Playfair Display", serif;
     color: #000;
+    line-height: 30px;
+    padding-bottom: 15px;
+
 }
 
 .latest-arrivals-section .subtitle {
@@ -179,7 +183,7 @@
     }
 
     .latest-arrivals-section .title {
-        font-size: 26px;
+        font-size: 28px;
     }
 
     .latest-arrivals-section .latest-arrivals-header {

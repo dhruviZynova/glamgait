@@ -58,11 +58,11 @@ const cards = [
 const CollectionBanner = () => {
   return (
     <section
-      className="w-full py-6 md:py-16 overflow-hidden flex flex-col items-center px-2 md:px-8 xl:px-24"
+      className="w-full py-16 md:py-16 overflow-hidden flex flex-col items-center px-2 md:px-8 xl:px-24"
     >
       {/* Header */}
-      <div className="text-center mb-12 md:mb-20 px-4">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
+      <div className="text-center mb-12 md:mb-20 px-2 md:px-4">
+        <h2 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
           Explore Our Latest Collections <br className="hidden sm:block" /> Designed For You
         </h2>
         <p className="text-[#767676] font-Poppins font-400 text-base max-w-2xl mx-auto">
@@ -127,7 +127,7 @@ const CollectionBanner = () => {
       </div>
 
       {/* ===== MOBILE: grid layout, all cards visible ===== */}
-      <div className="grid md:hidden w-full px-4 gap-4 pb-6 grid-cols-1 sm:grid-cols-2">
+      <div className="grid md:hidden w-full px-0 md:px-4 gap-4 pb-6 grid-cols-1 sm:grid-cols-2">
         {cards.map((card, i) => (
           <div
             key={i}

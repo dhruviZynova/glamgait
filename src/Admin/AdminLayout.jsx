@@ -16,6 +16,13 @@ const AdminLayout = () => {
     }
   }, [user, navigate]);
 
+  useEffect(() => {
+    document.body.classList.add("admin-body");
+    return () => {
+      document.body.classList.remove("admin-body");
+    };
+  }, []);
+
   // Synchronous security guard to block rendering child components prior to redirection
   if (!user?.auth_token || user?.role !== "admin") {
     return (
@@ -48,7 +55,7 @@ const AdminLayout = () => {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-2 md:p-6">
           <Outlet />
         </main>
       </div>

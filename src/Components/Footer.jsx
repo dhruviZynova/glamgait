@@ -198,7 +198,7 @@ const Footer = () => {
       </div>
 
       {/* Bottom Section */}
-      <div className="w-full flex flex-col justify-center items-center gap-4 sm:mt-8 mt-10 mb-2">
+      <div className="w-full flex flex-col justify-center items-center gap-4 sm:mt-8 mt-10 mb-20">
         {/* Copyright */}
         <div className="text-center md:text-left">
           <p className="text-[#F6F6F6] font-[Nunito Sans] text-sm lg:text-base">

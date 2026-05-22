@@ -165,29 +165,29 @@ const Dashboard = () => {
     };
 
     return (
-      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 hover:shadow-lg transition-shadow min-w-0 w-full overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <div
-            className={`p-3 rounded-lg ${colorClasses[color].split(" ")[2]}`}
+            className={`p-2.5 sm:p-3 rounded-lg ${colorClasses[color].split(" ")[2]}`}
           >
-            <Icon className={`h-6 w-6 ${colorClasses[color].split(" ")[1]}`} />
+            <Icon className={`h-5 w-5 sm:h-6 sm:w-6 ${colorClasses[color].split(" ")[1]}`} />
           </div>
           {trend && (
             <div
-              className={`flex items-center text-sm ${trend === "up" ? "text-green-600" : "text-red-600"
+              className={`flex items-center text-xs sm:text-sm ${trend === "up" ? "text-green-600" : "text-red-600"
                 }`}
             >
               <TrendingUp
-                className={`h-4 w-4 mr-1 ${trend === "down" ? "rotate-180" : ""
+                className={`h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 ${trend === "down" ? "rotate-180" : ""
                   }`}
               />
               {trendValue}%
             </div>
           )}
         </div>
-        <h3 className="text-gray-500 text-sm font-medium">{title}</h3>
-        <p className="text-3xl font-bold text-gray-800 mt-1">{value}</p>
-        {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+        <h3 className="text-gray-500 text-xs sm:text-sm font-medium">{title}</h3>
+        <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mt-1 break-all sm:break-normal">{value}</p>
+        {subtitle && <p className="text-[10px] sm:text-xs text-gray-500 mt-1">{subtitle}</p>}
       </div>
     );
   };
@@ -207,7 +207,7 @@ const Dashboard = () => {
           </div>
           <button
             onClick={fetchDashboardData}
-            className="mt-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-pink-600 transition-colors cursor-pointer"
+            className="mt-2 w-full md:w-auto px-4 py-2 bg-black text-white rounded-lg hover:bg-pink-600 transition-colors cursor-pointer text-center"
           >
             Refresh Data
           </button>
@@ -302,20 +302,20 @@ const Dashboard = () => {
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Revenue Chart */}
-          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-800">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 min-w-0 w-full overflow-hidden">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
                 Revenue Overview
-                <span className="text-sm text-gray-500 block">
+                <span className="text-xs sm:text-sm text-gray-500 block">
                   Excludes cancelled orders only
                 </span>
               </h2>
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full md:w-auto justify-start md:justify-end">
                 {["daily", "weekly", "monthly"].map((period) => (
                   <button
                     key={period}
                     onClick={() => setTimeframe(period)}
-                    className={`px-3 py-1 text-sm rounded-md capitalize transition-colors cursor-pointer ${timeframe === period
+                    className={`flex-1 md:flex-initial px-3 py-1.5 text-xs sm:text-sm rounded-md capitalize transition-colors cursor-pointer text-center ${timeframe === period
                       ? "bg-pink-500 text-white"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
@@ -357,8 +357,8 @@ const Dashboard = () => {
           </div>
 
           {/* Order Status Pie Chart */}
-          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 min-w-0 w-full overflow-hidden">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-6">
               Order Status Distribution
             </h2>
             <ResponsiveContainer width="100%" height={300}>
@@ -386,23 +386,23 @@ const Dashboard = () => {
         </div>
 
         {/* Orders Chart */}
-        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-8">
-          <div className="flex justify-between items-center mb-6">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 mb-8 min-w-0 w-full overflow-hidden">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-gray-800">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
                 Orders Overview
               </h2>
-              <span className="text-sm text-gray-500">
+              <span className="text-xs sm:text-sm text-gray-500">
                 Stacked view: Green (Revenue Contributing) + Red (Cancelled) =
                 Total
               </span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full md:w-auto justify-start md:justify-end">
               {["daily", "weekly", "monthly"].map((period) => (
                 <button
                   key={period}
                   onClick={() => setTimeframe(period)}
-                  className={`px-3 py-1 text-sm rounded-md capitalize transition-colors cursor-pointer ${timeframe === period
+                  className={`flex-1 md:flex-initial px-3 py-1.5 text-xs sm:text-sm rounded-md capitalize transition-colors cursor-pointer text-center ${timeframe === period
                     ? "bg-pink-500 text-white"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     }`}
@@ -453,33 +453,33 @@ const Dashboard = () => {
           </ResponsiveContainer>
 
           {/* Summary Stats */}
-          <div className="grid grid-cols-4 gap-4 mt-6 pt-4 border-t">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-4 border-t">
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-800">
+              <p className="text-lg sm:text-2xl font-bold text-gray-800">
                 {getCurrentData().reduce((sum, item) => sum + item.orders, 0)}
               </p>
-              <p className="text-sm text-gray-500">Total Orders</p>
+              <p className="text-xs sm:text-sm text-gray-500">Total Orders</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-lg sm:text-2xl font-bold text-green-600">
                 {getCurrentData().reduce(
                   (sum, item) => sum + item.eligibleOrders,
                   0
                 )}
               </p>
-              <p className="text-sm text-gray-500">Revenue Contributing</p>
+              <p className="text-xs sm:text-sm text-gray-500">Revenue Contributing</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-red-600">
+              <p className="text-lg sm:text-2xl font-bold text-red-600">
                 {getCurrentData().reduce(
                   (sum, item) => sum + (item.cancelledOrders || 0),
                   0
                 )}
               </p>
-              <p className="text-sm text-gray-500">Cancelled</p>
+              <p className="text-xs sm:text-sm text-gray-500">Cancelled</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-lg sm:text-2xl font-bold text-blue-600">
                 {(
                   (getCurrentData().reduce(
                     (sum, item) => sum + item.eligibleOrders,
@@ -496,17 +496,17 @@ const Dashboard = () => {
                 ).toFixed(1)}
                 %
               </p>
-              <p className="text-sm text-gray-500">Success Rate</p>
+              <p className="text-xs sm:text-sm text-gray-500">Success Rate</p>
             </div>
           </div>
         </div>
 
         {/* Recent Orders */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200">
-          <div className="flex  items-center justify-between p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 min-w-0 w-full overflow-hidden">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b border-gray-200 gap-2 sm:gap-0">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">Recent Orders</h2>
             <Link to="/admin/orders">
-              <button className="mt-2 px-4 py-2 text-black hover:text-gray-600 underline cursor-pointer">View All Orders</button>
+              <button className="px-0 sm:px-4 py-1 sm:py-2 text-black hover:text-gray-600 underline cursor-pointer text-sm sm:text-base">View All Orders</button>
             </Link>
           </div>
           <div className="overflow-x-auto">

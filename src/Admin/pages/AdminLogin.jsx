@@ -15,6 +15,13 @@ const AdminLogin = () => {
     const [loading, setLoading] = useState(false);
     const { refreshUser } = useUser();
 
+    React.useEffect(() => {
+        document.body.classList.add("admin-body");
+        return () => {
+            document.body.classList.remove("admin-body");
+        };
+    }, []);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (loading) return;

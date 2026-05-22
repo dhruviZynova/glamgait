@@ -145,7 +145,7 @@ const LatestArrivalsByCategories = () => {
                     </p>
                 </div>
 
-                <div className="space-y-12 px-4 sm:px-12">
+                <div className="space-y-12 px-2 md:px-4 sm:px-12">
                     {loading ? (
                         <LatestArrivalsSkeletonGrid />
                     ) : error ? (

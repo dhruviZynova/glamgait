@@ -590,7 +590,7 @@ const Allproducts = () => {
             {/* Mobile Filter Button */}
             <button
               onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
-              className="lg:hidden flex items-center justify-center gap-2 bg-[#f3f0ed] border border-gray-300 px-4 py-3 rounded-lg sm:mb-4 mb-0 shadow-sm flex-shrink-0"
+              className="lg:hidden flex items-center justify-end w-full gap-2 sm:mb-4 mb-4 flex-shrink-0"
             >
               <SlidersHorizontal className="w-5 h-5" />
               <span className="font-medium">Filters</span>

@@ -94,7 +94,7 @@ const Announcement = () => {
   return (
     <div className="pb-8">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">
           Announcement Management
         </h1>

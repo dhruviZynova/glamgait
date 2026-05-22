@@ -44,7 +44,8 @@ const ResetPassword = () => {
         toast.error(response.data.description || "Failed to reset password");
       }
     } catch (err) {
-      toast.error(err?.description || err?.message || "An error occurred. Please try again later.");
+      const errMsg = err.response?.data?.description || err.response?.data?.message || err.message || "An error occurred. Please try again later.";
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
