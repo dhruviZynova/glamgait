@@ -58,7 +58,7 @@ const cards = [
 const CollectionBanner = () => {
   return (
     <section
-      className="w-full py-16 md:py-16 overflow-hidden flex flex-col items-center px-2 md:px-8 xl:px-24"
+      className="w-full py-10 md:py-16 overflow-hidden flex flex-col items-center px-2 md:px-8 xl:px-24"
     >
       {/* Header */}
       <div className="text-center mb-12 md:mb-20 px-2 md:px-4">

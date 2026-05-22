@@ -73,7 +73,7 @@ const FAQSection = () => {
     ];
 
     return (
-        <section className="py-6 md:py-16 px-2 md:px-10 lg:px-20 relative overflow-hidden">
+        <section className="py-10 md:py-16 px-2 md:px-10 lg:px-20 relative overflow-hidden">
             {/* Illustration Image */}
             {/* <div className="relative mt-8 lg:mt-16 flex justify-center lg:justify-start"> */}
             <img
