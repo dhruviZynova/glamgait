@@ -1,5 +1,5 @@
 import React from 'react';
-import img5 from '../assets/images/img5.webp';
+import img5 from '../assets/images/holidaybannerimg.png'
 
 const HolidayBanner = () => {
     return (

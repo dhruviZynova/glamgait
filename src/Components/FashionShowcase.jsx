@@ -1,5 +1,5 @@
 import React from "react";
-import hijabModern from "../assets/images/img2.webp";
+import indianKurti from "../assets/images/indian_kurti_model.png";
 import lehengaCholi from "../assets/images/img3.webp";
 import abayaTall from "../assets/images/img4.webp";
 import longLight from "../assets/images/longlight.webp";
@@ -25,11 +25,11 @@ const FashionShowcase = () => {
             <p className="text-white text-xs md:text-sm lg:text-base opacity-90 mb-4 max-w-lg font-montserrat">Exquisite embroidery patterns for a sophisticated and elegant modest Islamic look.</p>
           </div>
         </div>
-        {/* Bottom Left: Single Niqab Card */}
+        {/* Bottom Left: Designer Kurtis Card */}
         <div className="relative rounded-2xl overflow-hidden group shadow-lg sm:col-span-1 md:row-span-3 flex flex-col justify-end min-h-[180px] md:min-h-[350px]">
-          <img src={hijabModern} alt="Modern Elegant Hijab" className="w-full h-full object-top object-cover group-hover:scale-105 transition-transform duration-300 absolute inset-0" loading="lazy" />
+          <img src={indianKurti} alt="Designer Kurtis" className="w-full h-full object-top object-cover group-hover:scale-105 transition-transform duration-300 absolute inset-0" loading="lazy" />
           <div className="relative z-10 h-full flex flex-col justify-end p-4 bg-gradient-to-t from-black/100 via-black/30 to-transparent">
-            <h2 className="text-white text-lg sm:text-xl md:text-2xl lg:text-4xl font-bold font-playfair mb-2">Modern Elegant Hijab</h2>
+            <h2 className="text-white text-lg sm:text-xl md:text-2xl lg:text-4xl font-bold font-playfair mb-2">Designer Kurtis</h2>
           </div>
         </div>
         {/* Bottom Center: Modest Wear Burqa Card */}
