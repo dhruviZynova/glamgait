@@ -416,8 +416,8 @@ const OrderDetails = () => {
                   ))}
                 </div>
               </div>
-            </ScrollReveal>
-          </div>
+            </div>
+          </ScrollReveal>
         </div>
       </div >
 
