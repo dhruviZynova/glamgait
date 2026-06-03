@@ -292,7 +292,9 @@ const Profileorder = () => {
                 </div>
               )}
             </div>
-          </div>
+          </ScrollReveal>
+        </div>
+      </div>
           <CancelOrderModal
             isOpen={showCancelModal}
             onClose={() => setShowCancelModal(false)}
@@ -310,8 +312,7 @@ const Profileorder = () => {
             onClose={() => setShowInvoiceModal(false)}
             order={selectedOrderForInvoice}
             isCreditNote={isCreditNote}
-          </ScrollReveal>
-      </div>
+          />
 
       <BrandBanner />
     </>
