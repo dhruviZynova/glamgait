@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import faqbgimg from '../assets/images/faqbgimg.webp';
+import ScrollReveal from './Ui/ScrollReveal';
 
 const FAQItem = ({ question, answer, isOpen, onClick }) => {
     return (
@@ -74,29 +75,47 @@ const FAQSection = () => {
 
     return (
         <section className="py-10 md:py-16 px-2 md:px-10 lg:px-20 relative overflow-hidden">
+            
             {/* Illustration Image */}
-            {/* <div className="relative mt-8 lg:mt-16 flex justify-center lg:justify-start"> */}
-            <img
-                src={faqbgimg}
-                alt="FAQ Illustration"
-                className="absolute bottom-0 left-0 z-[-1] w-full max-w-[450px] object-contain"
-                loading="lazy"
-            />
-            {/* </div> */}
+            <ScrollReveal 
+                className="absolute bottom-0 left-0 z-[-1] w-full max-w-[450px]"
+                animation="blur-in"
+                duration={1500}
+                delay={200}
+            >
+                <img
+                    src={faqbgimg}
+                    alt="FAQ Illustration"
+                    className="w-full object-contain"
+                    loading="lazy"
+                />
+            </ScrollReveal>
 
             <div className="mx-auto flex flex-col lg:flex-row items-start lg:gap-20">
+                
                 {/* Left Side Content */}
-                <div className="text-center max-w-2xl mx-auto md:text-left mb-8 md:mb-16 relative z-10 px-4 md:px-0">
-                    <h2 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
-                        Frequently Asked Questions
-                    </h2>
-                    <p className="text-[#767676] font-Poppins font-400 text-base max-w-2xl mx-auto">
-                        Got questions? We've got answers. Find helpful information about our premium modest wear, shipping timelines, payment methods, returns, and custom stitching services below.
-                    </p>
-                </div>
+                <ScrollReveal 
+                    className="w-full lg:w-[40%] flex flex-col"
+                    animation="fade-right"
+                    duration={900}
+                >
+                    <div className="text-center md:text-left mb-8 md:mb-16 relative z-10 px-4 md:px-0">
+                        <h2 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
+                            Frequently Asked Questions
+                        </h2>
+                        <p className="text-[#767676] font-Poppins font-400 text-base max-w-2xl mx-auto">
+                            Got questions? We've got answers. Find helpful information about our premium modest wear, shipping timelines, payment methods, returns, and custom stitching services below.
+                        </p>
+                    </div>
+                </ScrollReveal>
 
                 {/* Right Side Accordion */}
-                <div className="w-full lg:w-[60%]">
+                <ScrollReveal 
+                    className="w-full lg:w-[60%]"
+                    animation="fade-up"
+                    duration={1000}
+                    delay={150}
+                >
                     <div className="space-y-4">
                         {faqs.map((faq, index) => (
                             <FAQItem
@@ -108,7 +127,7 @@ const FAQSection = () => {
                             />
                         ))}
                     </div>
-                </div>
+                </ScrollReveal>
             </div>
         </section>
     );

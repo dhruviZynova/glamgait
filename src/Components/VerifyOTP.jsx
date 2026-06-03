@@ -7,6 +7,7 @@ import { ApiURL } from "../Variable";
 import toast from "react-hot-toast";
 import BrandBanner from "./BrandBanner";
 import { FaArrowLeft } from "react-icons/fa";
+import ScrollReveal from "./Ui/ScrollReveal";
 
 const VerifyOTP = () => {
   const navigate = useNavigate();
@@ -105,8 +106,8 @@ const VerifyOTP = () => {
 
   return (
     <>
-      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-sans">
-        <div className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
+      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-poppins">
+        <ScrollReveal animation="fade-up" duration={800} className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
           {/* Left Side: OTP Verification */}
           <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <div className="absolute top-8 left-8 lg:left-14">
@@ -120,7 +121,7 @@ const VerifyOTP = () => {
             </div>
 
             <div className="pt-8">
-              <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2">Verify OTP</h1>
+              <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2 font-poppins">Verify OTP</h1>
               <p className="text-sm text-gray-500 mb-8">
                 We've sent a 6-digit code to <span className="font-semibold text-[#1A2C2C]">{email}</span>. Please enter it below.
               </p>
@@ -178,7 +179,7 @@ const VerifyOTP = () => {
               className="md:absolute top-0 right-0 w-full h-[105%] md:h-[115%] object-cover md:object-top rounded-b-xl md:rounded-bl-none md:rounded-r-xl z-0"
             />
           </div>
-        </div>
+        </ScrollReveal>
       </div>
 
       <div className="relative">

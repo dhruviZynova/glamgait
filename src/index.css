@@ -320,6 +320,9 @@ p {
 
 html {
   scroll-behavior: smooth;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
 }
 
 /* Specific utility to hide scrollbar where necessary */
@@ -336,6 +339,10 @@ html {
 
 body {
   background-color: #F3F0ED;
+  font-family: var(--font-poppins), var(--font-montserrat), sans-serif;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
 }
 
 @media (max-width: 991px) {
@@ -369,4 +376,45 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ── Scroll Reveal System ── */
+.reveal-base {
+  opacity: 0;
+  will-change: transform, opacity, filter;
+  transition-property: transform, opacity, filter;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Luxury smooth expo curve */
+}
+
+.reveal-fade-up {
+  transform: translateY(35px);
+}
+
+.reveal-fade-down {
+  transform: translateY(-35px);
+}
+
+.reveal-fade-left {
+  transform: translateX(35px);
+}
+
+.reveal-fade-right {
+  transform: translateX(-35px);
+}
+
+.reveal-scale-up {
+  transform: scale(0.94);
+}
+
+.reveal-blur-in {
+  filter: blur(10px);
+}
+
+/* Active animated states */
+.reveal-active {
+  opacity: 1;
+  transform: none !important;
+  filter: none !important;
+  will-change: auto !important;
 }

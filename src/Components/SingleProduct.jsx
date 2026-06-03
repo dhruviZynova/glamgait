@@ -27,6 +27,7 @@ import Review from "./Review";
 import SingleProductSkeleton from "./skeletons/SingleProductSkeleton";
 
 import { Helmet } from "@dr.pogodin/react-helmet";
+import ScrollReveal from "./Ui/ScrollReveal";
 
 function SingleProduct() {
   const { slug } = useParams();
@@ -523,7 +524,7 @@ function SingleProduct() {
     }
   `}</script>
       </Helmet>
-      <div className="min-h-screen">
+      <div className="min-h-screen font-poppins">
         <div className="px-2 py-8 pb-24 md:px-10 lg:px-20">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs sm:text-sm font-[oxygen] font-400 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
@@ -540,7 +541,7 @@ function SingleProduct() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
 
             {/* ================= LEFT SIDE - IMAGE SECTION ================= */}
-            <div className="flex gap-6">
+            <ScrollReveal animation="fade-right" duration={800} className="flex gap-6">
 
               {/* Thumbnails - Desktop */}
               <div className="hidden lg:flex flex-col gap-4 w-24">
@@ -592,10 +593,10 @@ function SingleProduct() {
                   ))}
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
 
             {/* ================= RIGHT SIDE - PRODUCT DETAILS ================= */}
-            <div className="space-y-6 sm:space-y-8">
+            <ScrollReveal animation="fade-left" duration={800} className="space-y-6 sm:space-y-8">
 
               <div className="flex justify-between items-start gap-4">
                 {/* Stock Status */}
@@ -795,12 +796,12 @@ function SingleProduct() {
                   </div>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
 
         {/* ================= TABS SECTION - DESCRIPTION & REVIEWS ================= */}
-        <div className="px-2 py-6 md:py-16 md:px-10 lg:px-20 bg-[#f8f8f8]">
+        <ScrollReveal animation="fade-up" duration={800} className="px-2 py-6 md:py-16 md:px-10 lg:px-20 bg-[#f8f8f8]">
           <div className="flex items-center gap-6 mb-8 md:mb-10 text-2xl font-light">
             <button
               onClick={() => setActiveTab("description")}
@@ -836,7 +837,7 @@ function SingleProduct() {
               </div>
             )}
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Popup Sections */}
         {finalVideoFiles.length > 0 && (
@@ -854,11 +855,13 @@ function SingleProduct() {
             image={product?.category?.cate_chart}
           />
         )}
+        <ScrollReveal animation="fade-up" duration={800}>
         <ReletedProduct
           cate_name={product?.category?.cate_name}
           currentProductId={product.p_id}
           cate_id={product?.category?.cate_id}
         />
+        </ScrollReveal>
       </div>
     </>
   );

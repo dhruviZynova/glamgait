@@ -6,6 +6,7 @@ import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import BrandBanner from "./BrandBanner";
 import { Loader2 } from "lucide-react";
 import { useLogin } from "../hooks/useAuth";
+import ScrollReveal from "./Ui/ScrollReveal";
 
 
 const Login = () => {
@@ -39,12 +40,13 @@ const Login = () => {
 
   return (
     <>
-      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-sans">
+      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-poppins">
         {/* Login Card */}
-        <div className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
+        <ScrollReveal animation="fade-up" duration={800} className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
           {/* Left Side: Login Form */}
           <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
-            <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2">Login</h1>
+            <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2 font-poppins">Login</h1>
+
             <p className="text-sm text-gray-500 mb-8">
               Do not have an account, <span onClick={() => navigate("/register", { state: { from } })} className="underline cursor-pointer">create a new one.</span>
             </p>
@@ -117,7 +119,7 @@ const Login = () => {
               className="md:absolute top-0 right-0 w-full h-[105%] md:h-[115%] object-cover md:object-top rounded-b-xl md:rounded-bl-none md:rounded-r-xl z-0"
             />
           </div>
-        </div>
+        </ScrollReveal>
       </div>
 
       <div className="relative">

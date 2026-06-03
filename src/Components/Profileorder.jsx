@@ -13,6 +13,7 @@ import { ORDER_STATUS, STATUS_LABELS } from "../utils/constants";
 import InvoiceModal from "./InvoiceModal";
 import OrdersSkeleton from "./skeletons/OrdersSkeleton";
 import { useOrders, useCancelOrder, useReturnOrder } from "../hooks/useOrders";
+import ScrollReveal from "./Ui/ScrollReveal";
 
 
 const Profileorder = () => {
@@ -103,15 +104,15 @@ const Profileorder = () => {
   return (
     <>
       <div className="w-full lg:pt-0 pt-4 px-2 md:px-8 xl:px-24">
-        <div className="flex flex-col md:flex-row font-inter">
+        <div className="flex flex-col md:flex-row font-poppins">
           {/* Sidebar */}
-          <div className="w-full md:w-1/4">
+          <ScrollReveal animation="fade-right" duration={800} className="w-full md:w-1/4">
             <SideBar />
-          </div>
+          </ScrollReveal>
 
           {/* Main content */}
-          <div className="flex-1 p-2 sm:p-6 md:p-8">
-            <h2 className="text-3xl font-semibold mb-8 text-[#1a1a1a]">
+          <ScrollReveal animation="fade-left" duration={800} className="flex-1 p-2 sm:p-6 md:p-8">
+            <h2 className="text-3xl font-semibold mb-8 text-[#1a1a1a] font-poppins">
               My Orders
             </h2>
 
@@ -309,8 +310,7 @@ const Profileorder = () => {
             onClose={() => setShowInvoiceModal(false)}
             order={selectedOrderForInvoice}
             isCreditNote={isCreditNote}
-          />
-        </div>
+          </ScrollReveal>
       </div>
 
       <BrandBanner />

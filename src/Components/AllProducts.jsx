@@ -8,6 +8,7 @@ import { useUser } from "../Context/UserContext";
 import { getGuestId } from "../utils/guest";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import ProductCard from "./ProductCard";
+import ScrollReveal from "./Ui/ScrollReveal";
 
 const sortOptions = [
   { value: "a-z", label: "Alphabetical (A-Z)" },
@@ -581,7 +582,7 @@ const Allproducts = () => {
          This allows the page to grow naturally and the main browser scrollbar to appear.
          This fixes the "cut section" issue.
       */}
-      <div className="bg-[#f3f0ed] relative">
+      <div className="bg-[#f3f0ed] relative font-poppins">
 
         <div className="w-full py-8 px-2 md:px-8 xl:px-24">
 
@@ -596,10 +597,9 @@ const Allproducts = () => {
               <span className="font-medium">Filters</span>
             </button>
 
-            <aside
-              className={`${mobileFilterOpen ? "block" : "hidden"
-                } lg:block w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-28 h-fit`}
-            >
+            <ScrollReveal animation="fade-right" duration={800} className={`${mobileFilterOpen ? "block" : "hidden"
+                } lg:block w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-28 h-fit`}>
+              <aside className="w-full">
               <div className="bg-[#f3f0ed] border border-gray-200 rounded-lg shadow-sm mb-8">
                 {/* --- CATEGORIES SECTION --- */}
                 <div className="flex flex-col gap-4">
@@ -1024,6 +1024,7 @@ const Allproducts = () => {
               </div>
 
             </aside>
+            </ScrollReveal>
 
             {/* 
               CHANGED 3: Main Content
@@ -1141,6 +1142,7 @@ const Allproducts = () => {
               </div>
 
               {products?.length > 0 ? (
+                <ScrollReveal animation="fade-up" duration={800}>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 pb-8">
                   {products?.map((product) => (
                     <ProductCard
@@ -1151,6 +1153,7 @@ const Allproducts = () => {
                     />
                   ))}
                 </div>
+                </ScrollReveal>
               ) : (
                 <div className="text-center py-16">
                   <p className="text-gray-500 text-lg mb-2">

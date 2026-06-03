@@ -8,6 +8,7 @@ import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import BrandBanner from "./BrandBanner";
 import { Loader2 } from "lucide-react";
 import { useSignup } from "../hooks/useAuth";
+import ScrollReveal from "./Ui/ScrollReveal";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -63,14 +64,14 @@ const Register = () => {
 
   return (
     <>
-      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-sans">
+      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-poppins">
 
         {/* Register Card */}
-        <div className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
+        <ScrollReveal animation="fade-up" duration={800} className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
 
           {/* Left Side: Register Form */}
           <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#1A2C2C] mb-2">Create Account</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#1A2C2C] mb-2 font-poppins">Create Account</h1>
             <p className="text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8">
               Already Have An Account? <span onClick={() => navigate("/login", { state: { from } })} className="text-[#1A2C2C] font-semibold underline cursor-pointer">Log In</span>
             </p>
@@ -158,7 +159,7 @@ const Register = () => {
               className="md:absolute top-0 right-0 w-full h-[105%] md:h-[115%] object-cover md:object-top rounded-b-xl md:rounded-bl-none md:rounded-r-xl z-0"
             />
           </div>
-        </div>
+        </ScrollReveal>
       </div>
 
       <div className="relative">

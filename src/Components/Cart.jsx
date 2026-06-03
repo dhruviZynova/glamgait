@@ -11,6 +11,7 @@ import { getGuestId } from "../utils/guest";
 import CartSkeleton from "./skeletons/CartSkeleton";
 import { useCart, useUpdateCartQty, useRemoveFromCart } from "../hooks/useCart";
 import { useUser } from "../Context/UserContext";
+import ScrollReveal from "./Ui/ScrollReveal";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -182,10 +183,10 @@ const Cart = () => {
 
   return (
     <>
-      <div className="bg-[#f3f0ed] min-h-screen px-2 md:px-10 py-10">
+      <div className="bg-[#f3f0ed] min-h-screen px-2 md:px-10 py-10 font-poppins">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Section - Cart Items */}
-          <div className="flex-1">
+          <ScrollReveal animation="fade-right" duration={800} className="flex-1">
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-hidden rounded-[10px] border border-[#DEDFE1]">
               <table className="w-full border-collapse">
@@ -302,10 +303,10 @@ const Cart = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Right Section - Summary */}
-          <div className="w-full lg:w-[380px] h-fit">
+          <ScrollReveal animation="fade-left" duration={800} className="w-full lg:w-[380px] h-fit">
             <div className="rounded-[10px] overflow-hidden border border-[#DEDFE1]">
               <div className="bg-[#E7DCD2] py-4 px-6">
                 <h3 className="text-lg font-medium text-[#000000] font-[Oxygen] font-400 font-[18px]">Cart Total</h3>
@@ -337,12 +338,12 @@ const Cart = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
 
         {/* You May Also Like Section */}
         {recommendedProducts.length > 0 && (
-          <div className="mt-16 md:mt-20">
+          <ScrollReveal animation="fade-up" duration={800} className="mt-16 md:mt-20">
             <h2 className="text-[20px] md:text-[34px] font-700 text-[#3D3D3D] font-[Oxygen] mb-8 md:mb-12">
               You May Also Like
             </h2>
@@ -356,7 +357,7 @@ const Cart = () => {
                 />
               ))}
             </div>
-          </div>
+          </ScrollReveal>
         )}
       </div>
       <BrandBanner />

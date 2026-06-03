@@ -11,6 +11,7 @@ import ProfileInfoSkeleton from "./skeletons/ProfileInfoSkeleton";
 import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useProfile, useUpdateProfile, useAddresses, useDeleteAddress } from "../hooks/useProfile";
+import ScrollReveal from "./Ui/ScrollReveal";
 
 
 const PersonalInfo = () => {
@@ -102,15 +103,15 @@ const PersonalInfo = () => {
     <>
       {(
         <div className="">
-          <div className="w-full lg:pt-0 pt-4 px-2 md:px-8 xl:px-24 flex flex-col md:flex-row font-inter">
+          <div className="w-full lg:pt-0 pt-4 px-2 md:px-8 xl:px-24 flex flex-col md:flex-row font-poppins">
             {/* Left Sidebar */}
-            <div className="md:w-1/3 lg:w-1/4">
+            <ScrollReveal animation="fade-right" duration={800} className="md:w-1/3 lg:w-1/4">
               <SideBar />
-            </div>
+            </ScrollReveal>
 
             {/* Right Content */}
-            <div className="flex-1 p-4 sm:p-6 md:p-8">
-              <h1 className="text-3xl font-semibold text-[#3C4242] mb-8">My Info</h1>
+            <ScrollReveal animation="fade-left" duration={800} className="flex-1 p-4 sm:p-6 md:p-8">
+              <h1 className="text-3xl font-semibold text-[#3C4242] mb-8 font-poppins">My Info</h1>
 
               {dataLoading ? (
                 <ProfileInfoSkeleton />
@@ -293,7 +294,7 @@ const PersonalInfo = () => {
               </div>
               </div>
               )}
-            </div>
+            </ScrollReveal>
           </div>
           <BrandBanner />
         </div>

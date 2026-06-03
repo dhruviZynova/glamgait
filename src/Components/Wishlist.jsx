@@ -6,6 +6,7 @@ import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
 import wishlistempty from "../assets/wishlistempty.png";
 import WishlistSkeleton from "./skeletons/WishlistSkeleton";
+import ScrollReveal from "./Ui/ScrollReveal";
 
 import { useWishlist, useRemoveFromWishlist } from "../hooks/useWishlist";
 import { useAddToCart } from "../hooks/useCart";
@@ -91,12 +92,12 @@ const Wishlist = () => {
 
 
   return (
-    <div className="bg-[#f3f0ed] min-h-screen px-2 md:px-10 py-10">
+    <div className="bg-[#f3f0ed] min-h-screen px-2 md:px-10 py-10 font-poppins">
       <div className="max-w-7xl mx-auto">
         {loading ? (
           <WishlistSkeleton count={3} />
         ) : wishlistItems.length > 0 ? (
-          <div>
+          <ScrollReveal animation="fade-up" duration={800}>
             <h2 className="text-2xl font-semibold mb-6">My Wishlist</h2>
             <div className="flex flex-col lg:flex-row gap-6">
               <div className="flex-1">
@@ -169,9 +170,9 @@ const Wishlist = () => {
                 ))}
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         ) : (
-          <div className="bg-[#F3F0ED] h-screen flex items-center justify-center p-4 w-full">
+          <ScrollReveal animation="fade-up" duration={800} className="bg-[#F3F0ED] h-screen flex items-center justify-center p-4 w-full">
             <div className="text-center">
               <div className="w-40 h-24 md:w-[300px] md:h-[200px] mx-auto">
                 <img
@@ -191,7 +192,7 @@ const Wishlist = () => {
                 <Link to="/">Continue Shopping</Link>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         )}
       </div>
     </div>
