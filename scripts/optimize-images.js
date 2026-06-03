@@ -29,8 +29,7 @@ const imagesToOptimize = [
 ];
 
 async function main() {
-  console.log("🚀 Starting GlamGait Home Page Image Optimization (PNG to WebP)...");
-  
+
   let totalSaved = 0;
   let totalOriginal = 0;
   let totalOptimized = 0;
@@ -63,10 +62,6 @@ async function main() {
       totalOptimized += optimizedStats.size;
       totalSaved += originalStats.size - optimizedStats.size;
 
-      console.log(`✅ Converted ${img.input} -> ${baseName}.webp`);
-      console.log(`   Original:  ${originalSizeKb.toFixed(2)} KB`);
-      console.log(`   Optimized: ${optimizedSizeKb.toFixed(2)} KB`);
-      console.log(`   Saved:     ${savedKb.toFixed(2)} KB (${savedPercent.toFixed(1)}% reduction)\n`);
     } catch (error) {
       console.error(`❌ Failed to convert ${img.input}:`, error);
     }
@@ -77,13 +72,6 @@ async function main() {
   const overallSavedMb = totalSaved / (1024 * 1024);
   const overallSavedPercent = (totalSaved / totalOriginal) * 100;
 
-  console.log("--------------------------------------------------");
-  console.log("📊 OPTIMIZATION SUMMARY:");
-  console.log(`   Total Original size:  ${overallOriginalMb.toFixed(2)} MB`);
-  console.log(`   Total Optimized size: ${overallOptimizedMb.toFixed(2)} MB`);
-  console.log(`   Total Saved space:    ${overallSavedMb.toFixed(2)} MB`);
-  console.log(`   Overall Reduction:    ${overallSavedPercent.toFixed(1)}%`);
-  console.log("--------------------------------------------------");
 }
 
 main();

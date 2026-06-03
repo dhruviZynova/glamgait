@@ -1,3 +1,4 @@
+import React from "react";
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ApiURL, createSlug } from "../Variable";
@@ -33,10 +34,11 @@ const ProductCard = ({
 
 
   // Calculate discount percentage
-  const discountPercentage =
-    product?.original_price && product?.original_price > product.price
+  const discountPercentage = React.useMemo(() => {
+    return product?.original_price && product?.original_price > product.price
       ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
       : 0;
+  }, [product?.original_price, product?.price]);
 
 
   const toggleWishlist = async (e) => {
@@ -130,12 +132,16 @@ const ProductCard = ({
   };
 
   // Robust stock calculation
-  const totalStock = typeof product.total_stock === 'number'
-    ? product.total_stock
-    : (product.productcolors || product.colors || []).reduce((acc, color) => {
+  const totalStock = React.useMemo(() => {
+    if (typeof product.total_stock === 'number') {
+      return product.total_stock;
+    }
+    const colorList = product.productcolors || product.colors || [];
+    return colorList.reduce((acc, color) => {
       const sizes = color.productsizes || color.sizes || [];
       return acc + sizes.reduce((sAcc, size) => sAcc + (Number(size.remaining_qty) || 0), 0);
     }, 0);
+  }, [product?.total_stock, product?.productcolors, product?.colors]);
 
   // Logic: Pehlo Slug check karo, agal nahi hoy to ID use karo.
   const productSlug = product.slug || createSlug(product.name) || product.p_id;
@@ -221,4 +227,4 @@ const ProductCard = ({
   );
 };
 
-export default ProductCard;
+export default React.memo(ProductCard);
