@@ -4,6 +4,7 @@ import axiosInstance from "../Axios/axios";
 import { ApiURL, createSlug } from "../Variable";
 import "../style/LatestArrivalsByCategories.css";
 import ProductCardSkeleton from "./ProductCardSkeleton";
+import ProductCard from "./ProductCard";
 
 // High-fidelity luxury styled Error state with retry option
 const ErrorFallback = ({ message, onRetry }) => (
@@ -69,71 +70,16 @@ const LatestArrivalsByCategories = () => {
         return products.map((categoryGroup, groupIdx) => (
             <div key={categoryGroup.category?.cate_id || groupIdx}>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
-                    {categoryGroup.products?.map((product) => {
-                        const discountPercentage =
-                            product?.original_price && product?.original_price > product?.price
-                                ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
-                                : 0;
-
-                        const productSlug = product.slug || createSlug(product.name) || product.p_id;
-
-                        let imageUrl = product?.colors?.[0]?.images?.[0]?.image_url || '';
-                        if (imageUrl && !imageUrl.startsWith('http')) {
-                            imageUrl = `${ApiURL}${imageUrl}`;
-                        }
-
-                        return (
-                            <div
-                                onClick={() => navigate(`/product/${productSlug}`)}
-                                key={product.p_id}
-                                className="arrival-card-wrapper"
-                                style={{ textDecoration: "none", color: "inherit" }}
-                            >
-                                <div className="arrival-card">
-                                    <div className="card-image-wrapper">
-                                        <span className="off-badge">{discountPercentage > 0 ? `${discountPercentage}% OFF` : ''}</span>
-                                        <img
-                                            src={imageUrl}
-                                            alt={product.name}
-                                            loading="lazy"
-                                            onError={(e) => {
-                                                e.target.onerror = null;
-                                                e.target.src = "/placeholder.png";
-                                            }}
-                                        />
-                                    </div>
-                                    <div className="card-info pt-3">
-                                        <div className="info-header">
-                                            <h3 className="product-name">{product.name}</h3>
-                                            <div className="product-price">
-                                                {product.original_price > product.price && (
-                                                    <span className="original-price">₹{product.original_price}</span>
-                                                )}
-                                                <span>₹{product.price}</span>
-                                            </div>
-                                        </div>
-                                        <p className="category-tag">
-                                            {categoryGroup.category?.cate_name || product?.colors?.[0]?.color_name || "Style"}
-                                        </p>
-                                        <div className="color-swatches">
-                                            {product.colors?.slice(0, 4).map((color) => (
-                                                <div
-                                                    key={color.color_id || color.color_name}
-                                                    className="swatch"
-                                                    style={{ backgroundColor: color.color_code }}
-                                                    title={color.color_name}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
+                    {categoryGroup.products?.map((product) => (
+                        <ProductCard
+                            key={product.p_id}
+                            product={product}
+                        />
+                    ))}
                 </div>
             </div>
         ));
-    }, [products, navigate]);
+    }, [products]);
 
     return (
         <section className="latest-arrivals-section">

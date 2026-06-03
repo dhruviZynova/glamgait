@@ -153,13 +153,24 @@ const Navbar = () => {
 
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      const windowHeight = window.innerHeight;
-      const docHeight = document.documentElement.scrollHeight;
-      const scrollPos = window.scrollY + windowHeight;
-      setIsAtBottom(scrollPos >= docHeight - 10);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const windowHeight = window.innerHeight;
+          const docHeight = document.documentElement.scrollHeight;
+          const scrollPos = window.scrollY + windowHeight;
+          const isNearBottom = scrollPos >= docHeight - 10;
+          setIsAtBottom((prev) => {
+            if (prev !== isNearBottom) return isNearBottom;
+            return prev;
+          });
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
