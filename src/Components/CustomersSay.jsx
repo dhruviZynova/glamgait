@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import ReviewCard from "./ReviewCard";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
+import ScrollReveal from "./Ui/ScrollReveal";
 
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -92,54 +93,59 @@ const CustomersSay = () => {
 
   return (
     <section className="relative py-10 md:py-16 overflow-hidden w-full">
+      
       {/* Title & Description */}
-      <div className="text-center max-w-2xl mx-auto mb-8 md:mb-16 relative z-10 px-4">
-        <h2 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
-          What Customers Saying
-        </h2>
-        <p className="text-[#767676] font-Poppins font-400 text-base max-w-2xl mx-auto">
-          Reviews from People Who Love Fancy
-        </p>
-      </div>
-
-      {/* Content Render Grid */}
-      {loading ? (
-        <TestimonialSkeletonGrid />
-      ) : error ? (
-        <ErrorFallback message={error} onRetry={fetchReviews} />
-      ) : reviews.length === 0 ? (
-        <EmptyState />
-      ) : (
-        /* Slider Layout - Edge to Edge */
-        <div className="w-full relative z-10">
-          <Swiper
-            slidesPerView={1}
-            spaceBetween={0}
-            loop={true}
-            autoplay={{
-              delay: 3000,
-              disableOnInteraction: false,
-            }}
-            breakpoints={{
-              640: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
-              1440: { slidesPerView: 4 },
-            }}
-            modules={[Autoplay]}
-            className="mySwiper testimonial-swiper"
-          >
-            {reviews.map((item, idx) => (
-              <SwiperSlide key={idx}>
-                <ReviewCard
-                  name={item?.reviewer_name}
-                  review={item?.message}
-                  image={item?.image}
-                />
-              </SwiperSlide>
-            ))}
-          </Swiper>
+      <ScrollReveal animation="fade-up" duration={800}>
+        <div className="text-center max-w-2xl mx-auto mb-8 md:mb-16 relative z-10 px-4">
+          <h2 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
+            What Customers Saying
+          </h2>
+          <p className="text-[#767676] font-Poppins font-400 text-base max-w-2xl mx-auto">
+            Reviews from People Who Love Fancy
+          </p>
         </div>
-      )}
+      </ScrollReveal>
+
+      {/* Content Render Grid / Carousel */}
+      <ScrollReveal animation="scale-up" duration={1000} delay={150}>
+        {loading ? (
+          <TestimonialSkeletonGrid />
+        ) : error ? (
+          <ErrorFallback message={error} onRetry={fetchReviews} />
+        ) : reviews.length === 0 ? (
+          <EmptyState />
+        ) : (
+          /* Slider Layout - Edge to Edge */
+          <div className="w-full relative z-10">
+            <Swiper
+              slidesPerView={1}
+              spaceBetween={0}
+              loop={true}
+              autoplay={{
+                delay: 3000,
+                disableOnInteraction: false,
+              }}
+              breakpoints={{
+                640: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
+                1440: { slidesPerView: 4 },
+              }}
+              modules={[Autoplay]}
+              className="mySwiper testimonial-swiper"
+            >
+              {reviews.map((item, idx) => (
+                <SwiperSlide key={idx}>
+                  <ReviewCard
+                    name={item?.reviewer_name}
+                    review={item?.message}
+                    image={item?.image}
+                  />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+        )}
+      </ScrollReveal>
 
       {/* Decorative Background Pattern */}
       <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none z-0">

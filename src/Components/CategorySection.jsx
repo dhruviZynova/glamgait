@@ -5,6 +5,7 @@ import "swiper/css";
 import "swiper/css/pagination";
 import { Pagination, Autoplay } from "swiper/modules";
 import { Link } from "react-router-dom";
+import ScrollReveal from "./Ui/ScrollReveal";
 
 import axiosInstance from "../Axios/axios";
 import { ApiURL, createSlug, getFullImageUrl } from "../Variable";
@@ -78,71 +79,76 @@ const CategorySection = () => {
     return (
         <section className="category-section">
             <div className="container">
-                <div className="category-header">
-                    <h2 className="title">Shop by categories</h2>
-                    <p className="subtitle">
-                        Explore our curated categories and discover fashion that fits your vibe.
-                    </p>
-                </div>
-                <div className="category-bottom-container">
-                    {loading ? (
-                        <CategorySkeletonGrid />
-                    ) : error ? (
-                        <ErrorFallback message={error} onRetry={fetchCategories} />
-                    ) : categoryData.length === 0 ? (
-                        <EmptyState />
-                    ) : (
-                        <Swiper
-                            modules={[Pagination, Autoplay]}
-                            spaceBetween={20}
-                            slidesPerView={1.2}
-                            pagination={{ clickable: true }}
-                            autoplay={{ delay: 3000, disableOnInteraction: false }}
-                            breakpoints={{
-                                480: {
-                                    slidesPerView: 2,
-                                    spaceBetween: 20,
-                                    slidesPerGroup: 1
-                                },
-                                768: {
-                                    slidesPerView: 3,
-                                    spaceBetween: 30,
-                                    slidesPerGroup: 1
-                                },
-                                1024: {
-                                    slidesPerView: 4,
-                                    spaceBetween: 30,
-                                    slidesPerGroup: 1
-                                },
-                            }}
-                            className="bottom-swiper"
-                        >
-                            {categoryData.map((category, index) => {
-                                const imageUrl = category?.cate_image
-                                    ? getFullImageUrl(category.cate_image, "Category")
-                                    : "";
-                                const cateSlug = createSlug(category?.cate_name);
-                                return (
-                                    <SwiperSlide key={category?.cate_id || index}>
-                                        <Link to={`/collections/${cateSlug}`} className="bottom-card-link">
-                                            <div className="bottom-img-wrapper">
-                                                <img
-                                                    src={imageUrl}
-                                                    alt={category?.cate_name}
-                                                    className="bottom-img"
-                                                    loading="lazy"
-                                                />
-                                                <div className="category-name-overlay">
-                                                    <span>{category?.cate_name}</span>
+                <ScrollReveal animation="fade-up" duration={800}>
+                    <div className="category-header">
+                        <h2 className="title">Shop by categories</h2>
+                        <p className="subtitle">
+                            Explore our curated categories and discover fashion that fits your vibe.
+                        </p>
+                    </div>
+                </ScrollReveal>
+
+                <ScrollReveal animation="fade-up" duration={1000} delay={150}>
+                    <div className="category-bottom-container">
+                        {loading ? (
+                            <CategorySkeletonGrid />
+                        ) : error ? (
+                            <ErrorFallback message={error} onRetry={fetchCategories} />
+                        ) : categoryData.length === 0 ? (
+                            <EmptyState />
+                        ) : (
+                            <Swiper
+                                modules={[Pagination, Autoplay]}
+                                spaceBetween={20}
+                                slidesPerView={1.2}
+                                pagination={{ clickable: true }}
+                                autoplay={{ delay: 3000, disableOnInteraction: false }}
+                                breakpoints={{
+                                    480: {
+                                        slidesPerView: 2,
+                                        spaceBetween: 20,
+                                        slidesPerGroup: 1
+                                    },
+                                    768: {
+                                        slidesPerView: 3,
+                                        spaceBetween: 30,
+                                        slidesPerGroup: 1
+                                    },
+                                    1024: {
+                                        slidesPerView: 4,
+                                        spaceBetween: 30,
+                                        slidesPerGroup: 1
+                                    },
+                                }}
+                                className="bottom-swiper"
+                            >
+                                {categoryData.map((category, index) => {
+                                    const imageUrl = category?.cate_image
+                                        ? getFullImageUrl(category.cate_image, "Category")
+                                        : "";
+                                    const cateSlug = createSlug(category?.cate_name);
+                                    return (
+                                        <SwiperSlide key={category?.cate_id || index}>
+                                            <Link to={`/collections/${cateSlug}`} className="bottom-card-link">
+                                                <div className="bottom-img-wrapper">
+                                                    <img
+                                                        src={imageUrl}
+                                                        alt={category?.cate_name}
+                                                        className="bottom-img"
+                                                        loading="lazy"
+                                                    />
+                                                    <div className="category-name-overlay">
+                                                        <span>{category?.cate_name}</span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </Link>
-                                    </SwiperSlide>
-                                );
-                            })}
-                        </Swiper>
-                    )}
-                </div>
+                                            </Link>
+                                        </SwiperSlide>
+                                    );
+                                })}
+                            </Swiper>
+                        )}
+                    </div>
+                </ScrollReveal>
             </div>
         </section>
     );

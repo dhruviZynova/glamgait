@@ -11,6 +11,7 @@ import ReturnOrderModal from "./ReturnOrderModal";
 import { getGuestId } from "../utils/guest";
 import { ORDER_STATUS } from "../utils/constants";
 import InvoiceModal from "./InvoiceModal";
+import ScrollReveal from "./Ui/ScrollReveal";
 
 const OrderDetails = () => {
   const navigate = useNavigate();
@@ -173,12 +174,14 @@ const OrderDetails = () => {
   return (
     <>
       <div className="w-full lg:pt-0 pt-4 px-2 md:px-8 xl:px-24">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row font-inter">
-          <div className="w-full md:w-1/4">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row font-poppins">
+          {/* Sidebar */}
+          <ScrollReveal animation="fade-right" duration={800} className="w-full md:w-1/4">
             <SideBar />
-          </div>
+          </ScrollReveal>
 
-          <div className="flex-1 p-4 sm:p-6 md:p-10">
+          {/* Main content */}
+          <ScrollReveal animation="fade-left" duration={800} className="flex-1 p-4 sm:p-6 md:p-10">
             {/* Header/Breadcrumb */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
               <div className="flex items-center gap-2 text-[#1a1a1a]">
@@ -413,7 +416,7 @@ const OrderDetails = () => {
                   ))}
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </div >

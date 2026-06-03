@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import HomeHero from "../Components/HomeHero";
 import axiosInstance from "../Axios/axios";
+import ScrollReveal from "../Components/Ui/ScrollReveal";
 import { ApiURL, createSlug } from "../Variable";
 
 // Lazy-loaded components below the fold to keep the initial main bundle light
@@ -72,21 +73,27 @@ const HomePage = () => {
           ></div>
 
           {/* Text Content */}
-          <div className="absolute inset-0 flex flex-col justify-center px-2 md:px-16 lg:px-24 w-full md:w-2/3 lg:w-1/2">
-            <h3 className="text-green-800 text-sm md:text-base font-semibold tracking-widest uppercase mb-2">New Collection</h3>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4" style={{ fontFamily: "serif" }}>
-              Modesty is the <br /> New Beauty
-            </h2>
-            <p className="text-sm sm:text-base md:text-lg text-gray-800 mb-6 md:mb-8 max-w-md font-medium">
-              Discover our exclusive range of elegant, comfortable, and beautifully crafted modest wear tailored just for you.
-            </p>
-            <Link
-              to={firstCategorySlug ? `/collections/${firstCategorySlug}` : "/collections/lehengas"}
-              className="w-fit px-6 py-3 bg-[#1C2F2F] text-white rounded-lg hover:bg-[#1C2F2F]/80 transition-colors"
-            >
-              Shop Now
-            </Link>
-          </div>
+          <ScrollReveal 
+            className="absolute inset-0 flex flex-col justify-center px-2 md:px-16 lg:px-24 w-full md:w-2/3 lg:w-1/2"
+            animation="fade-right"
+            duration={1000}
+          >
+            <div>
+              <h3 className="text-green-800 text-sm md:text-base font-semibold tracking-widest uppercase mb-2">New Collection</h3>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4" style={{ fontFamily: "serif" }}>
+                Modesty is the <br /> New Beauty
+              </h2>
+              <p className="text-sm sm:text-base md:text-lg text-gray-800 mb-6 md:mb-8 max-w-md font-medium">
+                Discover our exclusive range of elegant, comfortable, and beautifully crafted modest wear tailored just for you.
+              </p>
+              <Link
+                to={firstCategorySlug ? `/collections/${firstCategorySlug}` : "/collections/lehengas"}
+                className="w-fit px-6 py-3 bg-[#1C2F2F] text-white rounded-lg hover:bg-[#1C2F2F]/80 transition-colors"
+              >
+                Shop Now
+              </Link>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
