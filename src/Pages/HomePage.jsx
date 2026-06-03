@@ -16,7 +16,7 @@ const HolidayBanner = lazy(() => import("../Components/HolidayBanner"));
 const BrandBanner = lazy(() => import("../Components/BrandBanner"));
 const FAQSection = lazy(() => import("../Components/FAQSection"));
 
-import bgImage from "../assets/images/bgimage3.webp";
+import bgImage from "../assets/images/bgimage6.png";
 
 // Lightweight placeholder height matching for subcomponents to prevent layout shifts (CLS)
 const SectionPlaceholder = ({ height = "h-40" }) => (
@@ -69,26 +69,36 @@ const HomePage = () => {
         >
           <div
             className="absolute inset-0 w-full h-full pointer-events-none"
-            style={{ background: "linear-gradient(90deg, rgba(243, 240, 237, 0.7) 0%, rgba(243, 240, 237, 0.3) 50%, rgba(243, 240, 237, 0) 100%)" }}
+            style={{ background: "linear-gradient(90deg, rgba(243, 240, 237, 0.7) 0%, rgba(243, 240, 237, 0.4) 50%, rgba(243, 240, 237, 0.1) 100%)" }}
           ></div>
 
           {/* Text Content */}
-          <ScrollReveal 
-            className="absolute inset-0 flex flex-col justify-center px-2 md:px-16 lg:px-24 w-full md:w-2/3 lg:w-1/2"
+          <ScrollReveal
+            className="absolute inset-0 flex flex-col justify-center px-6 md:px-16 lg:px-24 w-full md:w-2/3 lg:w-1/2"
             animation="fade-right"
             duration={1000}
           >
-            <div>
-              <h3 className="text-green-800 text-sm md:text-base font-semibold tracking-widest uppercase mb-2">New Collection</h3>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4" style={{ fontFamily: "serif" }}>
-                Modesty is the <br /> New Beauty
+            <div className="flex flex-col items-start">
+              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-[#2C2A29] leading-tight font-serif" style={{ fontFamily: "var(--font-playfair), Playfair Display, serif", fontWeight: 500 }}>
+                Designer <br /> Kurtis
               </h2>
-              <p className="text-sm sm:text-base md:text-lg text-gray-800 mb-6 md:mb-8 max-w-md font-medium">
-                Discover our exclusive range of elegant, comfortable, and beautifully crafted modest wear tailored just for you.
+
+              {/* Decorative Divider */}
+              <div className="flex items-center w-full max-w-[280px] sm:max-w-[320px] my-5">
+                <div className="flex-grow h-px bg-[#2C2A29]/30"></div>
+                <svg className="w-8 h-4 mx-3 text-[#2C2A29]/60" viewBox="0 0 32 16" fill="currentColor">
+                  <path d="M16 4c0 0-2 2.5-3.5 3.5C11 8.5 9 8 8 8c-1.5 0-3 1-3 2.5 0 1.5 1.5 2 3 2 2.5 0 4.5-2 5.5-3.5.5.8 1.5 1.5 2.5 1.5s2-.7 2.5-1.5c1 1.5 3 3.5 5.5 3.5 1.5 0 3-.5 3-2 0-1.5-1.5-2.5-3-2.5-1 0-3 .5-4.5-.5C18 6.5 16 4 16 4zm0 5.5c-.5 0-1-.5-1-1s.5-1 1-1 1 .5 1 1-.5 1-1 1z" />
+                </svg>
+                <div className="flex-grow h-px bg-[#2C2A29]/30"></div>
+              </div>
+
+              <p className="text-sm sm:text-base md:text-lg text-[#2C2A29]/80 mb-6 md:mb-8 max-w-sm font-medium leading-relaxed">
+                Effortless style meets everyday comfort. Explore our collection of designer kurtis.
               </p>
+
               <Link
                 to={firstCategorySlug ? `/collections/${firstCategorySlug}` : "/collections/lehengas"}
-                className="w-fit px-6 py-3 bg-[#1C2F2F] text-white rounded-lg hover:bg-[#1C2F2F]/80 transition-colors"
+                className="w-fit px-8 py-3 bg-[#233B23] text-white text-sm font-medium tracking-widest uppercase hover:bg-[#1C2F2F] transition-all duration-300 rounded-lg"
               >
                 Shop Now
               </Link>
