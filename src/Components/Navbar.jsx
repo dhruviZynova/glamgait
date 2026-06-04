@@ -45,6 +45,8 @@ const Navbar = () => {
       sessionStorage.removeItem("activeCategorySlug");
       setActiveCategorySlug("");
     }
+    setShowMegaMenu(false);
+    setHoveredCategory(null);
   }, [location.pathname]);
 
   const isAccountActive =

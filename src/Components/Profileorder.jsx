@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import SideBar from "./SideBar";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
@@ -17,7 +17,8 @@ import ScrollReveal from "./Ui/ScrollReveal";
 
 
 const Profileorder = () => {
-  const [activeTab, setActiveTab] = useState("Active");
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || "Active");
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
@@ -215,7 +216,7 @@ const Profileorder = () => {
                               setShowCancelModal(true);
                             }}
                             disabled={cancellingId === order.orderId}
-                            className="w-full sm:w-auto bg-white border-2 border-[#b32b2b] text-[#b32b2b] px-6 py-2.5 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition shadow-sm cursor-pointer text-sm flex items-center justify-center gap-2 disabled:opacity-60"
+                            className="w-full sm:w-auto bg-white border-1 border-[#b32b2b] text-[#b32b2b] px-6 py-2.5 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition cursor-pointer text-sm flex items-center justify-center gap-2 disabled:opacity-60"
                           >
                             {cancellingId === order.orderId && <Loader2 size={14} className="animate-spin" />}
                             Cancel Order
@@ -228,7 +229,7 @@ const Profileorder = () => {
                             setShowReturnModal(true);
                           }}
                           disabled={returningId === order.orderId}
-                          className="w-full sm:w-auto bg-white border-2 border-[#004534] text-[#004534] px-6 py-2.5 rounded-lg font-bold hover:bg-[#004534] hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm disabled:opacity-60"
+                          className="w-full sm:w-auto bg-white border-1 border-[#004534] text-[#004534] px-6 py-2.5 rounded-lg font-bold hover:bg-[#004534] hover:text-white transition cursor-pointer flex items-center justify-center gap-2 text-sm disabled:opacity-60"
                         >
                           {returningId === order.orderId
                             ? <Loader2 size={16} className="animate-spin" />
@@ -255,7 +256,7 @@ const Profileorder = () => {
                             setIsCreditNote(false);
                             setShowInvoiceModal(true);
                           }}
-                          className="w-full sm:w-auto bg-white border-2 border-emerald-600 text-emerald-600 px-6 py-2.5 rounded-lg font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
+                          className="w-full sm:w-auto bg-white border-1 border-emerald-600 text-emerald-600 px-6 py-2.5 rounded-lg font-bold hover:bg-emerald-600 hover:text-white transition cursor-pointer flex items-center justify-center gap-2 text-sm"
                         >
                           <Receipt size={16} />
                           Invoice
@@ -268,15 +269,15 @@ const Profileorder = () => {
                             setIsCreditNote(true);
                             setShowInvoiceModal(true);
                           }}
-                          className="w-full sm:w-auto bg-white border-2 border-rose-600 text-rose-600 px-6 py-2.5 rounded-lg font-bold hover:bg-rose-600 hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
+                          className="w-full sm:w-auto bg-white border-1 border-rose-600 text-rose-600 px-6 py-2.5 rounded-lg font-bold hover:bg-rose-600 hover:text-white transition cursor-pointer flex items-center justify-center gap-2 text-sm"
                         >
                           <ArrowLeftRight size={16} />
                           Credit Note
                         </button>
                       )}
                       <button
-                        onClick={() => navigate(`/orderdetails/${order.orderId}`)}
-                        className="w-full sm:w-auto bg-[#004534] text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-[#00382e] transition shadow-md cursor-pointer text-sm"
+                        onClick={() => navigate(`/orderdetails/${order.orderId}`, { state: { activeTab } })}
+                        className="w-full sm:w-auto bg-[#004534] text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-[#00382e] transition cursor-pointer text-sm"
                       >
                         View Detail
                       </button>
@@ -286,7 +287,7 @@ const Profileorder = () => {
               ))}
 
               {!loading && filteredOrders.length === 0 && (
-                <div className="bg-white/50 border-2 border-dashed border-gray-200 rounded-2xl py-20 text-center">
+                <div className="bg-white/50 border-1 border-dashed border-gray-200 rounded-2xl py-20 text-center">
                   <Package size={48} className="mx-auto text-[#004534] mb-4" />
                   <p className="text-[#004534] font-medium">No {activeTab.toLowerCase()} orders found.</p>
                 </div>
@@ -295,24 +296,24 @@ const Profileorder = () => {
           </ScrollReveal>
         </div>
       </div>
-          <CancelOrderModal
-            isOpen={showCancelModal}
-            onClose={() => setShowCancelModal(false)}
-            onConfirm={handleCancelOrder}
-            orderId={selectedOrderId}
-          />
-          <ReturnOrderModal
-            isOpen={showReturnModal}
-            onClose={() => setShowReturnModal(false)}
-            onConfirm={handleReturnOrder}
-            orderId={selectedOrderId}
-          />
-          <InvoiceModal
-            isOpen={showInvoiceModal}
-            onClose={() => setShowInvoiceModal(false)}
-            order={selectedOrderForInvoice}
-            isCreditNote={isCreditNote}
-          />
+      <CancelOrderModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={handleCancelOrder}
+        orderId={selectedOrderId}
+      />
+      <ReturnOrderModal
+        isOpen={showReturnModal}
+        onClose={() => setShowReturnModal(false)}
+        onConfirm={handleReturnOrder}
+        orderId={selectedOrderId}
+      />
+      <InvoiceModal
+        isOpen={showInvoiceModal}
+        onClose={() => setShowInvoiceModal(false)}
+        order={selectedOrderForInvoice}
+        isCreditNote={isCreditNote}
+      />
 
       <BrandBanner />
     </>

@@ -34,7 +34,8 @@ export function useSubmitReview(p_id) {
       queryClient.invalidateQueries({ queryKey: ["reviewsSummary"] });
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to submit review");
+      const errorMsg = err.response?.data?.description || err.response?.data?.message || err.message || "Failed to submit review";
+      toast.error(errorMsg);
     },
   });
 }
@@ -56,7 +57,8 @@ export function useEditReview(p_id) {
       queryClient.invalidateQueries({ queryKey: ["reviewsSummary"] });
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to update review");
+      const errorMsg = err.response?.data?.description || err.response?.data?.message || err.message || "Failed to update review";
+      toast.error(errorMsg);
     },
   });
 }
@@ -72,13 +74,29 @@ export function useDeleteReview(p_id) {
       }
       return res;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, r_id) => {
       toast.success(data.description || "Review deleted successfully!");
-      queryClient.invalidateQueries({ queryKey: ["reviews", p_id] });
+      
+      // Optimistically remove the deleted review from all potential cache key formats
+      const keysToClean = [
+        ["reviews", p_id],
+        ["reviews", Number(p_id)],
+        ["reviews", String(p_id)]
+      ];
+      
+      keysToClean.forEach(key => {
+        queryClient.setQueryData(key, (old) => {
+          if (!Array.isArray(old)) return [];
+          return old.filter(r => String(r.r_id || r.review_id) !== String(r_id));
+        });
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
       queryClient.invalidateQueries({ queryKey: ["reviewsSummary"] });
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to delete review");
+      const errorMsg = err.response?.data?.description || err.response?.data?.message || err.message || "Failed to delete review";
+      toast.error(errorMsg);
     },
   });
 }
