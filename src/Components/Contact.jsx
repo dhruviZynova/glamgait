@@ -9,6 +9,7 @@ import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
 import BrandBanner from "./BrandBanner";
 import ScrollReveal from "./Ui/ScrollReveal";
+import { Helmet } from "@dr.pogodin/react-helmet";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -49,6 +50,10 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen font-sans overflow-hidden relative">
+      <Helmet>
+        <title>Contact Us | Kundrat</title>
+        <meta name="description" content="Get in touch with Kundrat. If you have any query or suggestion, please reach out to us." />
+      </Helmet>
       {/* Main Contact Section */}
       <section className="relative pt-24 pb-16 px-2 md:px-12 lg:px-20 z-20">
         

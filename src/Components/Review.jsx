@@ -205,7 +205,8 @@ const Review = ({ p_id, productName, onReviewChange }) => {
   const [editingReviewId, setEditingReviewId] = useState(null);
 
   // TanStack Queries & Mutations
-  const { data: reviews = [], isLoading: isLoadingReviews } = useReviews(p_id);
+  // ✅ FIX: Destructure 'refetch' from useReviews to manually refresh the list
+  const { data: reviews = [], isLoading: isLoadingReviews, refetch: refetchReviews } = useReviews(p_id);
   const { data: orders = [], isLoading: isLoadingOrders } = useOrders();
 
   const submitReviewMutation = useSubmitReview(p_id);
@@ -215,6 +216,30 @@ const Review = ({ p_id, productName, onReviewChange }) => {
 
   const [deletingReviewId, setDeletingReviewId] = useState(null);
   const [deletingConfirm, setDeletingConfirm] = useState(false);
+  const [userReviewForProduct, setUserReviewForProduct] = useState(null);
+  const [checkingUserReview, setCheckingUserReview] = useState(false);
+  const [hasSubmittedLocally, setHasSubmittedLocally] = useState(false);
+
+  const checkUserReview = useCallback(async () => {
+    if (!p_id || !user?.u_id) return;
+    setCheckingUserReview(true);
+    try {
+      const res = await axiosInstance.post("/getuserreviews", { p_id: Number(p_id) });
+      if (res.data.status === 1) {
+        const list = res.data.data || [];
+        const userRev = list.find(r => String(r.u_id || r.user_id) === String(user.u_id));
+        setUserReviewForProduct(userRev || null);
+      }
+    } catch (err) {
+      console.error("Error checking user review:", err);
+    } finally {
+      setCheckingUserReview(false);
+    }
+  }, [p_id, user?.u_id]);
+
+  useEffect(() => {
+    checkUserReview();
+  }, [checkUserReview]);
 
   const alreadyReviewed = useMemo(() => {
     if (!user?.u_id) return false;
@@ -237,6 +262,29 @@ const Review = ({ p_id, productName, onReviewChange }) => {
       })
     );
   }, [orders, isLoadingOrders, user?.u_id, p_id, productName]);
+
+  const shouldShowReviewSection = useMemo(() => {
+    if (!user?.u_id) return true; // Show login prompt
+    if (isEditing) return true;
+    if (hasOrders === false) return false;
+
+    const isPublished = alreadyReviewed ||
+      userReviewForProduct?.is_published == 1 ||
+      userReviewForProduct?.is_published === true ||
+      userReviewForProduct?.is_published === "1";
+
+    if (isPublished) return false; // Hide completely once approved and published
+    if (hasSubmittedLocally) return true; // Show section to render pending message
+    if (!userReviewForProduct) return true;
+    if (userReviewForProduct.is_published !== 1 && userReviewForProduct.is_published !== true) return true;
+    return false;
+  }, [user?.u_id, isEditing, hasOrders, userReviewForProduct, hasSubmittedLocally, alreadyReviewed]);
+
+  useEffect(() => {
+    if (alreadyReviewed) {
+      setHasSubmittedLocally(false);
+    }
+  }, [alreadyReviewed]);
 
   useEffect(() => {
     if (user && !isEditing) {
@@ -294,6 +342,12 @@ const Review = ({ p_id, productName, onReviewChange }) => {
         if (onReviewChange) {
           onReviewChange();
         }
+        setHasSubmittedLocally(false);
+        setUserReviewForProduct(null); // Clear instantly
+        // ✅ FIX: Call checkUserReview to update the "Write Review" section visibility
+        checkUserReview();
+        // ✅ FIX: Call refetchReviews to update the review list immediately without refresh
+        refetchReviews();
       },
       onSettled: () => {
         setDeletingConfirm(false);
@@ -317,7 +371,7 @@ const Review = ({ p_id, productName, onReviewChange }) => {
     if (isEditing) {
       formData.append("r_id", editingReviewId);
     }
-    formData.append("p_id", p_id);
+    formData.append("p_id", Number(p_id));
     formData.append("rating", selectedStars);
     formData.append("message", reviewContent);
     formData.append("reviewer_name", reviewerName);
@@ -341,6 +395,10 @@ const Review = ({ p_id, productName, onReviewChange }) => {
         if (onReviewChange) {
           onReviewChange();
         }
+        setHasSubmittedLocally(true);
+        checkUserReview();
+        // ✅ FIX: Refetch reviews after submitting/editing to show the updated/new review immediately
+        refetchReviews();
       }
     });
   };
@@ -396,8 +454,23 @@ const Review = ({ p_id, productName, onReviewChange }) => {
       return null;
     }
 
-    // User already reviewed this product
-    if (alreadyReviewed && !isEditing) {
+    // User already reviewed this product (either published or pending)
+    if ((userReviewForProduct || hasSubmittedLocally) && !isEditing) {
+      const isPublished = alreadyReviewed ||
+        userReviewForProduct?.is_published == 1 ||
+        userReviewForProduct?.is_published === true ||
+        userReviewForProduct?.is_published === "1";
+
+      if (!isPublished) {
+        return (
+          <div className="text-center py-6 bg-amber-50 rounded-xl border border-amber-100 p-4">
+            <p className="text-amber-800 font-semibold text-sm flex items-center justify-center gap-2">
+              <CheckCircle size={16} className="text-amber-500 animate-pulse" />
+              Your review was added successfully and will be shown after admin approval.
+            </p>
+          </div>
+        );
+      }
       return null;
     }
 
@@ -549,9 +622,11 @@ const Review = ({ p_id, productName, onReviewChange }) => {
       {/* Review List */}
       <div className="mb-6 md:mb-12">
         {reviews?.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-[#949494] font-[oxygen] text-lg">No reviews yet. Be the first to share your experience!</p>
-          </div>
+          (!userReviewForProduct && !hasSubmittedLocally) && (
+            <div className="text-center">
+              <p className="text-[#949494] font-[oxygen] text-lg">No reviews yet. Be the first to share your experience!</p>
+            </div>
+          )
         ) : (
           reviews?.slice(0, visibleCount).map((review, index) => (
             <ReviewCard
@@ -580,25 +655,31 @@ const Review = ({ p_id, productName, onReviewChange }) => {
       </div>
 
       {/* Write a Review Section */}
-      {((!alreadyReviewed && hasOrders !== false) || isEditing || !user?.u_id) && (
-        <div id="review-form-section" className="border border-[#D3D3D3] rounded-[14px] p-4 md:p-8 mb-6">
-          <div className="flex gap-6">
-            <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#D9D9D9] flex items-center justify-center text-[#555] text-sm sm:text-base font-semibold select-none">
-              {getInitials(user?.first_name
-                ? `${user.first_name}`
-                : user?.name)}
-            </div>
-            <div className="flex-1">
-              {isEditing && (
-                <div className="mb-6 flex items-center gap-2 text-[#004534] bg-[#00453410] px-4 py-2 rounded-lg w-fit">
-                  <Pencil size={16} />
-                  <span className="text-sm font-semibold">Editing your review</span>
-                </div>
-              )}
-              {renderReviewFormArea()}
+      {shouldShowReviewSection && (
+        (!isEditing && (hasSubmittedLocally || (userReviewForProduct && userReviewForProduct.is_published !== 1 && userReviewForProduct.is_published !== true))) ? (
+          <div className="my-6">
+            {renderReviewFormArea()}
+          </div>
+        ) : (
+          <div id="review-form-section" className="border border-[#D3D3D3] rounded-[14px] p-4 md:p-8 mb-6">
+            <div className="flex gap-6">
+              <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#D9D9D9] flex items-center justify-center text-[#555] text-sm sm:text-base font-semibold select-none">
+                {getInitials(user?.first_name
+                  ? `${user.first_name}`
+                  : user?.name)}
+              </div>
+              <div className="flex-1">
+                {isEditing && (
+                  <div className="mb-6 flex items-center gap-2 text-[#004534] bg-[#00453410] px-4 py-2 rounded-lg w-fit">
+                    <Pencil size={16} />
+                    <span className="text-sm font-semibold">Editing your review</span>
+                  </div>
+                )}
+                {renderReviewFormArea()}
+              </div>
             </div>
           </div>
-        </div>
+        )
       )}
 
       {/* Custom Delete Confirmation Modal */}

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import "../style/About.css";
 import ScrollReveal from "./Ui/ScrollReveal";
+import { Helmet } from "@dr.pogodin/react-helmet";
 
 // Importing assets
 // import leftlight from "../assets/leftlight.png";
@@ -49,6 +50,10 @@ const About = () => {
 
   return (
     <div className="about-container">
+      <Helmet>
+        <title>About Us | Kundrat</title>
+        <meta name="description" content="Learn more about Kundrat. Establishing a new standard in Indian & Muslim Modest Fashion since 2020." />
+      </Helmet>
       
       {/* Hero Section */}
       <section className="about-hero" style={{ backgroundImage: `url(${aboutHeroNew})` }}>

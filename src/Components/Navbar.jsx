@@ -28,6 +28,26 @@ const Navbar = () => {
   const [mobileExpanded, setMobileExpanded] = useState({});
   const [megaMenuCache, setMegaMenuCache] = useState({});
   const [showAuthChoice, setShowAuthChoice] = useState(false);
+  const [activeCategorySlug, setActiveCategorySlug] = useState(
+    sessionStorage.getItem("activeCategorySlug") || ""
+  );
+
+  useEffect(() => {
+    const handleCategoryChange = () => {
+      setActiveCategorySlug(sessionStorage.getItem("activeCategorySlug") || "");
+    };
+    window.addEventListener("activeCategoryChanged", handleCategoryChange);
+    return () => window.removeEventListener("activeCategoryChanged", handleCategoryChange);
+  }, []);
+
+  useEffect(() => {
+    if (!location.pathname.startsWith("/product")) {
+      sessionStorage.removeItem("activeCategorySlug");
+      setActiveCategorySlug("");
+    }
+    setShowMegaMenu(false);
+    setHoveredCategory(null);
+  }, [location.pathname]);
 
   const isAccountActive =
     location.pathname === "/myorders" ||
@@ -279,12 +299,10 @@ const Navbar = () => {
               >
                 <Link
                   to={item.to}
-                  className={`text-[16px] capitalize transition-all duration-300 ${location.pathname.startsWith("/collections") &&
-                    item.cate_slug
-                    ? location.pathname.includes(item.cate_slug)
-                      ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
-                      : "text-[#767676] font-medium hover:text-[#1C2F2F]"
-                    : location.pathname === item.to
+                  className={`text-[16px] capitalize transition-all duration-300 ${
+                    (location.pathname.startsWith("/collections") && item.cate_slug && location.pathname.includes(item.cate_slug)) ||
+                    (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug) ||
+                    (location.pathname === item.to)
                       ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
                       : "text-[#767676] font-medium hover:text-[#1C2F2F]"
                     }`}
@@ -494,9 +512,12 @@ const Navbar = () => {
                         <Link
                           to={item.to}
                           onClick={() => setIsOpen(false)}
-                          className={`flex-grow py-4 capitalize transition-colors ${location.pathname === item.to || (item.cate_slug && location.pathname.includes(item.cate_slug))
-                            ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
-                            : "text-gray-900 font-medium"
+                          className={`flex-grow py-4 capitalize transition-colors ${
+                            location.pathname === item.to || 
+                            (item.cate_slug && location.pathname.includes(item.cate_slug)) ||
+                            (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug)
+                              ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
+                              : "text-gray-900 font-medium"
                             }`}
                         >
                           {item.label}

@@ -169,6 +169,11 @@ function SingleProduct() {
       value: product.price,
       currency: "INR",
     });
+
+    if (product?.category?.cate_name) {
+      sessionStorage.setItem("activeCategorySlug", createSlug(product.category.cate_name));
+      window.dispatchEvent(new Event("activeCategoryChanged"));
+    }
   }, [product]);
 
   //Update stock when color/size changes
@@ -525,7 +530,7 @@ function SingleProduct() {
   `}</script>
       </Helmet>
       <div className="min-h-screen font-poppins">
-        <div className="px-2 py-8 pb-24 md:px-10 lg:px-20">
+        <div className="px-2 py-6 pb-16 md:px-10 lg:px-20">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs sm:text-sm font-[oxygen] font-400 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
             <Link
@@ -778,7 +783,7 @@ function SingleProduct() {
               </div>
 
               {/* Shipping & Support Info */}
-              <div className="pt-8 border-t border-[#DDDDDD] space-y-4">
+              <div className="pt-8 border-t border-[#DDDDDD]">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 flex items-center justify-center">
                     <Truck size={24} className="text-[#B9B9B9]" />
@@ -824,7 +829,7 @@ function SingleProduct() {
             </button>
           </div>
 
-          <div className="min-h-[300px]">
+          <div className="min-h-auto">
             {activeTab === "description" ? (
               <div className="animate-fadeIn space-y-8">
                 <p className="text-lg text-[#575757] font-[oxygen] leading-relaxed">
@@ -856,11 +861,11 @@ function SingleProduct() {
           />
         )}
         <ScrollReveal animation="fade-up" duration={800}>
-        <ReletedProduct
-          cate_name={product?.category?.cate_name}
-          currentProductId={product.p_id}
-          cate_id={product?.category?.cate_id}
-        />
+          <ReletedProduct
+            cate_name={product?.category?.cate_name}
+            currentProductId={product.p_id}
+            cate_id={product?.category?.cate_id}
+          />
         </ScrollReveal>
       </div>
     </>

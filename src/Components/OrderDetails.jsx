@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { ChevronLeft, Package, Truck, CheckCircle, MapPin, X, XCircle, RefreshCcw, Receipt, ArrowLeftRight } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { ChevronLeft, Package, Truck, CheckCircle, MapPin, X, XCircle, RefreshCcw, Receipt, ArrowLeftRight, Star } from "lucide-react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import SideBar from "./SideBar";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
@@ -12,9 +12,11 @@ import { getGuestId } from "../utils/guest";
 import { ORDER_STATUS } from "../utils/constants";
 import InvoiceModal from "./InvoiceModal";
 import ScrollReveal from "./Ui/ScrollReveal";
+import ProductReviewModal from "./ProductReviewModal";
 
 const OrderDetails = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [tracking, setTracking] = useState(null);
@@ -23,10 +25,45 @@ const OrderDetails = () => {
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [isCreditNote, setIsCreditNote] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedProductForReview, setSelectedProductForReview] = useState(null);
+  const [reviewsStatus, setReviewsStatus] = useState({});
+
   const user = userInfo();
   const u_id = user?.u_id;
   const guestId = getGuestId();
   const isLoggedIn = !!u_id;
+
+  const checkReviews = async () => {
+    if (!order?.orderItems || !u_id) return;
+    const statusMap = {};
+    for (const item of order.orderItems) {
+      const rawId = item.p_id || item.product_id || item.pid || item.id || item.productId || item.product?.p_id || item.product?.product_id || item.product?.id;
+      const p_id = rawId ? Number(rawId) : null;
+      if (!p_id || isNaN(p_id)) continue;
+      try {
+        const res = await axiosInstance.post("/getuserreviews", { p_id });
+        if (res.data.status === 1) {
+          const list = res.data.data || [];
+          const userRev = list.find(r => String(r.u_id || r.user_id) === String(u_id));
+          statusMap[p_id] = userRev || null;
+        }
+      } catch (err) {
+        console.error("Error checking review status:", err);
+      }
+    }
+    setReviewsStatus(statusMap);
+  };
+
+  useEffect(() => {
+    if (order?.status === ORDER_STATUS.DELIVERED) {
+      checkReviews();
+    }
+  }, [order, u_id]);
+
+  const handleReviewSaved = () => {
+    checkReviews();
+  };
 
   const canShowInvoice = () => {
     if (!order) return false;
@@ -128,10 +165,6 @@ const OrderDetails = () => {
     }
   };
 
-
-
-
-
   const steps = ["Order Placed", "Inprogress", "shipped", "Delivered"];
 
   const getStatusStep = (status) => {
@@ -188,7 +221,7 @@ const OrderDetails = () => {
                 <ChevronLeft
                   className="cursor-pointer"
                   size={24}
-                  onClick={() => navigate("/myorders")}
+                  onClick={() => navigate("/myorders", { state: { activeTab: location.state?.activeTab } })}
                 />
                 <h2 className="text-3xl font-semibold">Order Details</h2>
               </div>
@@ -203,7 +236,7 @@ const OrderDetails = () => {
                 ].includes(order.status) && (
                     <button
                       onClick={() => setShowCancelModal(true)}
-                      className="w-full sm:w-auto bg-white border-2 border-[#b32b2b] text-[#b32b2b] px-6 py-2.5 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition shadow-sm cursor-pointer text-sm"
+                      className="w-full sm:w-auto bg-white border-1 border-[#b32b2b] text-[#b32b2b] px-6 py-2.5 rounded-lg font-bold hover:bg-[#b32b2b] hover:text-white transition cursor-pointer text-sm"
                     >
                       Cancel Order
                     </button>
@@ -211,7 +244,7 @@ const OrderDetails = () => {
                 {order.status === ORDER_STATUS.DELIVERED && (
                   <button
                     onClick={() => setShowReturnModal(true)}
-                    className="w-full sm:w-auto bg-white border-2 border-[#004534] text-[#004534] px-6 py-2.5 rounded-lg font-bold hover:bg-[#004534] hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
+                    className="w-full sm:w-auto bg-white border-1 border-[#004534] text-[#004534] px-6 py-2.5 rounded-lg font-bold hover:bg-[#004534] hover:text-white transition cursor-pointer flex items-center justify-center gap-2 text-sm"
                   >
                     <RefreshCcw size={18} />
                     Return Order
@@ -238,7 +271,7 @@ const OrderDetails = () => {
                       setIsCreditNote(false);
                       setShowInvoiceModal(true);
                     }}
-                    className="w-full sm:w-auto bg-white border-2 border-emerald-600 text-emerald-600 px-6 py-2.5 rounded-lg font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
+                    className="w-full sm:w-auto bg-white border-1 border-emerald-600 text-emerald-600 px-6 py-2.5 rounded-lg font-bold hover:bg-emerald-600 hover:text-white transition cursor-pointer flex items-center justify-center gap-2 text-sm"
                   >
                     <Receipt size={18} />
                     Invoice
@@ -251,7 +284,7 @@ const OrderDetails = () => {
                       setIsCreditNote(true);
                       setShowInvoiceModal(true);
                     }}
-                    className="w-full sm:w-auto bg-white border-2 border-rose-600 text-rose-600 px-6 py-2.5 rounded-lg font-bold hover:bg-rose-600 hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"
+                    className="w-full sm:w-auto bg-white border-1 border-rose-600 text-rose-600 px-6 py-2.5 rounded-lg font-bold hover:bg-rose-600 hover:text-white transition cursor-pointer flex items-center justify-center gap-2 text-sm"
                   >
                     <ArrowLeftRight size={18} />
                     Credit Note
@@ -411,6 +444,47 @@ const OrderDetails = () => {
                             <span className="text-[#1a1a1a] text-2xl font-semibold">₹{Math.round(item.totalAmount || item.price)}</span>
                           </p>
                         </div>
+                        {order.status === ORDER_STATUS.DELIVERED && isLoggedIn && (() => {
+                          const p_id = item.p_id || item.product_id || item.pid || item.id || item.productId;
+                          const userReview = reviewsStatus[p_id];
+
+                          if (userReview) {
+                            if (userReview.is_published === 1 || userReview.is_published === true) {
+                              return (
+                                <div className="mt-4 flex justify-center sm:justify-start">
+                                  <span className="flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg font-bold border border-emerald-100">
+                                    <CheckCircle size={14} className="text-emerald-600" />
+                                    Review approved & published
+                                  </span>
+                                </div>
+                              );
+                            } else {
+                              return (
+                                <div className="mt-4 flex justify-center sm:justify-start">
+                                  <span className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg font-bold border border-amber-100">
+                                    <CheckCircle size={14} className="text-amber-500 animate-pulse" />
+                                    Your review was added successfully and will be shown after admin approval.
+                                  </span>
+                                </div>
+                              );
+                            }
+                          }
+
+                          return (
+                            <div className="mt-4 flex justify-center sm:justify-start">
+                              <button
+                                onClick={() => {
+                                  setSelectedProductForReview(item);
+                                  setShowReviewModal(true);
+                                }}
+                                className="bg-white border border-[#004534] text-[#004534] hover:bg-[#004534] hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5"
+                              >
+                                <Star size={12} className="fill-current" />
+                                Write Review
+                              </button>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   ))}
@@ -440,6 +514,17 @@ const OrderDetails = () => {
         onClose={() => setShowInvoiceModal(false)}
         order={order}
         isCreditNote={isCreditNote}
+      />
+
+      <ProductReviewModal
+        isOpen={showReviewModal}
+        onClose={() => {
+          setShowReviewModal(false);
+          setSelectedProductForReview(null);
+        }}
+        product={selectedProductForReview}
+        user={user}
+        onReviewSaved={handleReviewSaved}
       />
 
       <BrandBanner />
