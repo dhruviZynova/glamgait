@@ -13,9 +13,9 @@
 
 .shimmer {
   background: linear-gradient(90deg,
-      #e5e7eb 25%,
-      #f3f4f6 50%,
-      #e5e7eb 75%);
+      #E5DFD9 25%,
+      #FAF9F8 50%,
+      #E5DFD9 75%);
   background-size: 800px 100%;
   animation: shimmer 1.4s infinite linear;
 }
@@ -40,7 +40,7 @@
 
 /* Skeleton shimmer alias */
 .skeleton-pulse {
-  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background: linear-gradient(90deg, #E5DFD9 25%, #FAF9F8 50%, #E5DFD9 75%);
   background-size: 800px 100%;
   animation: shimmer 1.4s infinite linear;
 }
@@ -77,6 +77,12 @@
   --font-playfair: "Playfair Display", serif;
   --font-montserrat: "Montserrat", sans-serif;
   --font-poppins: "Poppins", sans-serif;
+
+  --color-gray-50: #FAF9F8;
+  --color-gray-100: #F3F0ED;
+  --color-gray-200: #E5DFD9;
+  --color-gray-300: #D6CCC2;
+  --color-gray-400: #B5A89B;
 }
 
 /* h1,
@@ -423,4 +429,4 @@ body {
   .bg-fixed {
     background-attachment: scroll !important;
   }
-}
+}

@@ -169,6 +169,11 @@ function SingleProduct() {
       value: product.price,
       currency: "INR",
     });
+
+    if (product?.category?.cate_name) {
+      sessionStorage.setItem("activeCategorySlug", createSlug(product.category.cate_name));
+      window.dispatchEvent(new Event("activeCategoryChanged"));
+    }
   }, [product]);
 
   //Update stock when color/size changes

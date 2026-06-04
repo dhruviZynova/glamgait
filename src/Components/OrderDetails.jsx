@@ -128,10 +128,6 @@ const OrderDetails = () => {
     }
   };
 
-
-
-
-
   const steps = ["Order Placed", "Inprogress", "shipped", "Delivered"];
 
   const getStatusStep = (status) => {
