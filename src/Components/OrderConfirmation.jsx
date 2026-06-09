@@ -3,17 +3,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, razorpayKEY } from "../Variable";
 import toast from "react-hot-toast";
-import { 
-  CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
-  RefreshCw, 
-  ShoppingBag, 
-  ArrowRight, 
-  Phone, 
-  Mail, 
-  FileText, 
-  Loader2, 
+import {
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  RefreshCw,
+  ShoppingBag,
+  ArrowRight,
+  Phone,
+  Mail,
+  FileText,
+  Loader2,
   Home,
   Truck
 } from "lucide-react";
@@ -21,7 +21,7 @@ import {
 const OrderConfirmation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Parse query parameters
   const queryParams = new URLSearchParams(location.search);
   const queryOrderId = queryParams.get("orderId");
@@ -29,12 +29,13 @@ const OrderConfirmation = () => {
 
   // Robust orderId resolution
   const orderId = queryOrderId || location.state?.orderId || sessionStorage.getItem('lastOrderId');
-  
+
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState(queryStatus || location.state?.status || "success");
   const [loading, setLoading] = useState(true);
   const [switchingToCod, setSwitchingToCod] = useState(false);
   const [retryingPayment, setRetryingPayment] = useState(false);
+  const [showFullDetails, setShowFullDetails] = useState(false);
 
   // Fetch Order Details
   useEffect(() => {
@@ -50,7 +51,7 @@ const OrderConfirmation = () => {
 
         if (res.data.status === 1) {
           setOrder(res.data.data);
-          
+
           // Fallback status check based on actual payment status if queryStatus is omitted
           if (!queryStatus) {
             const payStatus = res.data.data.paymentStatus?.toLowerCase() || "";
@@ -109,7 +110,7 @@ const OrderConfirmation = () => {
   // Retry Payment Flow
   const handleRetryPayment = async () => {
     const lastCheckoutUrl = sessionStorage.getItem('lastCheckoutUrl');
-    
+
     // Redirect if we have an external checkout URL (Stripe, PhonePe, CCAvenue)
     if (lastCheckoutUrl && lastCheckoutUrl !== 'razorpay' && lastCheckoutUrl.startsWith('http')) {
       toast.loading("Redirecting to payment gateway...", { id: "retryRedirect" });
@@ -118,7 +119,7 @@ const OrderConfirmation = () => {
       }, 800);
       return;
     }
-    
+
     // Inline Razorpay retry logic
     if (!order) {
       toast.error("Order details are still loading. Please try again.");
@@ -162,13 +163,13 @@ const OrderConfirmation = () => {
               razorpay_signature: response.razorpay_signature,
               order_id: order.orderId,
             });
-            
+
             toast.dismiss("retryVerify");
             if (verifyRes.data.status === 1) {
               toast.success("Payment successful!");
               sessionStorage.removeItem('lastCheckoutUrl');
               setStatus("success");
-              
+
               // Refresh order data
               const updatedRes = await axiosInstance.get(`${ApiURL}/getorder/${order.orderId}`);
               if (updatedRes.data.status === 1) {
@@ -228,7 +229,7 @@ const OrderConfirmation = () => {
         toast.success("Successfully updated to Cash on Delivery!");
         setStatus("success");
         sessionStorage.removeItem('lastCheckoutUrl');
-        
+
         // Retrieve fresh order object
         const updatedRes = await axiosInstance.get(`${ApiURL}/getorder/${orderId}`);
         if (updatedRes.data.status === 1) {
@@ -282,10 +283,48 @@ const OrderConfirmation = () => {
     cardBorderColor = "border-[#d97706]/30";
   }
 
+  if (status === "success" && !showFullDetails) {
+    return (
+      <div className="min-h-screen bg-[#F3F0ED] py-16 px-4 md:px-8 font-[Oxygen] flex flex-col items-center justify-center">
+        <div className="bg-white rounded-[24px] p-8 md:p-12 w-full max-w-[650px] relative shadow-xl text-center space-y-8 animate-fadeIn">
+          <div className="flex justify-center">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-[3px] border-[#000] flex items-center justify-center">
+              <CheckCircle className="w-10 h-10 text-[#000]" strokeWidth={2} />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h2 className="text-4xl md:text-5xl font-semibold font-[Cinzel,serif] text-[#1C2F2F]">
+              Thank You!
+            </h2>
+            <p className="text-[#3D3D3D] font-[Oxygen] text-lg md:text-xl max-w-md mx-auto leading-relaxed">
+              Your Order Has Been Confirmed & It Is On The Way. Check Your Email For The Details
+            </p>
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-4 justify-center">
+            <button
+              onClick={() => navigate("/")}
+              className="bg-[#1C2F2F] text-white px-8 py-4 rounded-full font-medium transition-all hover:bg-black active:scale-[0.98] font-[Oxygen] text-lg cursor-pointer"
+            >
+              Go to Homepage
+            </button>
+            <button
+              onClick={() => setShowFullDetails(true)}
+              className="border border-[#1C2F2F] text-[#1C2F2F] px-8 py-4 rounded-full font-medium transition-all hover:bg-[#1C2F2F] hover:text-white active:scale-[0.98] font-[Oxygen] text-lg cursor-pointer"
+            >
+              Check Order Details
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F3F0ED] py-16 px-4 md:px-8 font-[Oxygen] flex flex-col items-center justify-center">
       <div className={`w-full max-w-2xl bg-white rounded-3xl shadow-[0_20px_50px_rgba(28,47,47,0.06)] border ${cardBorderColor} overflow-hidden transition-all duration-500 hover:shadow-[0_25px_60px_rgba(28,47,47,0.1)]`}>
-        
+
         {/* Upper Hero Header */}
         <div className={`${statusBgClass} text-white p-8 md:p-12 text-center flex flex-col items-center gap-4 relative overflow-hidden transition-colors duration-500`}>
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#FFF_1px,transparent_1px)] [background-size:16px_16px]"></div>
@@ -300,7 +339,7 @@ const OrderConfirmation = () => {
 
         {/* Core Body Container */}
         <div className="p-6 md:p-10 space-y-8 bg-white">
-          
+
           {/* Order Meta details bar */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-[#E7DCD2]/60 gap-4">
             <div>
@@ -310,17 +349,17 @@ const OrderConfirmation = () => {
             <div>
               <span className="text-xs uppercase tracking-widest text-[#767676] font-semibold block mb-1">Date of Purchase</span>
               <span className="text-md font-semibold text-[#3D3D3D]">
-                {order?.createdAt 
+                {order?.createdAt
                   ? new Date(order.createdAt).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric"
-                    })
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                  })
                   : new Date().toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric"
-                    })
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                  })
                 }
               </span>
             </div>
@@ -333,7 +372,7 @@ const OrderConfirmation = () => {
               <p className="text-sm text-[#767676] leading-relaxed">
                 To complete your transaction, you can instantly retry the online payment session or seamlessly convert this order to cash on delivery.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <button
                   onClick={handleRetryPayment}
@@ -347,7 +386,7 @@ const OrderConfirmation = () => {
                   )}
                   Retry Payment Online
                 </button>
-                
+
                 <button
                   onClick={handleSwitchToCOD}
                   disabled={retryingPayment || switchingToCod}
@@ -372,9 +411,9 @@ const OrderConfirmation = () => {
                 {order.orderItems.map((item, index) => (
                   <div key={item.orderItemId || index} className="py-4 flex gap-4 items-center">
                     <div className="w-16 h-16 bg-[#F3F0ED] rounded-xl overflow-hidden flex-shrink-0 border border-[#E7DCD2]/40">
-                      <img 
-                        src={`${ApiURL}/assets/Products/${item.imageUrl || item.image_url}`} 
-                        alt={item.productName} 
+                      <img
+                        src={`${ApiURL}/assets/Products/${item.imageUrl || item.image_url}`}
+                        alt={item.productName}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.target.style.display = 'none';
@@ -408,7 +447,7 @@ const OrderConfirmation = () => {
                 <span>Delivery Charges</span>
                 <span className="text-green-700 font-medium">FREE</span>
               </div>
-              
+
               {/* Optional Coupon/Discount */}
               {order.discountAmount > 0 && (
                 <div className="flex justify-between text-sm text-[#10B981]">

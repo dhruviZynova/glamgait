@@ -13,7 +13,7 @@ import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Reviews = () => {
   const adminData = adminInfo();
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState(null);
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -246,7 +246,22 @@ const Reviews = () => {
       </div>
 
       {/* Loading */}
-      {reviews.length === 0 ? (
+      {reviews === null ? (
+        <div className="glamloader-overlay" aria-label="Loading" role="status">
+          <div className="glamloader-logo">
+            KUNDRAT
+            <div className="glamloader-logo-fill">KUNDRAT</div>
+          </div>
+          <div className="glamloader-ring">
+            <svg viewBox="0 0 72 72">
+              <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+            </svg>
+            <div className="glamloader-ring-dot" />
+          </div>
+        </div>
+      ) : reviews.length === 0 ? (
         <div className="text-center py-16 text-gray-500 text-lg">
           No reviews found
         </div>

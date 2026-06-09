@@ -9,6 +9,7 @@ import { getGuestId } from "../utils/guest";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import ProductCard from "./ProductCard";
 import ScrollReveal from "./Ui/ScrollReveal";
+import { getCategories as getCachedCategories } from "../utils/dataCache";
 
 const sortOptions = [
   { value: "a-z", label: "Alphabetical (A-Z)" },
@@ -52,7 +53,7 @@ const Allproducts = () => {
     setDebouncedSearchTerm("");
     setCurrentPage(1);
   };
-  const [collectionsExpanded, setCollectionsExpanded] = useState(false);
+  const [collectionsExpanded, setCollectionsExpanded] = useState(true);
   const [fabricExpanded, setFabricExpanded] = useState(false);
   const [workExpanded, setWorkExpanded] = useState(false);
   const [occasionExpanded, setOccasionExpanded] = useState(false);
@@ -185,6 +186,7 @@ const Allproducts = () => {
   }, [filterValue, filters]);
 
   useEffect(() => {
+    let active = true;
     if (!cate_name) {
       // If no category slug → show all products or redirect
       setCateId(null);
@@ -195,52 +197,74 @@ const Allproducts = () => {
       try {
         // Call backend to get cate_id from name/slug
         const res = await axiosInstance.get(`/getcategorybyname/${cate_name}`);
-        if (res.data.status === 1 && res.data.data) {
-          setCateId(res.data.data.cate_id);
-          setCategoryDisplayName(res.data.data.cate_name || cate_name);
-        } else {
-          // Category not found — no action needed, UI handles empty state
+        if (active) {
+          if (res.data.status === 1 && res.data.data) {
+            setCateId(res.data.data.cate_id);
+            setCategoryDisplayName(res.data.data.cate_name || cate_name);
+          } else {
+            // Category not found — no action needed, UI handles empty state
+          }
         }
       } catch (err) {
         console.error("Category not found:", err);
       }
     };
     fetchCategoryId();
+    return () => {
+      active = false;
+    };
   }, [cate_name, navigate]);
 
   useEffect(() => {
+    let active = true;
     const fetchCategoryFilters = async () => {
       try {
-        // Fetch categories (no category ID needed)
-        const categoryRes = await axiosInstance.get(`${ApiURL}/getcategory`);
+        // Use cache for categories — avoids duplicate network call
+        const categoryData = await getCachedCategories(axiosInstance);
 
         // Fetch other filters using category ID if available, otherwise use default (2)
         const categoryId = cateId || 2;
 
+        // Helper for safe fetching
+        const safeGet = async (url) => {
+          try {
+            const res = await axiosInstance.get(url);
+            return res?.data?.data || [];
+          } catch (err) {
+            console.warn(`Filter fetch skipped for ${url}:`, err.message);
+            return [];
+          }
+        };
+
         const [subRes, fabricRes, workRes, occRes, styleRes, sizeRes] =
           await Promise.all([
-            cateId ? axiosInstance.get(`${ApiURL}/getsubcategory/${categoryId}`) : Promise.resolve({ data: { data: [] } }),
-            axiosInstance.get(`${ApiURL}/getfabrics/${categoryId}`),
-            axiosInstance.get(`${ApiURL}/getworks/${categoryId}`),
-            axiosInstance.get(`${ApiURL}/getoccasions/${categoryId}`),
-            axiosInstance.get(`${ApiURL}/getstyles/${categoryId}`),
-            axiosInstance.get(`${ApiURL}/getsize/${categoryId}`),
+            cateId ? safeGet(`${ApiURL}/getsubcategory/${categoryId}`) : Promise.resolve([]),
+            safeGet(`${ApiURL}/getfabrics/${categoryId}`),
+            safeGet(`${ApiURL}/getworks/${categoryId}`),
+            safeGet(`${ApiURL}/getoccasions/${categoryId}`),
+            safeGet(`${ApiURL}/getstyles/${categoryId}`),
+            safeGet(`${ApiURL}/getsize/${categoryId}`),
           ]);
 
-        setFilters({
-          subcategories: subRes.data.data || [],
-          fabrics: fabricRes.data.data || [],
-          works: workRes.data.data || [],
-          occasions: occRes.data.data || [],
-          styles: styleRes.data.data || [],
-          sizes: sizeRes.data.data || [],
-          categories: categoryRes.data.data || [],
-        });
+        if (active) {
+          setFilters({
+            subcategories: subRes || [],
+            fabrics: fabricRes || [],
+            works: workRes || [],
+            occasions: occRes || [],
+            styles: styleRes || [],
+            sizes: sizeRes || [],
+            categories: categoryData || [],
+          });
+        }
       } catch (error) {
         console.error("Error fetching category filters:", error);
       }
     };
     fetchCategoryFilters();
+    return () => {
+      active = false;
+    };
   }, [cateId]);
 
   // Sync URL category with sidebar selection
@@ -597,434 +621,434 @@ const Allproducts = () => {
               <span className="font-medium">Filters</span>
             </button>
 
-            <ScrollReveal animation="fade-right" duration={800} className={`${mobileFilterOpen ? "block" : "hidden"
-                } lg:block w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-28 h-fit`}>
+            <div className={`${mobileFilterOpen ? "block" : "hidden"
+              } lg:block w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-28 h-fit mb-4`}>
               <aside className="w-full">
-              <div className="bg-[#f3f0ed] border border-gray-200 rounded-lg shadow-sm mb-8">
-                {/* --- CATEGORIES SECTION --- */}
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between sm:p-4 p-2 border-b border-gray-200">
-                    <h2 className="text-xl font-400 text-[#2D2D2D] font-[Oxygen] border-l-4 pl-2">Filters</h2>
-                    <button
-                      onClick={clearAllFilters}
-                      className="text-xs font-400 text-gray-500 hover:text-[#5a2063] underline cursor-pointer transition-colors"
-                    >
-                      Clear All
-                    </button>
-                  </div>
+                <div className="bg-[#f3f0ed] border border-gray-200 rounded-lg shadow-sm mb-8">
+                  {/* --- CATEGORIES SECTION --- */}
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between sm:p-4 p-2 border-b border-gray-200">
+                      <h2 className="text-xl font-400 text-[#2D2D2D] font-[Oxygen] border-l-4 pl-2">Filters</h2>
+                      <button
+                        onClick={clearAllFilters}
+                        className="text-xs font-400 text-gray-500 hover:text-[#5a2063] underline cursor-pointer transition-colors"
+                      >
+                        Clear All
+                      </button>
+                    </div>
 
-                  {/* Filters Content */}
-                  <div className="flex flex-col gap-4 px-4">
-                    {/* Categories */}
-                    {filters?.categories?.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">
-                            All Categories
-                          </span>
-                          <div
-                            onClick={() => setCollectionsExpanded(!collectionsExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {collectionsExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            )}
+                    {/* Filters Content */}
+                    <div className="flex flex-col gap-4 px-4">
+                      {/* Categories */}
+                      {filters?.categories?.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">
+                              All Categories
+                            </span>
+                            <div
+                              onClick={() => setCollectionsExpanded(!collectionsExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {collectionsExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
                           </div>
+                          {collectionsExpanded && (
+                            <div className="space-y-1">
+                              {filters?.categories?.map((val) => (
+                                <div
+                                  key={val.cate_id}
+                                  onClick={() => navigate(`/collections/${val.cate_name}`)}
+                                  className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedCategories.includes(val.cate_id)}
+                                      onChange={(e) => {
+                                        e.stopPropagation();
+                                        toggleCategory(val.cate_id);
+                                      }}
+                                      className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                    />
+                                    <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">
+                                      {val?.cate_name}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        {collectionsExpanded && (
-                          <div className="space-y-1">
-                            {filters?.categories?.map((val) => (
-                              <div
-                                key={val.cate_id}
-                                onClick={() => navigate(`/collections/${val.cate_name}`)}
-                                className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
+                      )}
+
+                      {/* Subcategory / Collections */}
+                      {filters?.subcategories?.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">
+                              Collections
+                            </span>
+                            <div
+                              onClick={() => setCollectionsExpanded(!collectionsExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {collectionsExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
+                          </div>
+                          {collectionsExpanded && (
+                            <div className="space-y-1">
+                              {filters?.subcategories?.map((val) => (
+                                <label
+                                  key={val.sc_id}
+                                  className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedSubcategories.includes(val.sc_id)}
+                                      onChange={() => toggleSubcategory(val.sc_id)}
+                                      className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                    />
+                                    <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">
+                                      {val?.name}
+                                    </span>
+                                    {val.count && (
+                                      <span className="text-xs text-[#2D2D2D]">({val.count})</span>
+                                    )}
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Fabric */}
+                      {filters?.fabrics?.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Fabric</span>
+                            <div
+                              onClick={() => setFabricExpanded(!fabricExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {fabricExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
+                          </div>
+                          {fabricExpanded && (
+                            <div className="space-y-1">
+                              {filters.fabrics.map((val) => (
+                                <label
+                                  key={val.f_id}
+                                  className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedFabrics.includes(val.f_id)}
+                                      onChange={() => toggleFabric(val.f_id)}
+                                      className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                    />
+                                    <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Work */}
+                      {filters.works.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Work</span>
+                            <div
+                              onClick={() => setWorkExpanded(!workExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {workExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
+                          </div>
+                          {workExpanded && (
+                            <div className="space-y-1">
+                              {filters.works.map((val) => (
+                                <label
+                                  key={val.work_id}
+                                  className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedWorks.includes(val.work_id)}
+                                      onChange={() => toggleWork(val.work_id)}
+                                      className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                    />
+                                    <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Occasion */}
+                      {filters.occasions.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Occasion</span>
+                            <div
+                              onClick={() => setOccasionExpanded(!occasionExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {occasionExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
+                          </div>
+                          {occasionExpanded && (
+                            <div className="space-y-1">
+                              {filters.occasions.map((val) => (
+                                <label
+                                  key={val.occasion_id}
+                                  className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedOccasions.includes(val.occasion_id)}
+                                      onChange={() => toggleOccasion(val.occasion_id)}
+                                      className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                    />
+                                    <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Style */}
+                      {filters.styles.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Style</span>
+                            <div
+                              onClick={() => setStyleExpanded(!styleExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {styleExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
+                          </div>
+                          {styleExpanded && (
+                            <div className="space-y-1">
+                              {filters.styles.map((val) => (
+                                <label
+                                  key={val.style_id}
+                                  className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedStyles.includes(val.style_id)}
+                                      onChange={() => toggleStyle(val.style_id)}
+                                      className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                    />
+                                    <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Size */}
+                      {filters.sizes.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Size</span>
+                            <div
+                              onClick={() => setSizeExpanded(!sizeExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {sizeExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
+                          </div>
+                          {sizeExpanded && (
+                            <div className="space-y-1">
+                              {filters.sizes.map((val) => (
+                                <label
+                                  key={val.size_id}
+                                  className="flex items-center gap-3 group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
                                   <input
                                     type="checkbox"
-                                    checked={selectedCategories.includes(val.cate_id)}
-                                    onChange={(e) => {
-                                      e.stopPropagation();
-                                      toggleCategory(val.cate_id);
-                                    }}
+                                    checked={selectedSizes.includes(val.size_id)}
+                                    onChange={() => toggleSizeNew(val.size_id)}
                                     className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
                                   />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">
-                                    {val?.cate_name}
+                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.size_name}</span>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Color - Global */}
+                      {allColors?.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Color</span>
+                            <div
+                              onClick={() => setColorExpanded(!colorExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {colorExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
+                          </div>
+                          {colorExpanded && (
+                            <div className="grid grid-cols-5 gap-3">
+                              {allColors?.map((color) => (
+                                <label
+                                  key={color.color_id}
+                                  className="flex flex-col items-center cursor-pointer group"
+                                >
+                                  <div className="relative w-8 h-8 sm:w-10 sm:h-10">
+                                    <div
+                                      className={`w-full h-full rounded-full border-2 transition-all shadow-sm ${selectedColors.includes(color.color_id)
+                                        ? "border-black ring-2 ring-offset-2 ring-gray-200"
+                                        : "border-transparent group-hover:border-gray-300"
+                                        }`}
+                                      style={{
+                                        backgroundColor: color.color_code || "#ffffff",
+                                      }}
+                                    />
+                                    {selectedColors.includes(color.color_id) && (
+                                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <svg
+                                          className="w-4 h-4 text-white drop-shadow-md"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="3"
+                                            d="M5 13l4 4L19 7"
+                                          />
+                                        </svg>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <span className="mt-1.5 text-[10px] sm:text-xs text-gray-600 text-center capitalize w-full truncate">
+                                    {color.color_name}
                                   </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Subcategory / Collections */}
-                    {filters?.subcategories?.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">
-                            Collections
-                          </span>
-                          <div
-                            onClick={() => setCollectionsExpanded(!collectionsExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {collectionsExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            )}
-                          </div>
-                        </div>
-                        {collectionsExpanded && (
-                          <div className="space-y-1">
-                            {filters?.subcategories?.map((val) => (
-                              <label
-                                key={val.sc_id}
-                                className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
                                   <input
                                     type="checkbox"
-                                    checked={selectedSubcategories.includes(val.sc_id)}
-                                    onChange={() => toggleSubcategory(val.sc_id)}
-                                    className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                    checked={selectedColors.includes(color.color_id)}
+                                    onChange={() => toggleColor(color.color_id)}
+                                    className="hidden"
                                   />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">
-                                    {val?.name}
-                                  </span>
-                                  {val.count && (
-                                    <span className="text-xs text-[#2D2D2D]">({val.count})</span>
-                                  )}
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Fabric */}
-                    {filters?.fabrics?.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Fabric</span>
-                          <div
-                            onClick={() => setFabricExpanded(!fabricExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {fabricExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            )}
-                          </div>
+                                </label>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        {fabricExpanded && (
-                          <div className="space-y-1">
-                            {filters.fabrics.map((val) => (
-                              <label
-                                key={val.f_id}
-                                className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedFabrics.includes(val.f_id)}
-                                    onChange={() => toggleFabric(val.f_id)}
-                                    className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
-                                  />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Work */}
-                    {filters.works.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Work</span>
-                          <div
-                            onClick={() => setWorkExpanded(!workExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {workExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            )}
-                          </div>
-                        </div>
-                        {workExpanded && (
-                          <div className="space-y-1">
-                            {filters.works.map((val) => (
-                              <label
-                                key={val.work_id}
-                                className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedWorks.includes(val.work_id)}
-                                    onChange={() => toggleWork(val.work_id)}
-                                    className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
-                                  />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Occasion */}
-                    {filters.occasions.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Occasion</span>
-                          <div
-                            onClick={() => setOccasionExpanded(!occasionExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {occasionExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            )}
-                          </div>
-                        </div>
-                        {occasionExpanded && (
-                          <div className="space-y-1">
-                            {filters.occasions.map((val) => (
-                              <label
-                                key={val.occasion_id}
-                                className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedOccasions.includes(val.occasion_id)}
-                                    onChange={() => toggleOccasion(val.occasion_id)}
-                                    className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
-                                  />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Style */}
-                    {filters.styles.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Style</span>
-                          <div
-                            onClick={() => setStyleExpanded(!styleExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {styleExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            )}
-                          </div>
-                        </div>
-                        {styleExpanded && (
-                          <div className="space-y-1">
-                            {filters.styles.map((val) => (
-                              <label
-                                key={val.style_id}
-                                className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedStyles.includes(val.style_id)}
-                                    onChange={() => toggleStyle(val.style_id)}
-                                    className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
-                                  />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Size */}
-                    {filters.sizes.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Size</span>
-                          <div
-                            onClick={() => setSizeExpanded(!sizeExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {sizeExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            )}
-                          </div>
-                        </div>
-                        {sizeExpanded && (
-                          <div className="space-y-1">
-                            {filters.sizes.map((val) => (
-                              <label
-                                key={val.size_id}
-                                className="flex items-center gap-3 group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selectedSizes.includes(val.size_id)}
-                                  onChange={() => toggleSizeNew(val.size_id)}
-                                  className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
-                                />
-                                <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.size_name}</span>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Color - Global */}
-                    {allColors?.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Color</span>
-                          <div
-                            onClick={() => setColorExpanded(!colorExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {colorExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
-                            )}
-                          </div>
-                        </div>
-                        {colorExpanded && (
-                          <div className="grid grid-cols-5 gap-3">
-                            {allColors?.map((color) => (
-                              <label
-                                key={color.color_id}
-                                className="flex flex-col items-center cursor-pointer group"
-                              >
-                                <div className="relative w-8 h-8 sm:w-10 sm:h-10">
-                                  <div
-                                    className={`w-full h-full rounded-full border-2 transition-all shadow-sm ${selectedColors.includes(color.color_id)
-                                      ? "border-black ring-2 ring-offset-2 ring-gray-200"
-                                      : "border-transparent group-hover:border-gray-300"
-                                      }`}
-                                    style={{
-                                      backgroundColor: color.color_code || "#ffffff",
-                                    }}
-                                  />
-                                  {selectedColors.includes(color.color_id) && (
-                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                      <svg
-                                        className="w-4 h-4 text-white drop-shadow-md"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth="3"
-                                          d="M5 13l4 4L19 7"
-                                        />
-                                      </svg>
-                                    </div>
-                                  )}
-                                </div>
-                                <span className="mt-1.5 text-[10px] sm:text-xs text-gray-600 text-center capitalize w-full truncate">
-                                  {color.color_name}
-                                </span>
-                                <input
-                                  type="checkbox"
-                                  checked={selectedColors.includes(color.color_id)}
-                                  onChange={() => toggleColor(color.color_id)}
-                                  className="hidden"
-                                />
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-[#f3f0ed] border border-gray-200 rounded-lg overflow-hidden lg:sticky shadow-sm">
-                {/* --- PRICE RANGE SECTION --- */}
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between sm:p-4 p-2 border-b border-gray-200">
-                    <h2 className="text-xl font-400 text-[#2D2D2D] font-[Oxygen] border-l-4 pl-2">Price Range</h2>
-                  </div>
+                <div className="bg-[#f3f0ed] border border-gray-200 rounded-lg overflow-hidden lg:sticky shadow-sm">
+                  {/* --- PRICE RANGE SECTION --- */}
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between sm:p-4 p-2 border-b border-gray-200">
+                      <h2 className="text-xl font-400 text-[#2D2D2D] font-[Oxygen] border-l-4 pl-2">Price Range</h2>
+                    </div>
 
-                  {/* Price Content */}
-                  <div className="p-2 px-4">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <div className="relative w-1/2">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
-                          <input
-                            type="number"
-                            min={0}
-                            value={priceRange[0]}
-                            onChange={(e) =>
-                              setPriceRange([Number(e.target.value), priceRange[1]])
-                            }
-                            className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
-                            placeholder="Min"
-                          />
+                    {/* Price Content */}
+                    <div className="p-2 px-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <div className="relative w-1/2">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
+                            <input
+                              type="number"
+                              min={0}
+                              value={priceRange[0]}
+                              onChange={(e) =>
+                                setPriceRange([Number(e.target.value), priceRange[1]])
+                              }
+                              className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
+                              placeholder="Min"
+                            />
+                          </div>
+                          <div className="relative w-1/2">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
+                            <input
+                              type="number"
+                              min={0}
+                              value={Math.ceil(priceRange[1] / 1000) * 1000}
+                              onChange={(e) =>
+                                setPriceRange([priceRange[0], Number(e.target.value)])
+                              }
+                              className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
+                              placeholder="Max"
+                            />
+                          </div>
                         </div>
-                        <div className="relative w-1/2">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
-                          <input
-                            type="number"
-                            min={0}
-                            value={Math.ceil(priceRange[1] / 1000) * 1000}
-                            onChange={(e) =>
-                              setPriceRange([priceRange[0], Number(e.target.value)])
-                            }
-                            className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
-                            placeholder="Max"
-                          />
+                        <div className="flex justify-between items-center pt-1">
+                          <span className="text-xs text-[#2c2c2c] font-medium py-1 rounded">
+                            ₹{priceRange[0]}
+                          </span>
+                          <span className="text-xs text-[#2c2c2c]">to</span>
+                          <span className="text-xs text-[#2c2c2c] font-medium py-1 rounded">
+                            ₹{Math.ceil(priceRange[1] / 1000) * 1000}
+                          </span>
                         </div>
-                      </div>
-                      <div className="flex justify-between items-center pt-1">
-                        <span className="text-xs text-[#2c2c2c] font-medium py-1 rounded">
-                          ₹{priceRange[0]}
-                        </span>
-                        <span className="text-xs text-[#2c2c2c]">to</span>
-                        <span className="text-xs text-[#2c2c2c] font-medium py-1 rounded">
-                          ₹{Math.ceil(priceRange[1] / 1000) * 1000}
-                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-            </aside>
-            </ScrollReveal>
+              </aside>
+            </div>
 
             {/* 
               CHANGED 3: Main Content
@@ -1043,7 +1067,7 @@ const Allproducts = () => {
                   <input
                     type="text"
                     placeholder="Search An Item"
-                    className="w-full rounded-full border border-gray-200 bg-[#f8f6f4] py-3 pl-5 pr-24 text-gray-700 text-base focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    className="w-full rounded-full border border-gray-200 bg-[#f8f6f4] py-3 pl-5 pr-24 text-gray-700 text-base focus:outline-none"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -1142,18 +1166,21 @@ const Allproducts = () => {
               </div>
 
               {products?.length > 0 ? (
-                <ScrollReveal animation="fade-up" duration={800}>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 pb-8">
                   {products?.map((product) => (
-                    <ProductCard
+                    <ScrollReveal
                       key={product.p_id}
-                      product={product}
-                      wishlistMap={wishlistMap}
-                      onWishlistChange={refreshWishlist}
-                    />
+                      animation="fade-up"
+                      duration={600}
+                    >
+                      <ProductCard
+                        product={product}
+                        wishlistMap={wishlistMap}
+                        onWishlistChange={refreshWishlist}
+                      />
+                    </ScrollReveal>
                   ))}
                 </div>
-                </ScrollReveal>
               ) : (
                 <div className="text-center py-16">
                   <p className="text-gray-500 text-lg mb-2">

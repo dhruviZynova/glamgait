@@ -50,6 +50,11 @@ const Checkout = () => {
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
+        if (name === "phone") {
+            if (!/^\d*$/.test(value) || value.length > 10) {
+                return;
+            }
+        }
         setFormData((prev) => ({
             ...prev,
             [name]: type === "checkbox" ? checked : value,
@@ -267,11 +272,11 @@ const Checkout = () => {
                 />
             </div>
             <div className="space-y-2">
-                <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Country*</label>
+                <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Town / City*</label>
                 <input
                     type="text"
-                    name="country"
-                    value={formData.country}
+                    name="townCity"
+                    value={formData.townCity}
                     onChange={handleInputChange}
                     className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
                 />
@@ -287,11 +292,11 @@ const Checkout = () => {
                 />
             </div>
             <div className="space-y-2">
-                <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Town / City*</label>
+                <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Country*</label>
                 <input
                     type="text"
-                    name="townCity"
-                    value={formData.townCity}
+                    name="country"
+                    value={formData.country}
                     onChange={handleInputChange}
                     className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
                 />
@@ -385,6 +390,20 @@ const Checkout = () => {
             // Validate Personal Fields
             if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.streetAddress || !formData.townCity || !formData.postcodeZip) {
                 toast.error("Please fill all required fields");
+                return;
+            }
+
+            // Validate email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                toast.error("Please enter a valid email address");
+                return;
+            }
+
+            // Validate phone number (exactly 10 digits, starts with 6, 7, 8, or 9)
+            const phoneRegex = /^[6-9]\d{9}$/;
+            if (!phoneRegex.test(formData.phone)) {
+                toast.error("Please enter a valid 10-digit phone number starting with 6, 7, 8, or 9");
                 return;
             }
 

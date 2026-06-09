@@ -5,6 +5,21 @@ import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
+// ─── Prefetch critical data immediately on JS load ───────────────────────────
+// This fires BEFORE React renders anything, so by the time Navbar/CategorySection
+// mount they get data instantly from the in-memory cache with zero waiting.
+import axiosInstance from "./Axios/axios";
+import {
+  getCategories,
+  getAnnouncements,
+  getLatestArrivals,
+} from "./utils/dataCache";
+
+getCategories(axiosInstance).catch(() => {});
+getAnnouncements(axiosInstance).catch(() => {});
+getLatestArrivals(axiosInstance).catch(() => {});
+// ─────────────────────────────────────────────────────────────────────────────
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

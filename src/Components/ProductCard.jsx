@@ -205,9 +205,6 @@ const ProductCard = ({
               <span>₹{product.price}</span>
             </div>
           </div>
-          <p className="category-tag">
-            {firstColor?.color_name || firstColor?.color?.color_name || product.category?.cate_name || ""}
-          </p>
           <div className="color-swatches">
             {colorList.slice(0, 4).map((color, idx) => (
               <div

@@ -5,6 +5,7 @@ import { ApiURL, createSlug } from "../Variable";
 import "../style/LatestArrivalsByCategories.css";
 import ProductCardSkeleton from "./ProductCardSkeleton";
 import ProductCard from "./ProductCard";
+import { getLatestArrivals as getCachedLatestArrivals } from "../utils/dataCache";
 
 // High-fidelity luxury styled Error state with retry option
 const ErrorFallback = ({ message, onRetry }) => (
@@ -48,12 +49,8 @@ const LatestArrivalsByCategories = () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await axiosInstance.get(`${ApiURL}/getlatestarrivals`);
-            if (response.data.status === 1) {
-                setProducts(response.data.data || []);
-            } else {
-                setProducts([]);
-            }
+            const data = await getCachedLatestArrivals(axiosInstance);
+            setProducts(data || []);
         } catch (error) {
             console.error("Error fetching latest arrivals:", error);
             setError("We couldn't reach the server. Please verify your connection.");

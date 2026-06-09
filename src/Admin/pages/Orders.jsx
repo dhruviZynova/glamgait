@@ -15,7 +15,7 @@ import TrackingSection from "./TrackingSection";
 import { ORDER_STATUS, STATUS_LABELS, STATUS_COLORS } from "../../utils/constants";
 
 const AdminOrders = () => {
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState(null);
   const [openDropdownKey, setOpenDropdownKey] = useState(null);
   const containerRef = useRef(null);
 
@@ -216,7 +216,22 @@ const AdminOrders = () => {
 
         {/* Orders Grid */}
         <div className="grid gap-6">
-          {orders.length === 0 ? (
+          {orders === null ? (
+            <div className="glamloader-overlay" aria-label="Loading" role="status">
+              <div className="glamloader-logo">
+                KUNDRAT
+                <div className="glamloader-logo-fill">KUNDRAT</div>
+              </div>
+              <div className="glamloader-ring">
+                <svg viewBox="0 0 72 72">
+                  <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+                  <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+                  <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+                </svg>
+                <div className="glamloader-ring-dot" />
+              </div>
+            </div>
+          ) : orders.length === 0 ? (
             <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-gray-200">
               <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FaBoxOpen className="text-gray-300 text-3xl" />

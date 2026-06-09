@@ -10,7 +10,7 @@ const Sliders = () => {
   const { reset } = useForm();
   const fileInputRef = useRef();
 
-  const [sliderList, setSliderList] = useState([]);
+  const [sliderList, setSliderList] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [addLoading, setAddLoading] = useState(false);
@@ -121,6 +121,7 @@ const Sliders = () => {
       }
     } catch (error) {
       console.error(error);
+      setSliderList([]);
     }
   };
 
@@ -161,7 +162,22 @@ const Sliders = () => {
             Slider Images
           </h3>
 
-          {sliderList?.length === 0 ? (
+          {sliderList === null ? (
+            <div className="glamloader-overlay" aria-label="Loading" role="status">
+              <div className="glamloader-logo">
+                KUNDRAT
+                <div className="glamloader-logo-fill">KUNDRAT</div>
+              </div>
+              <div className="glamloader-ring">
+                <svg viewBox="0 0 72 72">
+                  <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+                  <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+                  <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+                </svg>
+                <div className="glamloader-ring-dot" />
+              </div>
+            </div>
+          ) : sliderList?.length === 0 ? (
             <p className="text-gray-500">No slider images available.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-2 gap-4">

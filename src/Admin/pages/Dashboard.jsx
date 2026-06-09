@@ -48,6 +48,7 @@ const formatRevenue = (revenue) => {
 const Dashboard = () => {
   const [timeframe, setTimeframe] = useState("daily");
   const [userCount, setUserCount] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [dashboardCount, setDashboardCount] = useState({
     totalRevenue: 0,
     totalOrders: 0,
@@ -133,16 +134,47 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchDashboardData();
-    fetchuserCount();
-    fetchChartData();
-    fetchRecentOrders();
-    fetchOrderStatusData();
+    const loadAllStats = async () => {
+      try {
+        setLoading(true);
+        await Promise.all([
+          fetchDashboardData(),
+          fetchuserCount(),
+          fetchChartData(),
+          fetchRecentOrders(),
+          fetchOrderStatusData(),
+        ]);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadAllStats();
   }, []);
 
   const getCurrentData = () => {
     return chartData[timeframe] || [];
   };
+
+  if (loading) {
+    return (
+      <div className="glamloader-overlay" aria-label="Loading" role="status">
+        <div className="glamloader-logo">
+          KUNDRAT
+          <div className="glamloader-logo-fill">KUNDRAT</div>
+        </div>
+        <div className="glamloader-ring">
+          <svg viewBox="0 0 72 72">
+            <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+            <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+            <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+          </svg>
+          <div className="glamloader-ring-dot" />
+        </div>
+      </div>
+    );
+  }
 
   const StatCard = ({
     title,

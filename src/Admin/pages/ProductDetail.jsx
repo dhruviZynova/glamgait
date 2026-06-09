@@ -23,9 +23,11 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState(null);
   const [mainMedia, setMainMedia] = useState("");
   const [showStockMatrix, setShowStockMatrix] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const fetchProduct = async () => {
     try {
+      setLoading(true);
       const response = await adminAxios.get(
         `${ApiURL}/getproductbyid/${p_id}`
       );
@@ -99,6 +101,8 @@ const ProductDetail = () => {
     } catch (error) {
       showToaster(0, error?.response?.data?.description || "Error fetching product");
       navigate("/admin/product");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -137,6 +141,25 @@ const ProductDetail = () => {
       }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="glamloader-overlay" aria-label="Loading" role="status">
+        <div className="glamloader-logo">
+          KUNDRAT
+          <div className="glamloader-logo-fill">KUNDRAT</div>
+        </div>
+        <div className="glamloader-ring">
+          <svg viewBox="0 0 72 72">
+            <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+            <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+            <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+          </svg>
+          <div className="glamloader-ring-dot" />
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (

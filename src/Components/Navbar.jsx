@@ -7,6 +7,7 @@ import axiosInstance from "../Axios/axios";
 import { ApiURL, createSlug } from "../Variable";
 import { useCart } from "../Context/CartContext";
 import { useUser } from "../Context/UserContext";
+import { getCategories as getCachedCategories, getAnnouncements as getCachedAnnouncements } from "../utils/dataCache";
 
 const Navbar = () => {
   const location = useLocation();
@@ -96,23 +97,23 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const getAnnouncements = async () => {
+  const getAnnouncements = useCallback(async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/getannouncements`);
-      if (res?.data?.status === 1) setAnnouncements(res.data.data);
+      const data = await getCachedAnnouncements(axiosInstance);
+      if (data) setAnnouncements(data);
     } catch (err) {
       console.error(err);
     }
-  };
+  }, []);
 
-  const getCategories = async () => {
+  const getCategories = useCallback(async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/getcategory`);
-      if (res?.data?.status === 1) setCategories(res.data.data);
+      const data = await getCachedCategories(axiosInstance);
+      if (data) setCategories(data);
     } catch (err) {
       console.error(err);
     }
-  };
+  }, []);
 
   const fetchCategoryFilters = useCallback(async (cate_id) => {
     if (!cate_id) return;
@@ -299,10 +300,9 @@ const Navbar = () => {
               >
                 <Link
                   to={item.to}
-                  className={`text-[16px] capitalize transition-all duration-300 ${
-                    (location.pathname.startsWith("/collections") && item.cate_slug && location.pathname.includes(item.cate_slug)) ||
-                    (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug) ||
-                    (location.pathname === item.to)
+                  className={`text-[16px] capitalize transition-all duration-300 ${(location.pathname.startsWith("/collections") && item.cate_slug && location.pathname.includes(item.cate_slug)) ||
+                      (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug) ||
+                      (location.pathname === item.to)
                       ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
                       : "text-[#767676] font-medium hover:text-[#1C2F2F]"
                     }`}
@@ -512,10 +512,9 @@ const Navbar = () => {
                         <Link
                           to={item.to}
                           onClick={() => setIsOpen(false)}
-                          className={`flex-grow py-4 capitalize transition-colors ${
-                            location.pathname === item.to || 
-                            (item.cate_slug && location.pathname.includes(item.cate_slug)) ||
-                            (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug)
+                          className={`flex-grow py-4 capitalize transition-colors ${location.pathname === item.to ||
+                              (item.cate_slug && location.pathname.includes(item.cate_slug)) ||
+                              (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug)
                               ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
                               : "text-gray-900 font-medium"
                             }`}
