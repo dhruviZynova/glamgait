@@ -10,12 +10,12 @@ import {
 } from "@heroicons/react/24/outline";
 import { Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import axiosInstance from "../../Axios/axios";
-import { ApiURL, userInfo } from "../../Variable";
+import { adminAxios } from "../../Axios/axios";
+import { ApiURL } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Contact = () => {
-  const [contacts, setContacts] = useState([]);
+  const [contacts, setContacts] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -26,12 +26,10 @@ const Contact = () => {
     contactId: null,
     name: "",
   });
-  const userData = userInfo();
-  const token = userData?.token;
 
   const fetchContacts = async (page = 1, limit = itemsPerPage, search = searchTerm) => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getcontacts`, {
+      const response = await adminAxios.get(`${ApiURL}/getcontacts`, {
         params: { page, limit, search },
       });
 
@@ -43,6 +41,7 @@ const Contact = () => {
       setTotalPages(totalPages);
     } catch (error) {
       console.error("Error fetching contacts:", error);
+      setContacts([]);
     }
   };
 
@@ -56,13 +55,8 @@ const Contact = () => {
 
   const confirmDelete = async () => {
     try {
-      await axiosInstance.delete(
-        `${ApiURL}/deletecontact/${deleteModal.contactId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      await adminAxios.delete(
+        `${ApiURL}/deletecontact/${deleteModal.contactId}`
       );
       toast.success("Request Deleted...");
       fetchContacts(currentPage);
@@ -125,13 +119,13 @@ const Contact = () => {
 
   return (
     <div className="pb-8">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Contact Requests</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-gray-800 text-left">Contact Requests</h1>
         <div className="relative flex-grow max-w-md">
           <input
             type="text"
             placeholder="Search contacts..."
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -142,7 +136,22 @@ const Contact = () => {
         </div>
       </div>
 
-      {contacts?.length === 0 ? (
+      {contacts === null ? (
+        <div className="glamloader-overlay" aria-label="Loading" role="status">
+          <div className="glamloader-logo">
+            KUNDRAT
+            <div className="glamloader-logo-fill">KUNDRAT</div>
+          </div>
+          <div className="glamloader-ring">
+            <svg viewBox="0 0 72 72">
+              <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+            </svg>
+            <div className="glamloader-ring-dot" />
+          </div>
+        </div>
+      ) : contacts?.length === 0 ? (
         <div className="text-center py-10">
           <p className="text-gray-500 text-lg" role="status">
             No contact requests found
@@ -182,7 +191,7 @@ const Contact = () => {
                             aria-hidden="true"
                           />
                           <div className="text-sm font-medium text-gray-900">
-                            {contact.first_name} {contact?.last_name}
+                            {contact.name}
                           </div>
                         </div>
                       </td>
@@ -214,7 +223,7 @@ const Contact = () => {
                           onClick={() =>
                             handleDelete(contact.contact_id, contact.name)
                           }
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 cursor-pointer"
                           aria-label={`Delete contact request from ${contact.name || "Unknown"
                             }`}
                         >
@@ -251,7 +260,7 @@ const Contact = () => {
                   disabled={currentPage === 1}
                   className={`px-3 py-1 border rounded flex items-center ${currentPage === 1
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-50"
+                    : "hover:bg-gray-50 cursor-pointer"
                     }`}
                   aria-label="Previous page"
                 >
@@ -274,7 +283,7 @@ const Contact = () => {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`px-3 py-1 border rounded ${currentPage === pageNum
+                        className={`px-3 py-1 border rounded cursor-pointer ${currentPage === pageNum
                           ? "bg-black text-white border-black"
                           : "hover:bg-gray-50"
                           }`}
@@ -302,7 +311,7 @@ const Contact = () => {
                     setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                   }
                   disabled={currentPage === totalPages}
-                  className={`px-3 py-1 border rounded flex items-center ${currentPage === totalPages
+                  className={`px-3 py-1 border rounded flex items-center cursor-pointer ${currentPage === totalPages
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:bg-gray-50"
                     }`}

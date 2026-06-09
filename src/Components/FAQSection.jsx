@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import faqbgimg from '../assets/images/faqbgimg.png';
+import faqbgimg from '../assets/images/faqbgimg.webp';
+import ScrollReveal from './Ui/ScrollReveal';
 
 const FAQItem = ({ question, answer, isOpen, onClick }) => {
     return (
-        <div className={`border border-gray-300 rounded-2xl mb-4 overflow-hidden transition-all duration-300`}>
+        <div className={`border border-gray-300 rounded-2xl mb-4 overflow-hidden transition-all duration-300 bg-[#ffffffcc]`}>
             <button
-                className="w-full px-6 py-5 flex justify-between items-center text-left focus:outline-none"
+                className="w-full px-4 md:px-6 py-5 flex justify-between items-center text-left focus:outline-none"
                 onClick={onClick}
             >
                 <span className="text-[#333333] font-Montserrat font-medium text-base md:text-lg pr-4">
@@ -19,7 +20,7 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => {
                 )}
             </button>
             <div
-                className={`px-6 transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'
+                className={`px-4 md:px-6 transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'
                     } overflow-hidden`}
             >
                 <p className="text-gray-600 font-Montserrat text-sm md:text-base leading-relaxed">
@@ -73,31 +74,48 @@ const FAQSection = () => {
     ];
 
     return (
-        <section className="py-6 md:py-16 px-4 md:px-10 lg:px-20 relative overflow-hidden">
+        <section className="py-10 md:py-16 px-2 md:px-10 lg:px-20 relative overflow-hidden">
+            
             {/* Illustration Image */}
-            {/* <div className="relative mt-8 lg:mt-16 flex justify-center lg:justify-start"> */}
-            <img
-                src={faqbgimg}
-                alt="FAQ Illustration"
-                className="absolute bottom-0 left-0 z-[-1] w-full max-w-[450px] object-contain"
-            />
-            {/* </div> */}
+            <ScrollReveal 
+                className="absolute bottom-0 left-0 z-[-1] w-full max-w-[450px]"
+                animation="blur-in"
+                duration={1500}
+                delay={200}
+            >
+                <img
+                    src={faqbgimg}
+                    alt="FAQ Illustration"
+                    className="w-full object-contain"
+                    loading="lazy"
+                />
+            </ScrollReveal>
 
-            <div className="mx-auto flex flex-col lg:flex-row items-start gap-12 lg:gap-20">
+            <div className="mx-auto flex flex-col lg:flex-row items-start lg:gap-20">
+                
                 {/* Left Side Content */}
-                <div className="w-full lg:w-[40%] space-y-8">
-                    <div className="space-y-4">
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-['Oxygen'] font-bold font-700">
+                <ScrollReveal 
+                    className="w-full lg:w-[40%] flex flex-col"
+                    animation="fade-right"
+                    duration={900}
+                >
+                    <div className="text-center md:text-left mb-8 md:mb-16 relative z-10 px-4 md:px-0">
+                        <h2 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
                             Frequently Asked Questions
                         </h2>
-                        <p className="text-[#666666] font-['Oxygen'] font-400 text-base max-w-md leading-relaxed">
-                            Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet.
+                        <p className="text-[#767676] font-Poppins font-400 text-base max-w-2xl mx-auto">
+                            Got questions? We've got answers. Find helpful information about our premium modest wear, shipping timelines, payment methods, returns, and custom stitching services below.
                         </p>
                     </div>
-                </div>
+                </ScrollReveal>
 
                 {/* Right Side Accordion */}
-                <div className="w-full lg:w-[60%]">
+                <ScrollReveal 
+                    className="w-full lg:w-[60%]"
+                    animation="fade-up"
+                    duration={1000}
+                    delay={150}
+                >
                     <div className="space-y-4">
                         {faqs.map((faq, index) => (
                             <FAQItem
@@ -109,7 +127,7 @@ const FAQSection = () => {
                             />
                         ))}
                     </div>
-                </div>
+                </ScrollReveal>
             </div>
         </section>
     );

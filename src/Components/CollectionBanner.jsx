@@ -1,9 +1,9 @@
 import React from 'react';
 
-import img1 from '../assets/images/collection1.png';
-import img2 from '../assets/images/collection2.png';
-import img3 from '../assets/images/collection3.png';
-import img4 from '../assets/images/collection4.png';
+import img1 from '../assets/images/collection1.webp';
+import img2 from '../assets/images/collection2.webp';
+import img3 from '../assets/images/collection3.webp';
+import img4 from '../assets/images/collection4.webp';
 
 /*
   KEY CONCEPT:
@@ -30,23 +30,23 @@ const cards = [
     rotateY: '8deg',
     scale: 0.95,
     translateY: '12px',
-    translateX: '12px', // Pull towards center to close middle gap
+    translateX: '10px', // Pull towards center to close middle gap
     z: 2
   },
   {
     src: img3,
-    alt: 'Casual Modesty',
-    label: 'Prayer Wear',
+    alt: 'Traditional Charm',
+    label: 'Designer Sarees',
     rotateY: '-8deg',
     scale: 0.95,
     translateY: '12px',
-    translateX: '-12px', // Pull towards center to close middle gap
+    translateX: '-10px', // Pull towards center to close middle gap
     z: 3
   },
   {
     src: img4,
-    alt: 'Luxury Edit',
-    label: 'Luxury Niqabs',
+    alt: 'Ethnic Luxury',
+    label: 'Lehengas & Kurtis',
     rotateY: '-25deg',
     scale: 1.05,
     translateY: '10px',
@@ -58,11 +58,11 @@ const cards = [
 const CollectionBanner = () => {
   return (
     <section
-      className="w-full py-6 md:py-16 overflow-hidden flex flex-col items-center px-2 md:px-8 xl:px-24"
+      className="w-full py-10 md:py-16 overflow-hidden flex flex-col items-center px-2 md:px-8 xl:px-24"
     >
       {/* Header */}
-      <div className="text-center mb-12 md:mb-20 px-4">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
+      <div className="text-center mb-12 md:mb-20 px-2 md:px-4">
+        <h2 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
           Explore Our Latest Collections <br className="hidden sm:block" /> Designed For You
         </h2>
         <p className="text-[#767676] font-Poppins font-400 text-base max-w-2xl mx-auto">
@@ -109,15 +109,16 @@ const CollectionBanner = () => {
                   alt={card.alt}
                   className="w-full object-cover block group-hover:scale-110 transition-transform duration-700"
                   style={{ aspectRatio: '3/4' }}
+                  loading="lazy"
                 />
                 {/* Overlay with Label */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
                   <span className="text-white text-1xl md:text-2xl font-700 font-bold mb-2 font-Playfair Display transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 tracking-wide">
                     {card.label}
                   </span>
-                  <button className="text-white/80 text-sm font-semibold uppercase tracking-widest flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
+                  {/* <button className="text-white/80 text-sm font-semibold uppercase tracking-widest flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
                     Shop Now <span className="text-lg">→</span>
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </div>
@@ -126,7 +127,7 @@ const CollectionBanner = () => {
       </div>
 
       {/* ===== MOBILE: grid layout, all cards visible ===== */}
-      <div className="grid md:hidden w-full px-4 gap-4 pb-6 grid-cols-1 sm:grid-cols-2">
+      <div className="grid md:hidden w-full px-0 md:px-4 gap-4 pb-6 grid-cols-1 sm:grid-cols-2">
         {cards.map((card, i) => (
           <div
             key={i}
@@ -137,11 +138,12 @@ const CollectionBanner = () => {
               alt={card.alt}
               className="w-full object-cover block"
               style={{ aspectRatio: '5/4' }}
+              loading="lazy"
             />
             {/* Mobile Label Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-transparent to-transparent flex flex-col justify-end p-5">
               <span className="text-white text-xl font-700 font-bold mb-2 font-Playfair Display">{card.label}</span>
-              <span className="text-white/80 text-xs mt-1 uppercase tracking-wider">Shop Now</span>
+              {/* <span className="text-white/80 text-xs mt-1 uppercase tracking-wider">Shop Now</span> */}
             </div>
           </div>
         ))}

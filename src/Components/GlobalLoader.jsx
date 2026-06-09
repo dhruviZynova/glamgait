@@ -1,83 +1,59 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
 import { useLoader } from "../Context/LoaderContext";
 
-const NAV_FLASH_MS = 200;
-
+/**
+ * GlobalLoader — full-page overlay shown ONLY during the initial auth check.
+ * Regular API calls no longer trigger this loader; they use local skeleton
+ * states or per-button spinners instead.
+ */
 export default function GlobalLoader() {
-  const { isLoading, show, hide } = useLoader();
-  const location = useLocation();
-  const navTimerRef = useRef(null);
-  const countIntervalRef = useRef(null);
-  const [count, setCount] = useState(0);
-  const [visible, setVisible] = useState(false);
+  const { initialLoad } = useLoader();
+  const safetyTimerRef = useRef(null);
+  const [visible, setVisible] = useState(initialLoad); // starts visible only if initial auth check is pending
   const [fading, setFading] = useState(false);
 
-  // Flash the loader briefly on every route change.
+  // When initialLoad transitions false → start fade-out
   useEffect(() => {
-    show();
-    if (navTimerRef.current) clearTimeout(navTimerRef.current);
-    navTimerRef.current = setTimeout(hide, NAV_FLASH_MS);
-    return () => {
-      if (navTimerRef.current) clearTimeout(navTimerRef.current);
-    };
-  }, [location.pathname]);
-
-  useEffect(() => {
-    const clearCount = () => {
-      if (countIntervalRef.current) {
-        clearInterval(countIntervalRef.current);
-        countIntervalRef.current = null;
-      }
-    };
-
-    if (isLoading) {
-      // Show loader and slowly count up to 90.
-      clearCount();
-      setFading(false);
-      setVisible(true);
-      setCount(0);
-      countIntervalRef.current = setInterval(() => {
-        setCount(prev => {
-          if (prev >= 90) { clearCount(); return 90; }
-          return prev + 1;
-        });
-      }, 25);
-    } else {
-      // Loading done — rush counter to 100, then fade out.
-      clearCount();
-      countIntervalRef.current = setInterval(() => {
-        setCount(prev => {
-          if (prev >= 100) {
-            clearCount();
-            // Pause at 100% for 400ms, then fade and unmount.
-            setTimeout(() => {
-              setFading(true);
-              setTimeout(() => {
-                setVisible(false);
-                setFading(false);
-                setCount(0);
-              }, 700);
-            }, 400);
-            return 100;
-          }
-          return prev + 1;
-        });
-      }, 12);
+    if (!initialLoad) {
+      if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
+      // Short delay so the app has painted before we fade
+      safetyTimerRef.current = setTimeout(() => {
+        setFading(true);
+        setTimeout(() => {
+          setVisible(false);
+          setFading(false);
+        }, 700);
+      }, 120);
     }
+    return () => {
+      if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
+    };
+  }, [initialLoad]);
 
-    return clearCount;
-  }, [isLoading]);
+  // Safety net — never block UI for more than 3 seconds regardless
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setFading(true);
+      setTimeout(() => {
+        setVisible(false);
+        setFading(false);
+      }, 700);
+    }, 3000);
+    return () => clearTimeout(id);
+  }, []);
 
   if (!visible) return null;
 
   return (
-    <div className={`glamloader-overlay${fading ? ' glamloader-overlay--fade' : ''}`} aria-label="Loading" role="status">
-
+    <div
+      className={`glamloader-overlay${fading ? " glamloader-overlay--fade" : ""}`}
+      aria-label="Loading"
+      role="status"
+    >
       {/* Logo */}
       <div className="glamloader-logo">
-        GLAMGAIT
-        <div className="glamloader-logo-fill">GLAMGAIT</div>
+        KUNDRAT
+        <div className="glamloader-logo-fill">KUNDRAT</div>
       </div>
 
       {/* Morphing ring */}
@@ -89,7 +65,6 @@ export default function GlobalLoader() {
         </svg>
         <div className="glamloader-ring-dot" />
       </div>
-
     </div>
   );
 }

@@ -22,7 +22,7 @@ const useCoupons = () => {
           setCoupons(validCoupons);
         }
       } catch (err) {
-        console.error("Coupon fetch failed");
+        console.error(err, "Coupon fetch failed");
       }
     };
 

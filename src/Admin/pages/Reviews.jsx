@@ -6,13 +6,14 @@ import {
   XMarkIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import { ApiURL } from "../../Variable";
+import { ApiURL, adminInfo } from "../../Variable";
 import toast from "react-hot-toast";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Reviews = () => {
-  const [reviews, setReviews] = useState([]);
+  const adminData = adminInfo();
+  const [reviews, setReviews] = useState(null);
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,11 +48,19 @@ const Reviews = () => {
   // Fetch Reviews
   const fetchReviews = async (page = 1) => {
     try {
-      const response = await axiosInstance.post(`${ApiURL}/getalluserreviews`, {
-        page,
-        perPage: reviewsPerPage,
-        search: searchTerm,
-      });
+      const response = await adminAxios.post(
+        `${ApiURL}/getalluserreviews`,
+        {
+          page,
+          perPage: reviewsPerPage,
+          search: searchTerm,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${adminData?.auth_token || adminData?.token}`,
+          },
+        }
+      );
       if (response.data.status === 1) {
         const data = response.data.data;
         setReviews(data.reviews || []);
@@ -70,8 +79,8 @@ const Reviews = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axiosInstance.post(`${ApiURL}/getproducts`, {
-        limit: 100,
+      const res = await adminAxios.get(`${ApiURL}/getproducts`, {
+        params: { limit: 100 },
       });
       if (res.data.status === 1) setProducts(res.data.data || []);
     } catch (err) {
@@ -94,13 +103,13 @@ const Reviews = () => {
 
   const confirmDelete = async () => {
     try {
-      await axiosInstance.delete(
+      await adminAxios.delete(
         `${ApiURL}/deleteuserreview/${deleteModal.reviewId}`
       );
       toast.success("Review deleted");
       fetchReviews(currentPage);
     } catch (error) {
-      toast.error("Failed to delete");
+      toast.error(error.response?.data?.message || "Failed to delete");
     } finally {
       setDeleteModal({ isOpen: false, reviewId: null, name: "" });
     }
@@ -108,8 +117,8 @@ const Reviews = () => {
 
   const togglePublish = async (reviewId, currentStatus) => {
     try {
-      const newStatus = currentStatus ? 0 : 1;
-      await axiosInstance.post(`${ApiURL}/togglereviewpublish`, {
+      const newStatus = !currentStatus;
+      await adminAxios.post(`${ApiURL}/togglereviewpublish`, {
         r_id: reviewId,
         is_published: newStatus,
       });
@@ -173,10 +182,10 @@ const Reviews = () => {
       }
       if (modal.editMode) {
         formData.append("r_id", modal.reviewId);
-        await axiosInstance.post(`${ApiURL}/updateuserreview`, formData);
+        await adminAxios.post(`${ApiURL}/updateuserreview`, formData);
         toast.success("Review updated!");
       } else {
-        await axiosInstance.post(`${ApiURL}/addfakereview`, formData);
+        await adminAxios.post(`${ApiURL}/addfakereview`, formData);
         toast.success("Review added!");
       }
 
@@ -210,17 +219,17 @@ const Reviews = () => {
   };
 
   return (
-    <div className="container mx-auto pb-8 max-w-7xl">
+    <div className="pb-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h2 className="text-2xl font-bold text-gray-800">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h2 className="text-2xl font-bold text-gray-800 text-left">
           Review Management
         </h2>
-        <div className="flex gap-3 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <input
             type="text"
             placeholder="Search reviews..."
-            className="flex-1 sm:w-64 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-sm"
+            className="w-full sm:w-64 px-4 py-2 border rounded-lg focus:outline-none"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -229,7 +238,7 @@ const Reviews = () => {
           />
           <button
             onClick={() => openModal(false)}
-            className="bg-black text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-800 transition"
+            className="w-full sm:w-auto bg-black text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-800 transition cursor-pointer"
           >
             Add Review
           </button>
@@ -237,14 +246,29 @@ const Reviews = () => {
       </div>
 
       {/* Loading */}
-      {reviews.length === 0 ? (
+      {reviews === null ? (
+        <div className="glamloader-overlay" aria-label="Loading" role="status">
+          <div className="glamloader-logo">
+            KUNDRAT
+            <div className="glamloader-logo-fill">KUNDRAT</div>
+          </div>
+          <div className="glamloader-ring">
+            <svg viewBox="0 0 72 72">
+              <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+            </svg>
+            <div className="glamloader-ring-dot" />
+          </div>
+        </div>
+      ) : reviews.length === 0 ? (
         <div className="text-center py-16 text-gray-500 text-lg">
           No reviews found
         </div>
       ) : (
         <>
           {/* Mobile Cards */}
-          <div className="block lg:hidden grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="grid md:hidden grid-cols-1 sm:grid-cols-2 gap-4">
             {reviews.map((r) => (
               <div
                 key={r.r_id}
@@ -307,13 +331,13 @@ const Reviews = () => {
                   <div className="flex gap-2 text-xs">
                     <button
                       onClick={() => openModal(true, r)}
-                      className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                      className="text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
                     >
                       <PencilSquareIcon className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(r.r_id, r.reviewer_name)}
-                      className="text-red-600 hover:text-red-800 flex items-center gap-1"
+                      className="text-red-600 hover:text-red-800 flex items-center gap-1 cursor-pointer"
                     >
                       <TrashIcon className="w-4 h-4" />
                     </button>
@@ -329,7 +353,6 @@ const Reviews = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Image</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Product</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Rating</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Comment</th>
@@ -351,13 +374,12 @@ const Reviews = () => {
                         "-"
                       )}
                     </td>
-                    <td className="px-6 py-3 font-medium">
-                      {r?.reviewer_name}
-                    </td>
                     <td className="px-6 py-3">{r.product_name || "N/A"}</td>
-                    <td className="px-6 py-3 flex items-center gap-1">
-                      {r.rating}
-                      <StarIcon className="w-4 h-4 text-yellow-500" />
+                    <td className="px-6 py-3">
+                      <div className="flex items-center justify-center gap-1">
+                        {r.rating}
+                        <StarIcon className="w-4 h-4 text-yellow-500" />
+                      </div>
                     </td>
                     <td className="px-6 py-3">{r.message}</td>
                     <td className="px-6 py-3 text-gray-500">
@@ -375,19 +397,19 @@ const Reviews = () => {
                             }
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
                         </label>
 
                         {/* Edit & Delete */}
-                        <button
+                        {/* <button
                           onClick={() => openModal(true, r)}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-blue-600 hover:text-blue-800 cursor-pointer"
                         >
                           <PencilSquareIcon className="w-5 h-5" />
-                        </button>
+                        </button> */}
                         <button
                           onClick={() => handleDelete(r.r_id, r.reviewer_name)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 cursor-pointer"
                         >
                           <TrashIcon className="w-5 h-5" />
                         </button>
@@ -443,7 +465,7 @@ const Reviews = () => {
                 onClick={() =>
                   setModal({ open: false, editMode: false, reviewId: null })
                 }
-                className="p-2 -mr-2 rounded-full hover:bg-gray-100 transition-colors"
+                className="p-2 -mr-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
               >
                 <XMarkIcon className="w-7 h-7 text-gray-500 hover:text-gray-700" />
               </button>
@@ -460,7 +482,7 @@ const Reviews = () => {
                   <button
                     type="button"
                     onClick={() => setProductDropdownOpen(!productDropdownOpen)}
-                    className="w-full flex items-center justify-between px-4 py-3.5 border border-gray-300 rounded-xl bg-white hover:border-gray-400 focus:border-black focus:ring-2 focus:ring-black/20 transition text-left text-sm sm:text-base"
+                    className="w-full flex items-center justify-between px-4 py-2 border border-gray-300 rounded-xl bg-white focus:outline-none transition text-left text-sm sm:text-base"
                   >
                     {form.product ? (
                       <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -488,7 +510,7 @@ const Reviews = () => {
 
                   {/* Dropdown - important mobile fix */}
                   {productDropdownOpen && (
-                    <div className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-2xl max-h-[45vh] sm:max-h-72 overflow-y-auto">
+                    <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-2xl max-h-[45vh] sm:max-h-72 overflow-y-auto">
                       {products.length === 0 ? (
                         <div className="px-5 py-8 text-center text-gray-500 text-sm">
                           No products available
@@ -547,12 +569,12 @@ const Reviews = () => {
                       key={star}
                       type="button"
                       onClick={() => setForm({ ...form, rating: star })}
-                      className={`p-1.5 transition-transform active:scale-95 sm:hover:scale-110 ${star <= form.rating
+                      className={`p-1.5 transition-transform ${star <= form.rating
                         ? "text-yellow-500"
                         : "text-gray-200"
                         }`}
                     >
-                      <StarIcon className="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-sm" />
+                      <StarIcon className="w-8 h-8 sm:w-9 sm:h-9 drop-shadow-sm" />
                     </button>
                   ))}
                 </div>
@@ -570,7 +592,7 @@ const Reviews = () => {
                     setForm({ ...form, comment: e.target.value })
                   }
                   placeholder="Write your honest review here..."
-                  className="w-full px-4 py-3.5 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black resize-none placeholder-gray-400"
+                  className="w-full px-4 py-3.5 text-base border border-gray-300 rounded-xl focus:outline-none resize-none placeholder-gray-400"
                 />
               </div>
 
@@ -584,7 +606,7 @@ const Reviews = () => {
                   placeholder="John Doe"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-4 py-3.5 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black placeholder-gray-400"
+                  className="w-full px-4 py-3.5 text-base border border-gray-300 rounded-xl focus:outline-none placeholder-gray-400"
                 />
               </div>
 
@@ -603,7 +625,7 @@ const Reviews = () => {
                       customCreatedAt: e.target.value || null,
                     })
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none"
                 />
                 <p className="mt-1 text-xs text-gray-500">
                   {modal.editMode && !form.is_fake
@@ -672,7 +694,7 @@ const Reviews = () => {
                         onClick={() =>
                           setForm({ ...form, image: null, preview: null })
                         }
-                        className="text-red-600 hover:text-red-800 underline text-sm mt-1"
+                        className="text-red-600 hover:text-red-800 underline text-sm mt-1 cursor-pointer"
                       >
                         Remove photo
                       </button>
@@ -689,7 +711,7 @@ const Reviews = () => {
                 onClick={() =>
                   setModal({ open: false, editMode: false, reviewId: null })
                 }
-                className="flex-1 py-3.5 px-6 rounded-xl font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 active:bg-gray-200 transition-colors order-2 sm:order-1"
+                className="flex-1 py-3.5 px-6 rounded-xl font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 active:bg-gray-200 transition-colors order-2 sm:order-1 cursor-pointer"
               >
                 Cancel
               </button>
@@ -697,7 +719,7 @@ const Reviews = () => {
               <button
                 disabled={submitting}
                 onClick={handleSubmit}
-                className={`flex-1 py-3.5 px-6 rounded-xl font-medium text-white transition-colors order-1 sm:order-2 ${submitting
+                className={`flex-1 py-3.5 px-6 rounded-xl font-medium text-white transition-colors order-1 sm:order-2 cursor-pointer ${submitting
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-black hover:bg-gray-900 active:bg-gray-900"
                   }`}

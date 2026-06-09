@@ -1,17 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "reactstrap";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import { useForm } from "react-hook-form";
 import { Pencil, PlusCircle, Trash2 } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
-import { Toaster } from "react-hot-toast";
 
 const Sliders = () => {
   const { reset } = useForm();
   const fileInputRef = useRef();
 
-  const [sliderList, setSliderList] = useState([]);
+  const [sliderList, setSliderList] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [addLoading, setAddLoading] = useState(false);
@@ -31,7 +30,7 @@ const Sliders = () => {
 
     setSelectedImages((prev) => {
       if (prev.length + files.length > 3 && !editingImage) {
-        console.log("You can only upload up to 3 images.");
+        showToaster(0, "You can only upload up to 3 images.");
         return prev;
       }
       return editingImage ? files.slice(0, 1) : [...prev, ...files];
@@ -52,7 +51,7 @@ const Sliders = () => {
   // Add or Update
   const saveSliderImages = async () => {
     if (selectedImages.length === 0) {
-      console.log("Please select an image first.");
+      showToaster(0, "Please select an image first.");
       return;
     }
 
@@ -71,9 +70,9 @@ const Sliders = () => {
     try {
       let response;
       if (editingImage) {
-        response = await axiosInstance.put(`${ApiURL}/updateslider`, formData);
+        response = await adminAxios.put(`${ApiURL}/updateslider`, formData);
       } else {
-        response = await axiosInstance.post(`${ApiURL}/addslider`, formData);
+        response = await adminAxios.post(`${ApiURL}/addslider`, formData);
       }
 
       showToaster(response?.data?.status, response?.data?.description);
@@ -94,11 +93,14 @@ const Sliders = () => {
 
   const deleteSliderFunction = async () => {
     try {
-      const response = await axiosInstance.delete(
+      const response = await adminAxios.delete(
         `${ApiURL}/deleteslider/${deleteModal.image_id}`
       );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status === 1) {
+        setSliderList((prev) =>
+          prev.filter((img) => img.image_id !== deleteModal.image_id)
+        );
         getSlidersFunction();
       }
     } catch (error) {
@@ -111,7 +113,7 @@ const Sliders = () => {
   // Fetch Sliders
   const getSlidersFunction = async () => {
     try {
-      const response = await axiosInstance.get("/getsliders");
+      const response = await adminAxios.get("/getsliders");
       if (response?.data?.status === 1) {
         setSliderList(response?.data?.data);
       } else {
@@ -119,6 +121,7 @@ const Sliders = () => {
       }
     } catch (error) {
       console.error(error);
+      setSliderList([]);
     }
   };
 
@@ -134,21 +137,20 @@ const Sliders = () => {
 
   return (
     <>
-      <Toaster />
       <div className="min-h-screen text-gray-800 pb-8">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Images</h2>
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-6 sm:items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 text-left">Images</h2>
           <div className="md:flex justify-items-center w-full sm:w-auto space-y-2 md:space-y-0 gap-2">
             <input
               type="text"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className=" text-black placeholder-gray-400 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-black p-2 rounded-md w-full "
+              className=" text-black placeholder-gray-400 border border-gray-600 focus:outline-none p-2 rounded-md w-full "
             />
             <Button
               onClick={handleAddImages}
-              className="flex w-full items-center justify-center gap-2 bg-black hover:bg-black text-white px-4 py-2 rounded-lg"
+              className="flex w-full items-center justify-center gap-2 bg-black hover:bg-black text-white px-4 py-2 rounded-lg cursor-pointer"
             >
               <PlusCircle size={20} /> Add Images
             </Button>
@@ -160,7 +162,22 @@ const Sliders = () => {
             Slider Images
           </h3>
 
-          {sliderList?.length === 0 ? (
+          {sliderList === null ? (
+            <div className="glamloader-overlay" aria-label="Loading" role="status">
+              <div className="glamloader-logo">
+                KUNDRAT
+                <div className="glamloader-logo-fill">KUNDRAT</div>
+              </div>
+              <div className="glamloader-ring">
+                <svg viewBox="0 0 72 72">
+                  <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+                  <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+                  <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+                </svg>
+                <div className="glamloader-ring-dot" />
+              </div>
+            </div>
+          ) : sliderList?.length === 0 ? (
             <p className="text-gray-500">No slider images available.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-2 gap-4">
@@ -177,7 +194,7 @@ const Sliders = () => {
                   >
                     <div className="w-full aspect-[16/9] bg-gray-200">
                       <img
-                        src={`${ApiURL}/assets/Sliders/${img?.image}`}
+                        src={img?.image}
                         alt={img?.image}
                         className="w-full h-full object-cover"
                       />
@@ -186,7 +203,7 @@ const Sliders = () => {
                     <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition">
                       <button
                         onClick={() => handleEditImage(img)}
-                        className="bg-blue-500 text-white p-1 rounded"
+                        className="bg-blue-500 text-white p-1 rounded cursor-pointer"
                         aria-label={`Edit image ${img.image_id}`}
                       >
                         <Pencil size={16} />
@@ -199,7 +216,7 @@ const Sliders = () => {
                             image_name: img.image,
                           })
                         }
-                        className="bg-red-500 text-white p-1 rounded"
+                        className="bg-red-500 text-white p-1 rounded cursor-pointer"
                         aria-label={`Delete slider ${img.image}`}
                       >
                         <Trash2 size={16} />

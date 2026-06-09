@@ -5,13 +5,15 @@ import {
 import { LogOut } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../../Context/UserContext";
 
 const Topbar = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { logout } = useUser();
 
   const handleLogout = () => {
-    localStorage.removeItem("GlamGait");
+    logout();
     navigate("/admin/login");
   };
 
@@ -33,8 +35,8 @@ const Topbar = ({ onMenuClick }) => {
       </button>
 
       {/* Search bar */}
-      <div className="flex-1 px-4 flex justify-between sm:px-6 lg:px-8">
-        <div className="flex-1 flex items-center">
+      <div className="flex-1 px-4 flex justify-end sm:px-6 lg:px-8">
+        {/* <div className="flex-1 flex items-center">
           <div className="w-full flex md:ml-0">
             <div className="relative w-full text-gray-400 focus-within:text-gray-600">
               <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
@@ -49,26 +51,19 @@ const Topbar = ({ onMenuClick }) => {
               />
             </div>
           </div>
-        </div>
+        </div> */}
 
-        <div className="ml-4 flex items-center md:ml-6">
+        <div className="ml-4 flex items-center gap-1.5 md:ml-6">
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-none cursor-pointer"
+            className="bg-white cursor-pointer flex items-center gap-1.5"
           >
-            <span className="sr-only">Logout</span>
             <LogOut className="h-5 w-5 text-black" />
+            <span className="text-sm font-medium bg-white">
+              Logout
+            </span>
           </button>
-
-          {/* Profile dropdown */}
-          <div className="ml-3 relative">
-            <div className="flex items-center">
-              <span className="ml-2 text-sm font-medium text-gray-700 hidden md:block">
-                Glam Gait
-              </span>
-            </div>
-          </div>
         </div>
       </div>
       {isModalOpen && (

@@ -5,16 +5,14 @@ import {
   ArrowPathIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import axiosInstance from "../../Axios/axios";
-import { ApiURL, showToaster, userInfo } from "../../Variable";
+import { adminAxios } from "../../Axios/axios";
+import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 // 
 const Announcement = () => {
-  const userData = userInfo();
-
   const [isEdit, setIsEdit] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [announcements, setAnnouncements] = useState([]);
+  const [announcements, setAnnouncements] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     text: "",
@@ -29,7 +27,7 @@ const Announcement = () => {
   // Fetch announcements
   const fetchAnnouncements = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getannouncements`);
+      const response = await adminAxios.get(`${ApiURL}/getannouncements`);
       if (response?.data?.status) setAnnouncements(response?.data?.data);
       else setAnnouncements([]);
     } catch (error) {
@@ -48,12 +46,12 @@ const Announcement = () => {
     try {
       let response;
       if (isEdit) {
-        response = await axiosInstance.put(`${ApiURL}/updateannouncement`, {
+        response = await adminAxios.put(`${ApiURL}/updateannouncement`, {
           ann_id: formData.ann_id,
           text: formData.text,
         });
       } else {
-        response = await axiosInstance.post(`${ApiURL}/addannouncement`, {
+        response = await adminAxios.post(`${ApiURL}/addannouncement`, {
           text: formData.text,
         });
       }
@@ -76,11 +74,8 @@ const Announcement = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.delete(
-        `${ApiURL}/deleteannouncement/${deleteModal.ann_id}`,
-        {
-          headers: { Authorization: `Bearer ${userData?.token}` },
-        }
+      const response = await adminAxios.delete(
+        `${ApiURL}/deleteannouncement/${deleteModal.ann_id}`
       );
       showToaster(response?.data?.status, response?.data?.description);
       if (response?.data?.status) fetchAnnouncements();
@@ -99,7 +94,7 @@ const Announcement = () => {
   return (
     <div className="pb-8">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">
           Announcement Management
         </h1>
@@ -108,7 +103,7 @@ const Announcement = () => {
           <input
             type="text"
             placeholder="Search announcements..."
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -118,7 +113,7 @@ const Announcement = () => {
               setFormData({ text: "", ann_id: null });
               setIsModalOpen(true);
             }}
-            className="w-full flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             <span>Add Announcement</span>
@@ -127,7 +122,22 @@ const Announcement = () => {
       </div>
 
       {/* Table Section */}
-      {filteredAnnouncements?.length === 0 ? (
+      {announcements === null ? (
+        <div className="glamloader-overlay" aria-label="Loading" role="status">
+          <div className="glamloader-logo">
+            KUNDRAT
+            <div className="glamloader-logo-fill">KUNDRAT</div>
+          </div>
+          <div className="glamloader-ring">
+            <svg viewBox="0 0 72 72">
+              <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+            </svg>
+            <div className="glamloader-ring-dot" />
+          </div>
+        </div>
+      ) : filteredAnnouncements?.length === 0 ? (
         <div className="text-center py-10">
           <p className="text-gray-500 text-lg">No announcements found</p>
         </div>
@@ -162,13 +172,13 @@ const Announcement = () => {
                         });
                         setIsModalOpen(true);
                       }}
-                      className="text-black mr-4"
+                      className="text-black mr-4 cursor-pointer"
                     >
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(item?.ann_id, item?.text)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 cursor-pointer"
                     >
                       <TrashIcon className="h-5 w-5" />
                     </button>
@@ -195,7 +205,8 @@ const Announcement = () => {
                 <textarea
                   autoFocus
                   rows={3}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+                  placeholder="Enter announcement text..."
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                   value={formData?.text}
                   onChange={(e) =>
                     setFormData({ ...formData, text: e.target.value })
@@ -207,13 +218,13 @@ const Announcement = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black"
+                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer"
                 >
                   {isEdit ? "Update" : "Create"}
                 </button>

@@ -3,18 +3,34 @@ import { useNavigate } from "react-router-dom";
 import Topbar from "./components/Topbar";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
-import { userInfo } from "../Variable";
+import { adminInfo } from "../Variable";
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
-  const user = userInfo();
+  const user = adminInfo();
 
   useEffect(() => {
     if (!user?.auth_token || user?.role !== "admin") {
       navigate("/admin/login", { replace: true });
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    document.body.classList.add("admin-body");
+    return () => {
+      document.body.classList.remove("admin-body");
+    };
+  }, []);
+
+  // Synchronous security guard to block rendering child components prior to redirection
+  if (!user?.auth_token || user?.role !== "admin") {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-800"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -39,7 +55,7 @@ const AdminLayout = () => {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-2 md:p-6">
           <Outlet />
         </main>
       </div>

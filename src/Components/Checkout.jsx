@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Check, X, Loader2 } from "lucide-react";
+import { Check, X, Loader2, ChevronDown } from "lucide-react";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
 import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
+import ScrollReveal from "./Ui/ScrollReveal";
 
 const Checkout = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { cartItems = [], isGuest, guestId: stateGuestId } = location.state || {};
+    const { cartItems = [], guestId: stateGuestId } = location.state || {};
 
     const [currentStep, setCurrentStep] = useState(1); // 1: Personal, 2: Billing, 3: Confirmation
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -18,6 +19,9 @@ const Checkout = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [addresses, setAddresses] = useState([]);
     const [selectedAddressId, setSelectedAddressId] = useState(null);
+    const [isAddressDropdownOpen, setIsAddressDropdownOpen] = useState(false);
+    const addressDropdownRef = useRef(null);
+    const isPlacingOrderRef = useRef(false);
 
     const user = userInfo();
     const u_id = user?.u_id;
@@ -46,6 +50,11 @@ const Checkout = () => {
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
+        if (name === "phone") {
+            if (!/^\d*$/.test(value) || value.length > 10) {
+                return;
+            }
+        }
         setFormData((prev) => ({
             ...prev,
             [name]: type === "checkbox" ? checked : value,
@@ -75,6 +84,19 @@ const Checkout = () => {
         fetchAddresses();
     }, [u_id, guestId]);
 
+    // Close address dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (addressDropdownRef.current && !addressDropdownRef.current.contains(event.target)) {
+                setIsAddressDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     const fillFormFromAddress = (addr) => {
         setSelectedAddressId(addr.add_id);
         setFormData(prev => ({
@@ -92,12 +114,12 @@ const Checkout = () => {
         }));
     };
 
-    const subtotal = cartItems.reduce(
+    const subtotal = React.useMemo(() => cartItems.reduce(
         (acc, item) => acc + item.price * item.quantity,
         0
-    );
-    const shipping = 100; // Hardcoded as per UI design
-    const total = subtotal + shipping;
+    ), [cartItems]);
+    const shipping = location.state?.shippingCharge || 0;
+    const total = React.useMemo(() => subtotal + shipping, [subtotal, shipping]);
 
     const steps = [
         { id: 1, name: "Personal" },
@@ -110,21 +132,93 @@ const Checkout = () => {
             {addresses.length > 0 && (
                 <div className="md:col-span-2 space-y-2 mb-4">
                     <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base font-semibold">Select Saved Address</label>
-                    <select
-                        onChange={(e) => {
-                            const addr = addresses.find(a => a.add_id.toString() === e.target.value);
-                            if (addr) fillFormFromAddress(addr);
-                        }}
-                        value={selectedAddressId || ""}
-                        className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                    >
-                        <option value="">-- Select an address --</option>
-                        {addresses.map(addr => (
-                            <option key={addr.add_id} value={addr.add_id}>
-                                {addr.address}, {addr.city} ({addr.first_name})
-                            </option>
-                        ))}
-                    </select>
+                    <div className="relative w-full" ref={addressDropdownRef}>
+                        <button
+                            type="button"
+                            onClick={() => setIsAddressDropdownOpen(!isAddressDropdownOpen)}
+                            className="flex items-center justify-between w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 text-sm text-[#3D3D3D] font-[Oxygen] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#1C2F2F]"
+                        >
+                            <span>
+                                {(() => {
+                                    const addr = addresses.find(a => a.add_id === selectedAddressId);
+                                    return addr ? `${addr.address}, ${addr.city} (${addr.first_name})` : "-- Select an address --";
+                                })()}
+                            </span>
+                            <ChevronDown
+                                className={`w-4 h-4 transition-transform duration-200 ${isAddressDropdownOpen ? "rotate-180 text-[#23403b]" : ""
+                                    }`}
+                            />
+                        </button>
+
+                        {isAddressDropdownOpen && (
+                            <div className="absolute left-0 w-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectedAddressId(null);
+                                        setIsAddressDropdownOpen(false);
+                                    }}
+                                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-[Oxygen] ${!selectedAddressId
+                                        ? "bg-[#23403b]/10 text-[#23403b] font-semibold"
+                                        : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                        }`}
+                                >
+                                    <span>-- Select an address --</span>
+                                    {!selectedAddressId && (
+                                        <svg
+                                            className="w-4 h-4 text-[#23403b]"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2.5"
+                                                d="M5 13l4 4L19 7"
+                                            />
+                                        </svg>
+                                    )}
+                                </button>
+                                {addresses.map((addr) => {
+                                    const isSelected = addr.add_id === selectedAddressId;
+                                    return (
+                                        <button
+                                            key={addr.add_id}
+                                            type="button"
+                                            onClick={() => {
+                                                fillFormFromAddress(addr);
+                                                setIsAddressDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-[Oxygen] ${isSelected
+                                                ? "bg-[#23403b]/10 text-[#23403b] font-semibold"
+                                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                                }`}
+                                        >
+                                            <span>
+                                                {addr.address}, {addr.city} ({addr.first_name})
+                                            </span>
+                                            {isSelected && (
+                                                <svg
+                                                    className="w-4 h-4 text-[#23403b]"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2.5"
+                                                        d="M5 13l4 4L19 7"
+                                                    />
+                                                </svg>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
             <div className="space-y-2">
@@ -251,63 +345,9 @@ const Checkout = () => {
             </div>
 
             {formData.paymentMethod === "online" && (
-                <>
-                    <div className="md:col-span-2 space-y-2">
-                        <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Name On Card*</label>
-                        <input
-                            type="text"
-                            name="cardName"
-                            value={formData.cardName}
-                            onChange={handleInputChange}
-                            className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                        />
-                    </div>
-                    <div className="md:col-span-2 space-y-2">
-                        <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Card Number*</label>
-                        <input
-                            type="text"
-                            name="cardNumber"
-                            value={formData.cardNumber}
-                            onChange={handleInputChange}
-                            className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">Valid Through*</label>
-                        <input
-                            type="text"
-                            name="validThrough"
-                            placeholder="MM/YY"
-                            value={formData.validThrough}
-                            onChange={handleInputChange}
-                            className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="block text-[#3D3D3D] font-[Oxygen] text-sm md:text-base">CVV*</label>
-                        <input
-                            type="password"
-                            name="cvv"
-                            maxLength="3"
-                            value={formData.cvv}
-                            onChange={handleInputChange}
-                            className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
-                        />
-                    </div>
-                    <div className="md:col-span-2 flex items-center gap-3">
-                        <input
-                            type="checkbox"
-                            id="saveAsDefault"
-                            name="saveAsDefault"
-                            checked={formData.saveAsDefault}
-                            onChange={handleInputChange}
-                            className="w-5 h-5 accent-[#1C2F2F] cursor-pointer"
-                        />
-                        <label htmlFor="saveAsDefault" className="text-[#3D3D3D] font-[Oxygen] text-sm md:text-base cursor-pointer">
-                            Save As Default Payment Method
-                        </label>
-                    </div>
-                </>
+                <div className="md:col-span-2 p-6 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-green-800 font-[Oxygen]">You have selected Online Payment. You will be redirected to the payment gateway to complete your transaction securely after clicking "Place Order".</p>
+                </div>
             )}
             {formData.paymentMethod === "COD" && (
                 <div className="md:col-span-2 p-6 bg-blue-50 border border-blue-200 rounded-lg">
@@ -319,7 +359,7 @@ const Checkout = () => {
 
     const renderConfirmationStep = () => (
         <div className="space-y-8 animate-fadeIn">
-            <div className="bg-[#f9f9f9a1] p-6 rounded-[8px] border border-[#E9E9E9]">
+            <div className="bg-[#f9f9f9a1] p-4 md:p-6 rounded-[8px] border border-[#E9E9E9]">
                 <h3 className="text-lg font-medium text-[#1C2F2F] font-[Oxygen] mb-4">Order Summary</h3>
                 <div className="space-y-3">
                     <div className="flex justify-between text-[#3D3D3D] font-[Oxygen]">
@@ -334,7 +374,7 @@ const Checkout = () => {
                     <div className="flex justify-between text-[#3D3D3D] font-[Oxygen]">
                         <span>Payment Method:</span>
                         <span className="font-medium">
-                            {formData.paymentMethod === "COD" ? "Cash on Delivery" : `Card ending in ${formData.cardNumber.slice(-4) || "****"}`}
+                            {formData.paymentMethod === "COD" ? "Cash on Delivery" : "Online Payment"}
                         </span>
                     </div>
                 </div>
@@ -350,6 +390,20 @@ const Checkout = () => {
             // Validate Personal Fields
             if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.streetAddress || !formData.townCity || !formData.postcodeZip) {
                 toast.error("Please fill all required fields");
+                return;
+            }
+
+            // Validate email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                toast.error("Please enter a valid email address");
+                return;
+            }
+
+            // Validate phone number (exactly 10 digits, starts with 6, 7, 8, or 9)
+            const phoneRegex = /^[6-9]\d{9}$/;
+            if (!phoneRegex.test(formData.phone)) {
+                toast.error("Please enter a valid 10-digit phone number starting with 6, 7, 8, or 9");
                 return;
             }
 
@@ -393,13 +447,6 @@ const Checkout = () => {
                 setIsProcessing(false);
             }
         } else if (currentStep === 2) {
-            // Validate Billing (if online)
-            if (formData.paymentMethod === "online") {
-                if (!formData.cardName || !formData.cardNumber || !formData.validThrough || !formData.cvv) {
-                    toast.error("Please fill all billing fields");
-                    return;
-                }
-            }
             setCurrentStep(3);
         } else {
             // Step 3: Place Order
@@ -407,32 +454,94 @@ const Checkout = () => {
         }
     };
 
-    const handlePlaceOrder = () => {
+    const handlePlaceOrder = async () => {
         // Validate form data before redirecting
-        if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || 
+        if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone ||
             !formData.streetAddress || !formData.townCity || !formData.postcodeZip) {
             toast.error("Please fill all required fields");
             return;
         }
 
-        // Navigate to SelectAddressPage with cart items and form data
-        navigate("/selectaddress", {
-            state: {
-                cartItems: cartItems,
-                formData: formData
+        if (!selectedAddressId) {
+            toast.error("Please select or save an address first.");
+            return;
+        }
+
+        if (isPlacingOrderRef.current) return;
+        isPlacingOrderRef.current = true;
+        setIsProcessing(true);
+        try {
+            const orderItems = cartItems.map((item) => ({
+                p_id: item.p_id,
+                pcolor_id: item.pcolor_id,
+                psize_id: item.psize_id || null,
+                quantity: item.quantity,
+                price: item.price,
+            }));
+
+            const orderData = {
+                u_id: u_id || null,
+                guest_id: u_id ? null : guestId,
+                cart_items: orderItems,
+                subtotal,
+                shipping: shipping,
+                total: total,
+                address_id: selectedAddressId,
+                add_id: selectedAddressId,
+                payment_method: formData.paymentMethod.toLowerCase(),
+            };
+
+            const res = await axiosInstance.post(`/createorder`, orderData);
+            const apiBody = res.data || res;
+
+            if (apiBody.status !== 1) {
+                throw new Error(apiBody.message || "Order failed");
             }
-        });
+
+            if (formData.paymentMethod === "online") {
+                const checkoutUrl = apiBody?.data?.checkoutUrl;
+                const paymentId = apiBody?.data?.paymentId || apiBody?.data?.id || apiBody?.data?.paymentIntentId;
+                const order_id = apiBody?.data?.order_id || apiBody?.data?.orderId;
+
+                if (paymentId) {
+                    sessionStorage.setItem('retryPaymentId', paymentId);
+                }
+
+                if (checkoutUrl) {
+                    sessionStorage.setItem('lastCheckoutUrl', checkoutUrl);
+                    if (order_id) {
+                        sessionStorage.setItem('lastOrderId', order_id);
+                    }
+                    window.location.href = checkoutUrl;
+                } else {
+                    toast.error('Failed to get payment checkout URL.');
+                    setIsProcessing(false);
+                    isPlacingOrderRef.current = false;
+                }
+            } else {
+                // Show success modal upon successful order placement (COD)
+                setShowSuccessModal(true);
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error(err.message || "Failed to place order");
+            isPlacingOrderRef.current = false;
+        } finally {
+            setIsProcessing(false);
+            if (formData.paymentMethod !== "online") {
+                isPlacingOrderRef.current = false;
+            }
+        }
     };
 
-    
     return (
         <>
-            <div className="min-h-screen pt-12 pb-12 px-4 md:px-10 lg:px-20">
+            <div className="bg-[#f3f0ed] min-h-screen px-2 md:px-10 py-10 font-poppins">
                 <div className="">
                     <div className="flex flex-col lg:flex-row gap-8">
 
                         {/* Left Section - Form */}
-                        <div className="bg-[#F3F0ED] flex-1 rounded-[10px] overflow-hidden border border-[#DEDFE1]">
+                        <ScrollReveal animation="fade-right" duration={800} className="bg-[#F3F0ED] flex-1 rounded-[10px] overflow-hidden border border-[#DEDFE1]">
                             {/* Steps Header */}
                             <div className="bg-[#E7DCD2]">
                                 <div className="flex justify-between items-center px-4 md:px-10 py-6">
@@ -450,7 +559,7 @@ const Checkout = () => {
                             </div>
 
                             {/* Form Content */}
-                            <div className="p-6 md:p-10">
+                            <div className="p-4 md:p-10">
                                 {currentStep === 1 && renderPersonalFields()}
                                 {currentStep === 2 && renderBillingFields()}
                                 {currentStep === 3 && renderConfirmationStep()}
@@ -467,10 +576,10 @@ const Checkout = () => {
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                        </ScrollReveal>
 
                         {/* Right Section - Cart Details */}
-                        <div className="w-full lg:w-[480px]">
+                        <ScrollReveal animation="fade-left" duration={800} className="w-full lg:w-[480px]">
                             <div className="bg-[#F3F0ED] rounded-[10px] overflow-hidden border border-[#DEDFE1]">
                                 <div className="bg-[#E7DCD2] px-4 md:px-10 py-6">
                                     <h3 className="text-2xl font-medium text-[#000000] font-[Oxygen]">Cart Details</h3>
@@ -497,7 +606,7 @@ const Checkout = () => {
                                                     {item.quantity < 10 ? `0${item.quantity}` : item.quantity}
                                                 </span>
                                                 <span className="w-1/4 text-right">
-                                                    ${(item.price * item.quantity).toFixed(0)}
+                                                    ₹{(item.price * item.quantity).toFixed(0)}
                                                 </span>
                                             </div>
                                         ))}
@@ -509,26 +618,26 @@ const Checkout = () => {
                                     <div className="">
                                         <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6">
                                             <span className="text-md font-medium text-[#3D3D3D] uppercase tracking-wide">SUBTOTAL</span>
-                                            <span className="text-[#767676] text-lg">${subtotal.toFixed(0)}</span>
+                                            <span className="text-[#767676] text-lg">₹{subtotal.toFixed(0)}</span>
                                         </div>
 
                                         <div className="border-b border-dashed border-[#d7d4d4]"></div>
 
                                         <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6">
                                             <span className="text-md font-medium text-[#3D3D3D] uppercase tracking-wide">SHIPPING</span>
-                                            <span className="text-[#767676] text-lg">${shipping.toFixed(0)}</span>
+                                            <span className="text-[#767676] text-lg">{shipping > 0 ? `₹${shipping.toFixed(0)}` : "Free"}</span>
                                         </div>
 
                                         <div className="border-b border-dashed border-[#d7d4d4]"></div>
 
                                         <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6">
                                             <span className="text-md font-medium text-[#3D3D3D] tracking-wide">Total</span>
-                                            <span className="text-[#767676] text-2xl font-semibold">${total.toFixed(0)}</span>
+                                            <span className="text-[#767676] text-2xl font-semibold">₹{total.toFixed(0)}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </ScrollReveal>
 
                     </div>
                 </div>
@@ -611,7 +720,7 @@ const Checkout = () => {
                             </h2>
                             <div className="space-y-4 text-[#3D3D3D] font-[Oxygen] text-md md:text-lg max-w-lg mx-auto leading-relaxed">
                                 <p>
-                                    Thank You For Choosing Modimal, Your Order Will Be Generated Based On Your Delivery Request.
+                                    Thank You For Choosing Kundrat, Your Order Will Be Generated Based On Your Delivery Request.
                                 </p>
                                 <p>
                                     The Receipt Has Been Sent To Your Email
@@ -624,9 +733,9 @@ const Checkout = () => {
                                 Please Contact Us For Any Query
                             </p>
                             <div className="space-y-1 font-[Oxygen] text-[#3D3D3D]">
-                                <p className="text-lg">+1(929)460-3208</p>
+                                <p className="text-lg">+91 98765 43210</p>
                                 <p className="uppercase text-sm">OR</p>
-                                <p className="text-lg font-medium">Hello @ Modimal.Com</p>
+                                <p className="text-lg font-medium">Hello@Kundrat.Com</p>
                             </div>
                         </div>
                     </div>

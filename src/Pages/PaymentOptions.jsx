@@ -2,7 +2,7 @@ import React from "react";
 
 const PaymentOptions = () => {
   return (
-    <div className="bg-white min-h-screen flex items-center justify-center text-justify">
+    <div className="bg-white min-h-screen flex items-center justify-center">
       <div className="container mx-auto p-6 max-w-4xl">
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold text-black">Payment Options</h1>

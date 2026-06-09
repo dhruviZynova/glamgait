@@ -1,14 +1,22 @@
-import { useState, useEffect, useRef } from "react";
-import { SlidersHorizontal, ChevronUp, ChevronDown } from "lucide-react";
-import HomePageBanner from "../Components/HomePageBanner";
-import singlebanner from "../assets/singlebanner.jpg";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronRight } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import ScrollToTop from "./ScrollToTop";
-import { userInfo } from "../Variable";
+import { ApiURL, createSlug } from "../Variable";
+import { useUser } from "../Context/UserContext";
 import { getGuestId } from "../utils/guest";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import ProductCard from "./ProductCard";
+import ScrollReveal from "./Ui/ScrollReveal";
+import { getCategories as getCachedCategories } from "../utils/dataCache";
+
+const sortOptions = [
+  { value: "a-z", label: "Alphabetical (A-Z)" },
+  { value: "z-a", label: "Alphabetical (Z-A)" },
+  { value: "low-high", label: "Price (Low to High)" },
+  { value: "high-low", label: "Price (High to Low)" },
+];
 
 const Allproducts = () => {
   ScrollToTop();
@@ -45,7 +53,7 @@ const Allproducts = () => {
     setDebouncedSearchTerm("");
     setCurrentPage(1);
   };
-  const [collectionsExpanded, setCollectionsExpanded] = useState(false);
+  const [collectionsExpanded, setCollectionsExpanded] = useState(true);
   const [fabricExpanded, setFabricExpanded] = useState(false);
   const [workExpanded, setWorkExpanded] = useState(false);
   const [occasionExpanded, setOccasionExpanded] = useState(false);
@@ -59,7 +67,9 @@ const Allproducts = () => {
     occasions: [],
     styles: [],
     sizes: [],
+    categories: [],
   });
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState([]);
   const [selectedFabrics, setSelectedFabrics] = useState([]);
   const [selectedWorks, setSelectedWorks] = useState([]);
@@ -69,36 +79,43 @@ const Allproducts = () => {
   const [selectedColors, setSelectedColors] = useState([]);
   const { cate_name, filterValue } = useParams();
   const [wishlistMap, setWishlistMap] = useState({});
-  const [reviewsSummary, setReviewsSummary] = useState({});
+
   const [products, setProducts] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [sortBy, setSortBy] = useState("a-z");
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const [categoryReviews, setCategoryReviews] = useState([]);
+
   const [cateId, setCateId] = useState(null);
   const [categoryDisplayName, setCategoryDisplayName] = useState("");
   const [activeFilterName, setActiveFilterName] = useState("");
   const [limit] = useState(18);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+
   const [seo, setSeo] = useState({
     title: "",
     description: "",
   });
 
   const navigate = useNavigate();
-  const prevProductsRef = useRef([]);
+  const { user } = useUser();
 
-  const createSlug = (name) =>
-    name
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-+|-+$/g, "");
+  // Close sort dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target)) {
+        setIsSortDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   // Set selected filters from URL filterValue (infer type by matching in filters)
 
   useEffect(() => {
@@ -169,6 +186,7 @@ const Allproducts = () => {
   }, [filterValue, filters]);
 
   useEffect(() => {
+    let active = true;
     if (!cate_name) {
       // If no category slug → show all products or redirect
       setCateId(null);
@@ -179,45 +197,83 @@ const Allproducts = () => {
       try {
         // Call backend to get cate_id from name/slug
         const res = await axiosInstance.get(`/getcategorybyname/${cate_name}`);
-        if (res.data.status === 1 && res.data.data) {
-          setCateId(res.data.data.cate_id);
-          setCategoryDisplayName(res.data.data.cate_name || cate_name);
-        } else {
-          console.log("cate_not found");
+        if (active) {
+          if (res.data.status === 1 && res.data.data) {
+            setCateId(res.data.data.cate_id);
+            setCategoryDisplayName(res.data.data.cate_name || cate_name);
+          } else {
+            // Category not found — no action needed, UI handles empty state
+          }
         }
       } catch (err) {
         console.error("Category not found:", err);
       }
     };
     fetchCategoryId();
+    return () => {
+      active = false;
+    };
   }, [cate_name, navigate]);
 
   useEffect(() => {
+    let active = true;
     const fetchCategoryFilters = async () => {
-      if (!cateId) return;
       try {
+        // Use cache for categories — avoids duplicate network call
+        const categoryData = await getCachedCategories(axiosInstance);
+
+        // Fetch other filters using category ID if available, otherwise use default (2)
+        const categoryId = cateId || 2;
+
+        // Helper for safe fetching
+        const safeGet = async (url) => {
+          try {
+            const res = await axiosInstance.get(url);
+            return res?.data?.data || [];
+          } catch (err) {
+            console.warn(`Filter fetch skipped for ${url}:`, err.message);
+            return [];
+          }
+        };
+
         const [subRes, fabricRes, workRes, occRes, styleRes, sizeRes] =
           await Promise.all([
-            axiosInstance.get(`/getsubcategory/${cateId}`),
-            axiosInstance.get(`/getfabrics/${cateId}`),
-            axiosInstance.get(`/getworks/${cateId}`),
-            axiosInstance.get(`/getoccasions/${cateId}`),
-            axiosInstance.get(`/getstyles/${cateId}`),
-            axiosInstance.get(`/getsize/${cateId}`),
+            cateId ? safeGet(`${ApiURL}/getsubcategory/${categoryId}`) : Promise.resolve([]),
+            safeGet(`${ApiURL}/getfabrics/${categoryId}`),
+            safeGet(`${ApiURL}/getworks/${categoryId}`),
+            safeGet(`${ApiURL}/getoccasions/${categoryId}`),
+            safeGet(`${ApiURL}/getstyles/${categoryId}`),
+            safeGet(`${ApiURL}/getsize/${categoryId}`),
           ]);
-        setFilters({
-          subcategories: subRes.data.data || [],
-          fabrics: fabricRes.data.data || [],
-          works: workRes.data.data || [],
-          occasions: occRes.data.data || [],
-          styles: styleRes.data.data || [],
-          sizes: sizeRes.data.data || [],
-        });
+
+        if (active) {
+          setFilters({
+            subcategories: subRes || [],
+            fabrics: fabricRes || [],
+            works: workRes || [],
+            occasions: occRes || [],
+            styles: styleRes || [],
+            sizes: sizeRes || [],
+            categories: categoryData || [],
+          });
+        }
       } catch (error) {
         console.error("Error fetching category filters:", error);
       }
     };
     fetchCategoryFilters();
+    return () => {
+      active = false;
+    };
+  }, [cateId]);
+
+  // Sync URL category with sidebar selection
+  useEffect(() => {
+    if (cateId) {
+      setSelectedCategories([cateId]);
+    } else {
+      setSelectedCategories([]);
+    }
   }, [cateId]);
 
   useEffect(() => {
@@ -235,29 +291,27 @@ const Allproducts = () => {
     fetchAllColors();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
-      console.log("Searching for:", debouncedSearchTerm);
+      const isSearch = !!debouncedSearchTerm;
+      const isAllProductsPage = !cate_name || cate_name === "All Products";
 
-      // If there's a search term, use the general products endpoint
-      // Otherwise use the category-specific endpoint
-      const endpoint = debouncedSearchTerm ? "/getallproducts" : `/productbycategory/${cate_name}`;
+      // Use global endpoint if searching, filtering by multiple categories, or on a generic page
+      const useGlobalEndpoint = isSearch || selectedCategories.length > 1 || isAllProductsPage;
+      const endpoint = useGlobalEndpoint ? "/getallproducts" : `/productbycategory/${cate_name}`;
 
-      const payload = debouncedSearchTerm ? {
-        search: debouncedSearchTerm,
+      // Build parameters
+      const params = {
         page: currentPage,
+        limit: limit,
         perPage: limit,
-        cate_id: cateId, // Include category filter if available
-      } : {
-        cate_id: cateId,
-        cate_name,
-        subcategories: selectedSubcategories,
-        fabrics: selectedFabrics,
-        works: selectedWorks,
-        occasions: selectedOccasions,
-        styles: selectedStyles,
-        colors: selectedColors,
-        sizes: selectedSizes,
+        search: debouncedSearchTerm,
+        // Pass selected categories as a comma-separated string if filtering,
+        // otherwise fallback to the URL-based cateId
+        cate_id: selectedCategories.length > 0
+          ? selectedCategories.join(",")
+          : (useGlobalEndpoint ? undefined : cateId),
+        cate_name: useGlobalEndpoint ? undefined : cate_name,
         price_min: priceRange[0],
         price_max: priceRange[1],
         sort_by:
@@ -268,57 +322,109 @@ const Allproducts = () => {
               : sortBy === "low-high"
                 ? "price_asc"
                 : "price_desc",
-        page: currentPage,
-        limit: limit,
       };
 
-      const response = await axiosInstance.post(endpoint, payload);
-      console.log("API Response:", response.data);
-      if (response.data.status === 1) {
-        let products, pagination;
+      // Add filter arrays, converting them to comma-separated strings if they have values
+      const filterMappings = {
+        categories: selectedCategories,
+        subcategories: selectedSubcategories,
+        fabrics: selectedFabrics,
+        works: selectedWorks,
+        occasions: selectedOccasions,
+        styles: selectedStyles,
+        colors: selectedColors,
+        sizes: selectedSizes,
+      };
 
-        if (debouncedSearchTerm) {
-          // Handle search endpoint response structure
-          products = response.data.data?.productData || [];
+      Object.keys(filterMappings).forEach((key) => {
+        const val = filterMappings[key];
+        if (Array.isArray(val) && val.length > 0) {
+          params[key] = val.join(",");
+        }
+      });
+
+      const response = await axiosInstance.get(endpoint, { params });
+
+      if (response.data.status === 1) {
+        let fetchedProducts, pagination;
+
+        if (useGlobalEndpoint) {
+          // Handle global endpoint (/getallproducts) response structure
+          fetchedProducts = response.data.data?.productData || [];
           pagination = response.data.data?.pagination || {
             totalCount: response.data.data?.totalCount || 0,
             totalPages: response.data.data?.totalPages || 0,
-            page: response.data.data?.currentPage || currentPage
+            page: response.data.data?.currentPage || currentPage,
           };
         } else {
-          // Handle category endpoint response structure
-          products = response.data.data?.products || [];
+          // Handle category-specific endpoint (/productbycategory) response structure
+          fetchedProducts = response.data.data?.products || [];
           pagination = response.data.data?.pagination || {
-            totalCount: 0,
-            totalPages: 0,
-            page: currentPage
+            totalCount: response.data.data?.totalCount || 0,
+            totalPages: response.data.data?.totalPages || 0,
+            page: currentPage,
           };
         }
 
-        console.log("Products found:", products);
-        console.log("Pagination:", pagination);
+        if (currentPage === 1) {
+          setProducts(fetchedProducts);
+        } else {
+          setProducts((prev) => {
+            const existingIds = new Set(prev.map((p) => p.p_id));
+            const uniqueNew = (fetchedProducts || []).filter(
+              (p) => !existingIds.has(p.p_id)
+            );
+            return [...prev, ...uniqueNew];
+          });
+        }
 
-        setProducts(products || []);
+        // Calculate max price from products and round up to nearest 1000 (only on initial load)
+        if (
+          fetchedProducts &&
+          fetchedProducts.length > 0 &&
+          priceRange[1] === 100000
+        ) {
+          const maxPrice = Math.max(...fetchedProducts.map((p) => p.price || 0));
+          const roundedMaxPrice = Math.ceil(maxPrice / 1000) * 1000;
+          setPriceRange([0, roundedMaxPrice]);
+        }
+
         setTotalProducts(pagination?.totalCount || 0);
-        setTotalPages(pagination?.totalPages || 0);
-        // Optional: sync page if backend returned different page
-        if (pagination?.page !== currentPage) {
-          setCurrentPage(pagination?.page || 1);
+
+        if (pagination?.page && pagination.page !== currentPage) {
+          // Only sync if necessary
+          // setCurrentPage(pagination.page); 
         }
       } else {
         setProducts([]);
         setTotalProducts(0);
-        setTotalPages(0);
       }
     } catch (error) {
       console.error("Error fetching products:", error);
     }
-  };
+  }, [
+    cate_name,
+    cateId,
+    selectedCategories,
+    selectedSubcategories,
+    selectedFabrics,
+    selectedWorks,
+    selectedOccasions,
+    selectedStyles,
+    selectedColors,
+    selectedSizes,
+    priceRange,
+    sortBy,
+    currentPage,
+    debouncedSearchTerm,
+    limit,
+  ]);
 
   useEffect(() => {
     if (cate_name) fetchProducts();
   }, [
     cate_name,
+    selectedCategories,
     selectedSubcategories,
     selectedFabrics,
     selectedWorks,
@@ -326,41 +432,63 @@ const Allproducts = () => {
     selectedStyles,
     selectedSizes,
     selectedColors,
-    priceRange,
     sortBy,
     currentPage,
     debouncedSearchTerm,
+    fetchProducts,
   ]);
 
+  // Separate effect for price range changes (debounced to avoid infinite loops)
+  useEffect(() => {
+    if (cate_name && priceRange[1] !== 100000) {
+      const timer = setTimeout(() => {
+        fetchProducts();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [priceRange, cate_name, fetchProducts]);
+
+  const toggleCategory = (val) => {
+    setSelectedCategories((prev) =>
+      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
+    );
+    setCurrentPage(1);
+  };
   const toggleSubcategory = (val) => {
     setSelectedSubcategories((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
+    setCurrentPage(1);
   };
   const toggleFabric = (val) => {
     setSelectedFabrics((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
+    setCurrentPage(1);
   };
   const toggleWork = (val) => {
     setSelectedWorks((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
+    setCurrentPage(1);
   };
   const toggleOccasion = (val) => {
     setSelectedOccasions((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
+    setCurrentPage(1);
   };
   const toggleStyle = (val) => {
     setSelectedStyles((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
+    setCurrentPage(1);
   };
   const toggleSizeNew = (val) => {
     setSelectedSizes((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
+    setCurrentPage(1);
   };
 
   const toggleColor = (colorId) => {
@@ -370,8 +498,10 @@ const Allproducts = () => {
           ? prev.filter((id) => id !== colorId) // remove if already selected
           : [...prev, colorId] // add if not selected
     );
+    setCurrentPage(1);
   };
   const clearAllFilters = () => {
+    setSelectedCategories([]);
     setSelectedSubcategories([]);
     setSelectedFabrics([]);
     setSelectedWorks([]);
@@ -380,11 +510,11 @@ const Allproducts = () => {
     setSelectedSizes([]);
     setSelectedColors([]);
     setPriceRange([0, 100000]);
+    setCurrentPage(1);
   };
 
   useEffect(() => {
     const fetchWishlist = async () => {
-      const user = userInfo();
       const identifier = user?.u_id || getGuestId();
       try {
         const query = user?.u_id
@@ -411,7 +541,6 @@ const Allproducts = () => {
     fetchWishlist();
   }, []);
   const refreshWishlist = async () => {
-    const user = userInfo();
     const identifier = user?.u_id || getGuestId();
     try {
       const query = user?.u_id
@@ -434,76 +563,6 @@ const Allproducts = () => {
       console.error("Wishlist refresh failed", err);
     }
   };
-  const fetchAllReviewsSummary = async () => {
-    if (products.length === 0) return;
-    const productIds = products.map((p) => p.p_id);
-    try {
-      const res = await axiosInstance.post("/getreviewsformultiple", {
-        p_ids: productIds,
-      });
-      if (res.data.status === 1) {
-        const data = res.data.data || {};
-        const summary = {};
-        Object.keys(data).forEach((p_id) => {
-          const item = data[p_id];
-          summary[p_id] = {
-            rating: item.average_rating,
-            count: item.total_reviews,
-          };
-        });
-        setReviewsSummary(summary);
-      }
-    } catch (err) {
-      console.error("Reviews fetch failed", err);
-    }
-  };
-  useEffect(() => {
-    const prev = prevProductsRef.current;
-    const hasProductsNow = products.length > 0;
-    const hadNoProductsBefore = prev.length === 0;
-    if (hasProductsNow && hadNoProductsBefore) {
-      fetchAllReviewsSummary();
-    }
-    prevProductsRef.current = products;
-  }, [products]);
-
-  // In your React component
-  const fetchCategoryReviews = async () => {
-    if (!cate_name) return;
-
-    try {
-      const response = await axiosInstance.post("/getReviewsByCategory", {
-        cate_name: cate_name,
-        page: 1,
-        perPage: 30,
-      });
-
-      if (response.data.status === 1) {
-        const fetchedReviews = response.data.data.reviews || [];
-        console.log("Fetched category reviews:", fetchedReviews);
-
-        // Optional: Format dates or add any client-side processing
-        const formatted = fetchedReviews.map((review) => ({
-          ...review,
-          createdAt: review.createdAt
-            ? new Date(review.createdAt).toLocaleDateString()
-            : "",
-        }));
-
-        setCategoryReviews(formatted);
-      } else {
-        console.log("No reviews found for category:", cate_name);
-        setCategoryReviews([]);
-      }
-    } catch (error) {
-      console.error("Error fetching category reviews:", error);
-      setCategoryReviews([]);
-    }
-  };
-
-  useEffect(() => {
-    fetchCategoryReviews();
-  }, [cate_name]);
 
   useEffect(() => {
     let title = "";
@@ -547,381 +606,449 @@ const Allproducts = () => {
          This allows the page to grow naturally and the main browser scrollbar to appear.
          This fixes the "cut section" issue.
       */}
-      <div className="min-h-screen bg-[#f3f0ed] relative">
+      <div className="bg-[#f3f0ed] relative font-poppins">
 
         <div className="w-full py-8 px-2 md:px-8 xl:px-24">
 
-          <div className="flex flex-col lg:flex-row sm:gap-8 gap-2">
+          <div className="flex flex-col lg:flex-row sm:gap-8 gap-2 items-start">
 
             {/* Mobile Filter Button */}
             <button
               onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
-              className="lg:hidden flex items-center justify-center gap-2 bg-[#f3f0ed] border border-gray-300 px-4 py-3 rounded-lg sm:mb-4 mb-0 shadow-sm flex-shrink-0"
+              className="lg:hidden flex items-center justify-end w-full gap-2 sm:mb-4 mb-4 flex-shrink-0"
             >
               <SlidersHorizontal className="w-5 h-5" />
               <span className="font-medium">Filters</span>
             </button>
 
-            <aside
-              className={`${mobileFilterOpen ? "block" : "hidden"
-                } lg:block w-full lg:w-72 flex-shrink-0 self-start lg:sticky lg:top-24`}
-            >
-              <div className="bg-[#D0BB9E33] rounded-lg p-4 overflow-y-auto max-h-[calc(100vh-160px)] flex flex-col gap-8 scrollbar-hide shadow-sm">
-                {/* --- CATEGORIES SECTION --- */}
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between p-2">
-                    <h2 className="text-xl font-400 text-[#2D2D2D] font-[Oxygen] border-l-4 pl-2">Categories</h2>
-                  </div>
+            <div className={`${mobileFilterOpen ? "block" : "hidden"
+              } lg:block w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-28 h-fit mb-4`}>
+              <aside className="w-full">
+                <div className="bg-[#f3f0ed] border border-gray-200 rounded-lg shadow-sm mb-8">
+                  {/* --- CATEGORIES SECTION --- */}
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between sm:p-4 p-2 border-b border-gray-200">
+                      <h2 className="text-xl font-400 text-[#2D2D2D] font-[Oxygen] border-l-4 pl-2">Filters</h2>
+                      <button
+                        onClick={clearAllFilters}
+                        className="text-xs font-400 text-gray-500 hover:text-[#5a2063] underline cursor-pointer transition-colors"
+                      >
+                        Clear All
+                      </button>
+                    </div>
 
-                  {/* Filters Content */}
-                  <div className="flex flex-col gap-2 px-2">
-                    {/* Subcategory / Collections */}
-                    {filters?.subcategories?.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">
-                            Collections
-                          </span>
-                          <div
-                            onClick={() => setCollectionsExpanded(!collectionsExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {collectionsExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
-                            )}
-                          </div>
-                        </div>
-                        {collectionsExpanded && (
-                          <div className="space-y-1">
-                            {filters?.subcategories?.map((val) => (
-                              <label
-                                key={val.sc_id}
-                                className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedSubcategories.includes(val.sc_id)}
-                                    onChange={() => toggleSubcategory(val.sc_id)}
-                                    className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
-                                  />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">
-                                    {val?.name}
-                                  </span>
-                                  {val.count && (
-                                    <span className="text-xs text-[#2D2D2D]">({val.count})</span>
-                                  )}
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Fabric */}
-                    {filters?.fabrics?.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Fabric</span>
-                          <div
-                            onClick={() => setFabricExpanded(!fabricExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {fabricExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
-                            )}
-                          </div>
-                        </div>
-                        {fabricExpanded && (
-                          <div className="space-y-1">
-                            {filters.fabrics.map((val) => (
-                              <label
-                                key={val.f_id}
-                                className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedFabrics.includes(val.f_id)}
-                                    onChange={() => toggleFabric(val.f_id)}
-                                    className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
-                                  />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.name}</span>
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Work */}
-                    {filters.works.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Work</span>
-                          <div
-                            onClick={() => setWorkExpanded(!workExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {workExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
-                            )}
-                          </div>
-                        </div>
-                        {workExpanded && (
-                          <div className="space-y-1">
-                            {filters.works.map((val) => (
-                              <label
-                                key={val.work_id}
-                                className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedWorks.includes(val.work_id)}
-                                    onChange={() => toggleWork(val.work_id)}
-                                    className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
-                                  />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.name}</span>
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Occasion */}
-                    {filters.occasions.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Occasion</span>
-                          <div
-                            onClick={() => setOccasionExpanded(!occasionExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {occasionExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
-                            )}
-                          </div>
-                        </div>
-                        {occasionExpanded && (
-                          <div className="space-y-1">
-                            {filters.occasions.map((val) => (
-                              <label
-                                key={val.occasion_id}
-                                className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedOccasions.includes(val.occasion_id)}
-                                    onChange={() => toggleOccasion(val.occasion_id)}
-                                    className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
-                                  />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.name}</span>
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Style */}
-                    {filters.styles.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Style</span>
-                          <div
-                            onClick={() => setStyleExpanded(!styleExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {styleExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
-                            )}
-                          </div>
-                        </div>
-                        {styleExpanded && (
-                          <div className="space-y-1">
-                            {filters.styles.map((val) => (
-                              <label
-                                key={val.style_id}
-                                className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedStyles.includes(val.style_id)}
-                                    onChange={() => toggleStyle(val.style_id)}
-                                    className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
-                                  />
-                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.name}</span>
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Size */}
-                    {filters.sizes.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Size</span>
-                        </div>
-                        <div className="space-y-1">
-                          {filters.sizes.map((val) => (
-                            <label
-                              key={val.size_id}
-                              className="flex items-center justify-center gap-1.5 cursor-pointer border border-gray-200 bg-white hover:border-gray-400 p-2 rounded transition-colors"
+                    {/* Filters Content */}
+                    <div className="flex flex-col gap-4 px-4">
+                      {/* Categories */}
+                      {filters?.categories?.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">
+                              All Categories
+                            </span>
+                            <div
+                              onClick={() => setCollectionsExpanded(!collectionsExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
                             >
-                              <input
-                                type="checkbox"
-                                checked={selectedSizes.includes(val.size_id)}
-                                onChange={() => toggleSizeNew(val.size_id)}
-                                className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
-                              />
-                              <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.size_name}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Color - Global */}
-                    {allColors?.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Color</span>
-                          <div
-                            onClick={() => setColorExpanded(!colorExpanded)}
-                            className="cursor-pointer p-1 rounded transition-colors"
-                          >
-                            {colorExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-[#73287E] group-hover:text-gray-600 transition-transform" />
-                            )}
+                              {collectionsExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
                           </div>
-                        </div>
-                        {colorExpanded && (
-                          <div className="grid grid-cols-5 gap-3">
-                            {allColors?.map((color) => (
-                              <label
-                                key={color.color_id}
-                                className="flex flex-col items-center cursor-pointer group"
-                              >
-                                <div className="relative w-8 h-8 sm:w-10 sm:h-10">
-                                  <div
-                                    className={`w-full h-full rounded-full border-2 transition-all shadow-sm ${selectedColors.includes(color.color_id)
-                                      ? "border-black ring-2 ring-offset-2 ring-gray-200"
-                                      : "border-transparent group-hover:border-gray-300"
-                                      }`}
-                                    style={{
-                                      backgroundColor: color.color_code || "#ffffff",
-                                    }}
-                                  />
-                                  {selectedColors.includes(color.color_id) && (
-                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                      <svg
-                                        className="w-4 h-4 text-white drop-shadow-md"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth="3"
-                                          d="M5 13l4 4L19 7"
-                                        />
-                                      </svg>
-                                    </div>
-                                  )}
+                          {collectionsExpanded && (
+                            <div className="space-y-1">
+                              {filters?.categories?.map((val) => (
+                                <div
+                                  key={val.cate_id}
+                                  onClick={() => navigate(`/collections/${val.cate_name}`)}
+                                  className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedCategories.includes(val.cate_id)}
+                                      onChange={(e) => {
+                                        e.stopPropagation();
+                                        toggleCategory(val.cate_id);
+                                      }}
+                                      className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                    />
+                                    <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">
+                                      {val?.cate_name}
+                                    </span>
+                                  </div>
                                 </div>
-                                <span className="mt-1.5 text-[10px] sm:text-xs text-gray-600 text-center capitalize w-full truncate">
-                                  {color.color_name}
-                                </span>
-                                <input
-                                  type="checkbox"
-                                  checked={selectedColors.includes(color.color_id)}
-                                  onChange={() => toggleColor(color.color_id)}
-                                  className="hidden"
-                                />
-                              </label>
-                            ))}
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Subcategory / Collections */}
+                      {filters?.subcategories?.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">
+                              Collections
+                            </span>
+                            <div
+                              onClick={() => setCollectionsExpanded(!collectionsExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {collectionsExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    )}
+                          {collectionsExpanded && (
+                            <div className="space-y-1">
+                              {filters?.subcategories?.map((val) => (
+                                <label
+                                  key={val.sc_id}
+                                  className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedSubcategories.includes(val.sc_id)}
+                                      onChange={() => toggleSubcategory(val.sc_id)}
+                                      className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                    />
+                                    <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">
+                                      {val?.name}
+                                    </span>
+                                    {val.count && (
+                                      <span className="text-xs text-[#2D2D2D]">({val.count})</span>
+                                    )}
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Fabric */}
+                      {filters?.fabrics?.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Fabric</span>
+                            <div
+                              onClick={() => setFabricExpanded(!fabricExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {fabricExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
+                          </div>
+                          {fabricExpanded && (
+                            <div className="space-y-1">
+                              {filters.fabrics.map((val) => (
+                                <label
+                                  key={val.f_id}
+                                  className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedFabrics.includes(val.f_id)}
+                                      onChange={() => toggleFabric(val.f_id)}
+                                      className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                    />
+                                    <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Work */}
+                      {filters.works.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Work</span>
+                            <div
+                              onClick={() => setWorkExpanded(!workExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {workExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
+                          </div>
+                          {workExpanded && (
+                            <div className="space-y-1">
+                              {filters.works.map((val) => (
+                                <label
+                                  key={val.work_id}
+                                  className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedWorks.includes(val.work_id)}
+                                      onChange={() => toggleWork(val.work_id)}
+                                      className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                    />
+                                    <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Occasion */}
+                      {filters.occasions.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Occasion</span>
+                            <div
+                              onClick={() => setOccasionExpanded(!occasionExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {occasionExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
+                          </div>
+                          {occasionExpanded && (
+                            <div className="space-y-1">
+                              {filters.occasions.map((val) => (
+                                <label
+                                  key={val.occasion_id}
+                                  className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedOccasions.includes(val.occasion_id)}
+                                      onChange={() => toggleOccasion(val.occasion_id)}
+                                      className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                    />
+                                    <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Style */}
+                      {filters.styles.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Style</span>
+                            <div
+                              onClick={() => setStyleExpanded(!styleExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {styleExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
+                          </div>
+                          {styleExpanded && (
+                            <div className="space-y-1">
+                              {filters.styles.map((val) => (
+                                <label
+                                  key={val.style_id}
+                                  className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedStyles.includes(val.style_id)}
+                                      onChange={() => toggleStyle(val.style_id)}
+                                      className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                    />
+                                    <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400 capitalize">{val?.name}</span>
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Size */}
+                      {filters.sizes.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Size</span>
+                            <div
+                              onClick={() => setSizeExpanded(!sizeExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {sizeExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
+                          </div>
+                          {sizeExpanded && (
+                            <div className="space-y-1">
+                              {filters.sizes.map((val) => (
+                                <label
+                                  key={val.size_id}
+                                  className="flex items-center gap-3 group cursor-pointer p-2 hover:bg-white/50 rounded-md transition-colors"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedSizes.includes(val.size_id)}
+                                    onChange={() => toggleSizeNew(val.size_id)}
+                                    className="w-4 h-4 text-[#73287E] border-[#73287E] rounded focus:ring-[#73287E] cursor-pointer accent-[#73287E]"
+                                  />
+                                  <span className="text-sm text-[#2D2D2D] font-[Oxygen] font-400">{val?.size_name}</span>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Color - Global */}
+                      {allColors?.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-400 font-[Oxygen] text-[#414141] text-lg block">Color</span>
+                            <div
+                              onClick={() => setColorExpanded(!colorExpanded)}
+                              className="cursor-pointer p-1 rounded transition-colors"
+                            >
+                              {colorExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#414141] group-hover:text-gray-600 transition-transform" />
+                              )}
+                            </div>
+                          </div>
+                          {colorExpanded && (
+                            <div className="grid grid-cols-5 gap-3">
+                              {allColors?.map((color) => (
+                                <label
+                                  key={color.color_id}
+                                  className="flex flex-col items-center cursor-pointer group"
+                                >
+                                  <div className="relative w-8 h-8 sm:w-10 sm:h-10">
+                                    <div
+                                      className={`w-full h-full rounded-full border-2 transition-all shadow-sm ${selectedColors.includes(color.color_id)
+                                        ? "border-black ring-2 ring-offset-2 ring-gray-200"
+                                        : "border-transparent group-hover:border-gray-300"
+                                        }`}
+                                      style={{
+                                        backgroundColor: color.color_code || "#ffffff",
+                                      }}
+                                    />
+                                    {selectedColors.includes(color.color_id) && (
+                                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <svg
+                                          className="w-4 h-4 text-white drop-shadow-md"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="3"
+                                            d="M5 13l4 4L19 7"
+                                          />
+                                        </svg>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <span className="mt-1.5 text-[10px] sm:text-xs text-gray-600 text-center capitalize w-full truncate">
+                                    {color.color_name}
+                                  </span>
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedColors.includes(color.color_id)}
+                                    onChange={() => toggleColor(color.color_id)}
+                                    className="hidden"
+                                  />
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* --- PRICE RANGE SECTION --- */}
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between p-2">
-                    <h2 className="text-xl font-400 text-[#2D2D2D] font-[Oxygen] border-l-4 pl-2">Price Range</h2>
-                  </div>
+                <div className="bg-[#f3f0ed] border border-gray-200 rounded-lg overflow-hidden lg:sticky shadow-sm">
+                  {/* --- PRICE RANGE SECTION --- */}
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between sm:p-4 p-2 border-b border-gray-200">
+                      <h2 className="text-xl font-400 text-[#2D2D2D] font-[Oxygen] border-l-4 pl-2">Price Range</h2>
+                    </div>
 
-                  {/* Price Content */}
-                  <div className="p-2">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <div className="relative w-1/2">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
-                          <input
-                            type="number"
-                            min={0}
-                            value={priceRange[0]}
-                            onChange={(e) =>
-                              setPriceRange([Number(e.target.value), priceRange[1]])
-                            }
-                            className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
-                            placeholder="Min"
-                          />
+                    {/* Price Content */}
+                    <div className="p-2 px-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <div className="relative w-1/2">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
+                            <input
+                              type="number"
+                              min={0}
+                              value={priceRange[0]}
+                              onChange={(e) =>
+                                setPriceRange([Number(e.target.value), priceRange[1]])
+                              }
+                              className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
+                              placeholder="Min"
+                            />
+                          </div>
+                          <div className="relative w-1/2">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
+                            <input
+                              type="number"
+                              min={0}
+                              value={Math.ceil(priceRange[1] / 1000) * 1000}
+                              onChange={(e) =>
+                                setPriceRange([priceRange[0], Number(e.target.value)])
+                              }
+                              className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
+                              placeholder="Max"
+                            />
+                          </div>
                         </div>
-                        <div className="relative w-1/2">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
-                          <input
-                            type="number"
-                            min={0}
-                            value={priceRange[1]}
-                            onChange={(e) =>
-                              setPriceRange([priceRange[0], Number(e.target.value)])
-                            }
-                            className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
-                            placeholder="Max"
-                          />
+                        <div className="flex justify-between items-center pt-1">
+                          <span className="text-xs text-[#2c2c2c] font-medium py-1 rounded">
+                            ₹{priceRange[0]}
+                          </span>
+                          <span className="text-xs text-[#2c2c2c]">to</span>
+                          <span className="text-xs text-[#2c2c2c] font-medium py-1 rounded">
+                            ₹{Math.ceil(priceRange[1] / 1000) * 1000}
+                          </span>
                         </div>
-                      </div>
-                      <div className="flex justify-between items-center pt-1">
-                        <span className="text-xs text-[#2c2c2c] font-medium py-1 rounded">
-                          ${priceRange[0]}
-                        </span>
-                        <span className="text-xs text-[#2c2c2c]">to</span>
-                        <span className="text-xs text-[#2c2c2c] font-medium py-1 rounded">
-                          ${priceRange[1]}
-                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </aside>
+
+              </aside>
+            </div>
 
             {/* 
               CHANGED 3: Main Content
@@ -929,7 +1056,7 @@ const Allproducts = () => {
               Now it acts as a normal block element, allowing the page to scroll naturally.
             */}
             <main className="flex-1 min-w-0">
-              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-['Judson'] font-bold font-700 text-[#000000] mb-4 leading-tight">
+              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-['Judson'] font-bold font-700 capitalize text-[#000000] mb-4 leading-tight">
                 {activeFilterName
                   ? `${activeFilterName} - ${categoryDisplayName} Collection`
                   : `${categoryDisplayName} Collection`}
@@ -940,7 +1067,7 @@ const Allproducts = () => {
                   <input
                     type="text"
                     placeholder="Search An Item"
-                    className="w-full rounded-full border border-gray-200 bg-[#f8f6f4] py-3 pl-5 pr-24 text-gray-700 text-base focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    className="w-full rounded-full border border-gray-200 bg-[#f8f6f4] py-3 pl-5 pr-24 text-gray-700 text-base focus:outline-none"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -963,13 +1090,13 @@ const Allproducts = () => {
                     aria-label="Search"
                     type="button"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
                     </svg>
                   </button>
                 </div>
               </div>
-              <div className="mb-6">
+              <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <p className="text-sm text-gray-600">
                   Showing{" "}
                   <span className="font-semibold">
@@ -979,17 +1106,79 @@ const Allproducts = () => {
                   of <span className="font-semibold">{totalProducts}</span>{" "}
                   item(s)
                 </p>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500 font-medium font-[Oxygen]">Sort by:</span>
+                  <div className="relative" ref={sortDropdownRef}>
+                    <button
+                      onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                      className="flex items-center gap-1.5 text-sm font-[Oxygen] text-gray-900 cursor-pointer"
+                    >
+                      <span>
+                        {sortOptions.find((opt) => opt.value === sortBy)?.label || "Select Sort"}
+                      </span>
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-200 ${isSortDropdownOpen ? "rotate-180 text-[#73287E]" : ""
+                          }`}
+                      />
+                    </button>
+
+                    {isSortDropdownOpen && (
+                      <div className="absolute right-0 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-y-auto z-[100] transform origin-top-right transition-all duration-200">
+                        {sortOptions.map((option) => {
+                          const isSelected = option.value === sortBy;
+                          return (
+                            <button
+                              key={option.value}
+                              onClick={() => {
+                                setSortBy(option.value);
+                                setCurrentPage(1);
+                                setIsSortDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-[Oxygen] ${isSelected
+                                ? "bg-[#23403b]/10 text-[#23403b] font-semibold"
+                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                }`}
+                            >
+                              <span>{option.label}</span>
+                              {isSelected && (
+                                <svg
+                                  className="w-4 h-4 text-[#23403b]"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2.5"
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {products?.length > 0 ? (
-                <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-6 pb-8">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 pb-8">
                   {products?.map((product) => (
-                    <ProductCard
+                    <ScrollReveal
                       key={product.p_id}
-                      product={product}
-                      wishlistMap={wishlistMap}
-                      onWishlistChange={refreshWishlist}
-                    />
+                      animation="fade-up"
+                      duration={600}
+                    >
+                      <ProductCard
+                        product={product}
+                        wishlistMap={wishlistMap}
+                        onWishlistChange={refreshWishlist}
+                      />
+                    </ScrollReveal>
                   ))}
                 </div>
               ) : (
@@ -1007,70 +1196,31 @@ const Allproducts = () => {
               )}
 
               {/* Pagination Controls */}
-              {totalProducts > 0 && totalPages > 1 && (
-                <div className="flex flex-col items-center mt-10 mb-8">
-                  <div className="flex items-center gap-2">
-                    {/* Previous */}
-                    <button
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(1, prev - 1))
-                      }
-                      disabled={currentPage === 1}
-                      className={`px-5 py-2.5 rounded-lg font-medium border transition-all ${currentPage === 1
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300"
-                        : "bg-white text-gray-800 border-gray-300 hover:bg-gray-50"
-                        }`}
-                    >
-                      Previous
-                    </button>
-                    {/* Page Numbers */}
-                    {(() => {
-                      const pages = [];
-                      const maxVisible = 5;
-                      let startPage = Math.max(1, currentPage - 2);
-                      let endPage = Math.min(
-                        totalPages,
-                        startPage + maxVisible - 1
-                      );
-                      if (endPage - startPage < maxVisible - 1) {
-                        startPage = Math.max(1, endPage - maxVisible + 1);
-                      }
-                      for (let i = startPage; i <= endPage; i++) {
-                        pages.push(
-                          <button
-                            key={i}
-                            onClick={() => setCurrentPage(i)}
-                            className={`w-11 h-11 rounded-lg font-medium transition-all ${currentPage === i
-                              ? "bg-black text-white"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                              }`}
-                          >
-                            {i}
-                          </button>
-                        );
-                      }
-                      return pages;
-                    })()}
-                    {/* Next */}
-                    <button
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-                      }
-                      disabled={currentPage === totalPages}
-                      className={`px-5 py-2.5 rounded-lg font-medium border transition-all ${currentPage === totalPages
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300"
-                        : "bg-white text-gray-800 border-gray-300 hover:bg-gray-50"
-                        }`}
-                    >
-                      Next
-                    </button>
+              {totalProducts > 0 && (
+                <div className="flex flex-col items-center mt-12 mb-16">
+                  <p className="text-[#767676] mb-4 text-[14px]">
+                    Showing 1&ndash;{products.length} of {totalProducts} item(s)
+                  </p>
+                  <div className="w-64 h-[2px] bg-[#E5E7EB] mb-8 relative">
+                    <div
+                      className="absolute top-0 left-0 h-full bg-[#1C2F2F] transition-all duration-500"
+                      style={{ width: `${Math.min((products.length / totalProducts) * 100, 100)}%` }}
+                    />
                   </div>
+                  {products.length < totalProducts && (
+                    <button
+                      onClick={() => setCurrentPage(prev => prev + 1)}
+                      className="bg-[#2D2D2D] hover:bg-black text-white px-8 py-3 rounded-[30px] font-medium transition-colors flex items-center gap-2"
+                    >
+                      Load More <ChevronRight className="w-5 h-5" />
+                    </button>
+                  )}
                 </div>
               )}
             </main>
           </div>
-        </div>
-      </div>
+        </div >
+      </div >
     </>
   );
 };

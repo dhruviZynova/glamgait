@@ -1,322 +1,160 @@
-// import React, { useEffect, useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import SideBar from "./SideBar";
-// import { ApiURL, userInfo } from "../Variable";
-// import axiosInstance from "../Axios/axios";
-
-// const Profileorder = () => {
-//   const statusMap = {
-//     1: "Pending",
-//     2: "Accepted",
-//     3: "Preparing",
-//     4: "Shipped",
-//     5: "Delivered",
-//     6: "Cancelled",
-//   };
-//   const [activeTab, setActiveTab] = useState("Active");
-//   const [orders, setOrders] = useState([]);
-
-//   const navigate = useNavigate();
-
-//   const tabs = ["Active", "Cancelled", "Completed"];
-
-//   const user = userInfo();
-//   const u_id = user?.u_id;
-
-//   useEffect(() => {
-//     const fetchOrders = async () => {
-//       try {
-//         if (!u_id) return;
-//         const res = await axiosInstance.get(`${ApiURL}/getorder/${u_id}`);
-//         if (res.data.status === 1) {
-//           setOrders(res.data.data);
-//         } else {
-//           setOrders([]);
-//         }
-//       } catch (err) {
-//         console.error("Error fetching orders:", err);
-//         setOrders([]);
-//       }
-//     };
-//     fetchOrders();
-//   }, [u_id]);
-
-//   //  Filter orders by tab
-//   const filteredOrders = orders.filter((order) => {
-//     if (activeTab === "Active") return order.status === 1; // pending/active
-//     if (activeTab === "Cancelled") return order.status === 0; // cancelled
-//     if (activeTab === "Completed") return order.status === 2; // completed
-//     return true;
-//   });
-
-//   return (
-//     <div className="bg-[#f3f0ed] min-h-screen flex flex-col md:flex-row font-inter">
-//       {/* Sidebar */}
-//       <div className="w-full md:w-1/4">
-//         <SideBar />
-//       </div>
-
-//       {/* Main content */}
-//       <div className="flex-1 p-4 sm:p-6 md:p-10 bg-[#f3f0ed]">
-//         <h2 className="text-xl sm:text-2xl font-semibold mb-6 text-gray-800">
-//           My Orders
-//         </h2>
-
-//         {/* Tabs */}
-//         <div className="flex justify-between border-b border-gray-300 mb-8">
-//           {tabs.map((tab) => (
-//             <button
-//               key={tab}
-//               onClick={() => setActiveTab(tab)}
-//               className={`relative pb-3 w-1/3 text-sm sm:text-lg font-medium transition-all duration-300 text-center rounded-t-md ${
-//                 activeTab === tab
-//                   ? "text-gray-900 bg-[#f6f6f6] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-black"
-//                   : "text-gray-500 hover:text-gray-800"
-//               }`}
-//             >
-//               {tab}
-//             </button>
-//           ))}
-//         </div>
-
-//         {/* Orders List */}
-//         <div className="space-y-6">
-//           {filteredOrders?.map((order, i) => (
-//             <div
-//               key={order.orderId}
-//               className="bg-[#f6f6f6] rounded-xl p-5 sm:p-6 shadow-sm border border-gray-100"
-//             >
-//               {/* Header */}
-//               <div className="flex flex-col sm:flex-row justify-between text-sm text-gray-600 mb-4">
-//                 <div>
-//                   <p>
-//                     <span className="font-medium text-gray-800">Order no:</span>{" "}
-//                     {order.orderId}
-//                   </p>
-//                   <p className="font-light">Order Date: {order?.date}</p>
-//                   <p className="font-light">
-//                     Estimated Delivery Date: {order?.delivery}
-//                   </p>
-//                 </div>
-
-//                 <div className="mt-3 sm:mt-0 text-left sm:text-right font-light text-gray-500">
-//                   <p>
-//                     <span className="font-light text-gray-500">
-//                       Order Status:
-//                     </span>{" "}
-//                     <span className="text-black">
-//                       {statusMap[order.status] || "Unknown"}
-//                     </span>
-//                   </p>
-//                   <p>
-//                     <span className="font-light text-gray-500">
-//                       Payment Method:
-//                     </span>{" "}
-//                     {order.paymentStatus}
-//                   </p>
-//                 </div>
-//               </div>
-
-//               <hr className="my-3" />
-
-//               {/* Product Info */}
-//               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-//                 {order.orderItems.map((item, idx) => (
-//                   <div
-//                     key={idx}
-//                     className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 bg-[#f6f6f6] p-4 rounded-md"
-//                   >
-//                     <div className="flex items-center gap-4">
-//                       <img
-//                         src={`${ApiURL}/assets/Products/${item.imageUrl}`}
-//                         alt={item.productName}
-//                         className="w-20 h-20 rounded-md object-cover"
-//                       />
-//                       <div>
-//                         <h3 className="font-semibold text-gray-800 text-sm sm:text-base">
-//                           {item.productName}
-//                         </h3>
-//                         <p className="text-xs sm:text-sm text-gray-600">
-//                           Colour:{" "}
-//                           <span className="text-black">
-//                             {item.color?.color_name || "N/A"}
-//                           </span>
-//                         </p>
-//                         <p className="text-xs sm:text-sm text-gray-600">
-//                           Qty:{" "}
-//                           <span className="text-black">{item.quantity}</span>
-//                         </p>
-//                         <p className="text-xs sm:text-sm text-gray-600">
-//                           Total:{" "}
-//                           <span className="text-black">
-//                             ₹{item.totalAmount.toFixed(2)}
-//                           </span>
-//                         </p>
-//                       </div>
-//                     </div>
-//                   </div>
-//                 ))}
-
-//                 {/* Button logic */}
-//                 <div className="w-full sm:w-auto">
-//                   {order.status === "Active" ? (
-//                     <button
-//                       onClick={() => navigate("/orderdetails")}
-//                       className="mt-3 sm:mt-0 bg-[#002e25] text-white px-5 py-2 rounded-md hover:bg-[#004534] transition text-sm sm:text-base w-full sm:w-auto text-center"
-//                     >
-//                       View Details
-//                     </button>
-//                   ) : order.status === "Cancelled" ? (
-//                     <button
-//                       disabled
-//                       className="mt-3 sm:mt-0 bg-red-100 text-red-700 px-5 py-2 rounded-md text-sm sm:text-base w-full sm:w-auto text-center cursor-not-allowed"
-//                     >
-//                       Successfully Cancelled
-//                     </button>
-//                   ) : (
-//                     <button
-//                       disabled
-//                       className="mt-3 sm:mt-0 bg-green-100 text-green-700 px-5 py-2 rounded-md text-sm sm:text-base w-full sm:w-auto text-center cursor-not-allowed"
-//                     >
-//                       Received Successfully
-//                     </button>
-//                   )}
-//                 </div>
-//               </div>
-//             </div>
-//           ))}
-
-//           {/* No orders message */}
-//           {filteredOrders.length === 0 && (
-//             <div className="text-center text-gray-500 text-sm py-10">
-//               No {activeTab.toLowerCase()} orders found.
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Profileorder;
-
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import SideBar from "./SideBar";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
-import ConfirmDeleteModal from "../Admin/pages/ConfirmDeleteModal";
-import { Package } from "lucide-react";
+import { Package, XCircle, RefreshCcw, Receipt, ArrowLeftRight, Loader2, Calendar, Truck, Eye } from "lucide-react";
 import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
+import CancelOrderModal from "./CancelOrderModal";
+import ReturnOrderModal from "./ReturnOrderModal";
+import { ORDER_STATUS, STATUS_LABELS } from "../utils/constants";
+import InvoiceModal from "./InvoiceModal";
+import OrdersSkeleton from "./skeletons/OrdersSkeleton";
+import { useOrders, useCancelOrder, useReturnOrder } from "../hooks/useOrders";
+import ScrollReveal from "./Ui/ScrollReveal";
+
 
 const Profileorder = () => {
-  const statusMap = {
-    1: "Pending",
-    2: "Accepted",
-    3: "Preparing",
-    4: "Shipped",
-    5: "Delivered",
-    6: "Cancelled",
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || "Active");
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState(null);
+  const [isCreditNote, setIsCreditNote] = useState(false);
+
+  const canShowInvoice = (order) => {
+    if (!order) return false;
+    const payStatus = order.paymentStatus?.toLowerCase() || "";
+    if (payStatus.includes("failed") || payStatus.includes("pending")) return false;
+
+    return [
+      ORDER_STATUS.ACCEPTED,
+      ORDER_STATUS.PREPARING,
+      ORDER_STATUS.SHIPPED,
+      ORDER_STATUS.DELIVERED
+    ].includes(order.status);
   };
 
-  const [activeTab, setActiveTab] = useState("Active");
-  const [orders, setOrders] = useState([]);
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const canShowCreditNote = (order) => {
+    if (!order) return false;
+    return [
+      ORDER_STATUS.CANCELLED,
+      ORDER_STATUS.RETURNED
+    ].includes(order.status);
+  };
+
   const navigate = useNavigate();
-  const tabs = ["Active", "Cancelled", "Completed"];
+  const tabs = ["Active", "Completed", "Cancelled", "Returned"];
   const user = userInfo();
   const u_id = user?.u_id;
   const guestId = getGuestId();
-
   const isLoggedIn = !!u_id;
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        let url = `${ApiURL}/getorder?`;
-        if (isLoggedIn) {
-          url += `u_id=${u_id}`;
-        } else {
-          url += `guest_id=${guestId}`;
-        }
+  // TanStack Queries & Mutations
+  const { data: orders = [], isLoading: loading } = useOrders();
 
-        const res = await axiosInstance.get(url);
+  const cancelOrderMutation = useCancelOrder();
+  const returnOrderMutation = useReturnOrder();
 
-        if (res.data.status === 1) {
-          setOrders(res.data.data || []);
-        } else {
-          setOrders([]);
-        }
-      } catch (err) {
-        console.error("Error fetching orders:", err);
-        setOrders([]);
-        toast.error("Failed to load orders");
+  const cancellingId = cancelOrderMutation.isPending ? selectedOrderId : null;
+  const returningId = returnOrderMutation.isPending ? selectedOrderId : null;
+
+  const handleCancelOrder = (reason) => {
+    if (cancellingId) return;
+    cancelOrderMutation.mutate({
+      order_id: selectedOrderId,
+      reason: reason,
+      ...(!isLoggedIn && { guest_id: guestId }),
+    }, {
+      onSettled: () => {
+        setShowCancelModal(false);
       }
-    };
+    });
+  };
 
-    fetchOrders();
-  }, [u_id, isLoggedIn, guestId]);
-
-  const handleCancelOrder = async () => {
-    try {
-      const res = await axiosInstance.put(`${ApiURL}/cancelorder`, {
-        order_id: selectedOrderId,
-        // Optional: guest_id bhej sakte ho if needed
-        ...(!isLoggedIn && { guest_id: guestId }),
-      });
-
-      if (res.data.status === 1) {
-        toast.success("Order cancelled successfully!");
-        setOrders((prev) =>
-          prev.map((o) =>
-            o.orderId === selectedOrderId ? { ...o, status: 6 } : o,
-          ),
-        );
-      } else {
-        toast.error(res.data.message || "Failed to cancel");
+  const handleReturnOrder = (reason) => {
+    if (returningId) return;
+    returnOrderMutation.mutate({
+      order_id: selectedOrderId,
+      reason: reason,
+      ...(!isLoggedIn && { guest_id: guestId }),
+    }, {
+      onSettled: () => {
+        setShowReturnModal(false);
       }
-    } catch (err) {
-      toast.error("Something went wrong");
-      console.error(err);
-    } finally {
-      setShowCancelModal(false);
-    }
+    });
   };
 
   const filteredOrders = orders.filter((order) => {
-    if (activeTab === "Active") return [1, 2, 3, 4].includes(order.status); // Pending to Shipped
-    if (activeTab === "Cancelled") return order.status === 6; // Cancelled
-    if (activeTab === "Completed") return [5].includes(order.status); // Delivered
+    if (activeTab === "Active") return [
+      ORDER_STATUS.PENDING,
+      ORDER_STATUS.ACCEPTED,
+      ORDER_STATUS.PREPARING,
+      ORDER_STATUS.SHIPPED
+    ].includes(order.status);
+    if (activeTab === "Cancelled") return order.status === ORDER_STATUS.CANCELLED;
+    if (activeTab === "Completed") return order.status === ORDER_STATUS.DELIVERED;
+    if (activeTab === "Returned") return order.status === ORDER_STATUS.RETURNED;
     return true;
   });
 
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case ORDER_STATUS.CANCELLED:
+        return (
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-red-50 text-red-700 border border-red-100 flex items-center gap-1 capitalize">
+            {STATUS_LABELS[status] || "Cancelled"}
+          </span>
+        );
+      case ORDER_STATUS.RETURNED:
+        return (
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-orange-50 text-orange-700 border border-orange-100 flex items-center gap-1 capitalize">
+            {STATUS_LABELS[status] || "Returned"}
+          </span>
+        );
+      case ORDER_STATUS.DELIVERED:
+        return (
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 text-[#063d32] border border-emerald-100 flex items-center gap-1 capitalize">
+            {STATUS_LABELS[status] || "Completed"}
+          </span>
+        );
+      default:
+        return (
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-100 flex items-center gap-1 capitalize">
+            {STATUS_LABELS[status] || "Active"}
+          </span>
+        );
+    }
+  };
+
   return (
     <>
-      <div className="w-full lg:pt-0 pt-8 px-2 md:px-8 xl:px-24">
-        <div className="min-h-screen flex flex-col md:flex-row font-inter">
+      <div className="w-full lg:pt-8 pt-4 px-2 md:px-8 xl:px-24 min-h-screen">
+        <div className="flex flex-col md:flex-row font-poppins">
           {/* Sidebar */}
-          <div className="w-full md:w-1/4">
+          <div className="w-full md:w-1/3 lg:w-1/4">
             <SideBar />
           </div>
 
           {/* Main content */}
-          <div className="flex-1 p-4 sm:p-6 md:p-8">
-            <h2 className="text-3xl font-semibold mb-8 text-[#1a1a1a]">
+          <ScrollReveal animation="fade-left" duration={800} className="flex-1 p-2 sm:p-6 md:p-8">
+            <h2 className="text-3xl font-semibold mb-8 text-[#3C4242] font-poppins">
               My Orders
             </h2>
 
             {/* Tabs */}
-            <div className="flex border-b border-[#F6F6F6] mb-8 relative">
+            <div className="flex bg-gray-50 p-1 rounded-xl mb-8 overflow-x-auto w-full scrollbar-none whitespace-nowrap gap-1">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`relative py-2 px-8 text-base sm:text-lg font-semibold transition-all duration-300 text-center rounded-[4px] cursor-pointer ${activeTab === tab
-                    ? "text-[#3C4242] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[3px] after:bg-[#1a1a1a] bg-[#F6F6F6]"
-                    : "text-[#3C4242] hover:text-[#1a1a1a]"
+                  className={`relative py-2 px-5 sm:px-8 text-sm sm:text-base font-semibold transition-all duration-300 text-center rounded-lg cursor-pointer border-none outline-none focus:outline-none flex-shrink-0 ${activeTab === tab
+                      ? "text-white bg-[#063d32] shadow-sm"
+                      : "text-gray-500 hover:text-[#063d32] hover:bg-white/60"
                     }`}
                 >
                   {tab}
@@ -325,59 +163,73 @@ const Profileorder = () => {
             </div>
 
             {/* Orders List */}
-            <div className="space-y-8">
-              {filteredOrders?.map((order) => (
+            <div className="space-y-6">
+              {loading ? (
+                <OrdersSkeleton count={3} />
+              ) : filteredOrders?.map((order) => (
                 <div
                   key={order.orderId}
-                  className="bg-white rounded-2xl p-6 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0,03)] border border-gray-100"
+                  className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 hover:border-emerald-800/10 hover:shadow-md transition-all duration-300"
                 >
                   {/* Header Info */}
-                  <div className="flex flex-col md:flex-row justify-between gap-6 mb-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2">
+                  <div className="flex flex-col lg:flex-row justify-between gap-6 mb-6">
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                       <div>
-                        <h3 className="text-lg font-semibold text-[#1a1a1a] mb-2">Order no: #{order.orderId}</h3>
-                        <p className="text-sm text-gray-500 font-medium">
-                          <span className="text-[#807D7E] font-[Causten] font-semibold">Order Date : </span><span className="text-[#BEBCBD] font-[Causten] font-normal">{new Date(order.createdAt).toLocaleDateString()}</span>
-                        </p>
-                        <p className="text-sm text-gray-500 font-medium">
-                          <span className="text-[#807D7E] font-[Causten] font-semibold">Estimated Delivery Date : </span><span className="text-[#BEBCBD] font-[Causten] font-normal">8 June 2023</span>
-                        </p>
+                        <h3 className="text-lg font-bold text-[#3C4242] mb-2">Order #{order.orderId}</h3>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-[#807D7E] font-medium">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5" />
+                            Date: {new Date(order.createdAt).toLocaleDateString()}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Truck className="w-3.5 h-3.5" />
+                            Delivery: {new Date(new Date(order.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="text-left md:text-right space-y-1">
-                      <p className="text-sm text-gray-500 font-medium">
-                        <span className="text-[#807D7E] font-[Causten] font-semibold">Order Status : </span><span className="text-[#BEBCBD] font-[Causten] font-normal capitalize">{statusMap[order.status] || "Unknown"}</span>
-                      </p>
-                      <p className="text-sm text-gray-500 font-medium">
-                        <span className="text-[#807D7E] font-[Causten] font-semibold">Payment Method : </span><span className="text-[#BEBCBD] font-[Causten] font-normal">{order.paymentStatus}</span>
-                      </p>
+                    <div className="flex flex-wrap lg:flex-col lg:items-end gap-3 lg:gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-[#807D7E] font-semibold">Status:</span>
+                        {getStatusBadge(order.status)}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-[#807D7E] font-semibold">Payment:</span>
+                        <span className="text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded capitalize">{order.paymentStatus}</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="h-px bg-gray-100 w-full mb-8"></div>
+                  <div className="h-px bg-gray-50 w-full mb-6"></div>
 
                   {/* Product/Item Preview */}
-                  <div className="flex flex-col lg:flex-row justify-between items-end lg:items-center gap-6">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                     <div className="flex flex-wrap gap-6 flex-1 w-full">
                       {order.orderItems.map((item) => (
                         <div key={item.orderItemId} className="flex gap-4 w-full sm:w-auto">
                           <img
                             src={`${ApiURL}/assets/Products/${item.imageUrl}`}
                             alt={item.productName}
-                            className="w-24 h-24 rounded-xl object-cover shadow-sm"
+                            className="w-20 h-20 rounded-xl object-cover shadow-sm border border-gray-100"
                           />
                           <div className="flex flex-col justify-center">
-                            <h4 className="font-semibold text-[#1a1a1a] text-lg mb-1">{item.productName}</h4>
-                            <div className="space-y-0.5">
-                              <p className="text-sm text-gray-500">
-                                Colour : <span className="text-[#BEBCBD] font-[Causten] font-normal capitalize">{item.color_name || "N/A"}</span>
+                            <h4 className="font-bold text-[#3C4242] text-base mb-1 line-clamp-1">{item.productName}</h4>
+                            <div className="space-y-0.5 text-xs text-[#807D7E] font-medium">
+                              <p className="flex items-center gap-1.5">
+                                Colour : <span className="text-gray-700 font-bold capitalize">{item.color_name || "N/A"}</span>
+                                {item.color_code && (
+                                  <span
+                                    className="w-2.5 h-2.5 rounded-full border border-gray-300"
+                                    style={{ backgroundColor: item.color_code }}
+                                  ></span>
+                                )}
                               </p>
-                              <p className="text-sm text-gray-500">
-                                Qty : <span className="text-[#BEBCBD] font-[Causten] font-normal">{item.quantity}</span>
+                              <p>
+                                Qty : <span className="text-gray-700 font-bold">{item.quantity}</span>
                               </p>
-                              <p className="text-sm text-gray-500">
-                                Total : <span className="text-[#BEBCBD] font-[Causten] font-normal">₹{item.totalAmount.toFixed(2)}</span>
+                              <p>
+                                Total : <span className="text-gray-700 font-bold">₹{Math.round(item.totalAmount)}</span>
                               </p>
                             </div>
                           </div>
@@ -386,22 +238,73 @@ const Profileorder = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex flex-wrap gap-3 w-full sm:w-auto mt-4 sm:mt-0">
-                      {order.status === 1 && (
+                    <div className="flex flex-wrap justify-end gap-2.5 w-full lg:w-auto mt-4 lg:mt-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-gray-50">
+                      {[
+                        ORDER_STATUS.PENDING,
+                        ORDER_STATUS.ACCEPTED,
+                        ORDER_STATUS.PREPARING,
+                        ORDER_STATUS.SHIPPED,
+                      ].includes(order.status) && (
+                          <button
+                            onClick={() => {
+                              setSelectedOrderId(order.orderId);
+                              setShowCancelModal(true);
+                            }}
+                            disabled={cancellingId === order.orderId}
+                            className="w-full sm:w-auto bg-white border border-red-200 text-red-600 px-4 py-2 rounded-xl font-semibold hover:bg-red-50 transition-all cursor-pointer text-sm flex items-center justify-center gap-1.5 disabled:opacity-60"
+                          >
+                            {cancellingId === order.orderId && <Loader2 size={14} className="animate-spin" />}
+                            Cancel Order
+                          </button>
+                        )}
+                      {order.status === ORDER_STATUS.DELIVERED && (
                         <button
                           onClick={() => {
                             setSelectedOrderId(order.orderId);
-                            setShowCancelModal(true);
+                            setShowReturnModal(true);
                           }}
-                          className="flex-1 sm:flex-none bg-[#b32b2b] text-white px-8 py-3 rounded-lg font-bold hover:bg-[#8e2222] transition shadow-md min-w-[140px]"
+                          disabled={returningId === order.orderId}
+                          className="w-full sm:w-auto bg-white border border-[#063d32]/20 text-[#063d32] px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm disabled:opacity-60"
                         >
-                          Cancel
+                          {returningId === order.orderId ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <RefreshCcw size={14} />
+                          )}
+                          Return Order
+                        </button>
+                      )}
+                      {canShowInvoice(order) && (
+                        <button
+                          onClick={() => {
+                            setSelectedOrderForInvoice(order);
+                            setIsCreditNote(false);
+                            setShowInvoiceModal(true);
+                          }}
+                          className="w-full sm:w-auto bg-white border border-emerald-200 text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm"
+                        >
+                          <Receipt size={14} />
+                          Invoice
+                        </button>
+                      )}
+                      {canShowCreditNote(order) && (
+                        <button
+                          onClick={() => {
+                            setSelectedOrderForInvoice(order);
+                            setIsCreditNote(true);
+                            setShowInvoiceModal(true);
+                          }}
+                          className="w-full sm:w-auto bg-white border border-rose-200 text-rose-600 px-4 py-2 rounded-xl font-semibold hover:bg-rose-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm"
+                        >
+                          <ArrowLeftRight size={14} />
+                          Credit Note
                         </button>
                       )}
                       <button
-                        onClick={() => navigate(`/orderdetails/${order.orderId}`)}
-                        className="flex-1 sm:flex-none bg-[#004534] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#00382e] transition shadow-md min-w-[140px] cursor-pointer"
+                        onClick={() => navigate(`/orderdetails/${order.orderId}`, { state: { activeTab } })}
+                        className="w-full sm:w-auto bg-[#063d32] text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-[#12584a] transition-all cursor-pointer text-sm flex items-center justify-center gap-1.5 shadow-sm"
                       >
+                        <Eye size={14} />
                         View Detail
                       </button>
                     </div>
@@ -409,23 +312,34 @@ const Profileorder = () => {
                 </div>
               ))}
 
-              {filteredOrders.length === 0 && (
-                <div className="bg-white/50 border-2 border-dashed border-gray-200 rounded-2xl py-20 text-center">
-                  <Package size={48} className="mx-auto text-[#004534] mb-4" />
-                  <p className="text-[#004534] font-medium">No {activeTab.toLowerCase()} orders found.</p>
+              {!loading && filteredOrders.length === 0 && (
+                <div className="bg-white border border-dashed border-gray-200 rounded-2xl py-20 text-center shadow-sm">
+                  <Package size={48} className="mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-400 font-medium text-sm">No {activeTab.toLowerCase()} orders found.</p>
                 </div>
               )}
             </div>
-          </div>
-          <ConfirmDeleteModal
-            isOpen={showCancelModal}
-            onClose={() => setShowCancelModal(false)}
-            onConfirm={handleCancelOrder}
-            itemType="order"
-            itemName={`#${selectedOrderId}`}
-          />
+          </ScrollReveal>
         </div>
       </div>
+      <CancelOrderModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={handleCancelOrder}
+        orderId={selectedOrderId}
+      />
+      <ReturnOrderModal
+        isOpen={showReturnModal}
+        onClose={() => setShowReturnModal(false)}
+        onConfirm={handleReturnOrder}
+        orderId={selectedOrderId}
+      />
+      <InvoiceModal
+        isOpen={showInvoiceModal}
+        onClose={() => setShowInvoiceModal(false)}
+        order={selectedOrderForInvoice}
+        isCreditNote={isCreditNote}
+      />
 
       <BrandBanner />
     </>

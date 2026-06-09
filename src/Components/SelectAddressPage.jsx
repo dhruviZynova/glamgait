@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Radio, Phone, MapPin, User, X, Check, Plus } from "lucide-react";
 import toast from "react-hot-toast";
@@ -13,6 +13,7 @@ const SelectAddressPage = () => {
     const user = userInfo();
     const u_id = user?.u_id;
     const guestId = getGuestId();
+    const isPlacingOrderRef = useRef(false);
 
     // Get data from checkout page
     const { cartItems = [], formData: checkoutFormData = {} } = location.state || {};
@@ -23,15 +24,15 @@ const SelectAddressPage = () => {
     const [paymentMethod, setPaymentMethod] = useState("COD");
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [orderId, setOrderId] = useState(null);
+
     const [showAddAddressModal, setShowAddAddressModal] = useState(false);
     const [addressType, setAddressType] = useState("HOME");
 
-    // Calculate totals
-    const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const taxes = Math.round(subtotal * 0.18); // 18% GST
-    const deliveryFee = subtotal > 500 ? 0 : 40; // Free delivery above ₹500
-    const grandTotal = subtotal + taxes + deliveryFee;
+    // Calculate totals - Memoized for performance
+    const subtotal = React.useMemo(() => cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0), [cartItems]);
+    const taxes = React.useMemo(() => Math.round(subtotal * 0.18), [subtotal]); // 18% GST
+    const deliveryFee = React.useMemo(() => subtotal > 500 ? 0 : 40, [subtotal]); // Free delivery above ₹500
+    const grandTotal = React.useMemo(() => subtotal + taxes + deliveryFee, [subtotal, taxes, deliveryFee]);
 
     // Fetch addresses
     useEffect(() => {
@@ -100,6 +101,8 @@ const SelectAddressPage = () => {
             return;
         }
 
+        if (isPlacingOrderRef.current) return;
+        isPlacingOrderRef.current = true;
         setIsProcessing(true);
 
         try {
@@ -167,15 +170,18 @@ const SelectAddressPage = () => {
             }
 
             const { order_id: newOrderId, rzp_order_id, amount } = res.data.data;
-            setOrderId(newOrderId);
+
 
             // Handle payment
             if (paymentMethod === "online") {
+                sessionStorage.setItem('lastOrderId', newOrderId);
+                sessionStorage.setItem('lastCheckoutUrl', 'razorpay');
+
                 const options = {
                     key: razorpayKEY,
                     amount: amount * 100,
                     currency: "INR",
-                    name: "GlamGait",
+                    name: "Kundrat",
                     description: `Order #${newOrderId}`,
                     order_id: rzp_order_id,
                     handler: async (response) => {
@@ -189,12 +195,31 @@ const SelectAddressPage = () => {
 
                             if (verifyRes.data.status === 1) {
                                 toast.success("Payment successful!");
+                                sessionStorage.removeItem('lastCheckoutUrl');
                                 setShowSuccessModal(true);
                             } else {
                                 toast.error("Payment verification failed");
+                                navigate(`/order-confirmation?status=failed&orderId=${newOrderId}`, {
+                                    state: { orderId: newOrderId, status: "failed" },
+                                });
                             }
                         } catch {
                             toast.error("Payment verification failed");
+                            navigate(`/order-confirmation?status=failed&orderId=${newOrderId}`, {
+                                state: { orderId: newOrderId, status: "failed" },
+                            });
+                        } finally {
+                            isPlacingOrderRef.current = false;
+                            setIsProcessing(false);
+                        }
+                    },
+                    modal: {
+                        ondismiss: () => {
+                            isPlacingOrderRef.current = false;
+                            setIsProcessing(false);
+                            navigate(`/order-confirmation?status=cancel&orderId=${newOrderId}`, {
+                                state: { orderId: newOrderId, status: "cancel" },
+                            });
                         }
                     },
                     prefill: {
@@ -210,6 +235,8 @@ const SelectAddressPage = () => {
                     rzp.open();
                 } else {
                     toast.error("Razorpay SDK not loaded");
+                    isPlacingOrderRef.current = false;
+                    setIsProcessing(false);
                 }
             } else {
                 toast.success("Order placed successfully!");
@@ -218,8 +245,12 @@ const SelectAddressPage = () => {
         } catch (error) {
             toast.error(error.message || "Failed to place order");
             console.error(error);
+            isPlacingOrderRef.current = false;
         } finally {
             setIsProcessing(false);
+            if (paymentMethod !== "online") {
+                isPlacingOrderRef.current = false;
+            }
         }
     };
 
@@ -228,8 +259,8 @@ const SelectAddressPage = () => {
             key={address.add_id}
             onClick={() => setSelectedAddressId(address.add_id)}
             className={`bg-white p-4 rounded-[10px] cursor-pointer transition-all ${selectedAddressId === address.add_id
-                    ? "border-[#E7E5E4]"
-                    : "border-[#E7E5E4] hover:border-[#E7E5E4]"
+                ? "border-[#E7E5E4]"
+                : "border-[#E7E5E4] hover:border-[#E7E5E4]"
                 }`}
         >
             <div className="flex items-start gap-3">
@@ -532,7 +563,7 @@ const SelectAddressPage = () => {
                             </h2>
                             <div className="space-y-4 text-[#3D3D3D] font-[Oxygen] text-md md:text-lg max-w-lg mx-auto leading-relaxed">
                                 <p>
-                                    Thank You For Choosing Modimal, Your Order Will Be Generated Based On Your Delivery Request.
+                                    Thank You For Choosing Kundrat, Your Order Will Be Generated Based On Your Delivery Request.
                                 </p>
                                 <p>
                                     The Receipt Has Been Sent To Your Email
@@ -545,9 +576,9 @@ const SelectAddressPage = () => {
                                 Please Contact Us For Any Query
                             </p>
                             <div className="space-y-1 font-[Oxygen] text-[#3D3D3D]">
-                                <p className="text-lg">+1(929)460-3208</p>
+                                <p className="text-lg">+91 98765 43210</p>
                                 <p className="uppercase text-sm">OR</p>
-                                <p className="text-lg font-medium">Hello @ Modimal.Com</p>
+                                <p className="text-lg font-medium">Hello@kundrat.Com</p>
                             </div>
                         </div>
                     </div>

@@ -19,7 +19,7 @@ import {
   Users,
   Package,
   TrendingUp,
-  DollarSign,
+  IndianRupee,
   Calendar,
   Clock,
   CheckCircle,
@@ -27,8 +27,10 @@ import {
   XCircle,
   Truck,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { ApiURL } from "../../Variable";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
+import { ORDER_STATUS, STATUS_LABELS, STATUS_COLORS } from "../../utils/constants";
 
 const formatRevenue = (revenue) => {
   if (revenue >= 100000) {
@@ -46,6 +48,7 @@ const formatRevenue = (revenue) => {
 const Dashboard = () => {
   const [timeframe, setTimeframe] = useState("daily");
   const [userCount, setUserCount] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [dashboardCount, setDashboardCount] = useState({
     totalRevenue: 0,
     totalOrders: 0,
@@ -71,7 +74,7 @@ const Dashboard = () => {
   // Fetch dashboard data
   const fetchDashboardData = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/stats`);
+      const res = await adminAxios.get(`${ApiURL}/stats`);
       setDashboardCount(res.data.data.stats);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -80,7 +83,7 @@ const Dashboard = () => {
 
   const fetchuserCount = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/usercount`);
+      const res = await adminAxios.get(`${ApiURL}/usercount`);
       setUserCount(res.data.data.count);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -90,7 +93,7 @@ const Dashboard = () => {
   // Fetch chart data
   const fetchChartData = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/chart-data`);
+      const res = await adminAxios.get(`${ApiURL}/chart-data`);
       setChartData(res.data.data.chartData);
     } catch (error) {
       console.error("Error fetching chart data:", error);
@@ -100,7 +103,7 @@ const Dashboard = () => {
   // Fetch order status data
   const fetchOrderStatusData = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/order-status-data`);
+      const res = await adminAxios.get(`${ApiURL}/order-status-data`);
       setOrderStatusData(res.data.data.orderStatusData);
     } catch (error) {
       console.error("Error fetching order status data:", error);
@@ -110,7 +113,7 @@ const Dashboard = () => {
   // Fetch recent orders
   const fetchRecentOrders = async () => {
     try {
-      const res = await axiosInstance.get(`${ApiURL}/recent-orders`);
+      const res = await adminAxios.get(`${ApiURL}/recent-orders`);
       setRecentOrders(res.data.data.recentOrders);
     } catch (error) {
       console.error("Error fetching recent orders:", error);
@@ -119,27 +122,59 @@ const Dashboard = () => {
 
   // Check if order should contribute to revenue
   const isRevenueEligible = (status) => {
+    const statusId = parseInt(status);
     const eligibleStatuses = [
-      "pending",
-      "accepted",
-      "preparing",
-      "shipped",
-      "delivered",
+      ORDER_STATUS.PENDING,
+      ORDER_STATUS.ACCEPTED,
+      ORDER_STATUS.PREPARING,
+      ORDER_STATUS.SHIPPED,
+      ORDER_STATUS.DELIVERED,
     ];
-    return eligibleStatuses.includes(status);
+    return eligibleStatuses.includes(statusId);
   };
 
   useEffect(() => {
-    fetchDashboardData();
-    fetchuserCount();
-    fetchChartData();
-    fetchRecentOrders();
-    fetchOrderStatusData();
+    const loadAllStats = async () => {
+      try {
+        setLoading(true);
+        await Promise.all([
+          fetchDashboardData(),
+          fetchuserCount(),
+          fetchChartData(),
+          fetchRecentOrders(),
+          fetchOrderStatusData(),
+        ]);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadAllStats();
   }, []);
 
   const getCurrentData = () => {
     return chartData[timeframe] || [];
   };
+
+  if (loading) {
+    return (
+      <div className="glamloader-overlay" aria-label="Loading" role="status">
+        <div className="glamloader-logo">
+          KUNDRAT
+          <div className="glamloader-logo-fill">KUNDRAT</div>
+        </div>
+        <div className="glamloader-ring">
+          <svg viewBox="0 0 72 72">
+            <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+            <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+            <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+          </svg>
+          <div className="glamloader-ring-dot" />
+        </div>
+      </div>
+    );
+  }
 
   const StatCard = ({
     title,
@@ -162,29 +197,29 @@ const Dashboard = () => {
     };
 
     return (
-      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 hover:shadow-lg transition-shadow min-w-0 w-full overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <div
-            className={`p-3 rounded-lg ${colorClasses[color].split(" ")[2]}`}
+            className={`p-2.5 sm:p-3 rounded-lg ${colorClasses[color].split(" ")[2]}`}
           >
-            <Icon className={`h-6 w-6 ${colorClasses[color].split(" ")[1]}`} />
+            <Icon className={`h-5 w-5 sm:h-6 sm:w-6 ${colorClasses[color].split(" ")[1]}`} />
           </div>
           {trend && (
             <div
-              className={`flex items-center text-sm ${trend === "up" ? "text-green-600" : "text-red-600"
+              className={`flex items-center text-xs sm:text-sm ${trend === "up" ? "text-green-600" : "text-red-600"
                 }`}
             >
               <TrendingUp
-                className={`h-4 w-4 mr-1 ${trend === "down" ? "rotate-180" : ""
+                className={`h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 ${trend === "down" ? "rotate-180" : ""
                   }`}
               />
               {trendValue}%
             </div>
           )}
         </div>
-        <h3 className="text-gray-500 text-sm font-medium">{title}</h3>
-        <p className="text-3xl font-bold text-gray-800 mt-1">{value}</p>
-        {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+        <h3 className="text-gray-500 text-xs sm:text-sm font-medium">{title}</h3>
+        <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mt-1 break-all sm:break-normal">{value}</p>
+        {subtitle && <p className="text-[10px] sm:text-xs text-gray-500 mt-1">{subtitle}</p>}
       </div>
     );
   };
@@ -204,7 +239,7 @@ const Dashboard = () => {
           </div>
           <button
             onClick={fetchDashboardData}
-            className="mt-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-pink-600 transition-colors"
+            className="mt-2 w-full md:w-auto px-4 py-2 bg-black text-white rounded-lg hover:bg-pink-600 transition-colors cursor-pointer text-center"
           >
             Refresh Data
           </button>
@@ -215,7 +250,7 @@ const Dashboard = () => {
           <StatCard
             title="Total Revenue"
             value={formatRevenue(dashboardCount.totalRevenue)} // Updated
-            icon={DollarSign}
+            icon={IndianRupee}
             color="green"
             subtitle="Excluding cancelled orders only"
           />
@@ -299,20 +334,20 @@ const Dashboard = () => {
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Revenue Chart */}
-          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-800">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 min-w-0 w-full overflow-hidden">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
                 Revenue Overview
-                <span className="text-sm text-gray-500 block">
+                <span className="text-xs sm:text-sm text-gray-500 block">
                   Excludes cancelled orders only
                 </span>
               </h2>
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full md:w-auto justify-start md:justify-end">
                 {["daily", "weekly", "monthly"].map((period) => (
                   <button
                     key={period}
                     onClick={() => setTimeframe(period)}
-                    className={`px-3 py-1 text-sm rounded-md capitalize transition-colors ${timeframe === period
+                    className={`flex-1 md:flex-initial px-3 py-1.5 text-xs sm:text-sm rounded-md capitalize transition-colors cursor-pointer text-center ${timeframe === period
                       ? "bg-pink-500 text-white"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
@@ -354,8 +389,8 @@ const Dashboard = () => {
           </div>
 
           {/* Order Status Pie Chart */}
-          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 min-w-0 w-full overflow-hidden">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-6">
               Order Status Distribution
             </h2>
             <ResponsiveContainer width="100%" height={300}>
@@ -383,23 +418,23 @@ const Dashboard = () => {
         </div>
 
         {/* Orders Chart */}
-        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-8">
-          <div className="flex justify-between items-center mb-6">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 mb-8 min-w-0 w-full overflow-hidden">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-gray-800">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
                 Orders Overview
               </h2>
-              <span className="text-sm text-gray-500">
+              <span className="text-xs sm:text-sm text-gray-500">
                 Stacked view: Green (Revenue Contributing) + Red (Cancelled) =
                 Total
               </span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full md:w-auto justify-start md:justify-end">
               {["daily", "weekly", "monthly"].map((period) => (
                 <button
                   key={period}
                   onClick={() => setTimeframe(period)}
-                  className={`px-3 py-1 text-sm rounded-md capitalize transition-colors ${timeframe === period
+                  className={`flex-1 md:flex-initial px-3 py-1.5 text-xs sm:text-sm rounded-md capitalize transition-colors cursor-pointer text-center ${timeframe === period
                     ? "bg-pink-500 text-white"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     }`}
@@ -450,33 +485,33 @@ const Dashboard = () => {
           </ResponsiveContainer>
 
           {/* Summary Stats */}
-          <div className="grid grid-cols-4 gap-4 mt-6 pt-4 border-t">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-4 border-t">
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-800">
+              <p className="text-lg sm:text-2xl font-bold text-gray-800">
                 {getCurrentData().reduce((sum, item) => sum + item.orders, 0)}
               </p>
-              <p className="text-sm text-gray-500">Total Orders</p>
+              <p className="text-xs sm:text-sm text-gray-500">Total Orders</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-lg sm:text-2xl font-bold text-green-600">
                 {getCurrentData().reduce(
                   (sum, item) => sum + item.eligibleOrders,
                   0
                 )}
               </p>
-              <p className="text-sm text-gray-500">Revenue Contributing</p>
+              <p className="text-xs sm:text-sm text-gray-500">Revenue Contributing</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-red-600">
+              <p className="text-lg sm:text-2xl font-bold text-red-600">
                 {getCurrentData().reduce(
                   (sum, item) => sum + (item.cancelledOrders || 0),
                   0
                 )}
               </p>
-              <p className="text-sm text-gray-500">Cancelled</p>
+              <p className="text-xs sm:text-sm text-gray-500">Cancelled</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-lg sm:text-2xl font-bold text-blue-600">
                 {(
                   (getCurrentData().reduce(
                     (sum, item) => sum + item.eligibleOrders,
@@ -493,15 +528,18 @@ const Dashboard = () => {
                 ).toFixed(1)}
                 %
               </p>
-              <p className="text-sm text-gray-500">Success Rate</p>
+              <p className="text-xs sm:text-sm text-gray-500">Success Rate</p>
             </div>
           </div>
         </div>
 
         {/* Recent Orders */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 min-w-0 w-full overflow-hidden">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b border-gray-200 gap-2 sm:gap-0">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">Recent Orders</h2>
+            <Link to="/admin/orders">
+              <button className="px-0 sm:px-4 py-1 sm:py-2 text-black hover:text-gray-600 underline cursor-pointer text-sm sm:text-base">View All Orders</button>
+            </Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -528,10 +566,10 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {recentOrders?.map((order) => (
+                {recentOrders?.slice(10).map((order) => (
                   <tr key={order.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">
-                      #{order.id}
+                      {order.id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {order.user?.fullName || order.user?.name || "N/A"}
@@ -541,30 +579,9 @@ const Dashboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${parseInt(order.status) === 5
-                          ? "bg-green-100 text-green-800"
-                          : parseInt(order.status) === 4
-                            ? "bg-purple-100 text-purple-800"
-                            : parseInt(order.status) === 3
-                              ? "bg-blue-100 text-blue-800"
-                              : parseInt(order.status) === 2
-                                ? "bg-yellow-100 text-yellow-800"
-                                : parseInt(order.status) === 1
-                                  ? "bg-gray-100 text-gray-800"
-                                  : "bg-red-100 text-red-800"
-                          }`}
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${STATUS_COLORS[parseInt(order.status)] || STATUS_COLORS[ORDER_STATUS.CANCELLED]}`}
                       >
-                        {parseInt(order.status) === 1
-                          ? "Pending"
-                          : parseInt(order.status) === 2
-                            ? "Accepted"
-                            : parseInt(order.status) === 3
-                              ? "Preparing"
-                              : parseInt(order.status) === 4
-                                ? "Shipped"
-                                : parseInt(order.status) === 5
-                                  ? "Delivered"
-                                  : "Cancelled"}
+                        {STATUS_LABELS[parseInt(order.status)] || "Unknown"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">

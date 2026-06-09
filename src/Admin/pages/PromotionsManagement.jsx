@@ -1,8 +1,9 @@
 /* eslint-disable no-unused-vars */
 // src/pages/admin/PromotionsManagement.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { ChevronDown } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable"; // adjust path if needed
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import {
   PlusIcon,
   TrashIcon,
@@ -17,6 +18,20 @@ const PromotionsManagement = () => {
   const [offers, setOffers] = useState([]);
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,7 +48,7 @@ const PromotionsManagement = () => {
   const fetchOffers = async () => {
     try {
       setLoading(true);
-      const res = await axiosInstance.post(`${ApiURL}/getoffers`);
+      const res = await adminAxios.post(`${ApiURL}/getoffers`);
       if (res?.data?.status === 1) setOffers(res.data.data || []);
     } catch (err) {
       console.error("Error fetching offers:", err);
@@ -46,7 +61,7 @@ const PromotionsManagement = () => {
   const fetchCoupons = async () => {
     try {
       setLoading(true);
-      const res = await axiosInstance.post(`${ApiURL}/getcoupons`);
+      const res = await adminAxios.post(`${ApiURL}/getcoupons`);
       if (res?.data?.status === 1) setCoupons(res.data.data || []);
     } catch (err) {
       console.error("Error fetching coupons:", err);
@@ -87,7 +102,7 @@ const PromotionsManagement = () => {
     const idField = deleteModal.type === "offer" ? "offer_id" : "coupon_id";
 
     try {
-      const res = await axiosInstance.post(`${ApiURL}/${endpoint}`, {
+      const res = await adminAxios.post(`${ApiURL}/${endpoint}`, {
         [idField]: deleteModal.id,
       });
       showToaster(res?.data?.status, res?.data?.description || "Deleted");
@@ -114,7 +129,7 @@ const PromotionsManagement = () => {
         : "addcoupon";
 
     try {
-      const res = await axiosInstance[isEdit ? "put" : "post"](
+      const res = await adminAxios[isEdit ? "put" : "post"](
         `${ApiURL}/${endpoint}`,
         formData
       );
@@ -153,7 +168,7 @@ const PromotionsManagement = () => {
           <div className="flex flex-wrap gap-3">
             <button
               onClick={() => setActiveTab("offers")}
-              className={`px-5 py-2 rounded-lg font-medium transition-colors ${activeTab === "offers"
+              className={`px-5 py-2 rounded-lg font-medium transition-colors cursor-pointer ${activeTab === "offers"
                 ? "bg-black text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
@@ -163,7 +178,7 @@ const PromotionsManagement = () => {
             </button>
             <button
               onClick={() => setActiveTab("coupons")}
-              className={`px-5 py-2 rounded-lg font-medium transition-colors ${activeTab === "coupons"
+              className={`px-5 py-2 rounded-lg font-medium transition-colors cursor-pointer ${activeTab === "coupons"
                 ? "bg-black text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
@@ -177,7 +192,7 @@ const PromotionsManagement = () => {
         <div className="flex justify-end">
           <button
             onClick={openAddModal}
-            className="flex items-center justify-center gap-2 bg-black text-white px-5 py-2 rounded-lg hover:bg-gray-900 transition-colors"
+            className="flex items-center justify-center gap-2 bg-black text-white px-5 py-2 rounded-lg hover:bg-gray-900 transition-colors cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             Add {activeTab === "offers" ? "Offer" : "Coupon"}
@@ -186,7 +201,22 @@ const PromotionsManagement = () => {
       </div>
 
       {/* Content */}
-      {(activeTab === "offers" ? offers : coupons).length === 0 ? (
+      {loading ? (
+        <div className="glamloader-overlay" aria-label="Loading" role="status">
+          <div className="glamloader-logo">
+            KUNDRAT
+            <div className="glamloader-logo-fill">KUNDRAT</div>
+          </div>
+          <div className="glamloader-ring">
+            <svg viewBox="0 0 72 72">
+              <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+            </svg>
+            <div className="glamloader-ring-dot" />
+          </div>
+        </div>
+      ) : (activeTab === "offers" ? offers : coupons).length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">No {activeTab} found</p>
         </div>
@@ -251,13 +281,13 @@ const PromotionsManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => openEditModal(item)}
-                        className="text-black mr-4 hover:text-gray-700"
+                        className="text-black mr-4 hover:text-gray-700 cursor-pointer"
                       >
                         <PencilSquareIcon className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => handleDeleteRequest(item.offer_id)}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 cursor-pointer"
                       >
                         <TrashIcon className="h-5 w-5" />
                       </button>
@@ -283,13 +313,13 @@ const PromotionsManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => openEditModal(item)}
-                        className="text-black mr-4 hover:text-gray-700"
+                        className="text-black mr-4 hover:text-gray-700 cursor-pointer"
                       >
                         <PencilSquareIcon className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => handleDeleteRequest(item.coupon_id)}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 cursor-pointer"
                       >
                         <TrashIcon className="h-5 w-5" />
                       </button>
@@ -318,17 +348,114 @@ const PromotionsManagement = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Offer Type
                     </label>
-                    <select
-                      name="offer_type"
-                      value={formData.offer_type || ""}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                      required
-                    >
-                      <option value="">Select type</option>
-                      <option value="QTY">Quantity Based</option>
-                      <option value="CART">Cart Amount Based</option>
-                    </select>
+                    <div className="relative" ref={dropdownRef}>
+                      <button
+                        type="button"
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className="flex items-center justify-between w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white cursor-pointer focus:outline-none"
+                      >
+                        <span>
+                          {formData.offer_type === "QTY"
+                            ? "Quantity Based"
+                            : formData.offer_type === "CART"
+                              ? "Cart Amount Based"
+                              : "Select type"}
+                        </span>
+                        <ChevronDown
+                          className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-[#0f1115]" : ""
+                            }`}
+                        />
+                      </button>
+
+                      {isDropdownOpen && (
+                        <div className="absolute left-0 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleChange({ target: { name: "offer_type", value: "" } });
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${!formData.offer_type
+                              ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                              }`}
+                          >
+                            <span>Select type</span>
+                            {!formData.offer_type && (
+                              <svg
+                                className="w-4 h-4 text-[#0f1115]"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2.5"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleChange({ target: { name: "offer_type", value: "QTY" } });
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${formData.offer_type === "QTY"
+                              ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                              }`}
+                          >
+                            <span>Quantity Based</span>
+                            {formData.offer_type === "QTY" && (
+                              <svg
+                                className="w-4 h-4 text-[#0f1115]"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2.5"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleChange({ target: { name: "offer_type", value: "CART" } });
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between ${formData.offer_type === "CART"
+                              ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                              }`}
+                          >
+                            <span>Cart Amount Based</span>
+                            {formData.offer_type === "CART" && (
+                              <svg
+                                className="w-4 h-4 text-[#0f1115]"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2.5"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {formData.offer_type === "QTY" && (
@@ -341,7 +468,7 @@ const PromotionsManagement = () => {
                         name="min_qty"
                         value={formData.min_qty || ""}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                         min="1"
                         required
                       />
@@ -358,7 +485,7 @@ const PromotionsManagement = () => {
                         name="min_amount"
                         value={formData.min_amount || ""}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                         min="0"
                         required
                       />
@@ -374,7 +501,7 @@ const PromotionsManagement = () => {
                       name="discount_percent"
                       value={formData.discount_percent || ""}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                       min="1"
                       max="100"
                       required
@@ -393,7 +520,7 @@ const PromotionsManagement = () => {
                         name="code"
                         value={formData.code || ""}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black uppercase"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none uppercase"
                         placeholder="SUMMER25"
                         required
                       />
@@ -409,7 +536,7 @@ const PromotionsManagement = () => {
                       name="discount_percent"
                       value={formData.discount_percent || ""}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                       min="1"
                       max="100"
                       required
@@ -425,7 +552,7 @@ const PromotionsManagement = () => {
                       name="min_amount"
                       value={formData.min_amount || 0}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                       min="0"
                     />
                   </div>
@@ -440,7 +567,7 @@ const PromotionsManagement = () => {
                         name="start_date"
                         value={formData.start_date?.split("T")[0] || ""}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                         required
                       />
                     </div>
@@ -453,7 +580,7 @@ const PromotionsManagement = () => {
                         name="end_date"
                         value={formData.end_date?.split("T")[0] || ""}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
                         required
                       />
                     </div>
@@ -469,7 +596,7 @@ const PromotionsManagement = () => {
                     name="is_active"
                     checked={formData.is_active !== false}
                     onChange={handleChange}
-                    className="h-4 w-4 text-black border-gray-300 rounded"
+                    className="h-4 w-4 text-black border-gray-200 rounded-lg focus:outline-none"
                   />
                   <span className="text-sm font-medium text-gray-700">
                     Active

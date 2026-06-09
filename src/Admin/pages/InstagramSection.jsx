@@ -1,15 +1,14 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
-import axiosInstance from "../../Axios/axios";
+import { adminAxios } from "../../Axios/axios";
 import { Upload, Trash2, Loader2 } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
-import toast, { Toaster } from "react-hot-toast";
 
 const InstagramSection = () => {
   const [error, setError] = useState("");
   const [file, setFile] = useState(null);
-  const [media, setMedia] = useState([]);
+  const [media, setMedia] = useState(null);
   const [success, setSuccess] = useState("");
   const [instaLink, setInstaLink] = useState("");
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -59,7 +58,7 @@ const InstagramSection = () => {
     formData.append("insta_link", instaLink);
 
     try {
-      const response = await axiosInstance.post(
+      const response = await adminAxios.post(
         `${ApiURL}/addinstaimage`,
         formData
       );
@@ -92,10 +91,13 @@ const InstagramSection = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await axiosInstance.delete(
+      const response = await adminAxios.delete(
         `${ApiURL}/deleteinstaimage/${deleteModal.insta_id}`
       );
       if (response?.data?.status) {
+        setMedia((prevMedia) =>
+          prevMedia.filter((item) => item.insta_id !== deleteModal.insta_id)
+        );
         fetchImages();
         setError("");
         setSuccess("Media deleted successfully");
@@ -117,7 +119,7 @@ const InstagramSection = () => {
 
   const fetchImages = async () => {
     try {
-      const response = await axiosInstance.get(`${ApiURL}/getinstaimages`);
+      const response = await adminAxios.get(`${ApiURL}/getinstaimages`);
       if (response?.data?.status) {
         setMedia(response.data.data);
       } else {
@@ -125,11 +127,15 @@ const InstagramSection = () => {
       }
     } catch (err) {
       setError("Error fetching images");
+      setMedia([]);
     }
   };
 
   useEffect(() => {
     fetchImages();
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
@@ -137,7 +143,6 @@ const InstagramSection = () => {
 
   return (
     <div className="pb-8 min-h-screen ">
-      <Toaster />
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Manage Instagram Section
       </h1>
@@ -153,7 +158,7 @@ const InstagramSection = () => {
                 type="file"
                 accept="image/*,video/*"
                 onChange={handleFileChange}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-black focus:border-black outline-none transition-all duration-300"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:outline-none transition-all duration-300"
                 aria-label="Upload image or video"
               />
             </div>
@@ -166,14 +171,14 @@ const InstagramSection = () => {
                 value={instaLink}
                 onChange={(e) => setInstaLink(e.target.value)}
                 placeholder="Enter Instagram Link (e.g., https://instagram.com/p/xyz)"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-black focus:border-black outline-none transition-all duration-300"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:outline-none transition-all duration-300"
                 aria-label="Instagram link"
               />
             </div>
             <button
               onClick={handleUpload}
               disabled={isUploading}
-              className={`flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-xl hover:bg-black transition-all duration-200 shadow-sm text-sm font-medium ${isUploading ? "opacity-50 cursor-not-allowed" : ""
+              className={`flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-xl hover:bg-black transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer ${isUploading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               aria-label="Upload media"
             >
@@ -187,11 +192,6 @@ const InstagramSection = () => {
             {error && (
               <p className="text-red-500 text-sm mt-2" role="alert">
                 {error}
-              </p>
-            )}
-            {success && (
-              <p className="text-green-500 text-sm mt-2" role="status">
-                {success}
               </p>
             )}
           </div>
@@ -210,8 +210,9 @@ const InstagramSection = () => {
                     alt="Media preview"
                     className="w-full h-full object-cover"
                     onError={(e) => {
+                      e.target.onerror = null;
                       e.target.src =
-                        "https://via.placeholder.com/180x320?text=Preview+Failed";
+                        "https://placehold.co/180x320?text=Preview+Failed";
                     }}
                   />
                 ) : (
@@ -220,8 +221,9 @@ const InstagramSection = () => {
                     controls
                     className="w-full h-full object-cover"
                     onError={(e) => {
+                      e.target.onerror = null;
                       e.target.poster =
-                        "https://via.placeholder.com/180x320?text=Preview+Failed";
+                        "https://placehold.co/180x320?text=Preview+Failed";
                     }}
                   />
                 )}
@@ -246,8 +248,23 @@ const InstagramSection = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
-          {media?.length === 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl">
+          {media === null ? (
+            <div className="glamloader-overlay" aria-label="Loading" role="status">
+              <div className="glamloader-logo">
+                KUNDRAT
+                <div className="glamloader-logo-fill">KUNDRAT</div>
+              </div>
+              <div className="glamloader-ring">
+                <svg viewBox="0 0 72 72">
+                  <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+                  <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+                  <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+                </svg>
+                <div className="glamloader-ring-dot" />
+              </div>
+            </div>
+          ) : media?.length === 0 ? (
             <p className="text-gray-500 text-center col-span-full">
               No Instagram media available.
             </p>
@@ -255,30 +272,32 @@ const InstagramSection = () => {
             media?.map((item) => (
               <div
                 key={item?.insta_id}
-                className="bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden group transform transition-all duration-300 hover:scale-105 animate-fade-in"
+                className="bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden group transform transition-all"
               >
-                <div className="w-full aspect-[9/14] bg-gray-200">
-                  {item?.image_url.endsWith(".mp4") ||
-                    item?.image_url.endsWith(".webm") ||
-                    item?.image_url.endsWith(".ogg") ? (
+                <div className="w-full aspect-square sm:aspect-[9/14] bg-gray-200">
+                  {item?.image_url?.endsWith(".mp4") ||
+                    item?.image_url?.endsWith(".webm") ||
+                    item?.image_url?.endsWith(".ogg") ? (
                     <video
-                      src={`${ApiURL}/assets/Instagram/${item?.image_url}`}
+                      src={`${item?.image_url}`}
                       controls
                       className="w-full h-full object-cover"
                       onError={(e) => {
+                        e.target.onerror = null;
                         e.target.poster =
-                          "https://via.placeholder.com/180x320?text=Media+Failed";
+                          "https://placehold.co/180x320?text=Media+Failed";
                       }}
                       aria-label={`Instagram video ${item.insta_id}`}
                     />
                   ) : (
                     <img
-                      src={`${ApiURL}/assets/Instagram/${item?.image_url}`}
+                      src={`${item?.image_url}`}
                       alt={`Instagram media ${item.insta_id}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
+                        e.target.onerror = null;
                         e.target.src =
-                          "https://via.placeholder.com/180x320?text=Media+Failed";
+                          "https://placehold.co/180x320?text=Media+Failed";
                       }}
                     />
                   )}
@@ -301,7 +320,7 @@ const InstagramSection = () => {
                     onClick={() =>
                       handleDelete(item?.insta_id, item?.image_url)
                     }
-                    className="flex items-center gap-1 text-red-500 text-sm font-medium hover:text-red-600 transition-colors duration-200"
+                    className="flex items-center gap-1 text-red-500 text-sm font-medium hover:text-red-600 transition-colors duration-200 cursor-pointer"
                     aria-label={`Delete Instagram media ${item.insta_id}`}
                   >
                     <Trash2 className="w-4 h-4" />

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
-import axios from "axios"; // <-- Add this import
+import { X, Loader2 } from "lucide-react";
+import axios from "axios";
 import axiosInstance from "../Axios/axios";
 import { userInfo } from "../Variable";
 import toast from "react-hot-toast";
@@ -20,12 +20,14 @@ const AddAddress = ({
     phone_number: "",
     address: "",
     apartment: "",
+    zip_code: "",
     city: "",
     state: "",
-    zip_code: "",
+    country: "",
   });
 
   const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,6 +39,11 @@ const AddAddress = ({
         if (value.length === 6) {
           fetchCityState(value);
         }
+      }
+    } else if (name === "phone_number") {
+      // Only allow digits, max 10 digits
+      if (/^\d*$/.test(value) && value.length <= 10) {
+        setFormData({ ...formData, [name]: value });
       }
     } else {
       setFormData({ ...formData, [name]: value });
@@ -90,13 +97,31 @@ const AddAddress = ({
         city: editingAddress.city,
         state: editingAddress.state,
         zip_code: editingAddress.zip_code,
+        country: editingAddress.country || "",
       });
       setAddressType(editingAddress.address_type || "HOME");
     }
-  }, [editingAddress]);
+  }, [editingAddress, setAddressType]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    // Validate phone number (exactly 10 digits, starts with 6, 7, 8, or 9)
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(formData.phone_number)) {
+      toast.error("Please enter a valid 10-digit phone number starting with 6, 7, 8, or 9");
+      return;
+    }
+
+    setSubmitting(true);
     try {
       const payload = {
         ...formData,
@@ -122,18 +147,20 @@ const AddAddress = ({
     } catch (err) {
       toast.error("Something went wrong");
       console.error(err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 px-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl w-full max-w-md p-6 relative my-8">
+      <div className="bg-white rounded-2xl w-full max-w-lg p-8 relative my-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold">
             {editingAddress ? "Edit Address" : "Add New Address"}
           </h3>
-          <button onClick={onClose} className="text-gray-600 hover:text-black">
+          <button onClick={onClose} className="text-gray-600 hover:text-black cursor-pointer">
             <X size={24} />
           </button>
         </div>
@@ -160,27 +187,29 @@ const AddAddress = ({
             />
           </div>
 
-          {/* Email */}
-          <input
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Email"
-            required
-            className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
-          />
-
-          {/* Phone */}
-          <input
-            name="phone_number"
-            type="tel"
-            value={formData.phone_number}
-            onChange={handleChange}
-            placeholder="Phone Number"
-            required
-            className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
-          />
+          {/* Email & Phone */}
+          <div className="flex gap-2">
+            <input
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email"
+              required
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
+            />
+            <input
+              name="phone_number"
+              type="tel"
+              value={formData.phone_number}
+              onChange={handleChange}
+              placeholder="Phone Number (10-15 digits)"
+              required
+              minLength={10}
+              maxLength={15}
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
+            />
+          </div>
 
           {/* Address */}
           <input
@@ -201,39 +230,50 @@ const AddAddress = ({
             className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
           />
 
-          {/* ZIP Code */}
-          <div className="relative">
+          {/* ZIP Code & City */}
+          <div className="flex gap-2">
+            {/* <div className="relative"> */}
             <input
               name="zip_code"
               value={formData.zip_code}
               onChange={handleChange}
-              placeholder="PIN Code (6 digits)"
+              placeholder="PIN Code"
               required
-              maxLength={6}
-              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32] pr-10"
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
             />
-            {pincodeLoading && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="w-4 h-4 border-2 border-t-transparent border-[#063d32] rounded-full animate-spin"></div>
-              </div>
-            )}
+            {/* {pincodeLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-t-transparent border-[#063d32] rounded-full animate-spin"></div>
+                </div>
+              )} */}
+            {/* </div> */}
+            <input
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              placeholder="City"
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
+              required
+            />
           </div>
 
-          {/* State & City (Auto-filled) */}
+          {/* State & Country */}
           <div className="flex gap-2">
             <input
               name="state"
               value={formData.state}
-              readOnly
-              placeholder="State (auto-filled)"
-              className="w-1/2 px-4 py-3 border rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+              onChange={handleChange}
+              placeholder="State"
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
+              required
             />
             <input
-              name="city"
-              value={formData.city}
-              readOnly
-              placeholder="City (auto-filled)"
-              className="w-1/2 px-4 py-3 border rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              placeholder="Country"
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
+              required
             />
           </div>
 
@@ -242,22 +282,20 @@ const AddAddress = ({
             <button
               type="button"
               onClick={() => setAddressType("HOME")}
-              className={`px-6 py-2 rounded-md font-medium transition-all ${
-                addressType === "HOME"
-                  ? "bg-[#063d32] text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+              className={`px-6 py-2 rounded-md font-medium transition-all cursor-pointer ${addressType === "HOME"
+                ? "bg-[#063d32] text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
             >
               HOME
             </button>
             <button
               type="button"
               onClick={() => setAddressType("WORK")}
-              className={`px-6 py-2 rounded-md font-medium transition-all ${
-                addressType === "WORK"
-                  ? "bg-[#063d32] text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+              className={`px-6 py-2 rounded-md font-medium transition-all cursor-pointer ${addressType === "WORK"
+                ? "bg-[#063d32] text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
             >
               WORK
             </button>
@@ -266,10 +304,11 @@ const AddAddress = ({
           {/* Submit */}
           <button
             type="submit"
-            disabled={pincodeLoading}
-            className="w-full bg-[#063d32] text-white py-3 rounded-lg hover:bg-[#052d25] transition font-medium mt-6 disabled:opacity-70"
+            disabled={pincodeLoading || submitting}
+            className="w-full bg-[#063d32] text-white py-3 rounded-lg hover:bg-[#052d25] transition font-medium mt-8 disabled:opacity-70 cursor-pointer flex items-center justify-center gap-2"
           >
-            {editingAddress ? "UPDATE" : "ADD"}
+            {submitting && <Loader2 size={16} className="animate-spin" />}
+            {submitting ? "Saving..." : (editingAddress ? "UPDATE" : "ADD")}
           </button>
         </form>
       </div>

@@ -50,7 +50,7 @@ const ConfirmDeleteModal = ({
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
+            className="text-gray-500 hover:text-gray-700 transition-colors duration-200 cursor-pointer"
             aria-label="Close modal"
           >
             <X className="h-5 w-5" />
@@ -69,14 +69,14 @@ const ConfirmDeleteModal = ({
           <button
             ref={cancelButtonRef}
             onClick={onClose}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium"
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
             aria-label="Cancel deletion"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-200 shadow-sm text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
             aria-label={`Confirm delete ${itemType}`}
           >
             <Trash2 className="h-4 w-4" />

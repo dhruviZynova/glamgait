@@ -1,7 +1,6 @@
 import ProductCard from "./ProductCard"; // Make sure this exists
-import singlebanner from "../assets/singlebanner.jpg";
 import axiosInstance from "../Axios/axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { userInfo } from "../Variable";
 import { getGuestId } from "../utils/guest";
 
@@ -10,19 +9,32 @@ const ReletedProduct = ({ cate_name, currentProductId, cate_id }) => {
   const [wishlistMap, setWishlistMap] = useState({});
   const [reviewsSummary, setReviewsSummary] = useState({});
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
+    if (!cate_id) return;
     try {
-      const response = await axiosInstance.post(
-        `/productbycategory/${cate_name}`,
-        { limit: 5, cate_id }
+      // Use /getallproducts with cate_id filter — same proven endpoint as AllProducts.jsx
+      const response = await axiosInstance.get("/getallproducts", {
+        params: {
+          cate_id,
+          page: 1,
+          limit: 20,
+          sort_by: "name_asc",
+        },
+      });
+
+      // /getallproducts uses productData (not products)
+      const allProducts = response?.data?.data?.productData || [];
+
+      // Filter out current product only if there are other products available
+      const othersOnly = allProducts.filter(
+        (item) => String(item.p_id) !== String(currentProductId)
       );
 
-      const filteredProducts =
-        response?.data?.data?.products?.filter(
-          (item) => item.p_id !== currentProductId
-        ) || [];
+      // If filtering leaves nothing, show all (fallback); otherwise show up to 5 others
+      const filteredProducts = (othersOnly.length > 0 ? othersOnly : allProducts).slice(0, 5);
 
       setRelatedProducts(filteredProducts);
+
 
       // Fetch reviews immediately after getting products
       if (filteredProducts.length > 0) {
@@ -52,13 +64,13 @@ const ReletedProduct = ({ cate_name, currentProductId, cate_id }) => {
         }
       }
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("Error fetching related products:", error);
     }
-  };
+  }, [cate_id, currentProductId]);
 
   useEffect(() => {
     fetchProducts();
-  }, [cate_name]);
+  }, [fetchProducts]);
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -125,7 +137,7 @@ const ReletedProduct = ({ cate_name, currentProductId, cate_id }) => {
   return (
     <>
       {relatedProducts?.length > 0 && (
-        <section className="px-4 py-6 md:py-16 md:px-10 lg:px-20">
+        <section className="px-2 pt-6 md:pt-16 md:px-10 lg:px-20">
           {/* Section Title */}
           <div className="text-start mb-8">
             <h2 className="text-[30px] md:text-[34px] xl:text-[34px] font-700 font-[oxygen] text-[#3D3D3D] mb-2">
@@ -135,7 +147,7 @@ const ReletedProduct = ({ cate_name, currentProductId, cate_id }) => {
 
           {/* Product Grid */}
           <div className="">
-            <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
               {relatedProducts?.map((product) => (
                 <div key={product.p_id}>
                   <ProductCard
