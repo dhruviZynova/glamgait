@@ -12,7 +12,7 @@ import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Sizes = () => {
   const [isEdit, setIsEdit] = useState(false);
-  const [sizeData, setSizeData] = useState([]);
+  const [sizeData, setSizeData] = useState(null);
   const [categories, setCategories] = useState([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -151,7 +151,22 @@ const Sizes = () => {
         </div>
       </div>
 
-      {filteredSizes?.length === 0 ? (
+      {sizeData === null ? (
+        <div className="glamloader-overlay" aria-label="Loading" role="status">
+          <div className="glamloader-logo">
+            KUNDRAT
+            <div className="glamloader-logo-fill">KUNDRAT</div>
+          </div>
+          <div className="glamloader-ring">
+            <svg viewBox="0 0 72 72">
+              <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+            </svg>
+            <div className="glamloader-ring-dot" />
+          </div>
+        </div>
+      ) : filteredSizes?.length === 0 ? (
         <div className="text-center py-10">
           <p className="text-gray-500 text-lg">No sizes found</p>
         </div>

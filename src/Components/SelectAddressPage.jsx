@@ -196,9 +196,7 @@ const SelectAddressPage = () => {
                             if (verifyRes.data.status === 1) {
                                 toast.success("Payment successful!");
                                 sessionStorage.removeItem('lastCheckoutUrl');
-                                navigate(`/order-confirmation?status=success&orderId=${newOrderId}`, {
-                                    state: { orderId: newOrderId, status: "success" },
-                                });
+                                setShowSuccessModal(true);
                             } else {
                                 toast.error("Payment verification failed");
                                 navigate(`/order-confirmation?status=failed&orderId=${newOrderId}`, {
@@ -242,9 +240,7 @@ const SelectAddressPage = () => {
                 }
             } else {
                 toast.success("Order placed successfully!");
-                navigate(`/order-confirmation?status=success&orderId=${newOrderId}`, {
-                    state: { orderId: newOrderId, status: "success" },
-                });
+                setShowSuccessModal(true);
             }
         } catch (error) {
             toast.error(error.message || "Failed to place order");

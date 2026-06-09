@@ -4,6 +4,7 @@ import HomeHero from "../Components/HomeHero";
 import axiosInstance from "../Axios/axios";
 import ScrollReveal from "../Components/Ui/ScrollReveal";
 import { ApiURL, createSlug } from "../Variable";
+import { getCategories as getCachedCategories } from "../utils/dataCache";
 
 // Lazy-loaded components below the fold to keep the initial main bundle light
 const CategorySection = lazy(() => import("../Components/CategorySection"));
@@ -31,9 +32,9 @@ const HomePage = () => {
   useEffect(() => {
     const fetchFirstCategory = async () => {
       try {
-        const response = await axiosInstance.get(`${ApiURL}/getcategory`);
-        if (response?.data?.status && response?.data?.data && response.data.data.length > 0) {
-          const firstCat = response.data.data[0];
+        const data = await getCachedCategories(axiosInstance);
+        if (data && data.length > 0) {
+          const firstCat = data[0];
           const slug = createSlug(firstCat.cate_name);
           setFirstCategorySlug(slug);
         }

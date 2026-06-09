@@ -8,7 +8,7 @@ import ConfirmDeleteModal from "./ConfirmDeleteModal";
 const InstagramSection = () => {
   const [error, setError] = useState("");
   const [file, setFile] = useState(null);
-  const [media, setMedia] = useState([]);
+  const [media, setMedia] = useState(null);
   const [success, setSuccess] = useState("");
   const [instaLink, setInstaLink] = useState("");
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -127,6 +127,7 @@ const InstagramSection = () => {
       }
     } catch (err) {
       setError("Error fetching images");
+      setMedia([]);
     }
   };
 
@@ -248,7 +249,22 @@ const InstagramSection = () => {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl">
-          {media?.length === 0 ? (
+          {media === null ? (
+            <div className="glamloader-overlay" aria-label="Loading" role="status">
+              <div className="glamloader-logo">
+                KUNDRAT
+                <div className="glamloader-logo-fill">KUNDRAT</div>
+              </div>
+              <div className="glamloader-ring">
+                <svg viewBox="0 0 72 72">
+                  <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+                  <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+                  <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+                </svg>
+                <div className="glamloader-ring-dot" />
+              </div>
+            </div>
+          ) : media?.length === 0 ? (
             <p className="text-gray-500 text-center col-span-full">
               No Instagram media available.
             </p>

@@ -9,6 +9,7 @@ import ScrollReveal from "./Ui/ScrollReveal";
 
 import axiosInstance from "../Axios/axios";
 import { ApiURL, createSlug, getFullImageUrl } from "../Variable";
+import { getCategories as getCachedCategories } from "../utils/dataCache";
 
 // Elegant loading skeletons matching the aspect-ratio and border-radius of the category cards
 const CategorySkeletonGrid = () => (
@@ -58,9 +59,9 @@ const CategorySection = () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await axiosInstance.get(`${ApiURL}/getcategory`);
-            if (response?.data?.status && response?.data?.data) {
-                setCategoryData(response.data.data);
+            const data = await getCachedCategories(axiosInstance);
+            if (data) {
+                setCategoryData(data);
             } else {
                 setCategoryData([]);
             }

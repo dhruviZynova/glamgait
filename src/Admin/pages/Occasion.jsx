@@ -29,7 +29,7 @@ const Occasions = () => {
   }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [occasionData, setOccasionData] = useState([]);
+  const [occasionData, setOccasionData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -147,7 +147,22 @@ const Occasions = () => {
         </div>
       </div>
 
-      {filterOccasions?.length === 0 ? (
+      {occasionData === null ? (
+        <div className="glamloader-overlay" aria-label="Loading" role="status">
+          <div className="glamloader-logo">
+            KUNDRAT
+            <div className="glamloader-logo-fill">KUNDRAT</div>
+          </div>
+          <div className="glamloader-ring">
+            <svg viewBox="0 0 72 72">
+              <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+              <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+            </svg>
+            <div className="glamloader-ring-dot" />
+          </div>
+        </div>
+      ) : filterOccasions?.length === 0 ? (
         <div className="text-center py-10">
           <p className="text-gray-500 text-lg">No Occasions found</p>
         </div>
