@@ -1,14 +1,12 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SideBar from "./SideBar";
 import AddAddress from "./AddAddress";
-import axiosInstance from "../Axios/axios";
-import { ApiURL, userInfo } from "../Variable";
+import { userInfo } from "../Variable";
 import toast from "react-hot-toast";
-import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 import ProfileInfoSkeleton from "./skeletons/ProfileInfoSkeleton";
-import { Loader2, User, Mail, Lock, Plus, MapPin, Trash2, Edit3, Home, Briefcase, AlertTriangle } from "lucide-react";
+import { Loader2, User, Mail, Lock, Plus, MapPin, Trash2, Pencil, Home, Briefcase, AlertTriangle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useProfile, useUpdateProfile, useAddresses, useDeleteAddress } from "../hooks/useProfile";
 import ScrollReveal from "./Ui/ScrollReveal";
@@ -110,14 +108,14 @@ const PersonalInfo = () => {
     <>
       {(
         <div className="min-h-screen">
-          <div className="w-full lg:pt-8 pt-4 px-2 md:px-8 xl:px-24 flex flex-col md:flex-row font-poppins">
+          <div className="w-full lg:pt-8 pt-4 px-2 md:px-8 xl:px-24 flex flex-col md:flex-row gap-6 md:gap-14 font-poppins">
             {/* Left Sidebar */}
             <div className="md:w-1/3 lg:w-1/4">
               <SideBar />
             </div>
 
             {/* Right Content */}
-            <ScrollReveal animation="fade-left" duration={800} className="flex-1 p-4 sm:p-6 md:p-8">
+            <ScrollReveal animation="fade-left" duration={800} className="flex-1">
               {/* Header section with avatar */}
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#063d32] to-[#1c2f2f] flex items-center justify-center text-white text-xl font-bold shadow-md">
@@ -298,8 +296,8 @@ const PersonalInfo = () => {
                             <div className="flex items-center gap-4 border-t border-gray-50 pt-4 mt-auto">
                               <button
                                 className={`text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${addr.add_id.toString().startsWith('dummy')
-                                    ? 'text-gray-300 cursor-not-allowed'
-                                    : 'text-gray-600 hover:text-red-600'
+                                  ? 'text-gray-300 cursor-not-allowed'
+                                  : 'text-gray-600 hover:text-red-600'
                                   }`}
                                 onClick={() => !addr.add_id.toString().startsWith('dummy') && handleDeleteAddress(addr.add_id)}
                                 disabled={addr.add_id.toString().startsWith('dummy')}
@@ -310,13 +308,13 @@ const PersonalInfo = () => {
                               <div className="w-px h-4 bg-gray-200"></div>
                               <button
                                 className={`text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${addr.add_id.toString().startsWith('dummy')
-                                    ? 'text-gray-300 cursor-not-allowed'
-                                    : 'text-[#063d32] hover:text-[#12584a]'
+                                  ? 'text-gray-300 cursor-not-allowed'
+                                  : 'text-[#063d32] hover:text-[#12584a]'
                                   }`}
                                 onClick={() => !addr.add_id.toString().startsWith('dummy') && handleEditAddress(addr)}
                                 disabled={addr.add_id.toString().startsWith('dummy')}
                               >
-                                <Edit3 className="w-4 h-4" />
+                                <Pencil className="w-4 h-4" />
                                 Edit
                               </button>
                             </div>

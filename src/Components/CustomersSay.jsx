@@ -31,7 +31,7 @@ const ErrorFallback = ({ message, onRetry }) => (
 
 // Premium stylized Empty state
 const EmptyState = ({ message }) => (
-  <div className="flex flex-col items-center justify-center p-8 py-14 bg-[#F3F0ED]/40 border border-[#F3F0ED] rounded-2xl max-w-lg mx-auto my-4 text-center relative z-10">
+  <div className="flex flex-col items-center justify-center p-8 py-14 border border-[#F3F0ED] rounded-2xl max-w-lg mx-auto my-4 text-center relative z-10">
     <h3 className="text-gray-900 font-serif text-lg font-bold mb-2">No Reviews Yet</h3>
     <p className="text-gray-600 font-sans text-sm max-w-xs leading-relaxed">{message || "No client testimonials have been posted yet. Check back soon!"}</p>
   </div>
@@ -93,7 +93,7 @@ const CustomersSay = () => {
 
   return (
     <section className="relative py-10 md:py-16 overflow-hidden w-full">
-      
+
       {/* Title & Description */}
       <ScrollReveal animation="fade-up" duration={800}>
         <div className="text-center max-w-2xl mx-auto mb-8 md:mb-16 relative z-10 px-4">

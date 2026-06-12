@@ -606,7 +606,7 @@ const Allproducts = () => {
          This allows the page to grow naturally and the main browser scrollbar to appear.
          This fixes the "cut section" issue.
       */}
-      <div className="bg-[#f3f0ed] relative font-poppins">
+      <div className="relative font-poppins">
 
         <div className="w-full py-8 px-2 md:px-8 xl:px-24">
 
@@ -1067,7 +1067,7 @@ const Allproducts = () => {
                   <input
                     type="text"
                     placeholder="Search An Item"
-                    className="w-full rounded-full border border-gray-200 bg-[#f8f6f4] py-3 pl-5 pr-24 text-gray-700 text-base focus:outline-none"
+                    className="w-full rounded-full border border-gray-200 py-3 pl-5 pr-24 text-gray-700 text-base focus:outline-none"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}

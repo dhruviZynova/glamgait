@@ -1,8 +1,10 @@
+import { useState } from "react";
 import frame2 from "../assets/images/frame2.png";
-import userPlaceholder from "../assets/images/profile1.jpg";
 import quoteLeft from "../assets/quoteLeft.png";
 
 const ReviewCard = ({ name, review, image }) => {
+  const [imgError, setImgError] = useState(false);
+
   return (
     <div className="relative w-full aspect-[4/4] overflow-hidden group">
       {/* Arch Frame Background */}
@@ -20,7 +22,7 @@ const ReviewCard = ({ name, review, image }) => {
         {/* Centered Content Group */}
         <div className="relative flex flex-col items-center max-w-sm">
           {/* Profile Image & Quote wrapper */}
-          <div className="relative mb-1 z-10 flex items-center justify-center">
+          <div className="relative mb-4 z-10 flex items-center justify-center">
             {/* Quote Icon */}
             <div className="absolute -left-12 sm:-left-16 md:-left-20 top-1/2 -translate-y-1/2">
               <img
@@ -30,11 +32,18 @@ const ReviewCard = ({ name, review, image }) => {
               />
             </div>
 
-            <img
-              src={image || userPlaceholder}
-              alt={name}
-              className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-[#D4AF37]/10"
-            />
+            {image && !imgError ? (
+              <img
+                src={image}
+                alt={name}
+                onError={() => setImgError(true)}
+                className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-[#D4AF37]/10"
+              />
+            ) : (
+              <div className="w-15 h-15 md:w-18 md:h-18 rounded-full flex items-center justify-center bg-[#1C2F2F] text-white font-semibold text-2xl md:text-3xl border-4 border-[#D4AF37]/10 select-none uppercase font-sans">
+                {name ? name.trim().charAt(0) : "?"}
+              </div>
+            )}
           </div>
 
           {/* Name & Review Text */}

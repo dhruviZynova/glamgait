@@ -73,7 +73,7 @@ const Categories = () => {
   }, [categories]);
 
   return (
-    <section className="relative py-16 px-4 bg-[#F3F0ED] overflow-visible">
+    <section className="relative py-16 px-4 overflow-visible">
       {/* Top title and description */}
       <div className="text-center max-w-4xl mx-auto mb-6 md:mb-12 relative z-10">
         <h2 className="text-[30px] md:text-[34px] xl:text-[34px] font-bold text-gray-800 mb-2">

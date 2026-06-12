@@ -32,9 +32,14 @@ const SearchResults = () => {
     const fetchSearchResults = async () => {
       setLoading(true);
       try {
+        const capitalizedSearch = query
+          .split(" ")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+
         const response = await axiosInstance.get("/getallproducts", {
           params: {
-            search: query,
+            search: capitalizedSearch,
             page: currentPage,
             perPage: 20, // or 12, 24 as you prefer
           },
@@ -176,7 +181,7 @@ const SearchResults = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Search Results
           </h1>
-          <p className="text-xs text-black bg-white inline-block px-8 py-3 rounded-full shadow">
+          <p className="text-xs text-black bg-white inline-block px-8 py-3 rounded-full shadow capitalize">
             {query}
           </p>
           <p className="mt-4 text-gray-600">
@@ -238,7 +243,7 @@ const SearchResults = () => {
           <div className="text-center py-20">
             <p className="text-6xl mb-4">😔</p>
             <p className="text-2xl text-gray-700 mb-4">
-              No products found for "<strong>{query}</strong>"
+              No products found for "<strong className="capitalize">{query}</strong>"
             </p>
             <Link
               to="/shop"

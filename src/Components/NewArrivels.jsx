@@ -127,7 +127,7 @@ const NewArrivels = () => {
   }, [fetchAllReviewsSummary]);
 
   return (
-    <section className="relative sm:pt-0 md:pt-16 md:px-4 bg-[#F3F0ED] overflow-hidden">
+    <section className="relative sm:pt-0 md:pt-16 md:px-4 overflow-hidden">
       {/* Title and Description */}
       <div className="text-center max-w-4xl mx-auto mb-8 relative z-20">
         <h2 className="text-[30px] md:text-[34px] xl:text-[34px] font-bold text-gray-800 mb-2">

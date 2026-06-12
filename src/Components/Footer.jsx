@@ -1,13 +1,31 @@
-import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import axiosInstance from "../Axios/axios";
+import { Link } from "react-router-dom";
+import longlight from "../assets/images/longlight.webp";
 import leftlonglight from "../assets/images/leftlonglight.png";
 import footerbgimg from "../assets/images/footerbgimg.png";
 import logo from "../assets/logo2.png";
-import axiosInstance from "../Axios/axios";
 
-import { FaFacebook, FaDribbble, FaInstagram, FaThreads } from "react-icons/fa6";
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaXTwitter,
+  FaPinterestP,
+  FaArrowRight,
+  FaPhone,
+  FaEnvelope,
+} from "react-icons/fa6";
+
+import gpay from "../assets/gpay.png";
+import paypal from "../assets/paypal.png";
+import razorpay from "../assets/razorpay.png";
+import stripe from "../assets/stripe.png"
+import applepay from "../assets/applepay.png";
+import visa from "../assets/visa.webp";
+import mastercard from "../assets/mastercard.png"
 
 const Footer = () => {
+
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
@@ -24,186 +42,260 @@ const Footer = () => {
 
     fetchCategories();
   }, []);
+
   return (
     <footer className="relative w-full bg-[#1C2F2F] font-inter text-white overflow-hidden px-4 md:px-10 lg:px-20">
-
       {/* Decorative Lamps */}
-      <img
-        src={leftlonglight}
-        alt="Decor"
-        className="absolute -right-1 lg:-left-10 lg:top-10 lg:w-20 xl:-left-10 xl:top-0 xl:w-25 2xl:left-0 z-11 pointer-events-none"
-      />
-      <img
-        src={leftlonglight}
-        alt="Decor"
-        className="hidden lg:block absolute lg:left-105 lg:w-10 xl:left-120 xl:w-9 2xl:left-150 2k:left-210 4k:left-270 z-10 pointer-events-none"
-      />
-      <img
-        src={leftlonglight}
-        alt="Decor"
-        className="hidden lg:block absolute lg:left-115 lg:w-8 xl:left-130 xl:w-7 2xl:left-160 2k:left-220 4k:left-280 z-10 pointer-events-none"
-      />
-      <img
-        src={leftlonglight}
-        alt="Decor"
-        className="hidden lg:block absolute lg:-right-5 lg:w-18 xl:right-15 xl:w-20 2xl:right-0 z-10 pointer-events-none"
-      />
       {/* <img
-        src={longlight2}
-        alt="Right Decor Light"
-        className="absolute -right-10 sm:-right-16 md:-right-24 xl:-right-12 bottom-0 top-100 sm:top-80 md:top-35 z-11 w-[250px] sm:w-[300px] md:w-[350px] xl:w-[350px] h-auto object-contain pointer-events-none"
+        src={leftlonglight}
+        alt="Decor"
+        className="absolute left-2 lg:left-6 top-0 w-12 lg:w-16 z-11 pointer-events-none"
       /> */}
+      <img
+        src={longlight}
+        alt="Decor"
+        className="absolute right-2 lg:right-0 top-0 w-12 lg:w-34 z-11 pointer-events-none"
+      />
+      <img
+        src={leftlonglight}
+        alt="Decor"
+        className="hidden lg:block absolute lg:left-[28%] lg:w-10 top-0 z-10 pointer-events-none"
+      />
+      <img
+        src={leftlonglight}
+        alt="Decor"
+        className="hidden lg:block absolute lg:left-[60%] lg:w-12 top-0 z-10 pointer-events-none"
+      />
 
       {/* Background Image */}
       <div className="absolute bottom-0 left-0 right-0 z-0 h-[480px] md:h-[680px] lg:h-full">
         <img
           src={footerbgimg}
           alt="Footer Background"
-          className="w-full h-full object-cover object-bottom opacity-30"
+          className="w-full h-full object-cover object-bottom opacity-30 pointer-events-none"
         />
       </div>
 
       {/* Footer Content */}
-      <div className="relative z-10 w-full mt-24 mb-0 sm:mb-24 max-w-7xl mx-auto py-3">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 lg:gap-12 w-full">
-
+      <div className="relative z-10 w-full pt-20 pb-8 max-w-7xl mx-auto">
+        {/* Top Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12 w-full border-b border-white/10 pb-12">
           {/* Brand Section */}
-          <div className="lg:col-span-1">
-            <div className="mb-6">
-              <img src={logo} alt="Logo" className="h-12 md:h-14 lg:h-16 w-auto" />
-              <p className="pt-4 text-[#F6F6F6] font-[Nunito Sans] text-sm lg:text-base leading-relaxed break-words">
-                Kundrat is your go-to destination for trendy, affordable, and high-quality fashion for women , crafted to bring style, comfort, and confidence into everyday life.
-              </p>
-            </div>
+          <div className="flex flex-col gap-6">
+            <img src={logo} alt="Logo" className="h-12 md:h-14 lg:h-16 w-auto self-start" />
+            <p className="text-[#CCCCCC] font-[Nunito Sans] text-sm leading-relaxed">
+              Defining modern elegance with timeless design. We craft collections for those who appreciate the finer details.
+            </p>
             {/* Social Media Icons */}
-            <div className="flex space-x-4">
-              <a
-                href="https://www.facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-gray-300 transition-colors cursor-pointer"
-                aria-label="Facebook"
-              >
-                <FaFacebook className="h-6 w-6 text-[#F6F6F6]" />
-              </a>
-              <a
-                href="https://dribbble.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-pink-400 transition-colors cursor-pointer"
-                aria-label="Dribbble"
-              >
-                <FaDribbble className="h-6 w-6 text-[#F6F6F6]" />
-              </a>
+            <div className="flex space-x-3">
               <a
                 href="https://www.instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-pink-400 transition-colors cursor-pointer"
+                className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
                 aria-label="Instagram"
               >
-                <FaInstagram className="h-6 w-6 text-[#F6F6F6]" />
+                <FaInstagram className="h-4 w-4 text-white" />
               </a>
               <a
-                href="https://www.threads.net"
+                href="https://www.facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-gray-300 transition-colors cursor-pointer"
-                aria-label="Threads"
+                className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                aria-label="Facebook"
               >
-                <FaThreads className="h-6 w-6 text-[#F6F6F6]" />
+                <FaFacebookF className="h-4 w-4 text-white" />
+              </a>
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                aria-label="X / Twitter"
+              >
+                <FaXTwitter className="h-4 w-4 text-white" />
+              </a>
+              <a
+                href="https://pinterest.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                aria-label="Pinterest"
+              >
+                <FaPinterestP className="h-4 w-4 text-white" />
               </a>
             </div>
           </div>
 
-          <div className="flex md:flex-row flex-col gap-6 lg:gap-12">
-            {/* Quick Links Section */}
-            <div>
-              <h3 className="text-lg lg:text-xl font-semibold text-[#F6F6F6] font-[Nunito Sans] mb-4">
-                Quick Links
-              </h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link to="/" className="text-[#F6F6F6] hover:text-[#767676] font-[Nunito Sans] transition-colors text-sm lg:text-base">
-                    Home
+          {/* Collections Section */}
+          <div>
+            <h3 className="text-sm font-semibold tracking-wider text-[#A3B8B5] font-[Montserrat] mb-6 uppercase">
+              Collections
+            </h3>
+            <ul className="space-y-3 text-sm text-[#CCCCCC]">
+              {categories.map((category) => (
+                <li key={category.cate_id}>
+                  <Link
+                    to={`/collections/${category.cate_name}`}
+                    className="hover:text-white transition-colors"
+                  >
+                    {category.cate_name}
                   </Link>
                 </li>
-                <li>
-                  <Link to="/about" className="text-[#F6F6F6] hover:text-[#767676] font-[Nunito Sans] transition-colors text-sm lg:text-base">
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/contact" className="text-[#F6F6F6] hover:text-[#767676] font-[Nunito Sans] transition-colors text-sm lg:text-base">
-                    Contact
-                  </Link>
-                </li>
-              </ul>
-            </div>
+              ))}
+            </ul>
+          </div>
 
-            {/* Categories Section */}
-            <div>
-              <h3 className="text-lg lg:text-xl font-semibold text-[#F6F6F6] font-[Nunito Sans] mb-4">
-                Categories
-              </h3>
-              <ul className="space-y-2">
-                {categories.map((category) => (
-                  <li key={category.cate_id}>
-                    <Link
-                      to={`/collections/${category.cate_name}`}
-                      className="text-[#F6F6F6] hover:text-[#767676] font-[Nunito Sans] transition-colors text-sm lg:text-base capitalize"
-                    >
-                      {category.cate_name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {/* Company Section */}
+          <div>
+            <h3 className="text-sm font-semibold tracking-wider text-[#A3B8B5] font-[Montserrat] mb-6 uppercase">
+              Company
+            </h3>
+            <ul className="space-y-3 text-sm text-[#CCCCCC]">
+              <li>
+                <Link to="/about" className="hover:text-white transition-colors">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-white transition-colors">
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </div>
 
-            {/* Policy Section */}
-            <div>
-              <h3 className="text-lg lg:text-xl font-semibold text-[#F6F6F6] font-[Nunito Sans] mb-4">
-                Policy
-              </h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link to="/privacy-policy" className="text-[#F6F6F6] hover:text-[#767676] font-[Nunito Sans] transition-colors text-sm lg:text-base">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/terms-and-conditions" className="text-[#F6F6F6] hover:text-[#767676] font-[Nunito Sans] transition-colors text-sm lg:text-base">
-                    Terms & Conditions
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/cancellation-policy" className="text-[#F6F6F6] hover:text-[#767676] font-[Nunito Sans] transition-colors text-sm lg:text-base">
-                    Cancellation Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/refund-policy" className="text-[#F6F6F6] hover:text-[#767676] font-[Nunito Sans] transition-colors text-sm lg:text-base">
-                    Refund Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/shipping-policy" className="text-[#F6F6F6] hover:text-[#767676] font-[Nunito Sans] transition-colors text-sm lg:text-base">
-                    Shipping Policy
-                  </Link>
-                </li>
-              </ul>
-            </div>
+          {/* Support Section */}
+          <div>
+            <h3 className="text-sm font-semibold tracking-wider text-[#A3B8B5] font-[Montserrat] mb-6 uppercase">
+              Support
+            </h3>
+            <ul className="space-y-3 text-sm text-[#CCCCCC]">
+              <li>
+                <Link to="/faq" className="hover:text-white transition-colors">
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link to="/shipping-policy" className="hover:text-white transition-colors">
+                  Shipping & Delivery
+                </Link>
+              </li>
+              <li>
+                <Link to="/refund-policy" className="hover:text-white transition-colors">
+                  Returns & Exchanges
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy-policy" className="hover:text-white transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms-and-conditions" className="hover:text-white transition-colors">
+                  Terms of Service
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Section */}
-      <div className="w-full flex flex-col justify-center items-center gap-4 sm:mt-8 mt-10 mb-20">
-        {/* Copyright */}
-        <div className="text-center md:text-left">
-          <p className="text-[#F6F6F6] font-[Nunito Sans] text-sm lg:text-base">
-            © 2025 Kundrat - All rights reserved
-          </p>
+        {/* Middle Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 w-full py-12 border-b border-white/10">
+          {/* Join the List */}
+          <div className="md:col-span-2 flex flex-col justify-center">
+            <h3 className="text-xl font-medium text-white mb-2">Join the List</h3>
+            <p className="text-sm text-[#CCCCCC] leading-relaxed max-w-md">
+              Sign up for early access to new drops, styling tips, and exclusive members-only offers.
+            </p>
+            <form onSubmit={(e) => e.preventDefault()} className="mt-6 max-w-md">
+              <div className="relative flex items-center border-b border-white/50 py-2 focus-within:border-white transition-colors">
+                <input
+                  type="email"
+                  placeholder="Your email address"
+                  className="appearance-none bg-transparent border-none w-full text-white mr-3 py-1 px-2 leading-tight focus:outline-none placeholder:text-white/50 text-sm"
+                  aria-label="Email address"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="flex-shrink-0 text-white hover:text-gray-300 transition-colors"
+                  aria-label="Subscribe"
+                >
+                  <FaArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Get in Touch */}
+          <div>
+            <h3 className="text-xs font-semibold tracking-wider text-[#A3B8B5] font-[Montserrat] mb-6 uppercase">
+              Get in Touch
+            </h3>
+            <ul className="space-y-3 text-sm text-[#CCCCCC]">
+              <li className="flex items-center gap-3">
+                <FaPhone className="h-4 w-4 text-[#A3B8B5]" />
+                <a href="tel:+919768967885" className="hover:text-white transition-colors">
+                  +91 97689 67885
+                </a>
+              </li>
+              <li className="flex items-center gap-3">
+                <FaEnvelope className="h-4 w-4 text-[#A3B8B5]" />
+                <a href="mailto:info@kundrat.com" className="hover:text-white transition-colors">
+                  info@kundrat.com
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Location */}
+          <div>
+            <h3 className="text-xs font-semibold tracking-wider text-[#A3B8B5] font-[Montserrat] mb-6 uppercase">
+              Location
+            </h3>
+            <p className="text-sm text-[#CCCCCC] leading-relaxed">
+              123 Fashion Avenue, Design District
+              <br />
+              Mumbai, Maharashtra 400001
+              <br />
+              India
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-8 text-sm text-[#CCCCCC]">
+          {/* Copyright */}
+          <div>
+            © 2025 Kundrat. All rights reserved.
+          </div>
+
+
+          {/* Payment Badges */}
+          <div className="flex gap-2">
+            <div className="w-12 h-8 bg-white/100 border border-white/10 rounded flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer overflow-hidden">
+              <img src={gpay} alt="GPay" className="w-full h-full object-contain p-1" />
+            </div>
+            <div className="w-12 h-8 bg-white/100 border border-white/10 rounded flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer overflow-hidden">
+              <img src={paypal} alt="Paypal" className="w-full h-full object-contain p-1" />
+            </div>
+            <div className="w-12 h-8 bg-white/100 border border-white/10 rounded flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer overflow-hidden">
+              <img src={razorpay} alt="Razorpay" className="w-full h-full object-contain p-1" />
+            </div>
+            <div className="w-12 h-8 bg-white/100 border border-white/10 rounded flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer overflow-hidden">
+              <img src={stripe} alt="Stripe" className="w-full h-full object-contain p-1" />
+            </div>
+            <div className="w-12 h-8 bg-white/100 border border-white/10 rounded flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer overflow-hidden">
+              <img src={applepay} alt="ApplePay" className="w-full h-full object-contain p-1.5" />
+            </div>
+            <div className="w-12 h-8 bg-white/100 border border-white/10 rounded flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer overflow-hidden">
+              <img src={visa} alt="Visa" className="w-full h-full object-contain p-1" />
+            </div>
+            <div className="w-12 h-8 bg-white/100 border border-white/10 rounded flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer overflow-hidden">
+              <img src={mastercard} alt="MasterCard" className="w-full h-full object-contain p-1" />
+            </div>
+          </div>
         </div>
       </div>
     </footer>

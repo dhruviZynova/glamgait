@@ -31,12 +31,6 @@ const CategoryReviewCard = ({ name, comment, rating = 5 }) => {
             <h4 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 truncate max-w-[65%]">
               {name}
             </h4>
-            {
-              <span className="flex items-center gap-1.5 text-xs font-medium bg-black text-white px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap">
-                <Check className="w-3.5 h-3.5" strokeWidth={3} />
-                Verified
-              </span>
-            }
           </div>
 
           {/* Rating Stars */}
@@ -44,9 +38,8 @@ const CategoryReviewCard = ({ name, comment, rating = 5 }) => {
             {Array.from({ length: 5 }, (_, i) => (
               <Star
                 key={i}
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 transition-colors ${
-                  i < rating ? "fill-amber-400 text-amber-400" : "text-gray-300"
-                }`}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 transition-colors ${i < rating ? "fill-amber-400 text-amber-400" : "text-gray-300"
+                  }`}
               />
             ))}
           </div>

@@ -27,6 +27,7 @@ const publicAPIs = [
   "/getproductdetails",
   "/getsliders",
   "/getinstaimages",
+  "/getallproducts",
 ];
 
 // Normalize ApiURL: Remove trailing slash if present to prevent double-slashes in requests

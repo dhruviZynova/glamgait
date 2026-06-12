@@ -310,7 +310,7 @@ const InvoiceModal = ({ isOpen, onClose, order, isCreditNote = false }) => {
                       <td className="py-4 pr-4">
                         <p className="font-bold text-gray-900 text-sm">{item.productName}</p>
                         <p className="text-xs text-gray-500 mt-1 capitalize">
-                          Color: {item.color_name || "N/A"} {item.size && ` | Size: ${item.size}`}
+                          {item.sku && `SKU: ${item.sku.toUpperCase()} | `}Color: {item.color_name || "N/A"} {item.size && ` | Size: ${item.size}`}
                         </p>
                       </td>
                       <td className="py-4 text-center text-sm font-semibold text-gray-900">{item.quantity}</td>

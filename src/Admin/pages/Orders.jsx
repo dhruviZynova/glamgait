@@ -406,9 +406,6 @@ const AdminOrders = () => {
                                     }
                                     alt={item.productName}
                                     className="w-14 h-14 object-cover rounded-lg shadow-sm"
-                                    onError={(e) =>
-                                      (e.target.src = "/placeholder.jpg")
-                                    }
                                   />
                                   <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
                                     {item.quantity}
@@ -419,6 +416,11 @@ const AdminOrders = () => {
                                     {item.productName}
                                   </h4>
                                   <div className="flex flex-wrap gap-2 mt-1">
+                                    {item.sku && (
+                                      <span className="text-[9px] font-extrabold bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded uppercase">
+                                        SKU: {item.sku}
+                                      </span>
+                                    )}
                                     {item.size && (
                                       <span className="text-[9px] font-extrabold bg-gray-200 px-1.5 py-0.5 rounded uppercase">
                                         Size: {item.size}
@@ -594,6 +596,7 @@ const AdminOrders = () => {
                                   </button>
                                 </div>
                               )}
+
                               <div className="pt-2">
                                 <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest block mb-2">
                                   Update Status

@@ -536,12 +536,12 @@ const Checkout = () => {
 
     return (
         <>
-            <div className="bg-[#f3f0ed] min-h-screen px-2 md:px-10 py-10 font-poppins">
+            <div className="min-h-screen px-2 md:px-10 py-10 font-poppins">
                 <div className="">
                     <div className="flex flex-col lg:flex-row gap-8">
 
                         {/* Left Section - Form */}
-                        <ScrollReveal animation="fade-right" duration={800} className="bg-[#F3F0ED] flex-1 rounded-[10px] overflow-hidden border border-[#DEDFE1]">
+                        <ScrollReveal animation="fade-right" duration={800} className="flex-1 rounded-[10px] overflow-hidden border border-[#DEDFE1]">
                             {/* Steps Header */}
                             <div className="bg-[#E7DCD2]">
                                 <div className="flex justify-between items-center px-4 md:px-10 py-6">
@@ -580,7 +580,7 @@ const Checkout = () => {
 
                         {/* Right Section - Cart Details */}
                         <ScrollReveal animation="fade-left" duration={800} className="w-full lg:w-[480px]">
-                            <div className="bg-[#F3F0ED] rounded-[10px] overflow-hidden border border-[#DEDFE1]">
+                            <div className="rounded-[10px] overflow-hidden border border-[#DEDFE1]">
                                 <div className="bg-[#E7DCD2] px-4 md:px-10 py-6">
                                     <h3 className="text-2xl font-medium text-[#000000] font-[Oxygen]">Cart Details</h3>
                                 </div>
