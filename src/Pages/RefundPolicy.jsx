@@ -43,18 +43,35 @@ const RefundPolicy = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-2 md:px-4 py-12">
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* Sticky Navigation */}
-          <aside className="lg:w-1/4">
+        <div className="flex flex-col lg:flex-row gap-6 md:gap-12">
+          {/* Mobile Navigation Tabs */}
+          <div className="lg:hidden flex overflow-x-auto gap-2 pb-3 mb-2 scrollbar-none whitespace-nowrap w-full">
+            {sections.map((section) => (
+              <button
+                key={section.id}
+                onClick={() => scrollToSection(section.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-300 cursor-pointer ${activeSection === section.id
+                  ? "bg-[#1F352F] text-white shadow-md"
+                  : "text-gray-500 bg-white border border-gray-200 hover:bg-gray-50"
+                  }`}
+              >
+                {React.cloneElement(section.icon, { className: "w-4 h-4 shrink-0" })}
+                {section.title}
+              </button>
+            ))}
+          </div>
+
+          {/* Sticky Navigation for Desktop */}
+          <aside className="hidden lg:block lg:w-1/4">
             <div className="sticky top-32 space-y-2">
               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 ml-4">Policy Sections</h3>
               {sections.map((section) => (
                 <button
                   key={section.id}
                   onClick={() => scrollToSection(section.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${activeSection === section.id
-                      ? "bg-[#1F352F] text-white shadow-lg translate-x-2"
-                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${activeSection === section.id
+                    ? "bg-[#1F352F] text-white shadow-lg translate-x-2"
+                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
                     }`}
                 >
                   {section.icon}

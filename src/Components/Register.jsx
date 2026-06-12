@@ -85,7 +85,7 @@ const Register = () => {
                   placeholder="First Name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
@@ -97,7 +97,7 @@ const Register = () => {
                   placeholder="Last Name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
@@ -109,7 +109,7 @@ const Register = () => {
                   placeholder="Email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none text-sm text-gray-600 placeholder-gray-400"
                 />
               </div>
 
@@ -123,7 +123,7 @@ const Register = () => {
                     value={formData.password}
                     onChange={handleChange}
                     autoComplete="off"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none text-sm text-gray-600 placeholder-gray-400"
                   />
                   <button
                     type="button"

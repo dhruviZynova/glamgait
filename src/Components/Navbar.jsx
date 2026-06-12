@@ -503,7 +503,7 @@ const Navbar = () => {
             >
               <X size={24} />
             </button>
-            <div className="p-6 pt-16 space-y-1 overflow-y-auto h-full">
+            <div className="p-6 pt-24 space-y-1 overflow-y-auto h-full">
               {menuItems.map((item) => (
                 <div
                   key={item.to}

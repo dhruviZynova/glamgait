@@ -54,7 +54,7 @@ const Footer = () => {
       <img
         src={longlight}
         alt="Decor"
-        className="absolute right-2 lg:right-0 top-0 w-12 lg:w-34 z-11 pointer-events-none"
+        className="absolute right-2 lg:right-0 top-0 w-20 lg:w-34 z-11 pointer-events-none"
       />
       <img
         src={leftlonglight}
@@ -77,9 +77,9 @@ const Footer = () => {
       </div>
 
       {/* Footer Content */}
-      <div className="relative z-10 w-full pt-20 pb-8 max-w-7xl mx-auto">
+      <div className="relative z-10 w-full pt-20 pb-14 md:pb-8 max-w-7xl mx-auto">
         {/* Top Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12 w-full border-b border-white/10 pb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 lg:gap-12 w-full border-b border-white/10 pb-8 md:pb-12">
           {/* Brand Section */}
           <div className="flex flex-col gap-6">
             <img src={logo} alt="Logo" className="h-12 md:h-14 lg:h-16 w-auto self-start" />
@@ -201,7 +201,7 @@ const Footer = () => {
         </div>
 
         {/* Middle Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 w-full py-12 border-b border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 w-full py-8 md:py-12 border-b border-white/10">
           {/* Join the List */}
           <div className="md:col-span-2 flex flex-col justify-center">
             <h3 className="text-xl font-medium text-white mb-2">Join the List</h3>

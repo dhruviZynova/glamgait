@@ -40,6 +40,7 @@ const SelectAddressPage = lazy(() => import("./Components/SelectAddressPage"));
 const OrderConfirmation = lazy(() => import("./Components/OrderConfirmation"));
 
 // Policies
+const FAQPage = lazy(() => import("./Pages/FAQPage"));
 const PrivacyPolicy = lazy(() => import("./Pages/PrivacyPolicy"));
 const ShippingPolicy = lazy(() => import("./Pages/ShippingPolicy"));
 const RefundPolicy = lazy(() => import("./Pages/RefundPolicy"));
@@ -157,6 +158,7 @@ function App() {
                   <Route path="/myinfo" element={<PersonalInfo />} />
                   <Route path="/selectaddress" element={<SelectAddressPage />} />
                 </Route>
+                <Route path="/faq" element={<FAQPage />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/shipping-policy" element={<ShippingPolicy />} />
                 <Route path="/refund-policy" element={<RefundPolicy />} />
