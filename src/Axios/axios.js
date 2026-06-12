@@ -85,7 +85,7 @@ const setupInterceptors = (instance, infoGetter, storageKey) => {
       loaderService.hide();
 
       // Handle Token Expiry / Forbidden access (401 Unauthorized / 403 Forbidden)
-      if (error?.response?.status === 401 || error?.response?.status === 403) {
+      if (error?.response?.status === 401) {
         sessionStorage.removeItem(storageKey);
         if (!window.location.pathname.includes('/login')) {
           window.location.href = '/login';

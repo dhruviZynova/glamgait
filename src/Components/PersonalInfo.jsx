@@ -132,7 +132,7 @@ const PersonalInfo = () => {
               ) : (
                 <div>
                   {/* Contact Details Card */}
-                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8 mb-10">
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-8 mb-10">
                     <h2 className="text-xl font-semibold text-[#3C4242] mb-6 flex items-center gap-2">
                       <User className="text-[#063d32] w-5 h-5" />
                       Contact Details
@@ -147,9 +147,9 @@ const PersonalInfo = () => {
                         ].map(({ label, field, icon: FieldIcon }) => (
                           <div
                             key={field}
-                            className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 border-b border-gray-50 last:border-b-0 gap-4"
+                            className="flex flex-row sm:justify-between sm:items-center py-4 border-b border-gray-50 last:border-b-0 gap-4"
                           >
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                               {editingField === field ? (
                                 <div className="max-w-md">
                                   <label className="text-xs text-[#807D7E] font-medium uppercase tracking-wider block mb-1.5">
@@ -180,15 +180,15 @@ const PersonalInfo = () => {
                                   </div>
                                 </div>
                               ) : (
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3 min-w-0">
                                   <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-[#063d32] shrink-0">
                                     <FieldIcon className="w-5 h-5" />
                                   </div>
-                                  <div>
+                                  <div className="min-w-0 flex-1">
                                     <p className="text-xs text-[#807D7E] font-medium uppercase tracking-wider">
                                       {label}
                                     </p>
-                                    <p className={`text-base font-semibold text-[#3C4242] mt-0.5 ${field === "first_name" ? "capitalize" : ""}`}>
+                                    <p className={`text-base font-semibold text-[#3C4242] mt-0.5 break-all sm:break-normal ${field === "first_name" ? "capitalize" : ""}`}>
                                       {field === "password"
                                         ? "••••••••"
                                         : userData && userData[field]}
@@ -257,7 +257,7 @@ const PersonalInfo = () => {
                         addresses.map((addr) => (
                           <div
                             key={addr.add_id}
-                            className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:border-emerald-800/10 hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
+                            className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 hover:border-emerald-800/10 hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
                           >
                             <div>
                               <div className="flex justify-between items-start mb-4 gap-2">

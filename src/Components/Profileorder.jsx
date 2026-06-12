@@ -133,7 +133,7 @@ const Profileorder = () => {
 
   return (
     <>
-      <div className="w-full lg:pt-8 pt-4 px-2 md:px-8 xl:px-24 min-h-screen">
+      <div className="w-full lg:pt-8 py-4 px-2 md:px-8 xl:px-24">
         <div className="flex flex-col md:flex-row gap-6 md:gap-14 font-poppins">
           {/* Sidebar */}
           <div className="w-full md:w-1/3 lg:w-1/4">
@@ -169,7 +169,7 @@ const Profileorder = () => {
               ) : filteredOrders?.map((order) => (
                 <div
                   key={order.orderId}
-                  className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 hover:border-emerald-800/10 hover:shadow-md transition-all duration-300"
+                  className="bg-white rounded-2xl p-4 md:p-6 sm:p-8 shadow-sm border border-gray-100 hover:border-emerald-800/10 hover:shadow-md transition-all duration-300"
                 >
                   {/* Header Info */}
                   <div className="flex flex-col lg:flex-row justify-between gap-6 mb-6">
@@ -212,7 +212,7 @@ const Profileorder = () => {
                   <div className="h-px bg-gray-50 w-full mb-6"></div>
 
                   {/* Product/Item Preview */}
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 md:gap-6">
                     <div className="flex flex-wrap gap-6 flex-1 w-full">
                       {order.orderItems.map((item) => (
                         <div key={item.orderItemId} className="flex gap-4 w-full sm:w-auto">
@@ -246,7 +246,7 @@ const Profileorder = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex flex-wrap justify-end gap-2.5 w-full lg:w-auto mt-4 lg:mt-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-gray-50">
+                    <div className="flex flex-wrap justify-end gap-2.5 w-full lg:w-auto lg:mt-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-gray-50">
                       {[
                         ORDER_STATUS.PENDING,
                         ORDER_STATUS.ACCEPTED,

@@ -288,7 +288,7 @@ const OrderDetails = () => {
 
   return (
     <>
-      <div className="w-full lg:pt-8 pt-4 px-2 md:px-8 xl:px-24 min-h-screen">
+      <div className="w-full lg:py-8 py-4 px-2 md:px-8 xl:px-24">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 md:gap-14 font-poppins">
           {/* Sidebar */}
           <div className="w-full md:w-1/3 lg:w-1/4">
@@ -306,17 +306,17 @@ const OrderDetails = () => {
             ) : (
               <ScrollReveal animation="fade-left" duration={800}>
                 {/* Header/Breadcrumb */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div className="flex items-center gap-2 text-[#3C4242]">
                     <ChevronLeft
                       className="cursor-pointer hover:text-[#063d32] transition-colors"
                       size={24}
                       onClick={() => navigate("/myorders", { state: { activeTab: location.state?.activeTab } })}
                     />
-                    <h2 className="text-3xl font-semibold">Order Details</h2>
+                    <h2 className="text-2xl sm:text-3xl font-semibold">Order Details</h2>
                   </div>
 
-                  <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+                  <div className="flex flex-row gap-3 w-full sm:w-auto">
                     {[
                       ORDER_STATUS.PENDING,
                       ORDER_STATUS.ACCEPTED,
@@ -325,7 +325,7 @@ const OrderDetails = () => {
                     ].includes(order.status) && (
                         <button
                           onClick={() => setShowCancelModal(true)}
-                          className="w-full sm:w-auto bg-white border border-red-200 text-red-600 px-5 py-2.5 rounded-xl font-semibold hover:bg-red-50 transition-all cursor-pointer text-sm"
+                          className="flex-1 sm:flex-none bg-white border border-red-200 text-red-600 px-4 py-2.5 rounded-xl font-semibold hover:bg-red-50 transition-all cursor-pointer text-sm text-center justify-center"
                         >
                           Cancel Order
                         </button>
@@ -333,7 +333,7 @@ const OrderDetails = () => {
                     {order.status === ORDER_STATUS.DELIVERED && (
                       <button
                         onClick={() => setShowReturnModal(true)}
-                        className="w-full sm:w-auto bg-white border border-[#063d32]/20 text-[#063d32] px-5 py-2.5 rounded-xl font-semibold hover:bg-emerald-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm"
+                        className="flex-1 sm:flex-none bg-white border border-[#063d32]/20 text-[#063d32] px-4 py-2.5 rounded-xl font-semibold hover:bg-emerald-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm text-center"
                       >
                         <RefreshCcw size={16} />
                         Return Order
@@ -341,14 +341,14 @@ const OrderDetails = () => {
                     )}
 
                     {order.status === ORDER_STATUS.CANCELLED && (
-                      <div className="flex items-center justify-center gap-2 px-5 py-2.5 bg-red-50 text-red-600 rounded-xl font-semibold border border-red-100 text-sm">
+                      <div className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 rounded-xl font-semibold border border-red-100 text-sm">
                         <XCircle size={16} />
                         <span>Cancelled</span>
                       </div>
                     )}
 
                     {order.status === ORDER_STATUS.RETURNED && (
-                      <div className="flex items-center justify-center gap-2 px-5 py-2.5 bg-orange-50 text-orange-600 rounded-xl font-semibold border border-orange-100 text-sm">
+                      <div className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-50 text-orange-600 rounded-xl font-semibold border border-orange-100 text-sm">
                         <RefreshCcw size={16} />
                         <span>Returned</span>
                       </div>
@@ -360,7 +360,7 @@ const OrderDetails = () => {
                           setIsCreditNote(false);
                           setShowInvoiceModal(true);
                         }}
-                        className="w-full sm:w-auto bg-white border border-emerald-200 text-emerald-600 px-5 py-2.5 rounded-xl font-semibold hover:bg-emerald-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm"
+                        className="flex-1 sm:flex-none bg-white border border-emerald-200 text-emerald-600 px-4 py-2.5 rounded-xl font-semibold hover:bg-emerald-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm text-center"
                       >
                         <Receipt size={16} />
                         Invoice
@@ -373,7 +373,7 @@ const OrderDetails = () => {
                           setIsCreditNote(true);
                           setShowInvoiceModal(true);
                         }}
-                        className="w-full sm:w-auto bg-white border border-rose-200 text-rose-600 px-5 py-2.5 rounded-xl font-semibold hover:bg-rose-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm"
+                        className="flex-1 sm:flex-none bg-white border border-rose-200 text-rose-600 px-4 py-2.5 rounded-xl font-semibold hover:bg-rose-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm text-center"
                       >
                         <ArrowLeftRight size={16} />
                         Credit Note
@@ -408,21 +408,21 @@ const OrderDetails = () => {
 
                 {/* Stepper Tracking */}
                 {order.status !== ORDER_STATUS.CANCELLED && (
-                  <div className="mb-8 bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm">
+                  <div className="mb-8 bg-white rounded-2xl p-4 sm:p-8 border border-gray-100 shadow-sm">
                     <div className="relative max-w-3xl mx-auto py-4">
                       {/* Progress Bar Background */}
-                      <div className="absolute top-[26px] left-0 w-full h-1 bg-gray-100 rounded-full -translate-y-1/2"></div>
+                      <div className="absolute top-[26px] left-[32px] right-[32px] sm:left-[48px] sm:right-[48px] h-1 bg-gray-100 rounded-full -translate-y-1/2"></div>
 
                       {/* Progress Bar Active */}
                       <div
-                        className="absolute top-[26px] left-0 h-1 bg-[#063d32] rounded-full transition-all duration-700 ease-in-out -translate-y-1/2"
-                        style={{ width: `${progressWidth}%` }}
+                        className="absolute top-[26px] left-[32px] right-[32px] sm:left-[48px] sm:right-[48px] h-1 bg-[#063d32] rounded-full transition-all duration-700 ease-in-out -translate-y-1/2 origin-left"
+                        style={{ transform: `scaleX(${currentStep / (steps.length - 1)}) translateY(-50%)` }}
                       ></div>
 
                       {/* Steps */}
                       <div className="relative flex justify-between items-start">
                         {steps.map((step, idx) => (
-                          <div key={idx} className="flex flex-col items-center w-24">
+                          <div key={idx} className="flex flex-col items-center w-16 sm:w-24">
                             <div
                               className={`w-6 h-6 rounded-full border-2 z-10 transition-all duration-500 flex items-center justify-center ${idx <= currentStep
                                 ? "bg-[#063d32] border-[#063d32] text-white"
@@ -438,7 +438,7 @@ const OrderDetails = () => {
                               )}
                             </div>
                             <p
-                              className={`mt-4 text-[10px] sm:text-xs font-bold text-center capitalize transition-colors duration-500 tracking-wider ${idx <= currentStep ? "text-[#063d32]" : "text-gray-400"
+                              className={`mt-4 text-[9px] sm:text-xs font-bold text-center capitalize transition-colors duration-500 tracking-wider ${idx <= currentStep ? "text-[#063d32]" : "text-gray-400"
                                 }`}
                             >
                               {step}
@@ -450,26 +450,26 @@ const OrderDetails = () => {
 
                     {/* Status Highlight Banner */}
                     <div className="mt-8 relative max-w-3xl mx-auto">
-                      <div className="bg-emerald-50/40 rounded-2xl p-6 border border-emerald-100/50 flex flex-col sm:flex-row justify-between items-center gap-6 relative z-10">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#063d32] shrink-0">
-                            <Package size={24} />
-                          </div>
+                      <div className="bg-emerald-50/40 rounded-2xl p-6 border border-emerald-100/50 flex flex-row items-start gap-4 relative z-10">
+                        <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#063d32] shrink-0">
+                          <Package size={24} />
+                        </div>
+                        <div className="flex flex-col gap-4 text-left">
                           <div>
                             <p className="text-[10px] text-[#807D7E] font-bold uppercase tracking-widest mb-0.5">Order Status</p>
                             <p className="text-base text-[#3C4242] font-bold">{getStatusMessage(order.status_label)}</p>
                           </div>
-                        </div>
-                        <div className="text-left sm:text-right flex-shrink-0">
-                          <p className="text-[10px] text-[#807D7E] font-bold uppercase tracking-widest mb-0.5">Last Update</p>
-                          <p className="text-sm text-[#3C4242] font-bold">
-                            {order.updatedAt
-                              ? new Date(order.updatedAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                              : order.createdAt
-                                ? new Date(order.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                                : "N/A"
-                            }
-                          </p>
+                          <div>
+                            <p className="text-[10px] text-[#807D7E] font-bold uppercase tracking-widest mb-0.5">Last Update</p>
+                            <p className="text-sm text-[#3C4242] font-bold">
+                              {order.updatedAt
+                                ? new Date(order.updatedAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                : order.createdAt
+                                  ? new Date(order.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                  : "N/A"
+                              }
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -503,231 +503,235 @@ const OrderDetails = () => {
                 {/* Products List */}
                 <div className="space-y-6">
                   <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative">
-                    <div className="divide-y divide-gray-50 p-6 sm:p-8">
+                    <div className="divide-y divide-gray-50 p-4 sm:p-8">
                       {order.orderItems.map((item) => (
-                        <div key={item.orderItemId} className="py-6 first:pt-0 last:pb-0 flex flex-col sm:flex-row gap-6 items-center group">
-                          <img
-                            src={`${ApiURL}/assets/Products/${item.imageUrl}`}
-                            alt={item.productName}
-                            className="w-24 h-24 rounded-xl object-cover shadow-sm transition-transform duration-300 group-hover:scale-105 border border-gray-50"
-                          />
-                          <div className="flex-1 text-center sm:text-left">
-                            <h3 className="font-bold text-[#3C4242] text-lg mb-2">
-                              {item.productName}
-                            </h3>
-                            <div className="flex flex-wrap justify-center items-center sm:justify-start gap-x-8 gap-y-2 text-sm">
-                              {item.sku && (
-                                <p className="text-[#807D7E] font-medium">SKU: <span className="text-gray-700 font-bold uppercase">{item.sku}</span></p>
-                              )}
-                              <p className="text-[#807D7E] font-medium flex items-center gap-1.5 justify-center sm:justify-start">
-                                Color:
-                                <span className="text-gray-700 font-bold capitalize">{item.color_name || "N/A"}</span>
-                                {item.color_code && (
-                                  <span
-                                    className="w-3.5 h-3.5 rounded-full border border-gray-300"
-                                    style={{ backgroundColor: item.color_code }}
-                                  ></span>
+                        <div key={item.orderItemId} className="py-6 first:pt-0 last:pb-0 flex flex-col gap-4 group">
+                          {/* Top Row: Image & Details */}
+                          <div className="flex flex-row gap-4 sm:gap-6 items-start">
+                            <img
+                              src={`${ApiURL}/assets/Products/${item.imageUrl}`}
+                              alt={item.productName}
+                              className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover shadow-sm transition-transform duration-300 group-hover:scale-105 border border-gray-50 flex-shrink-0"
+                            />
+                            <div className="flex-1 text-left">
+                              <h3 className="font-bold text-[#3C4242] text-sm sm:text-lg mb-1 sm:mb-2 line-clamp-2">
+                                {item.productName}
+                              </h3>
+                              <div className="flex flex-wrap justify-start items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm">
+                                {item.sku && (
+                                  <p className="text-[#807D7E] font-medium">SKU: <span className="text-gray-700 font-bold uppercase">{item.sku}</span></p>
                                 )}
-                              </p>
-                              <p className="text-[#807D7E] font-medium">Qty: <span className="text-gray-700 font-bold">{item.quantity}</span></p>
-                              <p className="text-[#807D7E] font-medium mt-2 sm:mt-0 sm:ml-auto">
-                                <span className="text-[#3C4242] text-xl font-bold">₹{Math.round(item.totalAmount || item.price)}</span>
-                              </p>
+                                <p className="text-[#807D7E] font-medium flex items-center gap-1.5">
+                                  Color:
+                                  <span className="text-gray-700 font-bold capitalize">{item.color_name || "N/A"}</span>
+                                  {item.color_code && (
+                                    <span
+                                      className="w-3 h-3 rounded-full border border-gray-300"
+                                      style={{ backgroundColor: item.color_code }}
+                                    ></span>
+                                  )}
+                                </p>
+                                <p className="text-[#807D7E] font-medium">Qty: <span className="text-gray-700 font-bold">{item.quantity}</span></p>
+                                <p className="text-[#3C4242] text-base sm:text-xl font-bold sm:ml-auto">
+                                  ₹{Math.round(item.totalAmount || item.price)}
+                                </p>
+                              </div>
                             </div>
-                            {order.status === ORDER_STATUS.DELIVERED && isLoggedIn && (() => {
-                              const p_id = item.p_id || item.product_id || item.pid || item.id || item.productId;
-                              let userReview = reviewsStatus[p_id];
+                          </div>
 
-                              // Fallback to localStorage if the state doesn't have it yet but localStorage says it's reviewed
-                              if (!userReview) {
-                                try {
-                                  const stored = JSON.parse(localStorage.getItem("glamgait_reviewed_pids") || "[]");
-                                  if (stored.includes(Number(p_id))) {
-                                    userReview = { status: "pending", is_published: 0 };
-                                  }
-                                } catch (_) { }
-                              }
+                          {/* Bottom Row: Review Section */}
+                          {order.status === ORDER_STATUS.DELIVERED && isLoggedIn && (() => {
+                            const p_id = item.p_id || item.product_id || item.pid || item.id || item.productId;
+                            let userReview = reviewsStatus[p_id];
 
-                              // ⏳ Show spinner while fetching review status (first load)
-                              if (checkingReviews && userReview === undefined) {
+                            // Fallback to localStorage if the state doesn't have it yet but localStorage says it's reviewed
+                            if (!userReview) {
+                              try {
+                                const stored = JSON.parse(localStorage.getItem("glamgait_reviewed_pids") || "[]");
+                                if (stored.includes(Number(p_id))) {
+                                  userReview = { status: "pending", is_published: 0 };
+                                }
+                              } catch (_) { }
+                            }
+
+                            // ⏳ Show spinner while fetching review status (first load)
+                            if (checkingReviews && userReview === undefined) {
+                              return (
+                                <div className="mt-3 flex justify-center sm:justify-start">
+                                  <div className="flex items-center gap-1.5 text-xs text-gray-400 font-poppins">
+                                    <Loader2 size={12} className="animate-spin" />
+                                    <span>Checking...</span>
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            if (userReview) {
+                              const getReviewStatus = (review) => {
+                                if (!review) return null;
+                                if (review.status === "pending" || review.status === "approved" || review.status === "rejected") {
+                                  return review.status;
+                                }
+                                const pub = review.is_published;
+                                if (pub === undefined || pub == 1 || pub === true || String(pub) === "1") return "approved";
+                                if (pub == 2 || String(pub) === "2" || pub === "rejected") return "rejected";
+                                return "pending";
+                              };
+
+                              const status = getReviewStatus(userReview);
+
+                              if (status === "pending") {
                                 return (
-                                  <div className="mt-3 flex justify-center sm:justify-start">
-                                    <div className="flex items-center gap-1.5 text-xs text-gray-400 font-poppins">
-                                      <Loader2 size={12} className="animate-spin" />
-                                      <span>Checking...</span>
+                                  <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-poppins">
+                                    <div className="flex items-center gap-2.5 flex-wrap">
+                                      <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider bg-amber-50 border border-amber-100/50 px-2 py-0.5 rounded">Pending Approval</span>
+                                      <span className="text-xs text-gray-400">Your review was added successfully and will be shown after admin approval.</span>
+                                    </div>
+                                    <div className="flex items-center gap-1 shrink-0 self-end sm:self-start">
+                                      <button
+                                        onClick={() => {
+                                          setSelectedProductForReview(item);
+                                          setExistingReviewForModal(userReview);
+                                          setShowReviewModal(true);
+                                        }}
+                                        className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-50 rounded-full border border-gray-200 transition cursor-pointer"
+                                        title="Edit Review"
+                                      >
+                                        <Pencil size={13} />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteReview(userReview.r_id || userReview.review_id, p_id)}
+                                        className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full border border-red-100 transition cursor-pointer"
+                                        title="Delete Review"
+                                      >
+                                        <Trash2 size={13} />
+                                      </button>
                                     </div>
                                   </div>
                                 );
                               }
 
-                              if (userReview) {
-                                const getReviewStatus = (review) => {
-                                  if (!review) return null;
-                                  if (review.status === "pending" || review.status === "approved" || review.status === "rejected") {
-                                    return review.status;
-                                  }
-                                  const pub = review.is_published;
-                                  if (pub === undefined || pub == 1 || pub === true || String(pub) === "1") return "approved";
-                                  if (pub == 2 || String(pub) === "2" || pub === "rejected") return "rejected";
-                                  return "pending";
-                                };
-
-                                const status = getReviewStatus(userReview);
-
-                                if (status === "pending") {
-                                  return (
-                                    <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-poppins">
-                                      <div className="flex items-center gap-2.5 flex-wrap">
-                                        <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider bg-amber-50 border border-amber-100/50 px-2 py-0.5 rounded">Pending Approval</span>
-                                        <span className="text-xs text-gray-400">Your review was added successfully and will be shown after admin approval.</span>
-                                      </div>
-                                      <div className="flex items-center gap-1 shrink-0 self-end sm:self-start">
-                                        <button
-                                          onClick={() => {
-                                            setSelectedProductForReview(item);
-                                            setExistingReviewForModal(userReview);
-                                            setShowReviewModal(true);
-                                          }}
-                                          className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-50 rounded-full border border-gray-200 transition cursor-pointer"
-                                          title="Edit Review"
-                                        >
-                                          <Pencil size={13} />
-                                        </button>
-                                        <button
-                                          onClick={() => handleDeleteReview(userReview.r_id || userReview.review_id, p_id)}
-                                          className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full border border-red-100 transition cursor-pointer"
-                                          title="Delete Review"
-                                        >
-                                          <Trash2 size={13} />
-                                        </button>
-                                      </div>
+                              if (status === "rejected") {
+                                return (
+                                  <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-poppins">
+                                    <div className="flex items-center gap-2.5 flex-wrap">
+                                      <span className="text-[10px] font-bold text-red-700 uppercase tracking-wider bg-red-50 border border-red-100/50 px-2 py-0.5 rounded">Review Rejected</span>
+                                      <span className="text-xs text-gray-400">Please edit and resubmit your review</span>
                                     </div>
-                                  );
-                                }
-
-                                if (status === "rejected") {
-                                  return (
-                                    <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-poppins">
-                                      <div className="flex items-center gap-2.5 flex-wrap">
-                                        <span className="text-[10px] font-bold text-red-700 uppercase tracking-wider bg-red-50 border border-red-100/50 px-2 py-0.5 rounded">Review Rejected</span>
-                                        <span className="text-xs text-gray-400">Please edit and resubmit your review</span>
-                                      </div>
-                                      <div className="flex items-center gap-1 shrink-0 self-end sm:self-start">
-                                        <button
-                                          onClick={() => {
-                                            setSelectedProductForReview(item);
-                                            setExistingReviewForModal(userReview);
-                                            setShowReviewModal(true);
-                                          }}
-                                          className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-50 rounded-full border border-gray-200 transition cursor-pointer"
-                                          title="Edit Review"
-                                        >
-                                          <Pencil size={13} />
-                                        </button>
-                                        <button
-                                          onClick={() => handleDeleteReview(userReview.r_id || userReview.review_id, p_id)}
-                                          className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full border border-red-100 transition cursor-pointer"
-                                          title="Delete Review"
-                                        >
-                                          <Trash2 size={13} />
-                                        </button>
-                                      </div>
+                                    <div className="flex items-center gap-1 shrink-0 self-end sm:self-start">
+                                      <button
+                                        onClick={() => {
+                                          setSelectedProductForReview(item);
+                                          setExistingReviewForModal(userReview);
+                                          setShowReviewModal(true);
+                                        }}
+                                        className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-50 rounded-full border border-gray-200 transition cursor-pointer"
+                                        title="Edit Review"
+                                      >
+                                        <Pencil size={13} />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteReview(userReview.r_id || userReview.review_id, p_id)}
+                                        className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full border border-red-100 transition cursor-pointer"
+                                        title="Delete Review"
+                                      >
+                                        <Trash2 size={13} />
+                                      </button>
                                     </div>
-                                  );
-                                }
-
-                                if (status === "approved") {
-                                  const rating = Number(userReview.rating || 0);
-                                  const comment = userReview.message || "";
-                                  const imageUrls = userReview.image_url
-                                    ? userReview.image_url.split(",").filter(Boolean)
-                                    : [];
-                                  const getReviewImageUrl = (img) => {
-                                    if (!img) return "";
-                                    if (img.startsWith("http://") || img.startsWith("https://")) return img;
-                                    return `${ApiURL}/assets/UserReviews/${img}`;
-                                  };
-
-                                  return (
-                                    <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-start justify-between gap-4 font-poppins">
-                                      <div className="flex-1">
-                                        <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
-                                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Your Review</span>
-                                          <div className="flex items-center gap-0.5">
-                                            {[...Array(5)].map((_, i) => (
-                                              <Star
-                                                key={i}
-                                                size={14}
-                                                className={i < rating ? "fill-[#F5A623] text-[#F5A623]" : "text-gray-200"}
-                                              />
-                                            ))}
-                                          </div>
-                                          <span className="text-xs text-gray-400">({rating}/5)</span>
-                                        </div>
-                                        {comment && (
-                                          <p className="text-sm text-gray-600 font-[oxygen] leading-relaxed pl-0.5">
-                                            &ldquo;{comment}&rdquo;
-                                          </p>
-                                        )}
-                                        {imageUrls.length > 0 && (
-                                          <div className="flex flex-wrap gap-1.5 mt-2">
-                                            {imageUrls.map((url, i) => (
-                                              <img
-                                                key={i}
-                                                src={getReviewImageUrl(url)}
-                                                alt={`Review image ${i + 1}`}
-                                                className="w-10 h-10 object-cover rounded-lg border border-gray-200 hover:opacity-90 cursor-pointer transition-opacity"
-                                                onClick={() => window.open(getReviewImageUrl(url), "_blank")}
-                                              />
-                                            ))}
-                                          </div>
-                                        )}
-                                      </div>
-                                      <div className="flex items-center gap-1 shrink-0 self-end sm:self-start">
-                                        <button
-                                          onClick={() => {
-                                            setSelectedProductForReview(item);
-                                            setExistingReviewForModal(userReview);
-                                            setShowReviewModal(true);
-                                          }}
-                                          className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-50 rounded-full border border-gray-200 transition cursor-pointer"
-                                          title="Edit Review"
-                                        >
-                                          <Pencil size={13} />
-                                        </button>
-                                        <button
-                                          onClick={() => handleDeleteReview(userReview.r_id || userReview.review_id, p_id)}
-                                          className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full border border-red-100 transition cursor-pointer"
-                                          title="Delete Review"
-                                        >
-                                          <Trash2 size={13} />
-                                        </button>
-                                      </div>
-                                    </div>
-                                  );
-                                }
-                                return null;
+                                  </div>
+                                );
                               }
 
-                              // No review yet — show Write Review button
-                              return (
-                                <div className="mt-4 flex justify-center sm:justify-start">
-                                  <button
-                                    onClick={() => {
-                                      setSelectedProductForReview(item);
-                                      setExistingReviewForModal(null);
-                                      setShowReviewModal(true);
-                                    }}
-                                    className="bg-white border border-[#063d32] text-[#063d32] hover:bg-[#063d32] hover:text-white px-4 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5"
-                                  >
-                                    <Star size={12} className="fill-current" />
-                                    Write Review
-                                  </button>
-                                </div>
-                              );
-                            })()}
-                            {/* end review section */}
-                          </div>
+                              if (status === "approved") {
+                                const rating = Number(userReview.rating || 0);
+                                const comment = userReview.message || "";
+                                const imageUrls = userReview.image_url
+                                  ? userReview.image_url.split(",").filter(Boolean)
+                                  : [];
+                                const getReviewImageUrl = (img) => {
+                                  if (!img) return "";
+                                  if (img.startsWith("http://") || img.startsWith("https://")) return img;
+                                  return `${ApiURL}/assets/UserReviews/${img}`;
+                                };
+
+                                return (
+                                  <div className="mt-2 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-start justify-between gap-4 font-poppins">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
+                                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Your Review</span>
+                                        <div className="flex items-center gap-0.5">
+                                          {[...Array(5)].map((_, i) => (
+                                            <Star
+                                              key={i}
+                                              size={14}
+                                              className={i < rating ? "fill-[#F5A623] text-[#F5A623]" : "text-gray-200"}
+                                            />
+                                          ))}
+                                        </div>
+                                        <span className="text-xs text-gray-400">({rating}/5)</span>
+                                      </div>
+                                      {comment && (
+                                        <p className="text-md text-gray-600 font-[oxygen] leading-relaxed pl-0.5">
+                                          &ldquo;{comment}&rdquo;
+                                        </p>
+                                      )}
+                                      {imageUrls.length > 0 && (
+                                        <div className="flex flex-wrap gap-1.5 mt-2">
+                                          {imageUrls.map((url, i) => (
+                                            <img
+                                              key={i}
+                                              src={getReviewImageUrl(url)}
+                                              alt={`Review image ${i + 1}`}
+                                              className="w-10 h-10 object-cover rounded-lg border border-gray-200 hover:opacity-90 cursor-pointer transition-opacity"
+                                              onClick={() => window.open(getReviewImageUrl(url), "_blank")}
+                                            />
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-1 shrink-0 self-end sm:self-start">
+                                      <button
+                                        onClick={() => {
+                                          setSelectedProductForReview(item);
+                                          setExistingReviewForModal(userReview);
+                                          setShowReviewModal(true);
+                                        }}
+                                        className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-50 rounded-full border border-gray-200 transition cursor-pointer"
+                                        title="Edit Review"
+                                      >
+                                        <Pencil size={13} />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteReview(userReview.r_id || userReview.review_id, p_id)}
+                                        className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full border border-red-100 transition cursor-pointer"
+                                        title="Delete Review"
+                                      >
+                                        <Trash2 size={13} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }
+
+                            // No review yet — show Write Review button
+                            return (
+                              <div className="mt-4 flex justify-center sm:justify-start">
+                                <button
+                                  onClick={() => {
+                                    setSelectedProductForReview(item);
+                                    setExistingReviewForModal(null);
+                                    setShowReviewModal(true);
+                                  }}
+                                  className="bg-white border border-[#063d32] text-[#063d32] hover:bg-[#063d32] hover:text-white px-4 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5"
+                                >
+                                  <Star size={12} className="fill-current" />
+                                  Write Review
+                                </button>
+                              </div>
+                            );
+                          })()}
                         </div>
                       ))}
                     </div>
