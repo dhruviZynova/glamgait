@@ -92,7 +92,7 @@ const Wishlist = () => {
 
 
   return (
-    <div className="bg-[#f3f0ed] min-h-screen px-2 md:px-10 py-10 font-poppins">
+    <div className="min-h-screen px-2 md:px-10 py-10 font-poppins">
       <div className="max-w-7xl mx-auto">
         {loading ? (
           <WishlistSkeleton count={3} />
@@ -172,7 +172,7 @@ const Wishlist = () => {
             </div>
           </ScrollReveal>
         ) : (
-          <ScrollReveal animation="fade-up" duration={800} className="bg-[#F3F0ED] h-screen flex items-center justify-center p-4 w-full">
+          <ScrollReveal animation="fade-up" duration={800} className="h-screen flex items-center justify-center p-4 w-full">
             <div className="text-center">
               <div className="w-40 h-24 md:w-[300px] md:h-[200px] mx-auto">
                 <img

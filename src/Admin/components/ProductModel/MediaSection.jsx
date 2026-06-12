@@ -161,7 +161,7 @@ const MediaSection = ({
                       colors: prev.colors.filter((_, idx) => idx !== i),
                     }));
                   }}
-                  className="text-red-600"
+                  className="text-red-600 cursor-pointer"
                 >
                   <Trash2 />
                 </button>

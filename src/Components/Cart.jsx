@@ -146,7 +146,7 @@ const Cart = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f3f0ed] pt-16 px-4 md:px-10 lg:px-20">
+      <div className="min-h-screen pt-16 px-4 md:px-10 lg:px-20">
         <CartSkeleton count={3} />
       </div>
     );
@@ -183,7 +183,7 @@ const Cart = () => {
 
   return (
     <>
-      <div className="bg-[#f3f0ed] min-h-screen px-2 md:px-10 py-10 font-poppins">
+      <div className="min-h-screen px-2 md:px-10 py-10 font-poppins">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Section - Cart Items */}
           <ScrollReveal animation="fade-right" duration={800} className="flex-1">

@@ -1,23 +1,16 @@
 import React from 'react';
 
-import img1 from '../assets/images/collection1.webp';
-import img2 from '../assets/images/collection2.webp';
-import img3 from '../assets/images/collection3.webp';
-import img4 from '../assets/images/collection4.webp';
-
-/*
-  KEY CONCEPT:
-  - `perspective` must be on the PARENT container (not inside each child's transform)
-  - `transformOrigin: 'center center'` on each card = cards rotate around their center,
-     with `translateY` creating a symmetrical arch effect.
-*/
+import img1 from '../assets/images/collection3.png'; // Designer Sarees (Indian)
+import img2 from '../assets/images/collection1.webp'; // Modest Abayas (Muslim)
+import img3 from '../assets/images/lehenga_choli_purple.webp'; // Lehenga Cholis (Indian)
+import img4 from '../assets/images/collection4.webp'; // Kurta & Tunics (Indian)
 
 const cards = [
   {
     src: img1,
     alt: 'Traditional Elegance',
-    label: 'Abaya Collection',
-    rotateY: '25deg',
+    label: 'Designer Sarees',
+    rotateY: '35deg',
     scale: 1.05,
     translateY: '10px',
     translateX: '0px',
@@ -25,8 +18,8 @@ const cards = [
   },
   {
     src: img2,
-    alt: 'Modern Style',
-    label: 'Hijab Sets',
+    alt: 'Modest Luxury',
+    label: 'Abaya Collection',
     rotateY: '8deg',
     scale: 0.95,
     translateY: '12px',
@@ -36,7 +29,7 @@ const cards = [
   {
     src: img3,
     alt: 'Traditional Charm',
-    label: 'Designer Sarees',
+    label: 'Lehenga Cholis',
     rotateY: '-8deg',
     scale: 0.95,
     translateY: '12px',
@@ -46,8 +39,8 @@ const cards = [
   {
     src: img4,
     alt: 'Ethnic Luxury',
-    label: 'Lehengas & Kurtis',
-    rotateY: '-25deg',
+    label: 'Kurta & Tunics',
+    rotateY: '-35deg',
     scale: 1.05,
     translateY: '10px',
     translateX: '0px',
@@ -92,7 +85,7 @@ const CollectionBanner = () => {
           return (
             <div
               key={i}
-              className="flex-1 group cursor-pointer transition-all duration-700 ease-in-out"
+              className="flex-1 group transition-all duration-700 ease-in-out"
               style={{
                 transform: `rotateY(${card.rotateY}) scale(${card.scale}) translateY(${card.translateY}) translateX(${card.translateX || '0px'})`,
                 transformOrigin: 'center center',
@@ -113,7 +106,7 @@ const CollectionBanner = () => {
                 />
                 {/* Overlay with Label */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
-                  <span className="text-white text-1xl md:text-2xl font-700 font-bold mb-2 font-Playfair Display transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 tracking-wide">
+                  <span className="text-white text-md md:text-lg font-700 font-semibold mb-2 font-Playfair Display transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 tracking-wide">
                     {card.label}
                   </span>
                   {/* <button className="text-white/80 text-sm font-semibold uppercase tracking-widest flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">

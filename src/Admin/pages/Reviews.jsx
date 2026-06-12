@@ -353,6 +353,7 @@ const Reviews = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Image</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Reviewer</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Product</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Rating</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Comment</th>
@@ -374,6 +375,7 @@ const Reviews = () => {
                         "-"
                       )}
                     </td>
+                    <td className="px-6 py-3 font-medium text-gray-900">{r.reviewer_name || "Verified Buyer"}</td>
                     <td className="px-6 py-3">{r.product_name || "N/A"}</td>
                     <td className="px-6 py-3">
                       <div className="flex items-center justify-center gap-1">

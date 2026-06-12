@@ -37,14 +37,12 @@ const AdminLogin = () => {
                 const userData = response.data.data;
 
                 if (userData.role === "admin") {
-                    // Extract specific user data to store in localStorage
                     const userSessionData = {
                         name: userData.name || userData.u_name || '',
                         email: userData.email || '',
                         token: userData.auth_token || '',
                         role: userData.role || '',
                         u_id: userData.u_id || '',
-                        // Keep other essential fields for backward compatibility
                         phone: userData.phone || '',
                         ...userData
                     };
@@ -61,6 +59,7 @@ const AdminLogin = () => {
             }
         } catch (err) {
             toast.error("Something went wrong");
+            console.log(err);
         } finally {
             setLoading(false);
         }

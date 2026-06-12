@@ -50,7 +50,7 @@ const CategoryReviewSlider = ({
   if (reviews.length === 0) return null;
 
   return (
-    <section className="relative bg-[#F3F0ED] py-16 overflow-hidden">
+    <section className="relative py-16 overflow-hidden">
       {/* Decorative Waves – SAME AS CUSTOMERS SAY */}
       <img
         src={waves}

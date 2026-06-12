@@ -377,7 +377,7 @@ const SelectAddress = () => {
   }, [grandTotal]);
 
   return (
-    <div className="bg-[#f3f0ed] min-h-screen px-4 md:px-10 py-10">
+    <div className="min-h-screen px-4 md:px-10 py-10">
       <h2 className="text-2xl font-semibold mb-6 max-w-6xl mx-auto">
         Delivery Address
       </h2>

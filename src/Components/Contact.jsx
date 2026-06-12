@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import longlight from "../assets/images/longlight.webp";
-import faqbgimg from "../assets/images/faqbgimg.webp";
+import faqbgimg from "../assets/images/faqbgimg.png";
 import location from "../assets/location.svg";
 import phone from "../assets/phone.svg";
 import mail from "../assets/mail.svg";
@@ -56,9 +56,9 @@ const Contact = () => {
       </Helmet>
       {/* Main Contact Section */}
       <section className="relative pt-24 pb-16 px-2 md:px-12 lg:px-20 z-20">
-        
+
         {/* Hanging Lantern (Top Left) */}
-        <ScrollReveal 
+        <ScrollReveal
           className="absolute -top-12 -lg-top-14 left-0 md:left-4 -lg:left-8 z-20 pointer-events-none"
           animation="fade-down"
           duration={1200}
@@ -69,7 +69,7 @@ const Contact = () => {
             className="w-24 md:w-32 lg:w-44 xl:w-56 h-auto drop-shadow-lg"
           />
         </ScrollReveal>
- 
+
         {/* Header */}
         <ScrollReveal animation="fade-up" duration={800}>
           <div className="text-center mb-12 md:mb-16 relative z-10">
@@ -81,15 +81,15 @@ const Contact = () => {
             </p>
           </div>
         </ScrollReveal>
- 
+
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-8 relative z-10 items-start">
-          
+
           {/* Left Column - Form */}
-          <ScrollReveal 
-            className="w-full flex flex-col" 
-            animation="fade-right" 
-            duration={1000} 
+          <ScrollReveal
+            className="w-full flex flex-col"
+            animation="fade-right"
+            duration={1000}
             delay={150}
           >
             <div className="bg-white/50 backdrop-blur-sm px-4 py-10 md:p-10 rounded-2xl shadow-xl shadow-gray-200/50">
@@ -114,7 +114,7 @@ const Contact = () => {
                     Full Name
                   </label>
                 </div>
- 
+
                 <div className="group relative">
                   <input
                     type="email"
@@ -132,7 +132,7 @@ const Contact = () => {
                     Email Address
                   </label>
                 </div>
- 
+
                 <div className="group relative">
                   <textarea
                     name="message"
@@ -149,7 +149,7 @@ const Contact = () => {
                     Your Message
                   </label>
                 </div>
- 
+
                 <button
                   type="submit"
                   disabled={loading}
@@ -160,9 +160,9 @@ const Contact = () => {
               </form>
             </div>
           </ScrollReveal>
- 
+
           {/* Right Column - Info */}
-          <ScrollReveal 
+          <ScrollReveal
             className="w-full flex flex-col justify-center space-y-6 md:space-y-12 lg:pl-10 py-8 lg:py-0"
             animation="fade-left"
             duration={1000}
@@ -180,7 +180,7 @@ const Contact = () => {
                   </p>
                 </div>
               </div>
- 
+
               <div className="flex items-center gap-2 md:gap-5 group">
                 <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center transition-transform">
                   <img src={phone} alt="Phone" className="w-4 h-4 md:w-6 md:h-6 object-contain" />
@@ -191,7 +191,7 @@ const Contact = () => {
                   </p>
                 </div>
               </div>
- 
+
               <div className="flex items-center gap-2 md:gap-5 group">
                 <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center transition-transform">
                   <img src={mail} alt="Email" className="w-4 h-4 md:w-6 md:h-6 object-contain" />
@@ -203,7 +203,7 @@ const Contact = () => {
                 </div>
               </div>
             </div>
- 
+
             {/* Social Icons */}
             <div className="">
               <div className="flex items-center gap-4">
@@ -224,12 +224,12 @@ const Contact = () => {
               </div>
             </div>
           </ScrollReveal>
- 
+
         </div>
       </section>
- 
+
       {/* Decorative Monument (Bottom Right) */}
-      <ScrollReveal 
+      <ScrollReveal
         className="absolute bottom-0 right-0 w-full md:w-1/2 h-1/2 pointer-events-none"
         animation="blur-in"
         duration={1500}
@@ -238,7 +238,7 @@ const Contact = () => {
         <img
           src={faqbgimg}
           alt="Decorative Monuments"
-          className="absolute bottom-0 right-0 z-10 -scale-x-100 w-full max-w-[300px] md:max-w-[450px] lg:max-w-[600px] h-auto object-contain opacity-40 md:opacity-70 translate-y-10"
+          className="absolute bottom-0 right-0 z-10 -scale-x-100 w-full max-w-[300px] md:max-w-[450px] lg:max-w-[600px] h-auto object-contain opacity-40 md:opacity-80 translate-y-10"
         />
       </ScrollReveal>
 

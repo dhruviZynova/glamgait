@@ -223,7 +223,12 @@ const Navbar = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
+      const capitalized = searchQuery
+        .trim()
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+      navigate(`/search?query=${encodeURIComponent(capitalized)}`);
       setSearchQuery("");
       setIsMobileSearchOpen(false);
     }
@@ -301,10 +306,10 @@ const Navbar = () => {
                 <Link
                   to={item.to}
                   className={`text-[16px] capitalize transition-all duration-300 ${(location.pathname.startsWith("/collections") && item.cate_slug && location.pathname.includes(item.cate_slug)) ||
-                      (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug) ||
-                      (location.pathname === item.to)
-                      ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
-                      : "text-[#767676] font-medium hover:text-[#1C2F2F]"
+                    (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug) ||
+                    (location.pathname === item.to)
+                    ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
+                    : "text-[#767676] font-medium hover:text-[#1C2F2F]"
                     }`}
                 >
                   {item.label}
@@ -457,32 +462,30 @@ const Navbar = () => {
             </div>
           </div>
         )}
-      </nav>
-
-      {/* Mobile Search & Drawer */}
-      {isMobileSearchOpen && (
-        <div
-          className={`fixed ${isAtBottom ? "bottom-0" : ""
-            } w-full bg-white shadow-md px-4 py-3 flex items-center justify-center z-60`}
-          ref={desktopSearchRef}
-        >
-          <form
-            onSubmit={handleSearch}
-            className="flex w-full max-w-xl items-center"
+        {/* Search Bar */}
+        {isMobileSearchOpen && (
+          <div
+            className="absolute top-full left-0 w-full bg-white shadow-md px-4 py-3 flex items-center justify-center z-40 border-t border-gray-50"
+            ref={desktopSearchRef}
           >
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-full focus:outline-none"
-                placeholder="Search..."
-              />
-            </div>
-          </form>
-        </div>
-      )}
+            <form
+              onSubmit={handleSearch}
+              className="flex w-full max-w-xl items-center"
+            >
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-full focus:outline-none capitalize"
+                  placeholder="Search..."
+                />
+              </div>
+            </form>
+          </div>
+        )}
+      </nav>
 
       {isOpen && (
         <>
@@ -513,10 +516,10 @@ const Navbar = () => {
                           to={item.to}
                           onClick={() => setIsOpen(false)}
                           className={`flex-grow py-4 capitalize transition-colors ${location.pathname === item.to ||
-                              (item.cate_slug && location.pathname.includes(item.cate_slug)) ||
-                              (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug)
-                              ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
-                              : "text-gray-900 font-medium"
+                            (item.cate_slug && location.pathname.includes(item.cate_slug)) ||
+                            (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug)
+                            ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
+                            : "text-gray-900 font-medium"
                             }`}
                         >
                           {item.label}

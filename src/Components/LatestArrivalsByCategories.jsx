@@ -24,7 +24,7 @@ const ErrorFallback = ({ message, onRetry }) => (
 
 // Premium stylized Empty state
 const EmptyState = ({ message }) => (
-    <div className="flex flex-col items-center justify-center p-8 py-14 bg-[#F3F0ED]/40 border border-[#F3F0ED] rounded-2xl max-w-lg mx-auto my-4 text-center">
+    <div className="flex flex-col items-center justify-center p-8 py-14 border border-[#F3F0ED] rounded-2xl max-w-lg mx-auto my-4 text-center">
         <h3 className="text-gray-900 font-serif text-lg font-bold mb-2">Products Not Found</h3>
         <p className="text-gray-600 font-sans text-sm max-w-xs leading-relaxed">{message || "No latest arrivals found. Please check back later."}</p>
     </div>

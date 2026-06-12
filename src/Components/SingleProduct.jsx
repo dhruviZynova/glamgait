@@ -398,15 +398,15 @@ function SingleProduct() {
 
       <div className="px-2 py-6 pb-16 md:px-10 lg:px-20">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-[#9A8F87] mb-6">
+        <div className="flex items-center gap-2 text-xs text-[#9A8F87] mb-6 flex-wrap">
           <Link
             to={product?.category?.cate_name ? `/collections/${createSlug(product.category.cate_name)}` : "/collections/All Products"}
-            className="hover:text-[#3D2C25]"
+            className="hover:text-[#3D2C25] shrink-0"
           >
             Collections
           </Link>
-          <FaChevronRight className="text-[10px]" />
-          <span className="text-[#3D2C25]">{product.name}</span>
+          <FaChevronRight className="text-[10px] shrink-0" />
+          <span className="text-[#3D2C25] break-words">{product.name}</span>
         </div>
 
         {/* ═══════════════ MAIN GRID ═══════════════ */}
@@ -573,7 +573,7 @@ function SingleProduct() {
               {product?.productcolors?.length > 0 && (
                 <div className="pb-2">
                   <p className="text-sm font-medium text-[#1E1512] mb-4">
-                    Colour {selectedColor && <span className="text-[#9A8F87]">— {selectedColor.color.color_name}</span>}
+                    Color {selectedColor && <span className="text-[#9A8F87]">— {selectedColor.color.color_name}</span>}
                   </p>
                   <div className="flex flex-wrap gap-3">
                     {product.productcolors.map((color) => (
@@ -703,15 +703,14 @@ function SingleProduct() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative px-6 pb-4 text-sm font-semibold uppercase tracking-widest cursor-pointer ${activeTab === tab ? "text-[#1E1512]" : "text-[#9A8F87] hover:text-[#3D2C25]"
+                className={`relative px-4 pb-2 text-sm font-semibold uppercase tracking-widest cursor-pointer ${activeTab === tab ? "text-[#1E1512] border-b-2 border-[#1E1512] " : "text-[#9A8F87] hover:text-[#3D2C25]"
                   }`}
               >
                 {tab}
-                {activeTab === tab && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1E1512]" />}
               </button>
             ))}
           </div>
-          <div className="py-8">
+          <div className="pt-8">
             {activeTab === "description" ? (
               <p className="text-sm text-[#5C504A] leading-relaxed whitespace-pre-line">{product?.description}</p>
             ) : activeTab === "details" ? (
