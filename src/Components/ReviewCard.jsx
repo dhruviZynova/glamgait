@@ -1,9 +1,24 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { Star } from "lucide-react";
+import { ApiURL } from "../Variable";
 import frame2 from "../assets/images/frame2.png";
 import quoteLeft from "../assets/quoteLeft.png";
 
-const ReviewCard = ({ name, review, image }) => {
+const ReviewCard = ({ name, review, rating = 5, product, fallbackProductName }) => {
   const [imgError, setImgError] = useState(false);
+
+  const colorList = product?.colors || product?.productcolors || [];
+  const firstColor = colorList[0];
+  const imgFile = firstColor?.images?.[0]?.image_url
+    || firstColor?.productimages?.[0]?.image_url
+    || (Array.isArray(product?.images) ? product.images[0] : null)
+    || product?.image;
+
+  const productImgSrc = (imgFile && typeof imgFile === "string")
+    ? (imgFile.startsWith("http") ? imgFile : `${ApiURL}/assets/Products/${imgFile}`)
+    : null;
+
+  const productName = product?.name || fallbackProductName || "Product";
 
   return (
     <div className="relative w-full aspect-[4/4] overflow-hidden group">
@@ -32,30 +47,51 @@ const ReviewCard = ({ name, review, image }) => {
               />
             </div>
 
-            {image && !imgError ? (
+            {productImgSrc && !imgError ? (
               <img
-                src={image}
-                alt={name}
+                src={productImgSrc}
+                alt={productName}
                 onError={() => setImgError(true)}
-                className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-[#D4AF37]/10"
+                className="w-10 h-10 md:w-14 md:h-14 rounded-full object-cover border-4 border-[#D4AF37]/10"
               />
             ) : (
-              <div className="w-15 h-15 md:w-18 md:h-18 rounded-full flex items-center justify-center bg-[#1C2F2F] text-white font-semibold text-2xl md:text-3xl border-4 border-[#D4AF37]/10 select-none uppercase font-sans">
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center bg-[#1C2F2F] text-white font-semibold text-lg md:text-2xl border-4 border-[#D4AF37]/10 select-none uppercase font-sans">
                 {name ? name.trim().charAt(0) : "?"}
               </div>
             )}
           </div>
 
           {/* Name & Review Text */}
-          <div className="flex flex-col items-center text-center">
-            <h3 className="text-[18px] md:text-[20px] font-semibold text-gray-900 mb-2 font-sans capitalize tracking-tight">
-              {name}
-            </h3>
-            <div className="px-4">
-              <p className="text-[14px] md:text-[15px] text-gray-600 leading-relaxed font-sans line-clamp-3">
-                {review}
-              </p>
+          <div className="flex flex-col items-center text-center w-full px-4">
+            {/* Product Name */}
+            <h4 className="text-[12px] font-semibold text-gray-900 mb-1.5 font-sans line-clamp-1 leading-tight">
+              {productName}
+            </h4>
+
+            {/* Stars / Rating */}
+            <div className="flex items-center gap-0.5 mb-2.5">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  size={14}
+                  className={
+                    i < rating
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-gray-300"
+                  }
+                />
+              ))}
             </div>
+
+            {/* Review Message */}
+            <p className="text-[14px] text-gray-600 leading-relaxed font-sans line-clamp-2 mb-2 italic">
+              "{review}"
+            </p>
+
+            {/* Reviewer Name */}
+            <h3 className="text-[12px] font-bold text-gray-800 font-sans capitalize">
+              — {name}
+            </h3>
           </div>
         </div>
       </div>
@@ -64,4 +100,3 @@ const ReviewCard = ({ name, review, image }) => {
 };
 
 export default ReviewCard;
-

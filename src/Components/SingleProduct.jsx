@@ -15,6 +15,14 @@ import Review from "./Review";
 import SingleProductSkeleton from "./skeletons/SingleProductSkeleton";
 import { Helmet } from "@dr.pogodin/react-helmet";
 
+import gpay from "../assets/gpay.png";
+import paypal from "../assets/paypal.png";
+import razorpay from "../assets/razorpay.png";
+import stripe from "../assets/stripe.png";
+import applepay from "../assets/applepay.png";
+import visa from "../assets/visa.webp";
+import mastercard from "../assets/mastercard.png";
+
 function SingleProduct() {
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
@@ -226,6 +234,11 @@ function SingleProduct() {
   };
 
   const handleBuyNow = async () => {
+    if (!user?.u_id) {
+      toast.error("Please login to buy this product");
+      navigate("/login", { state: { from: `/product/${slug}` } });
+      return;
+    }
     if (buyNowLoading) return;
     if (!selectedColor) return toast.error("Please select a color");
     if (product.has_sizes && !selectedSize) return toast.error("Please select a size");
@@ -676,20 +689,42 @@ function SingleProduct() {
                 </button>
               </div>
 
-              {/* Shipping */}
-              <div className="pt-4 border-t border-[#E8E0DA] space-y-3">
-                <div className="flex items-start gap-3">
-                  <Truck className="w-5 h-5 text-[#3D2C25] flex-shrink-0" />
-                  <p className="text-sm text-[#5C504A]">Free worldwide shipping on all orders over ₹1500</p>
+              {/* Shipping & Payment */}
+              <div className="pt-4 border-t border-[#E8E0DA] space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <Truck className="w-5 h-5 text-[#3D2C25] flex-shrink-0" />
+                    <p className="text-sm text-[#5C504A]">Free worldwide shipping on all orders over ₹1500</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Package className="w-5 h-5 text-[#3D2C25] flex-shrink-0" />
+                    <p className="text-sm text-[#5C504A]">
+                      Delivers in: 3-7 Working Days{" "}
+                      <button onClick={() => setShowPopup(true)} className="underline text-[#3D2C25] ml-1 cursor-pointer">
+                        Shipping & Return
+                      </button>
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <Package className="w-5 h-5 text-[#3D2C25] flex-shrink-0" />
-                  <p className="text-sm text-[#5C504A]">
-                    Delivers in: 3-7 Working Days{" "}
-                    <button onClick={() => setShowPopup(true)} className="underline text-[#3D2C25] ml-1 cursor-pointer">
-                      Shipping & Return
-                    </button>
-                  </p>
+
+                {/* Payment Gateway Logos */}
+                <div className="pt-6 border-t border-dashed border-[#E8E0DA]">
+                  <p className="text-xs font-semibold text-[#8C7A70] tracking-wider uppercase mb-4">Guaranteed Safe & Secure Checkout</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { src: gpay, alt: "GPay" },
+                      { src: paypal, alt: "PayPal" },
+                      { src: razorpay, alt: "RazorPay" },
+                      { src: stripe, alt: "Stripe" },
+                      { src: applepay, alt: "ApplePay" },
+                      { src: visa, alt: "Visa" },
+                      { src: mastercard, alt: "MasterCard" }
+                    ].map((gate, i) => (
+                      <div key={i} className="w-12 h-8 bg-white border border-[#E8E0DA] rounded flex items-center justify-center transition-all hover:scale-105 hover:border-[#3D2C25] shadow-sm overflow-hidden shrink-0">
+                        <img src={gate.src} alt={gate.alt} className="w-full h-full object-contain p-1" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
