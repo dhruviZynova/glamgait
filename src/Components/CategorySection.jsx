@@ -126,14 +126,14 @@ const CategorySection = () => {
                                 {categoryData.map((category, index) => {
                                     const imageUrl = category?.cate_image
                                         ? getFullImageUrl(category.cate_image, "Category")
-                                        : "";
+                                        : null;
                                     const cateSlug = createSlug(category?.cate_name);
                                     return (
                                         <SwiperSlide key={category?.cate_id || index}>
                                             <Link to={`/collections/${cateSlug}`} className="bottom-card-link">
                                                 <div className="bottom-img-wrapper">
                                                     <img
-                                                        src={imageUrl}
+                                                        src={imageUrl || null}
                                                         alt={category?.cate_name}
                                                         className="bottom-img"
                                                         loading="lazy"

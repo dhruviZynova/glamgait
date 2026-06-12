@@ -3,6 +3,7 @@ import ReviewCard from "./ReviewCard";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
 import ScrollReveal from "./Ui/ScrollReveal";
+import frame2 from "../assets/images/frame2.png";
 
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -37,21 +38,44 @@ const EmptyState = ({ message }) => (
   </div>
 );
 
-// Elegant shimmering skeletons replicating ReviewCard aspects (aspect-[4/4], circular avatar, name, paragraph lines)
+// Elegant shimmering skeletons replicating ReviewCard aspects (aspect-[4/4], arch frame image, circular avatar, name, paragraph lines)
 const TestimonialSkeletonGrid = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full px-4 sm:px-12 relative z-10">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full relative z-10">
     {[0, 1, 2, 3].map((idx) => (
-      <div key={idx} className="relative w-full aspect-[4/4] bg-white border border-gray-100 rounded-2xl flex flex-col items-center justify-center p-6 shadow-sm overflow-hidden animate-pulse">
-        {/* Profile Image Circle Placeholder */}
-        <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-200 mb-4 animate-pulse" />
+      <div key={idx} className="relative w-full aspect-[4/4] overflow-hidden animate-pulse">
+        {/* Arch Frame Background */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={frame2}
+            alt="Arch Frame"
+            className="w-full h-full object-cover opacity-90"
+          />
+        </div>
 
-        {/* Name Placeholder */}
-        <div className="h-5 w-1/3 rounded bg-gray-200 mb-3 animate-pulse" />
+        {/* Content Container */}
+        <div className="relative z-10 h-full flex flex-col items-center justify-center px-6">
+          <div className="relative flex flex-col items-center w-full max-w-sm">
+            {/* Image Placeholder */}
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-200 mb-4 border-4 border-gray-100" />
+            
+            {/* Product Name Placeholder */}
+            <div className="h-3 w-1/2 rounded bg-gray-200 mb-3" />
+            
+            {/* Rating Stars Placeholder */}
+            <div className="flex gap-1 mb-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="w-3 h-3 rounded-full bg-gray-200" />
+              ))}
+            </div>
 
-        {/* Review Line 1 */}
-        <div className="h-3 w-3/4 rounded bg-gray-200 mb-2 animate-pulse" />
-        {/* Review Line 2 */}
-        <div className="h-3 w-1/2 rounded bg-gray-200 animate-pulse" />
+            {/* Review Message Placeholder */}
+            <div className="h-3 w-3/4 rounded bg-gray-200 mb-2" />
+            <div className="h-3 w-1/2 rounded bg-gray-200 mb-3" />
+
+            {/* Reviewer Name Placeholder */}
+            <div className="h-3.5 w-1/4 rounded bg-gray-300" />
+          </div>
+        </div>
       </div>
     ))}
   </div>
@@ -87,9 +111,27 @@ const CustomersSay = () => {
     }
   }, [userData?.auth_token]);
 
+  const [products, setProducts] = useState([]);
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      const res = await axiosInstance.get(`/getproducts`);
+      if (res.data.status === 1) {
+        setProducts(res.data.data || []);
+      }
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchReviews();
-  }, [fetchReviews]);
+    fetchProducts();
+  }, [fetchReviews, fetchProducts]);
+
+  const getProductForReview = (p_id) => {
+    return products.find(p => String(p.p_id) === String(p_id));
+  };
 
   return (
     <section className="relative py-10 md:py-16 overflow-hidden w-full">
@@ -131,17 +173,22 @@ const CustomersSay = () => {
                 1440: { slidesPerView: 4 },
               }}
               modules={[Autoplay]}
-              className="mySwiper testimonial-swiper"
+              className="mySwiper testimonial-swiper py-4"
             >
-              {reviews.map((item, idx) => (
-                <SwiperSlide key={idx}>
-                  <ReviewCard
-                    name={item?.reviewer_name}
-                    review={item?.message}
-                    image={item?.image}
-                  />
-                </SwiperSlide>
-              ))}
+              {reviews.map((item, idx) => {
+                const product = getProductForReview(item.p_id);
+                return (
+                  <SwiperSlide key={idx}>
+                    <ReviewCard
+                      name={item?.reviewer_name}
+                      review={item?.message}
+                      rating={item?.rating || 5}
+                      product={product}
+                      fallbackProductName={item?.product_name}
+                    />
+                  </SwiperSlide>
+                );
+              })}
             </Swiper>
           </div>
         )}
