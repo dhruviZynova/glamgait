@@ -720,7 +720,7 @@ function SingleProduct() {
                       { src: visa, alt: "Visa" },
                       { src: mastercard, alt: "MasterCard" }
                     ].map((gate, i) => (
-                      <div key={i} className="w-12 h-8 bg-white border border-[#E8E0DA] rounded flex items-center justify-center transition-all hover:scale-105 hover:border-[#3D2C25] shadow-sm overflow-hidden shrink-0">
+                      <div key={i} className="w-12 h-8 bg-white shadow-sm rounded flex items-center justify-center transition-all overflow-hidden shrink-0">
                         <img src={gate.src} alt={gate.alt} className="w-full h-full object-contain p-1" />
                       </div>
                     ))}

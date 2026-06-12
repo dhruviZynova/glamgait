@@ -111,7 +111,7 @@ const Contact = () => {
                     onChange={handleChange}
                     placeholder="Enter your full name"
                     id="contact-name"
-                    className="w-full bg-gray-50/50 px-4 py-3.5 rounded-xl border border-gray-200 outline-none focus:border-[#003124] focus:ring-1 focus:ring-[#003124] focus:bg-white transition-all text-gray-800 font-sans text-sm"
+                    className="w-full bg-gray-50/50 px-4 py-3.5 rounded-xl border border-gray-200 outline-none transition-all text-gray-800 font-sans text-sm"
                   />
                 </div>
 
@@ -129,7 +129,7 @@ const Contact = () => {
                     onChange={handleChange}
                     placeholder="Enter your email address"
                     id="contact-email"
-                    className="w-full bg-gray-50/50 px-4 py-3.5 rounded-xl border border-gray-200 outline-none focus:border-[#003124] focus:ring-1 focus:ring-[#003124] focus:bg-white transition-all text-gray-800 font-sans text-sm"
+                    className="w-full bg-gray-50/50 px-4 py-3.5 rounded-xl border border-gray-200 outline-none transition-all text-gray-800 font-sans text-sm"
                   />
                 </div>
 
@@ -146,7 +146,7 @@ const Contact = () => {
                     onChange={handleChange}
                     placeholder="Write your message here..."
                     id="contact-message"
-                    className="w-full bg-gray-50/50 px-4 py-3.5 rounded-xl border border-gray-200 outline-none focus:border-[#003124] focus:ring-1 focus:ring-[#003124] focus:bg-white transition-all text-gray-800 h-36 resize-none font-sans text-sm"
+                    className="w-full bg-gray-50/50 px-4 py-3.5 rounded-xl border border-gray-200 outline-none transition-all text-gray-800 h-36 resize-none font-sans text-sm"
                   />
                 </div>
 
@@ -163,12 +163,12 @@ const Contact = () => {
 
           {/* Right Column - Info */}
           <ScrollReveal
-            className="w-full flex flex-col justify-center space-y-6 md:space-y-12 lg:pl-10 py-8 lg:py-0"
+            className="w-full flex flex-col justify-center gap-6 lg:pl-10 py-8 lg:py-0"
             animation="fade-left"
             duration={1000}
             delay={250}
           >
-            <div className="space-y-2 md:space-y-8">
+            <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2 md:gap-5 group">
                 <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center transition-transform">
                   <img src={location} alt="Location" className="w-4 h-4 md:w-6 md:h-6 object-contain" />
