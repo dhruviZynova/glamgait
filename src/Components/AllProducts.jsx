@@ -8,6 +8,7 @@ import { useUser } from "../Context/UserContext";
 import { getGuestId } from "../utils/guest";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import ProductCard from "./ProductCard";
+import ProductCardSkeleton from "./ProductCardSkeleton";
 import ScrollReveal from "./Ui/ScrollReveal";
 import { getCategories as getCachedCategories } from "../utils/dataCache";
 import { useProductFilters } from "../hooks/useFilters";
@@ -170,6 +171,8 @@ const Allproducts = () => {
   const categoryDisplayName = filterData?.categoryDisplayName || (cate_name ? cate_name : "All Products");
 
   const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [sortBy, setSortBy] = useState("a-z");
@@ -282,6 +285,7 @@ const Allproducts = () => {
   }, [cateId]);
 
   const fetchProducts = useCallback(async () => {
+    setProductsLoading(true);
     try {
       const isSearch = !!debouncedSearchTerm;
       const isAllProductsPage = !cate_name || cate_name === "All Products";
@@ -389,8 +393,12 @@ const Allproducts = () => {
         setProducts([]);
         setTotalProducts(0);
       }
+      setHasLoadedOnce(true);
     } catch (error) {
       console.error("Error fetching products:", error);
+      setHasLoadedOnce(true);
+    } finally {
+      setProductsLoading(false);
     }
   }, [
     cate_name,
@@ -412,6 +420,7 @@ const Allproducts = () => {
 
   useEffect(() => {
     if (cate_name) {
+      setProductsLoading(true);
       const timer = setTimeout(() => {
         fetchProducts();
       }, 300);
@@ -1155,7 +1164,13 @@ const Allproducts = () => {
                 </div>
               </div>
 
-              {products?.length > 0 ? (
+              {(productsLoading || isFiltersLoading) && !hasLoadedOnce ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 pb-8">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <ProductCardSkeleton key={i} />
+                  ))}
+                </div>
+              ) : products?.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 pb-8">
                   {products?.map((product) => (
                     <ScrollReveal
