@@ -92,70 +92,70 @@ const Contact = () => {
             duration={1000}
             delay={150}
           >
-            <div className="bg-white/50 backdrop-blur-sm px-4 py-10 md:p-10 rounded-2xl shadow-xl shadow-gray-200/50">
-              <h2 className="text-2xl md:text-3xl font-[Judson] text-[#000000] mb-8 border-l-4 border-[#003124] pl-4">
+            <div className="bg-white/95 border border-gray-100 backdrop-blur-md px-6 py-10 md:p-10 rounded-3xl shadow-2xl shadow-emerald-950/5">
+              <h2 className="text-2xl md:text-3xl font-[Judson] text-[#003124] mb-8 border-l-4 border-[#003124] pl-4 font-bold">
                 Leave us a message
               </h2>
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="group relative">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="contact-name"
+                    className="text-xs font-bold text-[#003124] uppercase tracking-wider mb-2"
+                  >
+                    Full Name
+                  </label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    placeholder=" "
+                    placeholder="Enter your full name"
                     id="contact-name"
-                    className="peer w-full bg-white px-4 pt-6 pb-2 rounded-lg border-b-1 border-gray-200 outline-none focus:border-[#003124] transition-all text-gray-800 placeholder-transparent"
+                    className="w-full bg-gray-50/50 px-4 py-3.5 rounded-xl border border-gray-200 outline-none focus:border-[#003124] focus:ring-1 focus:ring-[#003124] focus:bg-white transition-all text-gray-800 font-sans text-sm"
                   />
-                  <label
-                    htmlFor="contact-name"
-                    className="absolute left-4 top-1 text-xs font-600 text-[#003124] transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-4 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#003124]"
-                  >
-                    Full Name
-                  </label>
                 </div>
 
-                <div className="group relative">
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="contact-email"
+                    className="text-xs font-bold text-[#003124] uppercase tracking-wider mb-2"
+                  >
+                    Email Address
+                  </label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder=" "
+                    placeholder="Enter your email address"
                     id="contact-email"
-                    className="peer w-full bg-white px-4 pt-6 pb-2 rounded-lg border-b-1 border-gray-200 outline-none focus:border-[#003124] transition-all text-gray-800 placeholder-transparent"
+                    className="w-full bg-gray-50/50 px-4 py-3.5 rounded-xl border border-gray-200 outline-none focus:border-[#003124] focus:ring-1 focus:ring-[#003124] focus:bg-white transition-all text-gray-800 font-sans text-sm"
                   />
-                  <label
-                    htmlFor="contact-email"
-                    className="absolute left-4 top-1 text-xs font-600 text-[#003124] transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-4 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#003124]"
-                  >
-                    Email Address
-                  </label>
                 </div>
 
-                <div className="group relative">
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="contact-message"
+                    className="text-xs font-bold text-[#003124] uppercase tracking-wider mb-2"
+                  >
+                    Your Message
+                  </label>
                   <textarea
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder=" "
+                    placeholder="Write your message here..."
                     id="contact-message"
-                    className="peer w-full bg-white px-4 pt-6 pb-2 rounded-lg border-b-1 border-gray-200 outline-none focus:border-[#003124] transition-all text-gray-800 h-40 resize-none placeholder-transparent"
+                    className="w-full bg-gray-50/50 px-4 py-3.5 rounded-xl border border-gray-200 outline-none focus:border-[#003124] focus:ring-1 focus:ring-[#003124] focus:bg-white transition-all text-gray-800 h-36 resize-none font-sans text-sm"
                   />
-                  <label
-                    htmlFor="contact-message"
-                    className="absolute left-4 top-1 text-xs font-600 text-[#003124] transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-4 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#003124]"
-                  >
-                    Your Message
-                  </label>
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full md:w-auto min-w-[200px] bg-[#003124] text-white font-[Poppins] py-4 px-8 rounded-full font-semibold tracking-widest hover:bg-[#004d39] hover:shadow-lg hover:transform hover:-translate-y-1 transition-all disabled:opacity-50 disabled:translate-y-0 cursor-pointer"
+                  className="w-full md:w-auto min-w-[200px] bg-[#003124] text-white font-[Poppins] py-4 px-8 rounded-xl font-semibold tracking-widest hover:bg-[#004d39] hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:scale-100 cursor-pointer shadow-md shadow-emerald-900/10"
                 >
-                  {loading ? "SENDING..." : "SEND"}
+                  {loading ? "SENDING..." : "SEND MESSAGE"}
                 </button>
               </form>
             </div>

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, razorpayKEY } from "../Variable";
 import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle,
   XCircle,
@@ -30,12 +31,21 @@ const OrderConfirmation = () => {
   // Robust orderId resolution
   const orderId = queryOrderId || location.state?.orderId || sessionStorage.getItem('lastOrderId');
 
+  const queryClient = useQueryClient();
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState(queryStatus || location.state?.status || "success");
   const [loading, setLoading] = useState(true);
   const [switchingToCod, setSwitchingToCod] = useState(false);
   const [retryingPayment, setRetryingPayment] = useState(false);
   const [showFullDetails, setShowFullDetails] = useState(false);
+
+  useEffect(() => {
+    if (status === "success") {
+      localStorage.removeItem("localCart");
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      window.dispatchEvent(new Event("cartUpdated"));
+    }
+  }, [status, queryClient]);
 
   // Fetch Order Details
   useEffect(() => {

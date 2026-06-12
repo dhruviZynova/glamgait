@@ -58,12 +58,10 @@ const About = () => {
       {/* Hero Section */}
       <section className="about-hero" style={{ backgroundImage: `url(${aboutHeroNew})` }}>
         <div className="hero-overlay"></div>
-        <ScrollReveal animation="fade-up" duration={1000}>
-          <div className="hero-content">
-            <span className="hero-subtitle">Redefining Modesty</span>
-            <h1 className="hero-title">Elegance in <br /> Every Fold</h1>
-          </div>
-        </ScrollReveal>
+        <div className="hero-content">
+          <span className="hero-subtitle">Redefining Modesty</span>
+          <h1 className="hero-title">Elegance in <br /> Every Fold</h1>
+        </div>
       </section>
 
       {/* Brand Story Section */}

@@ -7,11 +7,13 @@ import toast from "react-hot-toast";
 import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 import ScrollReveal from "./Ui/ScrollReveal";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Checkout = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { cartItems = [], guestId: stateGuestId } = location.state || {};
+    const queryClient = useQueryClient();
 
     const [currentStep, setCurrentStep] = useState(1); // 1: Personal, 2: Billing, 3: Confirmation
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -497,6 +499,11 @@ const Checkout = () => {
             if (apiBody.status !== 1) {
                 throw new Error(apiBody.message || "Order failed");
             }
+
+            // Clear cart from local storage and trigger navbar updates
+            localStorage.removeItem("localCart");
+            queryClient.invalidateQueries({ queryKey: ["cart"] });
+            window.dispatchEvent(new Event("cartUpdated"));
 
             if (formData.paymentMethod === "online") {
                 const checkoutUrl = apiBody?.data?.checkoutUrl;
