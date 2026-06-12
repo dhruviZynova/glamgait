@@ -165,7 +165,7 @@ const Sidebar = ({ onClose }) => {
           </div>
           <button
             onClick={() => setIsLogoutModalOpen(true)}
-            className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition cursor-pointer"
+            className="text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition cursor-pointer"
             title="Logout"
           >
             <LogOut size={16} />
