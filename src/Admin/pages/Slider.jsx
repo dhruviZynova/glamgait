@@ -282,7 +282,7 @@ const Sliders = () => {
             <div className="flex justify-end gap-4 mt-4">
               <Button
                 onClick={() => setModalOpen(false)}
-                className="bg-gray-200 px-8 py-2  text-gray-700 rounded hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium"
+                className="bg-gray-200 px-8 py-2  text-gray-700 rounded hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
                 aria-label="Cancel"
               >
                 Cancel
@@ -290,7 +290,7 @@ const Sliders = () => {
               <Button
                 type="submit"
                 disabled={addLoading}
-                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black"
+                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer"
                 onClick={saveSliderImages}
                 aria-label={
                   editingImage ? "Update slider image" : "Add slider images"
