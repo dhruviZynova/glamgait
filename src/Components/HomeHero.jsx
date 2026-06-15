@@ -4,7 +4,7 @@ import "swiper/css";
 import { Autoplay } from "swiper/modules";
 
 import image1 from "../assets/images/bgimage5.png";
-import image2 from "../assets/images/ramadan_fashion_hero_banner.webp";
+import image2 from "../assets/images/bgimage7.png";
 
 const slides = [
   {
@@ -29,8 +29,8 @@ const slides = [
     id: 2,
     image: image2,
     subtitle: "Modest Luxury",
-    title: "Elegance in \n Modest Wear",
-    description: "Discover a refined collection of designer abayas and modest gowns. Flowing silhouettes tailored in premium, breathable fabrics, embellished with delicate gold artistry.",
+    title: "Elegance in \n Every Thread",
+    description: "Discover our premium collection of luxury abayas and modest gowns designed for modern grace.",
     align: "right",
     subColor: "text-amber-200 font-medium",
     textColor: "text-white",

@@ -153,7 +153,7 @@ const Sidebar = ({ onClose }) => {
 
       {/* Bottom Footer or User profile shortcut could go here */}
       <div className="p-4 border-t border-white/5 bg-black/20">
-        <div className="flex items-center px-4 py-3 space-x-3 rounded-xl bg-white/5 border border-white/5 justify-between">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3 overflow-hidden">
             <div className="h-8 w-8 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-amber-500/20 flex-shrink-0">
               {initials}
