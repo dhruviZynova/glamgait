@@ -21,7 +21,7 @@ const slides = [
     btnSecondary: "bg-transparent border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white",
     btnPrimaryText: "Shop Sarees",
     btnSecondaryText: "Our Heritage",
-    bgClass: "bg-[75%_center] md:bg-center",
+    bgClass: "bg-[75%_top] md:bg-[center_60px]",
     gradientMobile: "linear-gradient(60deg, rgba(252, 249, 245, 0.69) 0%, rgba(252, 249, 245, 0.37) 100%)",
     gradientDesktop: "linear-gradient(90deg, rgba(252, 249, 245, 0.95) 0%, rgba(252, 249, 245, 0.5) 50%, rgba(252, 249, 245, 0) 100%)"
   },
@@ -39,7 +39,7 @@ const slides = [
     btnSecondary: "bg-transparent border-white text-white hover:bg-white hover:text-gray-950",
     btnPrimaryText: "Shop Modest Wear",
     btnSecondaryText: "Explore Styles",
-    bgClass: "bg-[28%_top] md:bg-top",
+    bgClass: "bg-[35%_top] md:bg-[center_60px]",
     gradientMobile: "linear-gradient(180deg, rgba(24, 18, 15, 0.45) 0%, rgba(32, 28, 26, 0.44) 100%)",
     gradientDesktop: "linear-gradient(270deg, rgba(24, 18, 15, 0.95) 0%, rgba(24, 18, 15, 0.5) 50%, rgba(24, 18, 15, 0) 100%)"
   }
@@ -57,7 +57,7 @@ const HomeHero = () => {
       {slides.map((slide, index) => (
         <div
           key={`bg-${slide.id}`}
-          className={`absolute inset-0 bg-cover ${slide.bgClass} bg-fixed transition-opacity duration-1000 ease-in-out ${index === activeIndex ? "opacity-100 z-0" : "opacity-0 -z-10"
+          className={`absolute inset-0 bg-cover bg-no-repeat ${slide.bgClass} bg-scroll md:bg-fixed transition-opacity duration-1000 ease-in-out ${index === activeIndex ? "opacity-100 z-0" : "opacity-0 -z-10"
             }`}
           style={{ backgroundImage: `url(${slide.image})` }}
         >
