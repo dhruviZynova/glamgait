@@ -130,14 +130,19 @@ const ProductDetail = () => {
     setMainMedia(`${ApiURL}/assets/Products/${imageUrl}`);
   };
 
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const handleDelete = async () => {
     if (window.confirm("Delete this product permanently?")) {
+      setIsDeleting(true);
       try {
         await adminAxios.delete(`${ApiURL}/deleteproduct/${p_id}`);
         showToaster(1, "Product deleted");
         navigate("/admin/product");
       } catch (error) {
         showToaster(0, error?.response?.data?.description || "Error deleting product");
+      } finally {
+        setIsDeleting(false);
       }
     }
   };
@@ -188,9 +193,15 @@ const ProductDetail = () => {
           </button>
           <button
             onClick={handleDelete}
-            className="bg-red-600 text-white px-5 py-3 rounded-lg flex items-center gap-2 hover:bg-red-700 cursor-pointer"
+            disabled={isDeleting}
+            className="bg-red-600 text-white px-5 py-3 rounded-lg flex items-center gap-2 hover:bg-red-700 cursor-pointer disabled:opacity-50"
           >
-            <Trash2 size={18} /> Delete
+            {isDeleting ? (
+              <RefreshCw className="w-5 h-5 animate-spin" />
+            ) : (
+              <Trash2 size={18} />
+            )}
+            {isDeleting ? "Deleting..." : "Delete"}
           </button>
         </div>
       </div>

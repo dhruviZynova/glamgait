@@ -40,14 +40,14 @@ const HomeHero = () => {
 
   if (slides.length === 0) {
     return (
-      <section className="w-full h-[60vh] md:h-[85vh] bg-[#FCD9C6]/20 animate-pulse flex items-center justify-center">
+      <section className="w-full h-[30vh] sm:h-[50vh] md:h-[100vh] bg-[#FCD9C6]/20 animate-pulse flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-[#113d33]/20 border-t-[#113d33] rounded-full animate-spin"></div>
       </section>
     );
   }
 
   return (
-    <section className="w-full h-[60vh] md:h-[85vh] relative overflow-hidden">
+    <section className="w-full h-[30vh] sm:h-[50vh] md:h-[100vh] relative overflow-hidden">
       {slides[0]?.image && <link rel="preload" as="image" href={slides[0].image} fetchPriority="high" />}
 
       <Swiper
@@ -59,9 +59,10 @@ const HomeHero = () => {
       >
         {slides.map((slide) => (
           <SwiperSlide key={slide.id} className="relative w-full h-full">
-            <div
-              className="w-full h-full bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${slide.image})` }}
+            <img
+              src={slide.image}
+              alt="Slider Banner"
+              className="w-full h-full object-cover object-top"
             />
             <div className="absolute inset-0 bg-black/10 pointer-events-none" />
           </SwiperSlide>

@@ -157,15 +157,18 @@ const AdminOrders = () => {
 
   const cancelOrder = async (orderId) => {
     if (!window.confirm("Cancel this order?")) return;
+    toast.loading("Cancelling order...", { id: "cancelOrder" });
     try {
       const res = await adminAxios.put(`${ApiURL}/cancelorder`, {
         order_id: orderId,
       });
+      toast.dismiss("cancelOrder");
       if (res.data.status === 1) {
         toast.success("Order cancelled");
         fetchOrders(currentPage, searchTerm);
       }
     } catch {
+      toast.dismiss("cancelOrder");
       toast.error("Failed to cancel");
     }
   };

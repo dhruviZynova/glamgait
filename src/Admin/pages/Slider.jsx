@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "reactstrap";
 import { adminAxios } from "../../Axios/axios";
 import { useForm } from "react-hook-form";
-import { Pencil, PlusCircle, Trash2 } from "lucide-react";
+import { Pencil, PlusCircle, Trash2, Loader2 } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
@@ -20,6 +20,7 @@ const Sliders = () => {
     isOpen: false,
     image_id: null,
     image_name: "",
+    isDeleting: false,
   });
 
   // Handle file selection
@@ -96,6 +97,7 @@ const Sliders = () => {
   };
 
   const deleteSliderFunction = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       const response = await adminAxios.delete(
         `${ApiURL}/deleteslider/${deleteModal.image_id}`
@@ -110,7 +112,7 @@ const Sliders = () => {
     } catch (error) {
       console.error(error);
     } finally {
-      setDeleteModal({ isOpen: false, image_id: null, image_name: "" });
+      setDeleteModal({ isOpen: false, image_id: null, image_name: "", isDeleting: false });
     }
   };
 
@@ -294,12 +296,13 @@ const Sliders = () => {
               <Button
                 type="submit"
                 disabled={addLoading}
-                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer"
                 onClick={saveSliderImages}
                 aria-label={
                   editingImage ? "Update slider image" : "Add slider images"
                 }
               >
+                {addLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {editingImage ? "Update" : "Add"}
               </Button>
             </div>
@@ -309,11 +312,12 @@ const Sliders = () => {
       <ConfirmDeleteModal
         isOpen={deleteModal.isOpen}
         onClose={() =>
-          setDeleteModal({ isOpen: false, image_id: null, image_name: "" })
+          setDeleteModal({ isOpen: false, image_id: null, image_name: "", isDeleting: false })
         }
         onConfirm={deleteSliderFunction}
         itemType="slider image"
         itemName={deleteModal.image_name}
+        isDeleting={deleteModal.isDeleting}
       />
     </>
   );

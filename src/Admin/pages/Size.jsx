@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import {
   PlusIcon,
   TrashIcon,
@@ -30,6 +30,7 @@ const Sizes = () => {
   }, []);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     size_name: "",
     cate_id: "",
@@ -39,6 +40,7 @@ const Sizes = () => {
     isOpen: false,
     size_id: null,
     name: "",
+    isDeleting: false,
   });
 
   const fetchCategories = async () => {
@@ -73,6 +75,7 @@ const Sizes = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const payload = {
         size_name: formData?.size_name,
@@ -96,6 +99,8 @@ const Sizes = () => {
       setIsEdit(false);
     } catch (error) {
       showToaster(0, error?.response?.data?.description || "Error saving size");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -104,6 +109,7 @@ const Sizes = () => {
   };
 
   const confirmDelete = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       const response = await adminAxios.delete(`${ApiURL}/deletesize/${deleteModal.size_id}`);
       showToaster(response?.data?.status, response?.data?.description);
@@ -111,7 +117,7 @@ const Sizes = () => {
     } catch (error) {
       showToaster(0, error?.response?.data?.description || "Error deleting size");
     } finally {
-      setDeleteModal({ isOpen: false, size_id: null, name: "" });
+      setDeleteModal({ isOpen: false, size_id: null, name: "", isDeleting: false });
     }
   };
 
@@ -352,8 +358,10 @@ const Sizes = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-900 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-900 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer disabled:opacity-50"
                 >
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   {isEdit ? "Update" : "Create"}
                 </button>
               </div>
@@ -364,10 +372,11 @@ const Sizes = () => {
 
       <ConfirmDeleteModal
         isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, size_id: null, name: "" })}
+        onClose={() => setDeleteModal({ isOpen: false, size_id: null, name: "", isDeleting: false })}
         onConfirm={confirmDelete}
         itemType="size"
         itemName={deleteModal.name}
+        isDeleting={deleteModal.isDeleting}
       />
     </div>
   );

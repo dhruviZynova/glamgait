@@ -3,7 +3,7 @@ import {
   PlusIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import { Trash2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 import { adminAxios } from "../../Axios/axios";
 import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
@@ -13,6 +13,7 @@ const Colors = () => {
   const [colorData, setColorData] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     color_name: "",
     color_code: "#000000",
@@ -22,6 +23,7 @@ const Colors = () => {
     isOpen: false,
     color_id: null,
     color_name: "",
+    isDeleting: false,
   });
 
   const fetchColors = async () => {
@@ -44,6 +46,7 @@ const Colors = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const payload = {
         color_name: formData.color_name,
@@ -71,6 +74,8 @@ const Colors = () => {
     } catch (error) {
       console.error("Error saving color:", error);
       showToaster(0, "Error saving color");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -79,6 +84,7 @@ const Colors = () => {
   };
 
   const confirmDelete = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       const response = await adminAxios.delete(
         `${ApiURL}/deletecolor/${deleteModal.color_id}`
@@ -89,7 +95,7 @@ const Colors = () => {
       console.error("Error deleting color:", error);
       showToaster(0, "Error deleting color");
     } finally {
-      setDeleteModal({ isOpen: false, color_id: null, color_name: "" });
+      setDeleteModal({ isOpen: false, color_id: null, color_name: "", isDeleting: false });
     }
   };
 
@@ -279,11 +285,13 @@ const Colors = () => {
                 >
                   Cancel
                 </button>
-                <button
+                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer disabled:opacity-50"
                   aria-label={isEdit ? "Update color" : "Create color"}
                 >
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   {isEdit ? "Update" : "Create"}
                 </button>
               </div>
@@ -295,11 +303,12 @@ const Colors = () => {
       <ConfirmDeleteModal
         isOpen={deleteModal.isOpen}
         onClose={() =>
-          setDeleteModal({ isOpen: false, color_id: null, color_name: "" })
+          setDeleteModal({ isOpen: false, color_id: null, color_name: "", isDeleting: false })
         }
         onConfirm={confirmDelete}
         itemType="color"
         itemName={deleteModal.color_name}
+        isDeleting={deleteModal.isDeleting}
       />
     </div>
   );

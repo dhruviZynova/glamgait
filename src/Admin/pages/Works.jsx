@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable";
 import { adminAxios } from "../../Axios/axios";
 import {
@@ -30,6 +30,7 @@ const Works = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [workData, setWorkData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     work_id: null,
@@ -39,8 +40,8 @@ const Works = () => {
     isOpen: false,
     work_id: null,
     cate_id: null,
-
     name: "",
+    isDeleting: false,
   });
 
   const fetchWorks = async () => {
@@ -70,6 +71,7 @@ const Works = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       if (isEdit) {
         const response = await adminAxios.put(
@@ -90,14 +92,17 @@ const Works = () => {
       setIsEdit(false);
     } catch (error) {
       showToaster(0, error?.response?.data?.description || "Error saving work");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDelete = (work_id) => {
-    setDeleteModal({ isOpen: true, work_id });
+  const handleDelete = (work_id, name) => {
+    setDeleteModal({ isOpen: true, work_id, name, isDeleting: false });
   };
 
   const confirmDelete = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       const response = await adminAxios.post(
         `${ApiURL}/deletework`,
@@ -111,7 +116,7 @@ const Works = () => {
       console.error(error);
       showToaster(0, "Error deleting work");
     } finally {
-      setDeleteModal({ isOpen: false, work_id: null, name: "" });
+      setDeleteModal({ isOpen: false, work_id: null, name: "", isDeleting: false });
     }
   };
 
@@ -210,7 +215,7 @@ const Works = () => {
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
                     <button
-                      onClick={() => handleDelete(work?.work_id)}
+                      onClick={() => handleDelete(work?.work_id, work?.name)}
                       className="text-red-600 hover:text-red-900 cursor-pointer"
                     >
                       <TrashIcon className="h-5 w-5" />
@@ -345,8 +350,10 @@ const Works = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer"
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer disabled:opacity-50"
                 >
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   {isEdit ? "Update" : "Create"}
                 </button>
               </div>
@@ -357,11 +364,12 @@ const Works = () => {
       <ConfirmDeleteModal
         isOpen={deleteModal.isOpen}
         onClose={() =>
-          setDeleteModal({ isOpen: false, work_id: null, name: "" })
+          setDeleteModal({ isOpen: false, work_id: null, name: "", isDeleting: false })
         }
         onConfirm={confirmDelete}
         itemType="work"
         itemName={deleteModal.name}
+        isDeleting={deleteModal.isDeleting}
       />
     </div>
   );

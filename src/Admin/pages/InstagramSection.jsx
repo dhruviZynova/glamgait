@@ -17,6 +17,7 @@ const InstagramSection = () => {
     isOpen: false,
     insta_id: null,
     image_name: "",
+    isDeleting: false,
   });
 
   const handleFileChange = (e) => {
@@ -86,10 +87,11 @@ const InstagramSection = () => {
   };
 
   const handleDelete = (insta_id, image_name) => {
-    setDeleteModal({ isOpen: true, insta_id, image_name });
+    setDeleteModal({ isOpen: true, insta_id, image_name, isDeleting: false });
   };
 
   const confirmDelete = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       const response = await adminAxios.delete(
         `${ApiURL}/deleteinstaimage/${deleteModal.insta_id}`
@@ -113,7 +115,7 @@ const InstagramSection = () => {
       setError("Failed to delete media");
       showToaster(false, "Failed to delete media");
     } finally {
-      setDeleteModal({ isOpen: false, insta_id: null, image_name: "" });
+      setDeleteModal({ isOpen: false, insta_id: null, image_name: "", isDeleting: false });
     }
   };
 
@@ -334,11 +336,12 @@ const InstagramSection = () => {
           <ConfirmDeleteModal
             isOpen={deleteModal.isOpen}
             onClose={() =>
-              setDeleteModal({ isOpen: false, insta_id: null, image_name: "" })
+              setDeleteModal({ isOpen: false, insta_id: null, image_name: "", isDeleting: false })
             }
             onConfirm={confirmDelete}
             itemType="Instagram post"
             itemName={deleteModal.image_name}
+            isDeleting={deleteModal.isDeleting}
           />
         </div>
       </>

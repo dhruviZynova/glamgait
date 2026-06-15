@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable";
 import { adminAxios } from "../../Axios/axios";
 import {
@@ -30,6 +30,7 @@ const Styles = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [styleData, setStyleData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     style_id: null,
@@ -39,6 +40,7 @@ const Styles = () => {
     isOpen: false,
     style_id: null,
     name: "",
+    isDeleting: false,
   });
 
   // Fetch Styles
@@ -72,6 +74,7 @@ const Styles = () => {
   // Add / Edit Style
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       if (isEdit) {
         const response = await adminAxios.put(
@@ -93,15 +96,18 @@ const Styles = () => {
     } catch (error) {
       console.error(error);
       showToaster(0, "Error saving style");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // Delete Style
-  const handleDelete = (style_id) => {
-    setDeleteModal({ isOpen: true, style_id });
+  const handleDelete = (style_id, name) => {
+    setDeleteModal({ isOpen: true, style_id, name, isDeleting: false });
   };
 
   const confirmDelete = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       const response = await adminAxios.post(
         `${ApiURL}/deletestyle`,
@@ -115,7 +121,7 @@ const Styles = () => {
       console.error(error);
       showToaster(0, "Error deleting style");
     } finally {
-      setDeleteModal({ isOpen: false, style_id: null, name: "" });
+      setDeleteModal({ isOpen: false, style_id: null, name: "", isDeleting: false });
     }
   };
 
@@ -215,7 +221,7 @@ const Styles = () => {
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
                     <button
-                      onClick={() => handleDelete(style?.style_id)}
+                      onClick={() => handleDelete(style?.style_id, style?.name)}
                       className="text-red-600 hover:text-red-900 cursor-pointer"
                     >
                       <TrashIcon className="h-5 w-5" />
@@ -349,8 +355,10 @@ const Styles = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer"
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer disabled:opacity-50"
                 >
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   {isEdit ? "Update" : "Create"}
                 </button>
               </div>
@@ -362,11 +370,12 @@ const Styles = () => {
       <ConfirmDeleteModal
         isOpen={deleteModal.isOpen}
         onClose={() =>
-          setDeleteModal({ isOpen: false, style_id: null, name: "" })
+          setDeleteModal({ isOpen: false, style_id: null, name: "", isDeleting: false })
         }
         onConfirm={confirmDelete}
         itemType="style"
         itemName={deleteModal.name}
+        isDeleting={deleteModal.isDeleting}
       />
     </div>
   );
