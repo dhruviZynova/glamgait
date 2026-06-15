@@ -24,9 +24,13 @@ const Sliders = () => {
 
   // Handle file selection
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files).filter((file) =>
-      file.type.startsWith("image/")
-    );
+    const files = Array.from(e.target.files).filter((file) => {
+      if (file.size > 5 * 1024 * 1024) {
+        showToaster(0, `Image "${file.name}" exceeds 5MB size limit.`);
+        return false;
+      }
+      return file.type.startsWith("image/");
+    });
 
     setSelectedImages((prev) => {
       if (prev.length + files.length > 3 && !editingImage) {
