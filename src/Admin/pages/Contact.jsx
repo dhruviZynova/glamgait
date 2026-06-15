@@ -7,6 +7,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ChatBubbleLeftIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { Trash2, Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -127,7 +128,7 @@ const Contact = () => {
           <input
             type="text"
             placeholder="Search contacts..."
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -135,6 +136,7 @@ const Contact = () => {
             }}
             aria-label="Search contact requests"
           />
+          <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
         </div>
       </div>
 

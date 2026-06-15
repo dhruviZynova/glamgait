@@ -30,7 +30,7 @@ const CouponList = ({ coupons }) => {
               navigator.clipboard.writeText(coupon.code);
               showToaster(1, "Copied!");
             }}
-            className="px-3 py-1.5 bg-[#02382A] text-white text-xs font-medium rounded hover:bg-[#02382A]/90 transition-colors"
+            className="px-3 py-1.5 bg-[#02382A] text-white text-xs font-medium rounded hover:bg-[#02382A]/90 transition-colors cursor-pointer"
           >
             COPY
           </button>

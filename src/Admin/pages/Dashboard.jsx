@@ -45,6 +45,23 @@ const formatRevenue = (revenue) => {
   }
 };
 
+const formatChartDate = (value, timeframe) => {
+  if (!value || timeframe !== "daily") return value;
+  try {
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      return date.toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    }
+  } catch (error) {
+    // Return original value if parsing fails
+  }
+  return value;
+};
+
 const Dashboard = () => {
   const [timeframe, setTimeframe] = useState("daily");
   const [userCount, setUserCount] = useState([]);
@@ -114,7 +131,8 @@ const Dashboard = () => {
   const fetchRecentOrders = async () => {
     try {
       const res = await adminAxios.get(`${ApiURL}/recent-orders`);
-      setRecentOrders(res.data.data.recentOrders);
+      const data = res.data?.data?.recentOrders || res.data?.recentOrders || res.data?.data || res.data;
+      setRecentOrders(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching recent orders:", error);
     }
@@ -368,6 +386,7 @@ const Dashboard = () => {
                         ? "week"
                         : "date"
                   }
+                  tickFormatter={(value) => formatChartDate(value, timeframe)}
                 />
                 <YAxis />
                 <Tooltip
@@ -377,6 +396,7 @@ const Dashboard = () => {
                       ? "Revenue (Valid Orders)"
                       : "Total Orders",
                   ]}
+                  labelFormatter={(label) => formatChartDate(label, timeframe)}
                 />
                 <Area
                   type="monotone"
@@ -456,6 +476,7 @@ const Dashboard = () => {
                       ? "week"
                       : "date"
                 }
+                tickFormatter={(value) => formatChartDate(value, timeframe)}
               />
               <YAxis />
               <Tooltip
@@ -466,7 +487,10 @@ const Dashboard = () => {
                   };
                   return [value, labels[name] || name];
                 }}
-                labelFormatter={(label) => `Period: ${label}`}
+                labelFormatter={(label) => {
+                  const formatted = formatChartDate(label, timeframe);
+                  return timeframe === "daily" ? formatted : `Period: ${formatted}`;
+                }}
               />
               <Legend />
               <Bar
@@ -566,41 +590,44 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {recentOrders?.slice(10).map((order) => (
-                  <tr key={order.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">
-                      {order.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {order.user?.fullName || order.user?.name || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      ₹{order.total.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${STATUS_COLORS[parseInt(order.status)] || STATUS_COLORS[ORDER_STATUS.CANCELLED]}`}
-                      >
-                        {STATUS_LABELS[parseInt(order.status)] || "Unknown"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${isRevenueEligible(order.status)
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                          }`}
-                      >
-                        {isRevenueEligible(order.status)
-                          ? "Counts"
-                          : "Excluded"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(order.createdAt).toLocaleDateString("en-IN")}
-                    </td>
-                  </tr>
-                ))}
+                {[...recentOrders]
+                  .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+                  .slice(0, 10)
+                  .map((order) => (
+                    <tr key={order.id || order._id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">
+                        {order.id || order._id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {order.user?.fullName || order.user?.name || (typeof order.user === "string" ? order.user : "N/A")}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        ₹{(order.total || order.totalAmount || order.amount || 0).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${STATUS_COLORS[parseInt(order.status)] || STATUS_COLORS[ORDER_STATUS.CANCELLED]}`}
+                        >
+                          {STATUS_LABELS[parseInt(order.status)] || "Unknown"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span
+                          className={`px-2 py-1 rounded text-xs ${isRevenueEligible(order.status)
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                            }`}
+                        >
+                          {isRevenueEligible(order.status)
+                            ? "Counts"
+                            : "Excluded"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "N/A"}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>

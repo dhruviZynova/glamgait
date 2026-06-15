@@ -14,6 +14,17 @@ import {
 } from "@heroicons/react/24/outline";
 
 const PromotionsManagement = () => {
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "—";
+    const day = date.getDate();
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+  };
+
   const [activeTab, setActiveTab] = useState("offers"); // "offers" | "coupons"
   const [offers, setOffers] = useState([]);
   const [coupons, setCoupons] = useState([]);
@@ -315,8 +326,7 @@ const PromotionsManagement = () => {
                       ₹{item.min_amount || "0"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {new Date(item.start_date).toLocaleDateString()} –{" "}
-                      {new Date(item.end_date).toLocaleDateString()}
+                      {formatDate(item.start_date)} – {formatDate(item.end_date)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
