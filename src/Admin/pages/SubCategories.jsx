@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import {
   PlusIcon,
   TrashIcon,
@@ -16,6 +16,7 @@ const SubCategories = () => {
   const [subCategoryData, setSubCategoryData] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -43,6 +44,7 @@ const SubCategories = () => {
     isOpen: false,
     sc_id: null,
     name: "",
+    isDeleting: false,
   });
 
   // Fetch categories for dropdown
@@ -91,6 +93,7 @@ const SubCategories = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const payload = new FormData();
       payload.append("name", formData.name);
@@ -129,6 +132,8 @@ const SubCategories = () => {
     } catch (error) {
       console.error(error);
       showToaster(0, "Error saving subcategory");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -160,10 +165,11 @@ const SubCategories = () => {
   };
 
   const handleDelete = (sc_id, name) => {
-    setDeleteModal({ isOpen: true, sc_id, name });
+    setDeleteModal({ isOpen: true, sc_id, name, isDeleting: false });
   };
 
   const confirmDelete = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       const response = await adminAxios.delete(
         `${ApiURL}/deletesubcategory/${deleteModal.sc_id}`
@@ -174,7 +180,7 @@ const SubCategories = () => {
       console.error(error);
       showToaster(0, "Error deleting subcategory");
     } finally {
-      setDeleteModal({ isOpen: false, sc_id: null, name: "" });
+      setDeleteModal({ isOpen: false, sc_id: null, name: "", isDeleting: false });
     }
   };
 
@@ -507,10 +513,12 @@ const SubCategories = () => {
                 >
                   Cancel
                 </button>
-                <button
+                 <button
                   type="submit"
-                  className="px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-900 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-900 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer disabled:opacity-50"
                 >
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   {isEdit ? "Update Subcategory" : "Create Subcategory"}
                 </button>
               </div>
@@ -521,10 +529,11 @@ const SubCategories = () => {
 
       <ConfirmDeleteModal
         isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, sc_id: null, name: "" })}
+        onClose={() => setDeleteModal({ isOpen: false, sc_id: null, name: "", isDeleting: false })}
         onConfirm={confirmDelete}
         itemType="subcategory"
         itemName={deleteModal.name}
+        isDeleting={deleteModal.isDeleting}
       />
     </div>
   );

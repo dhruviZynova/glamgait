@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { ApiURL } from "../../Variable";
 import toast from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
@@ -432,7 +432,9 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-900 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer">
+                className="flex items-center gap-2 px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-900 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer disabled:opacity-50"
+              >
+                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                 {isSubmitting ? "Saving..." : (product ? "Update Product" : "Create Product")}
               </button>
             </div>

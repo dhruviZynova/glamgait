@@ -10,6 +10,7 @@ import { ApiURL, adminInfo } from "../../Variable";
 import toast from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
+import { Loader2 } from "lucide-react";
 
 const Reviews = () => {
   const adminData = adminInfo();
@@ -41,6 +42,7 @@ const Reviews = () => {
     isOpen: false,
     reviewId: null,
     name: "",
+    isDeleting: false,
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -102,6 +104,7 @@ const Reviews = () => {
     setDeleteModal({ isOpen: true, reviewId, name });
 
   const confirmDelete = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       await adminAxios.delete(
         `${ApiURL}/deleteuserreview/${deleteModal.reviewId}`
@@ -111,7 +114,7 @@ const Reviews = () => {
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to delete");
     } finally {
-      setDeleteModal({ isOpen: false, reviewId: null, name: "" });
+      setDeleteModal({ isOpen: false, reviewId: null, name: "", isDeleting: false });
     }
   };
 
@@ -447,11 +450,12 @@ const Reviews = () => {
       <ConfirmDeleteModal
         isOpen={deleteModal.isOpen}
         onClose={() =>
-          setDeleteModal({ isOpen: false, reviewId: null, name: "" })
+          setDeleteModal({ isOpen: false, reviewId: null, name: "", isDeleting: false })
         }
         onConfirm={confirmDelete}
         itemType="review"
         itemName={deleteModal.name || "this review"}
+        isDeleting={deleteModal.isDeleting}
       />
 
       {/* Add/Edit Modal */}
@@ -721,11 +725,12 @@ const Reviews = () => {
               <button
                 disabled={submitting}
                 onClick={handleSubmit}
-                className={`flex-1 py-3.5 px-6 rounded-xl font-medium text-white transition-colors order-1 sm:order-2 cursor-pointer ${submitting
+                className={`flex-1 py-3.5 px-6 rounded-xl font-medium text-white transition-colors order-1 sm:order-2 cursor-pointer flex items-center justify-center gap-2 ${submitting
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-black hover:bg-gray-900 active:bg-gray-900"
                   }`}
               >
+                {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
                 {submitting
                   ? "Saving..."
                   : modal.editMode

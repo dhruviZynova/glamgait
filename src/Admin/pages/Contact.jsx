@@ -8,7 +8,7 @@ import {
   ChevronRightIcon,
   ChatBubbleLeftIcon,
 } from "@heroicons/react/24/outline";
-import { Trash2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
 import { ApiURL } from "../../Variable";
@@ -25,6 +25,7 @@ const Contact = () => {
     isOpen: false,
     contactId: null,
     name: "",
+    isDeleting: false,
   });
 
   const fetchContacts = async (page = 1, limit = itemsPerPage, search = searchTerm) => {
@@ -54,6 +55,7 @@ const Contact = () => {
   };
 
   const confirmDelete = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       await adminAxios.delete(
         `${ApiURL}/deletecontact/${deleteModal.contactId}`
@@ -63,7 +65,7 @@ const Contact = () => {
     } catch (error) {
       console.error("Error deleting contact:", error);
     } finally {
-      setDeleteModal({ isOpen: false, contactId: null, name: "" });
+      setDeleteModal({ isOpen: false, contactId: null, name: "", isDeleting: false });
     }
   };
 
@@ -221,7 +223,7 @@ const Contact = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() =>
-                            handleDelete(contact.contact_id, contact.name)
+                            handleDelete(contact.contactId, contact.name)
                           }
                           className="text-red-600 hover:text-red-900 cursor-pointer"
                           aria-label={`Delete contact request from ${contact.name || "Unknown"
@@ -328,11 +330,12 @@ const Contact = () => {
       <ConfirmDeleteModal
         isOpen={deleteModal.isOpen}
         onClose={() =>
-          setDeleteModal({ isOpen: false, contactId: null, name: "" })
+          setDeleteModal({ isOpen: false, contactId: null, name: "", isDeleting: false })
         }
         onConfirm={confirmDelete}
         itemType="contact request"
         itemName={deleteModal.name}
+        isDeleting={deleteModal.isDeleting}
       />
     </div>
   );

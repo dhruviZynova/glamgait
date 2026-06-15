@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import {
   PlusIcon,
   TrashIcon,
@@ -30,6 +30,7 @@ const Fabrics = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [fabricData, setFabricData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     f_id: null,
@@ -40,6 +41,7 @@ const Fabrics = () => {
     f_id: null,
     cate_id: null,
     name: "",
+    isDeleting: false,
   });
 
   // ✅ Fetch all categories
@@ -73,6 +75,7 @@ const Fabrics = () => {
   // ✅ Submit (Add/Edit)
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       if (!formData.cate_id) {
         showToaster(0, "Please select a category");
@@ -99,14 +102,17 @@ const Fabrics = () => {
       setIsEdit(false);
     } catch (error) {
       showToaster(0, error?.response?.data?.description || "Error saving fabric");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDelete = (f_id) => {
-    setDeleteModal({ isOpen: true, f_id });
+  const handleDelete = (f_id, name) => {
+    setDeleteModal({ isOpen: true, f_id, name, isDeleting: false });
   };
 
   const confirmDelete = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       const response = await adminAxios.post(
         `${ApiURL}/deletefabric`,
@@ -120,7 +126,7 @@ const Fabrics = () => {
       console.error(error);
       showToaster(0, "Error deleting fabric");
     } finally {
-      setDeleteModal({ isOpen: false, f_id: null, name: "" });
+      setDeleteModal({ isOpen: false, f_id: null, name: "", isDeleting: false });
     }
   };
 
@@ -219,7 +225,7 @@ const Fabrics = () => {
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
                     <button
-                      onClick={() => handleDelete(fabric?.f_id)}
+                      onClick={() => handleDelete(fabric?.f_id, fabric?.name)}
                       className="text-red-600 hover:text-red-900 cursor-pointer"
                     >
                       <TrashIcon className="h-5 w-5" />
@@ -357,8 +363,10 @@ const Fabrics = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 cursor-pointer"
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 cursor-pointer disabled:opacity-50"
                 >
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   {isEdit ? "Update" : "Create"}
                 </button>
               </div>
@@ -370,10 +378,11 @@ const Fabrics = () => {
       {/* Delete Confirmation */}
       <ConfirmDeleteModal
         isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, f_id: null, name: "" })}
+        onClose={() => setDeleteModal({ isOpen: false, f_id: null, name: "", isDeleting: false })}
         onConfirm={confirmDelete}
         itemType="fabric"
         itemName={deleteModal.name}
+        isDeleting={deleteModal.isDeleting}
       />
     </div>
   );
