@@ -8,6 +8,8 @@ import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 import ScrollReveal from "./Ui/ScrollReveal";
 import { useQueryClient } from "@tanstack/react-query";
+import OfferList from "./OfferList";
+import CouponList from "./CouponList";
 
 const Checkout = () => {
     const location = useLocation();
@@ -25,9 +27,36 @@ const Checkout = () => {
     const addressDropdownRef = useRef(null);
     const isPlacingOrderRef = useRef(false);
 
+    // Offers and coupons states
+    const [offers, setOffers] = useState([]);
+    const [coupons, setCoupons] = useState([]);
+    const [couponCode, setCouponCode] = useState("");
+    const [couponDiscount, setCouponDiscount] = useState(0);
+    const [couponApplied, setCouponApplied] = useState(false);
+    const [offerDiscount, setOfferDiscount] = useState(0);
+    const [appliedOffer, setAppliedOffer] = useState(null);
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+
     const user = userInfo();
     const u_id = user?.u_id;
     const guestId = stateGuestId || getGuestId();
+
+    // Fetch offers and coupons
+    useEffect(() => {
+        const fetchOffersCoupons = async () => {
+            try {
+                const [offerRes, couponRes] = await Promise.all([
+                    axiosInstance.post(`/getoffers`),
+                    axiosInstance.post(`/getcoupons`),
+                ]);
+                setOffers(offerRes.data.data || []);
+                setCoupons(couponRes.data.data || []);
+            } catch (err) {
+                console.error("Error fetching offers/coupons:", err);
+            }
+        };
+        fetchOffersCoupons();
+    }, []);
 
     const [formData, setFormData] = useState({
         // Personal fields
@@ -120,8 +149,73 @@ const Checkout = () => {
         (acc, item) => acc + item.price * item.quantity,
         0
     ), [cartItems]);
+
+    // Evaluate auto-applied offers
+    useEffect(() => {
+        if (couponApplied) {
+            setOfferDiscount(0);
+            setAppliedOffer(null);
+            return;
+        }
+
+        let bestDiscount = 0;
+        let bestOffer = null;
+        const totalQty = cartItems.reduce((s, i) => s + i.quantity, 0);
+
+        offers.forEach((offer) => {
+            if (!offer.is_active) return;
+
+            let discount = 0;
+
+            if (offer.offer_type === "QTY" && totalQty >= offer.min_qty) {
+                discount = (subtotal * offer.discount_percent) / 100;
+            }
+
+            if (offer.offer_type === "CART" && subtotal >= offer.min_amount) {
+                discount = (subtotal * offer.discount_percent) / 100;
+            }
+
+            if (discount > bestDiscount) {
+                bestDiscount = discount;
+                bestOffer = offer;
+            }
+        });
+
+        setOfferDiscount(Math.floor(bestDiscount));
+        setAppliedOffer(bestOffer);
+    }, [offers, cartItems, subtotal, couponApplied]);
+
+    const applyCoupon = () => {
+        if (!couponCode.trim()) return toast.error("Enter coupon code");
+
+        const coupon = coupons.find(
+            (c) => c.code === couponCode.toUpperCase() && c.is_active,
+        );
+
+        if (!coupon) return toast.error("Invalid or expired coupon");
+
+        if (subtotal < coupon.min_amount) {
+            return toast.error(`Minimum cart ₹${coupon.min_amount}`);
+        }
+
+        const discount = Math.floor((subtotal * coupon.discount_percent) / 100);
+
+        setCouponDiscount(discount);
+        setCouponApplied(true);
+        setAppliedCoupon(coupon);
+        toast.success("Coupon applied successfully");
+    };
+
+    const removeCoupon = () => {
+        setCouponApplied(false);
+        setCouponCode("");
+        setCouponDiscount(0);
+        setAppliedCoupon(null);
+    };
+
     const shipping = location.state?.shippingCharge || 0;
-    const total = React.useMemo(() => subtotal + shipping, [subtotal, shipping]);
+    const totalDiscount = couponDiscount + offerDiscount;
+    const total = React.useMemo(() => Math.max(0, subtotal - totalDiscount + shipping), [subtotal, totalDiscount, shipping]);
 
     const steps = [
         { id: 1, name: "Personal" },
@@ -635,11 +729,91 @@ const Checkout = () => {
                                             <span className="text-[#767676] text-lg">{shipping > 0 ? `₹${shipping.toFixed(0)}` : "Free"}</span>
                                         </div>
 
+                                        {offerDiscount > 0 && (
+                                            <>
+                                                <div className="border-b border-dashed border-[#d7d4d4]"></div>
+                                                <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6 text-green-700">
+                                                    <span className="text-md font-medium uppercase tracking-wide">Offer Discount</span>
+                                                    <span className="text-lg font-semibold">- ₹{offerDiscount}</span>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {couponApplied && couponDiscount > 0 && (
+                                            <>
+                                                <div className="border-b border-dashed border-[#d7d4d4]"></div>
+                                                <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6 text-blue-700">
+                                                    <span className="text-md font-medium uppercase tracking-wide">Coupon Discount ({appliedCoupon?.code})</span>
+                                                    <span className="text-lg font-semibold">- ₹{couponDiscount}</span>
+                                                </div>
+                                            </>
+                                        )}
+
                                         <div className="border-b border-dashed border-[#d7d4d4]"></div>
 
                                         <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6">
                                             <span className="text-md font-medium text-[#3D3D3D] tracking-wide">Total</span>
                                             <span className="text-[#767676] text-2xl font-semibold">₹{total.toFixed(0)}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Coupon and Offers Promo Section */}
+                                    <div className="px-4 md:px-10 py-6 border-t border-[#DEDFE1] bg-gray-50/70">
+                                        <h4 className="text-sm font-semibold text-[#1C2F2F] mb-4 font-[Oxygen] uppercase tracking-wider">Promotions & Coupons</h4>
+
+                                        {/* Coupon Input */}
+                                        <div className="mt-2">
+                                            {!couponApplied ? (
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        value={couponCode}
+                                                        onChange={(e) => setCouponCode(e.target.value)}
+                                                        placeholder="Enter Coupon code"
+                                                        className="border border-gray-300 p-2.5 rounded-lg w-full text-sm font-[Oxygen] focus:outline-none uppercase"
+                                                    />
+                                                    <button
+                                                        onClick={applyCoupon}
+                                                        className="bg-[#1C2F2F] hover:bg-black text-white px-5 rounded-lg text-sm font-medium font-[Oxygen] transition-colors cursor-pointer"
+                                                    >
+                                                        Apply
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex justify-between items-center bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                                    <div>
+                                                        <p className="text-xs text-blue-800 font-semibold font-[Oxygen]">Coupon Applied</p>
+                                                        <p className="text-sm font-mono font-bold text-blue-900">{appliedCoupon?.code}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={removeCoupon}
+                                                        className="text-red-600 text-sm font-semibold hover:underline font-[Oxygen] cursor-pointer"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Auto-applied offer notification */}
+                                        {!couponApplied && appliedOffer && offerDiscount > 0 && (
+                                            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-4 flex justify-between items-center">
+                                                <div className="flex-1 pr-2">
+                                                    <p className="text-xs text-green-800 font-semibold font-[Oxygen]">🎉 Best Offer Auto-Applied</p>
+                                                    <p className="text-xs text-green-900 font-medium font-[Oxygen] mt-0.5 leading-relaxed">
+                                                        {appliedOffer.offer_type === "QTY"
+                                                            ? `Buy ${appliedOffer.min_qty}+ items & get ${appliedOffer.discount_percent}% OFF`
+                                                            : `Flat ${appliedOffer.discount_percent}% OFF on orders above ₹${appliedOffer.min_amount}`
+                                                        }
+                                                    </p>
+                                                </div>
+                                                <span className="font-bold text-green-800 text-sm">- ₹{offerDiscount}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Lists of all active promotions */}
+                                        <div className="mt-4 space-y-4">
+                                            <OfferList offers={offers} />
+                                            <CouponList coupons={coupons} />
                                         </div>
                                     </div>
                                 </div>

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "reactstrap";
 import { adminAxios } from "../../Axios/axios";
 import { useForm } from "react-hook-form";
-import { Pencil, PlusCircle, Trash2, Loader2 } from "lucide-react";
+import { Pencil, PlusIcon, Trash2, Loader2, Search } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
@@ -147,18 +147,21 @@ const Sliders = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start gap-6 sm:items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800 text-left">Images</h2>
           <div className="md:flex justify-items-center w-full sm:w-auto space-y-2 md:space-y-0 gap-2">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className=" text-black placeholder-gray-400 border border-gray-600 focus:outline-none p-2 rounded-md w-full "
-            />
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full text-black placeholder-gray-400 border border-gray-600 focus:outline-none pl-10 pr-4 py-2 rounded-md"
+              />
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+            </div>
             <Button
               onClick={handleAddImages}
-              className="flex w-full items-center justify-center gap-2 bg-black hover:bg-black text-white px-4 py-2 rounded-lg cursor-pointer"
+              className="flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
             >
-              <PlusCircle size={20} /> Add Images
+              <PlusIcon size={20} /> Add Images
             </Button>
           </div>
         </div>

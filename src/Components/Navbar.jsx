@@ -269,15 +269,13 @@ const Navbar = () => {
   return (
     <>
       {/* Announcement Bar */}
-      <div className="bg-[#23403b] text-white text-xs md:text-sm py-2 text-center font-Montserrat font-medium">
-        {announcements.length > 0 ? (
+      {announcements.length > 0 && (
+        <div className="bg-[#23403b] text-white text-xs md:text-sm py-2 text-center font-Montserrat font-medium">
           <div className="transition-all duration-500 ease-in-out">
-            {announcements[currentAnnouncement]?.message || "Enjoy Free Shipping On All Orders"}
+            {announcements[currentAnnouncement]?.text || ""}
           </div>
-        ) : (
-          "Enjoy Free Shipping On All Orders"
-        )}
-      </div>
+        </div>
+      )}
       <nav ref={navRef} className="sticky bg-white shadow-md top-0 z-50">
         <div className="mx-auto px-2 md:px-10 lg:px-20 py-3 flex justify-between items-center">
           <Link to="/">
