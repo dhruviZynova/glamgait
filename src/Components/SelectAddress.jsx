@@ -101,7 +101,7 @@ const SelectAddress = () => {
 
   useEffect(() => {
     if (paymentMethod === "online") {
-      const discount = Math.floor(subtotal * 0.1);
+      const discount = Math.round(subtotal * 0.1);
       setOnlineDiscount(discount);
     } else {
       setOnlineDiscount(0);
@@ -190,6 +190,7 @@ const SelectAddress = () => {
         shipping: deliveryFee,
         total: grandTotal,
         payment_method: paymentMethod.toLowerCase(),
+        coupon_code: couponApplied && appliedCoupon ? appliedCoupon.code : null,
       };
 
       const orderRes = await axiosInstance.post(
@@ -296,6 +297,7 @@ const SelectAddress = () => {
         setOffers(offerRes.data.data || []);
         setCoupons(couponRes.data.data || []);
       } catch (err) {
+        console.log(err);
         // Non-critical — offers/coupons unavailable, continue silently
       }
     };
@@ -333,7 +335,7 @@ const SelectAddress = () => {
       }
     });
 
-    setOfferDiscount(Math.floor(bestDiscount));
+    setOfferDiscount(Math.round(bestDiscount));
     setAppliedOffer(bestOffer);
   }, [offers, cartItems, subtotal, couponApplied]);
 
@@ -350,7 +352,7 @@ const SelectAddress = () => {
       return toast.error(`Minimum cart ₹${coupon.min_amount}`);
     }
 
-    const discount = Math.floor((subtotal * coupon.discount_percent) / 100);
+    const discount = Math.round((subtotal * coupon.discount_percent) / 100);
 
     setCouponDiscount(discount);
     setCouponApplied(true);

@@ -44,11 +44,11 @@ const Login = () => {
         {/* Login Card */}
         <ScrollReveal animation="fade-up" duration={800} className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
           {/* Left Side: Login Form */}
-          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
+          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white shadow-lg rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2 font-poppins">Login</h1>
 
             <p className="text-sm text-gray-500 mb-8">
-              Do not have an account, <span onClick={() => navigate("/register", { state: { from } })} className="underline cursor-pointer">create a new one.</span>
+              Do not have an account, <span onClick={() => navigate("/register", { state: { from } })} className="underline cursor-pointer text-[#1A2C2C] font-medium">create a new one.</span>
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -104,7 +104,7 @@ const Login = () => {
             <div className="mt-8 text-center">
               <button
                 onClick={() => navigate("/forgot-password", { state: { from } })}
-                className="text-xs text-gray-500 hover:underline underline-offset-4 cursor-pointer"
+                className="text-xs text-[#1A2C2C] font-medium underline cursor-pointer"
               >
                 Forgot Your Password
               </button>
@@ -116,7 +116,7 @@ const Login = () => {
             <img
               src={loginbgimg}
               alt="Mosque Illustration"
-              className="md:absolute top-0 right-0 w-full h-[105%] md:h-[115%] object-cover md:object-top rounded-b-xl md:rounded-bl-none md:rounded-r-xl z-0"
+              className="md:absolute top-0 right-0 w-full h-[105%] md:h-[115%] object-cover md:object-top rounded-b-xl md:rounded-bl-none md:rounded-r-none z-0"
             />
           </div>
         </ScrollReveal>

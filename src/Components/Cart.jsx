@@ -319,11 +319,6 @@ const Cart = () => {
                 </div>
 
                 <div className="border-t border-gray-200 flex justify-between items-center py-6 px-6">
-                  <span className="uppercase tracking-wider text-sm font-medium text-[#4A4A4A] font-[Oxygen] font-400 font-[16px]">DISCOUNT</span>
-                  <span className="text-[#949494] font-[Oxygen] font-400 font-[16px]">---</span>
-                </div>
-
-                <div className="border-t border-gray-200 flex justify-between items-center py-6 px-6">
                   <span className="uppercase tracking-wider text-sm font-medium text-[#4A4A4A] font-[Oxygen] font-400 font-[16px]">TOTAL</span>
                   <span className="text-[#949494] font-[Oxygen] font-400 font-[16px]">₹{grandTotal.toFixed(0)}</span>
                 </div>

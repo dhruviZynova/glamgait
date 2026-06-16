@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
 import { useNavigate, useLocation } from "react-router-dom";
-import axiosInstance from "../Axios/axios";
-import { ApiURL } from "../Variable";
+import { forgotPassword, verifyOTP } from "../api/user";
 import toast from "react-hot-toast";
 import BrandBanner from "./BrandBanner";
 import { FaArrowLeft } from "react-icons/fa";
@@ -64,18 +63,16 @@ const VerifyOTP = () => {
       return;
     }
 
+    if (loading) return;
     setLoading(true);
     try {
-      // Assuming there's a verify otp endpoint
-      const response = await axiosInstance.post(`${ApiURL}/auth/verify-otp`, {
-        otp: otpString,
-      });
+      const data = await verifyOTP(otpString, email);
 
-      if (response.data.status === 1) {
-        toast.success(response.data.description || "OTP Verified Successfully");
-        navigate("/reset-password", { state: { email, otp: otpString, from } });
+      if (data && (data.status === 1 || data.success === true)) {
+        toast.success(data.description || data.message || "OTP Verified Successfully");
+        navigate(`/reset-password/${otpString}`, { state: { email, otp: otpString, from } });
       } else {
-        toast.error(response.data.description || "Invalid OTP");
+        toast.error(data?.description || data?.message || "Invalid OTP");
       }
     } catch (err) {
       const errMsg = err.response?.data?.description || err.response?.data?.message || err.message || "Error verifying OTP";
@@ -89,14 +86,12 @@ const VerifyOTP = () => {
     if (timer > 0) return;
 
     try {
-      const response = await axiosInstance.post(`${ApiURL}/auth/forgot-password`, {
-        email,
-      });
-      if (response.data.status === 1) {
+      const data = await forgotPassword(email);
+      if (data && (data.status === 1 || data.success === true)) {
         toast.success("OTP resent successfully");
         setTimer(30);
       } else {
-        toast.error(response.data.description || "Failed to resend OTP");
+        toast.error(data?.description || data?.message || "Failed to resend OTP");
       }
     } catch (err) {
       const errMsg = err.response?.data?.description || err.response?.data?.message || err.message || "Error resending OTP";
@@ -109,7 +104,7 @@ const VerifyOTP = () => {
       <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-poppins">
         <ScrollReveal animation="fade-up" duration={800} className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
           {/* Left Side: OTP Verification */}
-          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
+          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white shadow-lg rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <div className="absolute top-8 left-8 lg:left-14">
               <button
                 onClick={() => navigate("/forgot-password")}
@@ -161,7 +156,7 @@ const VerifyOTP = () => {
                   <button
                     onClick={handleResend}
                     disabled={timer > 0}
-                    className={`font-medium ml-1 transition-all ${timer > 0 ? "text-gray-300 cursor-not-allowed" : "text-[#1A2C2C] hover:underline cursor-pointer"
+                    className={`font-medium ml-1 transition-all ${timer > 0 ? "text-gray-300 cursor-not-allowed" : "text-[#1A2C2C] font-medium underline cursor-pointer"
                       }`}
                   >
                     Resend {timer > 0 && `(${timer}s)`}
@@ -176,7 +171,7 @@ const VerifyOTP = () => {
             <img
               src={loginbgimg}
               alt="Mosque Illustration"
-              className="md:absolute top-0 right-0 w-full h-[105%] md:h-[115%] object-cover md:object-top rounded-b-xl md:rounded-bl-none md:rounded-r-xl z-0"
+              className="md:absolute top-0 right-0 w-full h-[105%] md:h-[115%] object-cover md:object-top rounded-b-xl md:rounded-bl-none md:rounded-r-none z-0"
             />
           </div>
         </ScrollReveal>

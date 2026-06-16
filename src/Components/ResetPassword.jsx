@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
-import { useNavigate, useLocation } from "react-router-dom";
-import axiosInstance from "../Axios/axios";
-import { ApiURL } from "../Variable";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { resetPassword } from "../api/user";
 import toast from "react-hot-toast";
 import BrandBanner from "./BrandBanner";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
@@ -12,37 +11,56 @@ import ScrollReveal from "./Ui/ScrollReveal";
 const ResetPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { token } = useParams();
   const from = location.state?.from || "/";
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setPasswordError("");
+    setConfirmPasswordError("");
 
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
+    let isValid = true;
+
+    if (!password) {
+      setPasswordError("Password is required");
+      isValid = false;
+    } else if (password.length < 6) {
+      setPasswordError("Password must be at least 6 characters long");
+      isValid = false;
     }
 
+    if (!confirmPassword) {
+      setConfirmPasswordError("Confirm password is required");
+      isValid = false;
+    } else if (password !== confirmPassword) {
+      setConfirmPasswordError("Passwords do not match");
+      isValid = false;
+    }
+
+    if (!isValid) return;
+
+    if (loading) return;
     setLoading(true);
 
     try {
-      // Assuming there's a reset password endpoint
-      const response = await axiosInstance.post(`${ApiURL}/auth/reset-password`, {
-        newPassword: password,
-        confirmNewPassword: confirmPassword,
-      });
+      const data = await resetPassword(token, password);
 
-      if (response.data.status === 1) {
-        toast.success(response.data.description || "Password reset successfully");
+      if (data && (data.status === 1 || data.success === true)) {
+        toast.success(data.description || data.message || "Password reset successfully");
+        setPassword("");
+        setConfirmPassword("");
         setTimeout(() => {
           navigate("/login", { state: { from } });
         }, 2000);
       } else {
-        toast.error(response.data.description || "Failed to reset password");
+        toast.error(data?.description || data?.message || "Failed to reset password");
       }
     } catch (err) {
       const errMsg = err.response?.data?.description || err.response?.data?.message || err.message || "An error occurred. Please try again later.";
@@ -59,7 +77,7 @@ const ResetPassword = () => {
         <ScrollReveal animation="fade-up" duration={800} className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
 
           {/* Left Side: Form */}
-          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
+          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white shadow-lg rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <div className="mt-4">
               <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2 font-poppins">Set New Password</h1>
               <p className="text-sm text-gray-500 mb-8">
@@ -76,11 +94,14 @@ const ResetPassword = () => {
                     <input
                       type={passwordVisible ? "text" : "password"}
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (passwordError) setPasswordError("");
+                      }}
                       required
                       autoComplete="new-password"
                       placeholder="••••••••"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
+                      className={`w-full px-4 py-3 border ${passwordError ? "border-red-500" : "border-gray-200"} rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400`}
                     />
                     <button
                       type="button"
@@ -90,6 +111,9 @@ const ResetPassword = () => {
                       {passwordVisible ? <FaRegEyeSlash size={18} /> : <FaRegEye size={18} />}
                     </button>
                   </div>
+                  {passwordError && (
+                    <p className="text-xs text-red-500 mt-1 pl-2 font-poppins">{passwordError}</p>
+                  )}
                 </div>
 
                 {/* Confirm Password */}
@@ -101,11 +125,14 @@ const ResetPassword = () => {
                     <input
                       type={confirmPasswordVisible ? "text" : "password"}
                       value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        if (confirmPasswordError) setConfirmPasswordError("");
+                      }}
                       required
                       autoComplete="new-password"
                       placeholder="••••••••"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
+                      className={`w-full px-4 py-3 border ${confirmPasswordError ? "border-red-500" : "border-gray-200"} rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400`}
                     />
                     <button
                       type="button"
@@ -115,6 +142,9 @@ const ResetPassword = () => {
                       {confirmPasswordVisible ? <FaRegEyeSlash size={18} /> : <FaRegEye size={18} />}
                     </button>
                   </div>
+                  {confirmPasswordError && (
+                    <p className="text-xs text-red-500 mt-1 pl-2 font-poppins">{confirmPasswordError}</p>
+                  )}
                 </div>
 
                 <button
@@ -135,7 +165,7 @@ const ResetPassword = () => {
               <div className="mt-8 text-center">
                 <button
                   onClick={() => navigate("/login", { state: { from } })}
-                  className="text-xs text-gray-500 hover:underline underline-offset-4 cursor-pointer"
+                  className="text-xs text-[#1A2C2C] font-medium underline cursor-pointer"
                 >
                   Back to Login
                 </button>
@@ -148,7 +178,7 @@ const ResetPassword = () => {
             <img
               src={loginbgimg}
               alt="Mosque Illustration"
-              className="md:absolute top-0 right-0 w-full h-[105%] md:h-[115%] object-cover md:object-top rounded-b-xl md:rounded-bl-none md:rounded-r-xl z-0"
+              className="md:absolute top-0 right-0 w-full h-[105%] md:h-[115%] object-cover md:object-top rounded-b-xl md:rounded-bl-none md:rounded-r-none z-0"
             />
           </div>
         </ScrollReveal>
