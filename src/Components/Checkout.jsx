@@ -181,7 +181,7 @@ const Checkout = () => {
             }
         });
 
-        setOfferDiscount(Math.floor(bestDiscount));
+        setOfferDiscount(Math.round(bestDiscount));
         setAppliedOffer(bestOffer);
     }, [offers, cartItems, subtotal, couponApplied]);
 
@@ -198,7 +198,7 @@ const Checkout = () => {
             return toast.error(`Minimum cart ₹${coupon.min_amount}`);
         }
 
-        const discount = Math.floor((subtotal * coupon.discount_percent) / 100);
+        const discount = Math.round((subtotal * coupon.discount_percent) / 100);
 
         setCouponDiscount(discount);
         setCouponApplied(true);
@@ -585,6 +585,7 @@ const Checkout = () => {
                 address_id: selectedAddressId,
                 add_id: selectedAddressId,
                 payment_method: formData.paymentMethod.toLowerCase(),
+                coupon_code: couponApplied && appliedCoupon ? appliedCoupon.code : null,
             };
 
             const res = await axiosInstance.post(`/createorder`, orderData);

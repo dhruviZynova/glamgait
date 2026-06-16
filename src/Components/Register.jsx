@@ -70,10 +70,10 @@ const Register = () => {
         <ScrollReveal animation="fade-up" duration={800} className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
 
           {/* Left Side: Register Form */}
-          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
+          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white shadow-lg rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <h1 className="text-2xl sm:text-3xl font-bold text-[#1A2C2C] mb-2 font-poppins">Create Account</h1>
             <p className="text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8">
-              Already Have An Account? <span onClick={() => navigate("/login", { state: { from } })} className="text-[#1A2C2C] font-semibold underline cursor-pointer">Log In</span>
+              Already Have An Account? <span onClick={() => navigate("/login", { state: { from } })} className="text-[#1A2C2C] font-medium underline cursor-pointer">Log In</span>
             </p>
 
             <form className="space-y-3 sm:space-y-4" onSubmit={handleRegister}>
@@ -147,7 +147,7 @@ const Register = () => {
             </form>
 
             <p className="text-[12px] text-center text-gray-500 mt-6 leading-relaxed px-2">
-              By clicking Register you agree to <span className="underline cursor-pointer">Terms & Conditions</span> and <span className="underline cursor-pointer">Privacy Policy</span>.
+              By clicking Register you agree to <span className="text-xs text-[#1A2C2C] font-medium underline cursor-pointer">Terms & Conditions</span> and <span className="text-xs text-[#1A2C2C] font-medium underline cursor-pointer">Privacy Policy</span>.
             </p>
           </div>
 
@@ -156,7 +156,7 @@ const Register = () => {
             <img
               src={loginbgimg}
               alt="Mosque Illustration"
-              className="md:absolute top-0 right-0 w-full h-[105%] md:h-[115%] object-cover md:object-top rounded-b-xl md:rounded-bl-none md:rounded-r-xl z-0"
+              className="md:absolute top-0 right-0 w-full h-[105%] md:h-[115%] object-cover md:object-top rounded-b-xl md:rounded-bl-none md:rounded-r-none z-0"
             />
           </div>
         </ScrollReveal>

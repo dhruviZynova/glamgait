@@ -284,7 +284,7 @@ const AdminOrders = () => {
                         </span>
                         <div className="flex flex-col">
                           <p className="text-base font-bold text-gray-900">
-                            ₹{order.grandTotal.toFixed(2)}
+                            ₹{Math.round(order.grandTotal)}
                           </p>
                           <span className="text-[10px] font-medium text-gray-500">
                             {order.paymentStatus}
@@ -461,13 +461,13 @@ const AdminOrders = () => {
                               <div className="flex justify-between">
                                 <span className="text-gray-400">SUBTOTAL</span>
                                 <span className="text-gray-800">
-                                  ₹{order.totalPrice.toFixed(2)}
+                                  ₹{Math.round(order.totalPrice)}
                                 </span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-400">SHIPPING</span>
                                 <span className="text-gray-800">
-                                  ₹{order.shippingCharge.toFixed(2)}
+                                  ₹{Math.round(order.shippingCharge)}
                                 </span>
                               </div>
                               <div className="border-t border-gray-200 pt-3 flex justify-between text-base">
@@ -475,7 +475,7 @@ const AdminOrders = () => {
                                   TOTAL
                                 </span>
                                 <span className="text-black font-extrabold">
-                                  ₹{order.grandTotal.toFixed(2)}
+                                  ₹{Math.round(order.grandTotal)}
                                 </span>
                               </div>
                             </div>
