@@ -21,7 +21,7 @@ import bgImage from "../assets/images/bgimage6.png";
 
 // Lightweight placeholder height matching for subcomponents to prevent layout shifts (CLS)
 const SectionPlaceholder = ({ height = "h-40" }) => (
-  <div className={`w-full ${height} bg-white animate-pulse flex items-center justify-center`}>
+  <div className={`w-full ${height} animate-pulse flex items-center justify-center`}>
     <div className="w-8 h-8 border-2 border-[#113d33]/20 border-t-[#113d33] rounded-full animate-spin"></div>
   </div>
 );

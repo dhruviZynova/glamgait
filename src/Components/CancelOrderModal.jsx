@@ -27,7 +27,7 @@ const CancelOrderModal = ({ isOpen, onClose, onConfirm, orderId }) => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-[#b32b2b] p-6 text-white flex justify-between items-center">
+        <div className="bg-[#b32b2b] p-4 md:p-6 text-white flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="bg-white/20 p-2 rounded-full">
               <AlertCircle size={24} />
@@ -46,11 +46,7 @@ const CancelOrderModal = ({ isOpen, onClose, onConfirm, orderId }) => {
         </div>
 
         {/* Content */}
-        <div className="p-8">
-          <p className="text-gray-600 mb-6 font-medium">
-            We're sorry to see you cancel. Please tell us why you're cancelling so we can improve our service.
-          </p>
-
+        <div className="p-4 md:p-8">
           <div className="space-y-4">
             <label className="block text-sm font-bold text-gray-700 mb-2">
               Reason for cancellation
@@ -59,7 +55,7 @@ const CancelOrderModal = ({ isOpen, onClose, onConfirm, orderId }) => {
               {reasons.map((r) => (
                 <label
                   key={r}
-                  className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer ${reason === r
+                  className={`flex items-center gap-3 p-4 rounded-xl border-1 transition-all cursor-pointer ${reason === r
                     ? "border-[#b32b2b] bg-[#b32b2b]/5"
                     : "border-gray-100 hover:border-gray-200"
                     }`}
@@ -84,27 +80,19 @@ const CancelOrderModal = ({ isOpen, onClose, onConfirm, orderId }) => {
                 value={otherReason}
                 onChange={(e) => setOtherReason(e.target.value)}
                 placeholder="Please specify your reason..."
-                className="w-full mt-4 p-4 border-2 border-gray-100 rounded-xl focus:border-[#b32b2b] focus:ring-0 outline-none transition-all text-sm min-h-[100px]"
+                className="w-full p-4 border-1 border-gray-100 rounded-xl outline-none transition-all text-sm min-h-[100px]"
               />
             )}
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-8 bg-gray-50 flex gap-4">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2 px-4 border-2 border-gray-200 rounded-2xl font-bold text-gray-600 hover:bg-gray-100 transition-all cursor-pointer"
-          >
-            Go Back
-          </button>
-          <button
-            onClick={handleConfirm}
-            disabled={!reason || (reason === "Other" && !otherReason)}
-            className="flex-1 py-2 px-4 bg-[#b32b2b] text-white rounded-2xl font-bold hover:bg-[#8e2222] disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
-          >
-            Confirm Cancel
-          </button>
+          <div className="pt-4 flex justify-center">
+            <button
+              onClick={handleConfirm}
+              disabled={!reason || (reason === "Other" && !otherReason)}
+              className="flex-1 py-2 px-4 bg-[#b32b2b] text-white rounded-2xl text-md font-semibold hover:bg-[#8e2222] disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+            >
+              Confirm Cancel
+            </button>
+          </div>
         </div>
       </div>
     </div>

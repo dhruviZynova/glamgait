@@ -641,10 +641,10 @@ const Checkout = () => {
         <>
             <div className="min-h-screen px-2 md:px-10 py-10 font-poppins">
                 <div className="">
-                    <div className="flex flex-col lg:flex-row gap-8">
+                    <div className="flex flex-col lg:flex-row items-start gap-8">
 
                         {/* Left Section - Form */}
-                        <ScrollReveal animation="fade-right" duration={800} className="flex-1 rounded-[10px] overflow-hidden border border-[#DEDFE1]">
+                        <ScrollReveal animation="fade-right" duration={800} className="w-full lg:w-[480px] flex-1 rounded-[10px] overflow-hidden border border-[#DEDFE1]">
                             {/* Steps Header */}
                             <div className="bg-[#E7DCD2]">
                                 <div className="flex justify-between items-center px-4 md:px-10 py-6">
@@ -652,7 +652,7 @@ const Checkout = () => {
                                         <button
                                             key={step.id}
                                             onClick={() => setCurrentStep(step.id)}
-                                            className={`text-sm md:text-lg font-medium font-[Oxygen] transition-colors duration-300 cursor-pointer ${currentStep === step.id ? "text-[#000000]" : "text-[#767676]"
+                                            className={`text-md md:text-lg font-medium font-[Oxygen] transition-colors duration-300 cursor-pointer ${currentStep === step.id ? "text-[#000000]" : "text-[#767676]"
                                                 }`}
                                         >
                                             {step.name}
@@ -690,9 +690,9 @@ const Checkout = () => {
 
                                 <div className=" ">
                                     {/* Table Header */}
-                                    <div className="flex justify-between px-4 md:px-10 py-6 text-md font-medium text-[#3D3D3D] font-[Oxygen] uppercase tracking-wide">
+                                    <div className="flex justify-between px-4 md:px-10 py-6 text-xs md:text-md font-medium text-[#3D3D3D] font-[Oxygen] uppercase tracking-wide">
                                         <span className="w-1/2">PRODUCT</span>
-                                        <span className="w-1/4 text-center">Quantity</span>
+                                        <span className="w-1/4 text-center">QTY</span>
                                         <span className="w-1/4 text-right">SUBTOTAL</span>
                                     </div>
 
@@ -701,7 +701,7 @@ const Checkout = () => {
                                     {/* Product List */}
                                     <div className="space-y-8 px-4 md:px-10 py-6">
                                         {cartItems.map((item, index) => (
-                                            <div key={item.cart_id || index} className="flex items-center text-[#767676] font-[Oxygen] text-lg">
+                                            <div key={item.cart_id || index} className="flex items-center text-[#767676] font-[Oxygen] text-sm md:text-lg">
                                                 <div className="w-1/2 flex flex-col">
                                                     <span className="font-normal">{item.product_name}</span>
                                                 </div>
@@ -828,26 +828,26 @@ const Checkout = () => {
 
             <BrandBanner />
 
-             {/* Success Modal */}
-             {showSuccessModal && (
-                 <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
-                     <div
-                         className="absolute inset-0 bg-[#00000040] backdrop-blur-sm"
-                         onClick={() => {
-                             setShowSuccessModal(false);
-                             navigate(u_id ? "/myorders" : "/");
-                         }}
-                     ></div>
-                     <div className="bg-white rounded-[24px] p-8 md:p-12 w-full max-w-[650px] relative z-10 shadow-xl animate-fadeIn scale-up text-center space-y-8">
-                         <button
-                             onClick={() => {
-                                 setShowSuccessModal(false);
-                                 navigate(u_id ? "/myorders" : "/");
-                             }}
-                             className="absolute top-6 right-6 text-[#767676] hover:text-[#000] transition-colors cursor-pointer"
-                         >
-                             <X size={24} />
-                         </button>
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+                    <div
+                        className="absolute inset-0 bg-[#00000040] backdrop-blur-sm"
+                        onClick={() => {
+                            setShowSuccessModal(false);
+                            navigate(u_id ? "/myorders" : "/");
+                        }}
+                    ></div>
+                    <div className="bg-white rounded-[24px] p-8 md:p-12 w-full max-w-[650px] relative z-10 shadow-xl animate-fadeIn scale-up text-center space-y-8">
+                        <button
+                            onClick={() => {
+                                setShowSuccessModal(false);
+                                navigate(u_id ? "/myorders" : "/");
+                            }}
+                            className="absolute top-6 right-6 text-[#767676] hover:text-[#000] transition-colors cursor-pointer"
+                        >
+                            <X size={24} />
+                        </button>
                         <div className="flex justify-center">
                             <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-[3px] border-[#000] flex items-center justify-center">
                                 <Check size={36} className="text-[#000]" strokeWidth={3} />
