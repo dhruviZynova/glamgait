@@ -13,7 +13,7 @@ const FashionShowcase = () => {
 
         {/* Top Left: Large Couple Niqab Card */}
         <ScrollReveal
-          className="sm:col-span-2 md:row-span-3 md:col-span-2 flex flex-col justify-end min-h-[220px] md:min-h-[350px]"
+          className="sm:col-span-2 md:row-span-3 md:col-span-2 flex flex-col justify-end h-[220px] sm:h-auto sm:min-h-[220px] md:min-h-[350px]"
           animation="fade-right"
           duration={1000}
         >
@@ -28,13 +28,13 @@ const FashionShowcase = () => {
 
         {/* Top Right: Embroidery Burqa Card (Right Side - Full Height) */}
         <ScrollReveal
-          className="sm:col-span-2 md:col-span-1 md:row-span-6 flex flex-col justify-end min-h-[300px] md:min-h-[420px] h-full"
+          className="sm:col-span-2 md:col-span-1 md:row-span-6 flex flex-col justify-end h-[350px] sm:h-auto sm:min-h-[300px] md:min-h-[420px]"
           animation="fade-left"
           duration={1200}
           delay={150}
         >
           <div className="relative w-full h-full rounded-2xl overflow-hidden group shadow-lg flex flex-col justify-end">
-            <img src={abayaTall} alt="Luxurious Embroidered Abaya" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300 absolute inset-0" loading="lazy" />
+            <img src={abayaTall} alt="Luxurious Embroidered Abaya" className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300 absolute inset-0" loading="lazy" />
             <div className="relative z-10 h-full flex flex-col justify-end items-start p-4 md:p-6 bg-gradient-to-t from-black/100 via-black/30 to-transparent">
               <h2 className="text-white text-xl sm:text-2xl md:text-3xl lg:text-5xl font-bold font-playfair mb-2">Embroidered Abaya</h2>
               <p className="text-white text-xs md:text-sm lg:text-base opacity-90 mb-4 max-w-lg font-montserrat">Exquisite embroidery patterns for a sophisticated and elegant modest Islamic look.</p>
@@ -44,7 +44,7 @@ const FashionShowcase = () => {
 
         {/* Bottom Left: Designer Kurtis Card */}
         <ScrollReveal
-          className="sm:col-span-1 md:row-span-3 flex flex-col justify-end min-h-[180px] md:min-h-[350px]"
+          className="sm:col-span-1 md:row-span-3 flex flex-col justify-end h-[220px] sm:h-auto sm:min-h-[180px] md:min-h-[350px]"
           animation="fade-up"
           duration={1000}
           delay={100}
@@ -59,7 +59,7 @@ const FashionShowcase = () => {
 
         {/* Bottom Center: Modest Wear Burqa Card */}
         <ScrollReveal
-          className="sm:col-span-1 md:row-span-3 flex flex-col justify-end min-h-[180px] md:min-h-[350px]"
+          className="sm:col-span-1 md:row-span-3 flex flex-col justify-end h-[220px] sm:h-auto sm:min-h-[180px] md:min-h-[350px]"
           animation="fade-up"
           duration={1000}
           delay={250}

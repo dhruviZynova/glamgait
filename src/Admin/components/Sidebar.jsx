@@ -7,7 +7,7 @@ import {
   Mail,
   X,
   Star,
-  Box,
+  ShoppingBag,
   LayoutDashboard,
   Grid,
   Palette,
@@ -19,6 +19,7 @@ import {
   ListTree,
   Ruler,
   LogOut,
+
 } from "lucide-react";
 // import logo from "../../assets/logo.svg";
 import logo from "../../assets/logo2.png";
@@ -56,7 +57,7 @@ const Sidebar = ({ onClose }) => {
         { name: "Attributes", path: "/admin/product-attributes", icon: ListTree },
         { name: "Colors", path: "/admin/colors", icon: Palette },
         { name: "Sizes", path: "/admin/sizes", icon: Ruler },
-        { name: "Products", path: "/admin/product", icon: Box },
+        { name: "Products", path: "/admin/product", icon: ShoppingBag },
       ]
     },
     {

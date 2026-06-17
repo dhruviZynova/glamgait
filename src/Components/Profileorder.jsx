@@ -219,19 +219,20 @@ const Profileorder = () => {
                           <img
                             src={`${ApiURL}/assets/Products/${item.imageUrl}`}
                             alt={item.productName}
-                            className="w-20 h-20 rounded-xl object-cover shadow-sm border border-gray-100"
+                            className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover shadow-sm transition-transform duration-300 group-hover:scale-105 border border-gray-50 flex-shrink-0"
                           />
                           <div className="flex flex-col justify-center">
                             <h4 className="font-bold text-[#3C4242] text-base mb-1 line-clamp-1">{item.productName}</h4>
                             <div className="space-y-0.5 text-xs text-[#807D7E] font-medium">
                               <p className="flex items-center gap-1.5">
-                                Color : <span className="text-gray-700 font-bold capitalize">{item.color_name || "N/A"}</span>
+                                Color :
                                 {item.color_code && (
                                   <span
-                                    className="w-2.5 h-2.5 rounded-full border border-gray-300"
+                                    className="w-3 h-3 rounded-full border border-gray-300"
                                     style={{ backgroundColor: item.color_code }}
                                   ></span>
                                 )}
+                                {item.color_name && <span className="text-gray-700 font-bold capitalize">{item.color_name}</span>}
                               </p>
                               <p>
                                 Qty : <span className="text-gray-700 font-bold">{item.quantity}</span>

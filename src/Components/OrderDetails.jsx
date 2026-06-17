@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { ChevronLeft, Package, Truck, CheckCircle, MapPin, X, XCircle, RefreshCcw, Receipt, ArrowLeftRight, Star, Calendar, Loader2, Pencil, Trash2 } from "lucide-react";
+import { ChevronLeft, CheckCircle, X, XCircle, RefreshCcw, Receipt, ArrowLeftRight, Star, Calendar, Loader2, Pencil, Trash2 } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { FaBoxOpen } from "react-icons/fa";
 import SideBar from "./SideBar";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
@@ -383,7 +384,7 @@ const OrderDetails = () => {
                 </div>
 
                 {/* Order Summary Card */}
-                <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-4 md:mb-8">
+                <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-sm border border-gray-100 mb-4 md:mb-8">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                       <h3 className="text-xl font-bold text-[#3C4242]">Order #{order.orderId}</h3>
@@ -450,9 +451,9 @@ const OrderDetails = () => {
 
                     {/* Status Highlight Banner */}
                     <div className="mt-4 relative max-w-3xl mx-auto">
-                      <div className="bg-emerald-50/40 rounded-2xl p-6 border border-emerald-100/50 flex flex-row items-start gap-4 relative z-10">
+                      <div className="bg-emerald-50/40 rounded-2xl p-4 md:p-6 border border-emerald-100/50 flex flex-row items-start gap-4 relative z-10">
                         <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#063d32] shrink-0">
-                          <Package size={24} />
+                          <FaBoxOpen size={24} />
                         </div>
                         <div className="flex flex-col gap-4 text-left">
                           <div>
@@ -517,19 +518,19 @@ const OrderDetails = () => {
                               <h3 className="font-bold text-[#3C4242] text-sm sm:text-lg mb-1 sm:mb-2 line-clamp-2">
                                 {item.productName}
                               </h3>
-                              <div className="flex flex-wrap justify-start items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm">
+                              <div className="flex flex-col justify-start items-start gap-x-4 gap-y-1.5 text-xs sm:text-sm">
                                 {item.sku && (
                                   <p className="text-[#807D7E] font-medium">SKU: <span className="text-gray-700 font-bold uppercase">{item.sku}</span></p>
                                 )}
                                 <p className="text-[#807D7E] font-medium flex items-center gap-1.5">
                                   Color:
-                                  <span className="text-gray-700 font-bold capitalize">{item.color_name || "N/A"}</span>
                                   {item.color_code && (
                                     <span
                                       className="w-3 h-3 rounded-full border border-gray-300"
                                       style={{ backgroundColor: item.color_code }}
                                     ></span>
                                   )}
+                                  {item.color_name && <span className="text-gray-700 font-bold capitalize">{item.color_name}</span>}
                                 </p>
                                 <p className="text-[#807D7E] font-medium">Qty: <span className="text-gray-700 font-bold">{item.quantity}</span></p>
                                 <p className="text-[#3C4242] text-base sm:text-xl font-bold sm:ml-auto">
