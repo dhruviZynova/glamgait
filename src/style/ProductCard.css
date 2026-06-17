@@ -38,7 +38,17 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.5s ease, opacity 0.3s ease;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0.8;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .arrival-card:hover .card-image-wrapper img {
@@ -141,6 +151,7 @@
     display: flex;
     gap: 6px;
     margin-top: 6px;
+    pointer-events: auto;
 }
 
 .swatch {
@@ -149,13 +160,19 @@
     border-radius: 50%;
     border: 1px solid rgba(0, 0, 0, 0.08);
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.2s, border 0.2s;
     position: relative;
+    pointer-events: auto;
 }
 
 .swatch:hover {
     transform: scale(1.25);
     z-index: 2;
+}
+
+.swatch.active {
+    border: 1px solid #1A1A1A;
+    transform: scale(1.15);
 }
 
 /* Responsive */

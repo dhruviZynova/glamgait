@@ -40,7 +40,7 @@ const HomeHero = () => {
 
   if (slides.length === 0) {
     return (
-      <section className="w-full h-[30vh] sm:h-[50vh] md:h-[100vh] bg-[#FCD9C6]/20 animate-pulse flex items-center justify-center">
+      <section className="w-full h-[30vh] sm:h-[50vh] md:h-[100vh] animate-pulse flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-[#113d33]/20 border-t-[#113d33] rounded-full animate-spin"></div>
       </section>
     );

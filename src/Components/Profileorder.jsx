@@ -147,14 +147,14 @@ const Profileorder = () => {
             </h2>
 
             {/* Tabs */}
-            <div className="flex bg-gray-50 p-1 rounded-xl mb-8 overflow-x-auto w-full scrollbar-none whitespace-nowrap gap-1">
+            <div className="flex p-1 rounded-xl mb-8 overflow-x-auto w-full scrollbar-none whitespace-nowrap gap-1">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`relative py-2 px-5 sm:px-8 text-sm sm:text-base font-semibold transition-all duration-300 text-center rounded-lg cursor-pointer border-none outline-none focus:outline-none flex-shrink-0 ${activeTab === tab
-                    ? "text-white bg-[#063d32] shadow-sm"
-                    : "text-gray-500 hover:text-[#063d32] hover:bg-white/60"
+                  className={`relative py-2 text-sm sm:text-base font-semibold transition-all duration-300 text-center rounded-lg cursor-pointer border-none outline-none focus:outline-none flex-shrink-0 ${activeTab === tab
+                    ? "px-6 text-white bg-[#063d32] shadow-sm"
+                    : "px-4 text-gray-500 hover:text-[#063d32] hover:bg-white/60"
                     }`}
                 >
                   {tab}

@@ -97,104 +97,103 @@ function App() {
   return (
     <UserProvider>
       <LoaderProvider>
-      <CartProvider>
-        <Toaster
-          position="top-right"
-          containerStyle={{
-            zIndex: 99999,
-          }}
-          toastOptions={{
-            duration: 2000, // Slightly increased for better UX
-            style: {
-              background: "#F3F0ED",
-              color: "#1f2937",
-              padding: "16px 20px",
-              borderRadius: "12px",
-              boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-              fontSize: "14px",
-              fontWeight: 500,
-              maxWidth: "300px",
-            },
-          }}
-        />
-        <BrowserRouter>
-          <GlobalLoader />
-          <SmartScrollManager />
-          <Suspense fallback={<SuspenseLoader />}>
-            <Routes>
-              {/* Client Routes */}
-              <Route
-                element={
-                  <>
-                    <Navbar />
-                    <Outlet />
-                    <Footer />
-                    <WhatsAppIcon />
-                    <BackToTop />
-                  </>
-                }
-              >
-                <Route path="/" element={<HomePage />} />
-                <Route path="/product/:slug" element={<SingleProductPage />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/collections/:cate_name" element={<AllProductPage />} />
-                <Route path="/collections/:cate_name/:filterValue" element={<AllProductPage />} />
-                <Route path="/collections/:filterValue" element={<AllProductPage />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password/:token" element={<ResetPassword />} />
-                <Route path="/verify-otp" element={<VerifyOTP />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/wishlist" element={<Wishlist />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/blog/:id" element={<SingleBlog />} />
-                {/* Protected User Routes */}
-                <Route element={<ProtectedRoute />}>
-                  <Route path="/myorders" element={<Profileorder />} />
-                  <Route path="/orderdetails/:orderId" element={<OrderDetails />} />
-                  <Route path="/myinfo" element={<PersonalInfo />} />
-                  <Route path="/selectaddress" element={<SelectAddressPage />} />
+        <CartProvider>
+          <Toaster
+            position="top-right"
+            containerStyle={{
+              zIndex: 99999,
+            }}
+            toastOptions={{
+              duration: 2000, // Slightly increased for better UX
+              style: {
+                color: "#1f2937",
+                padding: "16px 20px",
+                borderRadius: "12px",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+                fontSize: "14px",
+                fontWeight: 500,
+                maxWidth: "300px",
+              },
+            }}
+          />
+          <BrowserRouter>
+            <GlobalLoader />
+            <SmartScrollManager />
+            <Suspense fallback={<SuspenseLoader />}>
+              <Routes>
+                {/* Client Routes */}
+                <Route
+                  element={
+                    <>
+                      <Navbar />
+                      <Outlet />
+                      <Footer />
+                      <WhatsAppIcon />
+                      <BackToTop />
+                    </>
+                  }
+                >
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/product/:slug" element={<SingleProductPage />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/collections/:cate_name" element={<AllProductPage />} />
+                  <Route path="/collections/:cate_name/:filterValue" element={<AllProductPage />} />
+                  <Route path="/collections/:filterValue" element={<AllProductPage />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password/:token" element={<ResetPassword />} />
+                  <Route path="/verify-otp" element={<VerifyOTP />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/wishlist" element={<Wishlist />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/blog/:id" element={<SingleBlog />} />
+                  {/* Protected User Routes */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/myorders" element={<Profileorder />} />
+                    <Route path="/orderdetails/:orderId" element={<OrderDetails />} />
+                    <Route path="/myinfo" element={<PersonalInfo />} />
+                    <Route path="/selectaddress" element={<SelectAddressPage />} />
+                  </Route>
+                  <Route path="/faq" element={<FAQPage />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/shipping-policy" element={<ShippingPolicy />} />
+                  <Route path="/refund-policy" element={<RefundPolicy />} />
+                  <Route path="/terms-and-conditions" element={<TermsofService />} />
+                  <Route path="/paymentoptions" element={<PaymentOptions />} />
+                  <Route path="/search" element={<SearchResults />} />
+                  <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+                  <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                  <Route path="*" element={<NotFound />} />
                 </Route>
-                <Route path="/faq" element={<FAQPage />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="/shipping-policy" element={<ShippingPolicy />} />
-                <Route path="/refund-policy" element={<RefundPolicy />} />
-                <Route path="/terms-and-conditions" element={<TermsofService />} />
-                <Route path="/paymentoptions" element={<PaymentOptions />} />
-                <Route path="/search" element={<SearchResults />} />
-                <Route path="/cancellation-policy" element={<CancellationPolicy />} />
-                <Route path="/order-confirmation" element={<OrderConfirmation />} />
-                <Route path="*" element={<NotFound />} />
-              </Route>
 
-              <Route path="/admin/login" element={<AdminLogin />} />
-              {/* Admin Routes */}
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="announcements" element={<Announcement />} />
-                <Route path="categories" element={<Categories />} />
-                <Route path="subcategories" element={<SubCategories />} />
-                <Route path="colors" element={<Colors />} />
-                <Route path="product-attributes" element={<ProductAttributes />} />
-                <Route path="sizes" element={<Sizes />} />
-                <Route path="product" element={<Product />} />
-                <Route path="product/:p_id" element={<ProductDetail />} />
-                <Route path="contact" element={<ContactUs />} />
-                <Route path="users" element={<Users />} />
-                <Route path="orders" element={<Orders />} />
-                <Route path="instagram" element={<InstagramSection />} />
-                <Route path="reviews" element={<Reviews />} />
-                <Route path="sliders" element={<Sliders />} />
-                <Route path="offer-coupon" element={<PromotionsManagement />} />
-              </Route>
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </CartProvider>
-    </LoaderProvider>
+                <Route path="/admin/login" element={<AdminLogin />} />
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="announcements" element={<Announcement />} />
+                  <Route path="categories" element={<Categories />} />
+                  <Route path="subcategories" element={<SubCategories />} />
+                  <Route path="colors" element={<Colors />} />
+                  <Route path="product-attributes" element={<ProductAttributes />} />
+                  <Route path="sizes" element={<Sizes />} />
+                  <Route path="product" element={<Product />} />
+                  <Route path="product/:p_id" element={<ProductDetail />} />
+                  <Route path="contact" element={<ContactUs />} />
+                  <Route path="users" element={<Users />} />
+                  <Route path="orders" element={<Orders />} />
+                  <Route path="instagram" element={<InstagramSection />} />
+                  <Route path="reviews" element={<Reviews />} />
+                  <Route path="sliders" element={<Sliders />} />
+                  <Route path="offer-coupon" element={<PromotionsManagement />} />
+                </Route>
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </CartProvider>
+      </LoaderProvider>
     </UserProvider>
   );
 }

@@ -1,15 +1,15 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import { X, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { Loader2, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
-import { userInfo, ApiURL } from "../Variable";
-import axiosInstance from "../Axios/axios";
-import toast from "react-hot-toast";
+import { getFullImageUrl } from "../Variable";
 import wishlistempty from "../assets/wishlistempty.png";
 import WishlistSkeleton from "./skeletons/WishlistSkeleton";
 import ScrollReveal from "./Ui/ScrollReveal";
 
 import { useWishlist, useRemoveFromWishlist } from "../hooks/useWishlist";
 import { useAddToCart } from "../hooks/useCart";
+
+import "../style/ProductCard.css";
 
 const Wishlist = () => {
   const { data: wishlistItems = [], isLoading: loading } = useWishlist();
@@ -90,85 +90,132 @@ const Wishlist = () => {
     );
   };
 
-
   return (
-    <div className="min-h-screen px-2 md:px-10 py-10 font-poppins">
+    <div className="min-h-screen px-4 md:px-10 py-12 font-poppins">
       <div className="max-w-7xl mx-auto">
         {loading ? (
-          <WishlistSkeleton count={3} />
+          <WishlistSkeleton count={4} />
         ) : wishlistItems.length > 0 ? (
           <ScrollReveal animation="fade-up" duration={800}>
-            <h2 className="text-2xl font-semibold mb-6">My Wishlist</h2>
-            <div className="flex flex-col lg:flex-row gap-6">
-              <div className="flex-1">
-                {wishlistItems.map((item) => (
+            <div className="flex items-baseline justify-between mb-8 border-b pb-4 border-gray-100">
+              <h2 className="text-3xl font-bold text-gray-900 tracking-tight">My Wishlist</h2>
+              <span className="text-sm font-medium text-gray-500">
+                {wishlistItems.length} {wishlistItems.length === 1 ? "item" : "items"}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
+              {wishlistItems.map((item) => {
+                const isOutOfStock = item.stock_qty === 0;
+                const discountPercentage = item.original_price && item.original_price > item.price
+                  ? Math.round(((item.original_price - item.price) / item.original_price) * 100)
+                  : 0;
+
+                return (
                   <div
                     key={item.w_id}
-                    className="bg-white rounded-2xl flex flex-col md:flex-row gap-4 p-4 mb-4 shadow-sm relative"
+                    className="arrival-card group flex flex-col justify-between"
                   >
-                    <button
-                      onClick={() => handleRemove(item.w_id)}
-                      disabled={removingIds.has(item.w_id)}
-                      className="absolute top-3 right-3 text-gray-600 hover:text-black cursor-pointer disabled:opacity-50"
-                    >
-                      {removingIds.has(item.w_id)
-                        ? <Loader2 size={16} className="animate-spin" />
-                        : <X size={18} />}
-                    </button>
+                    {/* Image and Header */}
+                    <div>
+                      <div className="card-image-wrapper relative group overflow-hidden">
+                        {discountPercentage > 0 && (
+                          <span className="off-badge">
+                            {discountPercentage}% OFF
+                          </span>
+                        )}
 
-                    <div className="flex items-center justify-center">
-                      <img
-                        src={`${ApiURL}/assets/Products/${item.image_url}`}
-                        alt={item.product_name}
-                        className="w-40 h-60 md:w-28 md:h-40 object-cover rounded-lg"
-                      />
-                    </div>
+                        {/* Wishlist Remove Heart Button */}
+                        <button
+                          onClick={() => handleRemove(item.w_id)}
+                          disabled={removingIds.has(item.w_id)}
+                          className="wishlist-heart-btn"
+                          aria-label="Remove from wishlist"
+                        >
+                          {removingIds.has(item.w_id) ? (
+                            <div className="bg-white/80 backdrop-blur-md rounded-full p-1 shadow-sm">
+                              <Loader2 size={16} className="animate-spin text-red-500" />
+                            </div>
+                          ) : (
+                            <Heart
+                              size={20}
+                              className="wishlist-heart wishlist-active"
+                            />
+                          )}
+                        </button>
 
-                    <div className="flex flex-col flex-1 gap-2 justify-center">
-                      <div>
-                        <h3 className="text-xl font-medium">
-                          {item.product_name}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          ₹{item.price.toFixed(2)}{" "}
-                          {item.original_price > item.price && (
-                            <span className="line-through text-gray-400 text-sm">
-                              ₹{item.original_price.toFixed(2)}
+                        <img
+                          src={getFullImageUrl(item.image_url, "Products")}
+                          alt={item.product_name}
+                          loading="lazy"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+
+                        {/* Stock status overlay */}
+                        {item.stock_qty <= 5 && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-[2px]">
+                            {item.stock_qty <= 0 ? (
+                              <span className="px-4 py-2 bg-red-600 text-white text-[11px] font-bold rounded-full uppercase tracking-widest shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                                Out of Stock
+                              </span>
+                            ) : (
+                              <span className="px-4 py-2 bg-orange-500 text-white text-[11px] font-bold rounded-full uppercase tracking-widest shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                                Low Stock ({item.stock_qty})
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Card Info */}
+                      <div className="card-info pt-3">
+                        <div className="info-header">
+                          <h3 className="product-name">{item.product_name}</h3>
+                          <div className="product-price">
+                            {item.original_price > item.price && (
+                              <span className="original-price">₹{item.original_price}</span>
+                            )}
+                            <span>₹{item.price}</span>
+                          </div>
+                        </div>
+
+                        {/* Color swatch and Size tag matching ProductCard aesthetics */}
+                        <div className="flex items-center gap-2 mt-2">
+                          <div
+                            className="swatch active"
+                            title={item.color_name}
+                            style={{
+                              backgroundColor: item.color_code || "#ccc",
+                            }}
+                          />
+                          {item.size_name && (
+                            <span className="text-[10px] font-bold text-gray-600 uppercase bg-gray-100/80 border border-gray-200 px-2 py-0.5 rounded">
+                              {item.size_name}
                             </span>
                           )}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Color: {item.color_name}
-                          {item.size_name && ` • Size: ${item.size_name}`}
-                        </p>
-                        {item.stock_qty === 0 ? (
-                          <p className="text-red-600 text-sm font-medium mt-1">
-                            Out of Stock
-                          </p>
-                        ) : item.stock_qty <= 5 ? (
-                          <p className="text-orange-600 text-sm font-medium mt-1">
-                            Only {item.stock_qty} left
-                          </p>
-                        ) : null}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center md:ml-4">
+                    {/* Move to Cart action */}
+                    <div className="mt-4 px-1 pb-1">
                       <button
                         onClick={() => handleMoveToCart(item)}
-                        disabled={item.stock_qty === 0 || movingIds.has(item.w_id)}
-                        className={`border px-3 py-2 text-sm rounded-md transition whitespace-nowrap cursor-pointer flex items-center gap-2 ${item.stock_qty > 0 && !movingIds.has(item.w_id)
-                          ? "hover:bg-[#02382A] hover:text-white"
-                          : "opacity-60 cursor-not-allowed"
+                        disabled={isOutOfStock || movingIds.has(item.w_id)}
+                        className={`w-full py-2.5 px-4 text-xs font-semibold rounded-lg tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 border ${isOutOfStock
+                          ? "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed"
+                          : movingIds.has(item.w_id)
+                            ? "bg-[#02382A]/5 border-[#02382A]/10 text-[#02382A] cursor-wait"
+                            : "bg-transparent border-[#02382A] text-[#02382A] hover:bg-[#02382A] hover:text-white hover:shadow-sm cursor-pointer"
                           }`}
                       >
-                        {movingIds.has(item.w_id) && <Loader2 size={14} className="animate-spin" />}
-                        {item.stock_qty > 0 ? "MOVE TO CART" : "UNAVAILABLE"}
+                        {movingIds.has(item.w_id) && <Loader2 size={13} className="animate-spin" />}
+                        {isOutOfStock ? "Unavailable" : "Move To Cart"}
                       </button>
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </ScrollReveal>
         ) : (

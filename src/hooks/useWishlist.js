@@ -1,13 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getWishlist, addToWishlist, removeFromWishlist } from "../api/wishlist";
 import { useUser } from "../Context/UserContext";
-import { getGuestId } from "../utils/guest";
 import toast from "react-hot-toast";
 
 export function useWishlist() {
   const { user } = useUser();
   const isLoggedIn = !!user?.u_id;
-  const guestId = getGuestId();
 
   return useQuery({
     queryKey: ["wishlist", user?.u_id || "guest"],
@@ -74,6 +72,7 @@ export function useToggleWishlist() {
           original_price: product.original_price,
           image_url: selectedColor.productimages?.[0]?.image_url || "",
           color_name: selectedColor.color?.color_name || "",
+          color_code: selectedColor.color?.color_code || selectedColor.color_code || "",
           size_name: selectedSize?.size?.size_name || null,
           stock_qty: availableStock,
         };

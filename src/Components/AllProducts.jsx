@@ -284,6 +284,11 @@ const Allproducts = () => {
     }
   }, [cateId]);
 
+  // Reset price range when category/collection changes
+  useEffect(() => {
+    setPriceRange([0, 100000]);
+  }, [cate_name]);
+
   const fetchProducts = useCallback(async () => {
     setProductsLoading(true);
     try {
