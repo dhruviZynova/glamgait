@@ -1207,11 +1207,11 @@ const Allproducts = () => {
 
               {/* Pagination Controls */}
               {totalProducts > 0 && (
-                <div className="flex flex-col items-center mt-12 mb-16">
+                <div className="flex flex-col items-center mt-10 md:my-12">
                   <p className="text-[#767676] mb-4 text-[14px]">
                     Showing 1&ndash;{products.length} of {totalProducts} item(s)
                   </p>
-                  <div className="w-64 h-[2px] bg-[#E5E7EB] mb-8 relative">
+                  <div className="w-64 h-[2px] bg-[#E5E7EB] relative">
                     <div
                       className="absolute top-0 left-0 h-full bg-[#1C2F2F] transition-all duration-500"
                       style={{ width: `${Math.min((products.length / totalProducts) * 100, 100)}%` }}

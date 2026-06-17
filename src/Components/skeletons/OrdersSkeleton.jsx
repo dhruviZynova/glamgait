@@ -40,7 +40,7 @@ const OrderRowSkeleton = () => (
 
 export default function OrdersSkeleton({ count = 3 }) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       {Array.from({ length: count }).map((_, i) => (
         <OrderRowSkeleton key={i} />
       ))}

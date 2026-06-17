@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { User, Package, Menu, X, LogOut, AlertTriangle } from "lucide-react";
+import { FaBoxOpen } from "react-icons/fa";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "../Context/UserContext";
 
@@ -86,7 +87,7 @@ const SideBar = ({ onMenuChange = () => { } }) => {
                 : "text-[#7A8B99] hover:text-[#1E332C] hover:bg-gray-50/50 font-medium"
                 }`}
             >
-              <Package
+              <FaBoxOpen
                 size={20}
                 strokeWidth={activeMenu === "orders" ? 2.5 : 2}
                 className={activeMenu === "orders" ? "text-white" : "text-[#7A8B99] group-hover:text-[#1E332C] transition-colors"}

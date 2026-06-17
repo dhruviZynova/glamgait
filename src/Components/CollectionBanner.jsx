@@ -21,8 +21,8 @@ const cards = [
     alt: 'Modest Luxury',
     label: 'Abaya Collection',
     rotateY: '8deg',
-    scale: 0.95,
-    translateY: '12px',
+    scale: 0.94,
+    translateY: '10px',
     translateX: '10px', // Pull towards center to close middle gap
     z: 2
   },
@@ -31,8 +31,8 @@ const cards = [
     alt: 'Traditional Charm',
     label: 'Lehenga Cholis',
     rotateY: '-8deg',
-    scale: 0.95,
-    translateY: '12px',
+    scale: 0.94,
+    translateY: '10px',
     translateX: '-10px', // Pull towards center to close middle gap
     z: 3
   },
