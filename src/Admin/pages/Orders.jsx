@@ -31,15 +31,15 @@ const AdminOrders = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [openOrderId, setOpenOrderId] = useState(null);
   const [logistics, setLogistics] = useState([]);
   const [selectedLogistic, setSelectedLogistic] = useState(null);
   const [loadingLogistics, setLoadingLogistics] = useState(false);
   const [trackingDetails, setTrackingDetails] = useState([]);
-  const limit = 20;
+  const limit = 10000;
 
   const getStatusInfo = (status) => {
     const s = parseInt(status);
@@ -52,26 +52,26 @@ const AdminOrders = () => {
   // Consolidate fetching logic
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchOrders(currentPage, searchTerm);
+      fetchOrders(searchTerm);
     }, searchTerm ? 600 : 0);
     return () => clearTimeout(timer);
-  }, [currentPage, searchTerm]);
-
-  // Reset to page 1 when search term changes
-  useEffect(() => {
-    setCurrentPage(1);
   }, [searchTerm]);
 
-  const fetchOrders = async (page = 1, search = "") => {
+  // Reset to page 1 when search term or status filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedStatus]);
+
+  const fetchOrders = async (search = "") => {
     try {
-      const response = await adminAxios.post(`${ApiURL}/getallorders`, {
-        page,
+      const payload = {
+        page: 1,
         limit,
         search,
-      });
+      };
+      const response = await adminAxios.post(`${ApiURL}/getallorders`, payload);
       if (response?.data?.status === 1) {
         setOrders(response.data.data.orders || []);
-        setTotalPages(response.data.data.totalPages || 1);
       } else {
         setOrders([]);
       }
@@ -130,7 +130,7 @@ const AdminOrders = () => {
       toast.dismiss("ship");
       if (res.data.status === 1) {
         toast.success("Order shipped!");
-        fetchOrders(currentPage, searchTerm);
+        fetchOrders(searchTerm);
       } else {
         toast.error(res.data.message || "Shipping failed");
       }
@@ -166,7 +166,7 @@ const AdminOrders = () => {
       toast.dismiss("cancelOrder");
       if (res.data.status === 1) {
         toast.success("Order cancelled");
-        fetchOrders(currentPage, searchTerm);
+        fetchOrders(searchTerm);
       }
     } catch {
       toast.dismiss("cancelOrder");
@@ -183,7 +183,7 @@ const AdminOrders = () => {
       toast.dismiss("updateStatus");
       if (res.data.status === 1) {
         toast.success("Order status updated");
-        fetchOrders(currentPage, searchTerm);
+        fetchOrders(searchTerm);
       } else {
         toast.error(res.data.description || "Failed to update status");
       }
@@ -192,6 +192,18 @@ const AdminOrders = () => {
       toast.error(error.message || "Error updating status");
     }
   };
+
+  const filteredOrders = orders
+    ? (selectedStatus === "all"
+      ? orders
+      : orders.filter((order) => parseInt(order.status) === parseInt(selectedStatus)))
+    : null;
+
+  const itemsPerPage = 20;
+  const displayOrders = filteredOrders
+    ? filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+    : null;
+  const totalPages = filteredOrders ? Math.ceil(filteredOrders.length / itemsPerPage) : 1;
 
   return (
     <div className="pb-8 min-h-screen bg-gray-50" ref={containerRef}>
@@ -219,9 +231,28 @@ const AdminOrders = () => {
           </div>
         </div>
 
+        {/* Status Filter Tabs */}
+        <div className="mb-6 flex gap-2 overflow-x-auto py-2 pl-2 scrollbar-none">
+          {[{ key: "all", label: "All Orders" }, ...Object.entries(STATUS_LABELS).map(([key, label]) => ({ key, label }))].map((tab) => {
+            const isActive = selectedStatus === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setSelectedStatus(tab.key)}
+                className={`px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-250 cursor-pointer ${isActive
+                  ? "bg-black text-white"
+                  : "bg-white text-gray-600 hover:text-black border border-gray-100 hover:border-gray-200"
+                  }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Orders Grid */}
         <div className="grid gap-6">
-          {orders === null ? (
+          {displayOrders === null ? (
             <div className="glamloader-overlay" aria-label="Loading" role="status">
               <div className="glamloader-logo">
                 KUNDRAT
@@ -236,7 +267,7 @@ const AdminOrders = () => {
                 <div className="glamloader-ring-dot" />
               </div>
             </div>
-          ) : orders.length === 0 ? (
+          ) : displayOrders.length === 0 ? (
             <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-gray-200">
               <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FaBoxOpen className="text-gray-300 text-3xl" />
@@ -245,7 +276,7 @@ const AdminOrders = () => {
               <p className="text-gray-500 mt-1 text-sm">Try adjusting your search filters</p>
             </div>
           ) : (
-            orders.map((order) => {
+            displayOrders.map((order) => {
               const status = getStatusInfo(order.status);
               return (
                 <div
@@ -464,6 +495,14 @@ const AdminOrders = () => {
                                   ₹{Math.round(order.totalPrice)}
                                 </span>
                               </div>
+                              {order.discountAmount > 0 && (
+                                <div className="flex justify-between text-emerald-600">
+                                  <span className="text-emerald-600">DISCOUNT</span>
+                                  <span className="text-emerald-600">
+                                    -₹{Math.round(order.discountAmount)}
+                                  </span>
+                                </div>
+                              )}
                               <div className="flex justify-between">
                                 <span className="text-gray-400">SHIPPING</span>
                                 <span className="text-gray-800">

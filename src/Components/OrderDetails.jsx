@@ -306,7 +306,7 @@ const OrderDetails = () => {
             ) : (
               <ScrollReveal animation="fade-left" duration={800}>
                 {/* Header/Breadcrumb */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 md:mb-6">
                   <div className="flex items-center gap-2 text-[#3C4242]">
                     <ChevronLeft
                       className="cursor-pointer hover:text-[#063d32] transition-colors"
@@ -383,7 +383,7 @@ const OrderDetails = () => {
                 </div>
 
                 {/* Order Summary Card */}
-                <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-8">
+                <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-4 md:mb-8">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                       <h3 className="text-xl font-bold text-[#3C4242]">Order #{order.orderId}</h3>
@@ -408,7 +408,7 @@ const OrderDetails = () => {
 
                 {/* Stepper Tracking */}
                 {order.status !== ORDER_STATUS.CANCELLED && (
-                  <div className="mb-8 bg-white rounded-2xl p-4 sm:p-8 border border-gray-100 shadow-sm">
+                  <div className="mb-4 md:mb-8 bg-white rounded-2xl p-4 sm:p-8 border border-gray-100 shadow-sm">
                     <div className="relative max-w-3xl mx-auto py-4">
                       {/* Progress Bar Background */}
                       <div className="absolute top-[26px] left-[32px] right-[32px] sm:left-[48px] sm:right-[48px] h-1 bg-gray-100 rounded-full -translate-y-1/2"></div>
@@ -449,7 +449,7 @@ const OrderDetails = () => {
                     </div>
 
                     {/* Status Highlight Banner */}
-                    <div className="mt-8 relative max-w-3xl mx-auto">
+                    <div className="mt-4 relative max-w-3xl mx-auto">
                       <div className="bg-emerald-50/40 rounded-2xl p-6 border border-emerald-100/50 flex flex-row items-start gap-4 relative z-10">
                         <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#063d32] shrink-0">
                           <Package size={24} />
