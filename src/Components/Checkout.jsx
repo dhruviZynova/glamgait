@@ -586,6 +586,7 @@ const Checkout = () => {
                 add_id: selectedAddressId,
                 payment_method: formData.paymentMethod.toLowerCase(),
                 coupon_code: couponApplied && appliedCoupon ? appliedCoupon.code : null,
+                offer_id: appliedOffer ? appliedOffer.offer_id : null,
             };
 
             const res = await axiosInstance.post(`/createorder`, orderData);
@@ -827,20 +828,26 @@ const Checkout = () => {
 
             <BrandBanner />
 
-            {/* Success Modal */}
-            {showSuccessModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
-                    <div
-                        className="absolute inset-0 bg-[#00000040] backdrop-blur-sm"
-                        onClick={() => setShowSuccessModal(false)}
-                    ></div>
-                    <div className="bg-white rounded-[24px] p-8 md:p-12 w-full max-w-[650px] relative z-10 shadow-xl animate-fadeIn scale-up text-center space-y-8">
-                        <button
-                            onClick={() => setShowSuccessModal(false)}
-                            className="absolute top-6 right-6 text-[#767676] hover:text-[#000] transition-colors cursor-pointer"
-                        >
-                            <X size={24} />
-                        </button>
+             {/* Success Modal */}
+             {showSuccessModal && (
+                 <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+                     <div
+                         className="absolute inset-0 bg-[#00000040] backdrop-blur-sm"
+                         onClick={() => {
+                             setShowSuccessModal(false);
+                             navigate(u_id ? "/myorders" : "/");
+                         }}
+                     ></div>
+                     <div className="bg-white rounded-[24px] p-8 md:p-12 w-full max-w-[650px] relative z-10 shadow-xl animate-fadeIn scale-up text-center space-y-8">
+                         <button
+                             onClick={() => {
+                                 setShowSuccessModal(false);
+                                 navigate(u_id ? "/myorders" : "/");
+                             }}
+                             className="absolute top-6 right-6 text-[#767676] hover:text-[#000] transition-colors cursor-pointer"
+                         >
+                             <X size={24} />
+                         </button>
                         <div className="flex justify-center">
                             <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-[3px] border-[#000] flex items-center justify-center">
                                 <Check size={36} className="text-[#000]" strokeWidth={3} />

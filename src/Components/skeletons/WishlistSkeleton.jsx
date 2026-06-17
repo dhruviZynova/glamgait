@@ -1,37 +1,42 @@
 /**
- * WishlistSkeleton — shimmer placeholder matching the wishlist card layout.
+ * WishlistSkeleton — shimmer placeholder matching the wishlist grid card layout.
  */
 const WishlistItemSkeleton = () => (
-  <div className="bg-white rounded-2xl flex flex-col md:flex-row gap-4 p-4 mb-4 shadow-sm relative">
+  <div className="arrival-card bg-white rounded-2xl overflow-hidden flex flex-col justify-between shadow-sm border border-gray-100 p-3 relative">
     {/* Remove button placeholder */}
-    <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-gray-200 shimmer" />
+    <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gray-200 shimmer z-10" />
 
-    {/* Image */}
-    <div className="flex items-center justify-center flex-shrink-0">
-      <div className="w-40 h-60 md:w-28 md:h-40 rounded-lg bg-gray-200 shimmer" />
-    </div>
+    {/* Image wrapper */}
+    <div className="card-image-wrapper bg-gray-200 shimmer mb-3 rounded-lg" style={{ aspectRatio: "1/1.2" }} />
 
     {/* Info */}
-    <div className="flex flex-col flex-1 gap-3 justify-center">
-      <div className="h-5 w-3/4 rounded bg-gray-200 shimmer" />
-      <div className="h-4 w-1/2 rounded bg-gray-200 shimmer" />
-      <div className="h-4 w-1/3 rounded bg-gray-200 shimmer" />
-    </div>
-
-    {/* Action button */}
-    <div className="flex items-center md:ml-4">
-      <div className="h-9 w-28 rounded-md bg-gray-200 shimmer" />
+    <div className="card-info flex-1 flex flex-col justify-between gap-3">
+      <div className="space-y-2">
+        <div className="h-4 w-3/4 rounded bg-gray-200 shimmer" />
+        <div className="h-4 w-1/3 rounded bg-gray-200 shimmer" />
+      </div>
+      <div className="flex items-center justify-between mt-2">
+        <div className="h-4 w-4 rounded-full bg-gray-200 shimmer" />
+        <div className="h-4 w-12 rounded bg-gray-200 shimmer" />
+      </div>
+      {/* Action button */}
+      <div className="mt-3.5">
+        <div className="h-8 w-full rounded-lg bg-gray-200 shimmer" />
+      </div>
     </div>
   </div>
 );
 
-export default function WishlistSkeleton({ count = 3 }) {
+export default function WishlistSkeleton({ count = 4 }) {
   return (
     <div>
-      <div className="h-8 w-40 rounded bg-gray-200 shimmer mb-6" />
-      {Array.from({ length: count }).map((_, i) => (
-        <WishlistItemSkeleton key={i} />
-      ))}
+      <div className="h-8 w-44 rounded bg-gray-200 shimmer mb-8" />
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {Array.from({ length: count }).map((_, i) => (
+          <WishlistItemSkeleton key={i} />
+        ))}
+      </div>
     </div>
   );
 }
+

@@ -7,7 +7,6 @@ import { ApiURL } from "../Variable";
 import toast from "react-hot-toast";
 import BrandBanner from "./BrandBanner";
 import ProductCard from "./ProductCard";
-import { getGuestId } from "../utils/guest";
 import CartSkeleton from "./skeletons/CartSkeleton";
 import { useCart, useUpdateCartQty, useRemoveFromCart } from "../hooks/useCart";
 import { useUser } from "../Context/UserContext";
@@ -40,12 +39,17 @@ const Cart = () => {
   }, []);
 
   const fetchWishlist = useCallback(async () => {
-    const identifier = user?.u_id || getGuestId();
+    if (!user?.u_id) {
+      const local = JSON.parse(localStorage.getItem("localWishlist") || "[]");
+      const map = {};
+      local.forEach((item, i) => {
+        map[`${item.p_id}-${item.pcolor_id}`] = { wished: true, w_id: `local-${i}` };
+      });
+      setWishlistMap(map);
+      return;
+    }
     try {
-      const query = user?.u_id
-        ? `u_id=${identifier}`
-        : `guest_id=${identifier}`;
-      const res = await axiosInstance.get(`/getwishlist?${query}`);
+      const res = await axiosInstance.get(`/getwishlist?u_id=${user.u_id}`);
       if (res.data.status === 1) {
         const items = res.data.data || [];
         const map = {};
@@ -154,7 +158,7 @@ const Cart = () => {
 
   if (cartItems.length === 0) {
     return (
-      <div className="bg-[#FAF7F2] h-screen flex items-center justify-center p-4">
+      <div className="h-screen flex items-center justify-center p-4">
         <div className="text-center">
           <div className="w-40 h-24 md:w-[300px] md:h-[200px] mx-auto">
             <img

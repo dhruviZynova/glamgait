@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ApiURL, createSlug } from "../Variable";
@@ -16,15 +16,23 @@ const ProductCard = ({
 }) => {
   const navigate = useNavigate();
   const { user } = useUser();
+  const [selectedColorId, setSelectedColorId] = useState(null);
 
   // Support both API shapes:
-  // /productbycategory → product.colors[]
-  // /getallproducts   → product.productcolors[]
+  // /productbycategory → product.colors[] (new format with color_id)
+  // /getallproducts   → product.productcolors[] (old format with pcolor_id)
   const colorList = product?.colors || product?.productcolors || [];
   const firstColor = colorList[0];
+  
+  // Get the currently selected color or default to first color
+  const currentColor = selectedColorId
+    ? colorList.find(c => c.color_id === selectedColorId || c.pcolor_id === selectedColorId)
+    : firstColor;
 
-  const wishlistKey = firstColor?.pcolor_id
-    ? `${product.p_id}-${firstColor.pcolor_id}`
+  // Support both ID formats: color_id (new API) or pcolor_id (old API)
+  const currentColorId = currentColor?.color_id || currentColor?.pcolor_id;
+  const wishlistKey = currentColorId
+    ? `${product.p_id}-${currentColorId}`
     : null;
 
   const isWished =
@@ -44,7 +52,7 @@ const ProductCard = ({
   const toggleWishlist = async (e) => {
     e.stopPropagation();
 
-    if (!firstColor?.pcolor_id) {
+    if (!currentColorId) {
       toast.error("Please select a color");
       return;
     }
@@ -57,20 +65,21 @@ const ProductCard = ({
       const payload = {
         p_id: product.p_id,
         sc_id: product.sc_id,
-        pcolor_id: firstColor.pcolor_id,
+        pcolor_id: currentColorId,
         psize_id: psize_id,
         product_name: product.name,
         price: product.price,
         original_price: product.original_price,
         // image_url can be in images[] (new API) or productimages[] (old API)
-        image_url: firstColor?.images?.[0]?.image_url
-          || firstColor?.productimages?.[0]?.image_url || '',
-        color_name: firstColor?.color_name || firstColor?.color?.color_name,
+        image_url: currentColor?.images?.[0]?.image_url
+          || currentColor?.productimages?.[0]?.image_url || '',
+        color_name: currentColor?.color_name || currentColor?.color?.color_name,
+        color_code: currentColor?.color_code || currentColor?.color?.color_code || "",
         size_name: firstSize?.size?.size_name || null,
         stock_qty: firstSize?.remaining_qty || 10
       };
 
-      const existingIndex = localWishlist.findIndex(item => item.p_id === product.p_id && item.pcolor_id === firstColor.pcolor_id);
+      const existingIndex = localWishlist.findIndex(item => item.p_id === product.p_id && item.pcolor_id === currentColorId);
 
       if (isWished || existingIndex !== -1) {
         if (existingIndex !== -1) localWishlist.splice(existingIndex, 1);
@@ -108,7 +117,7 @@ const ProductCard = ({
           guest_id: null,
           p_id: product.p_id,
           sc_id: product.sc_id,
-          pcolor_id: firstColor.pcolor_id,
+          pcolor_id: currentColorId,
           psize_id: psize_id,
         };
 
@@ -170,9 +179,10 @@ const ProductCard = ({
             />
           </button>
           <img
+            key={currentColorId || 'default'}
             src={
-              firstColor?.images?.[0]?.image_url
-              || firstColor?.productimages?.[0]?.image_url
+              currentColor?.images?.[0]?.image_url
+              || currentColor?.productimages?.[0]?.image_url
               || ''
             }
             alt={product.name}
@@ -206,17 +216,24 @@ const ProductCard = ({
             </div>
           </div>
           <div className="color-swatches">
-            {colorList.slice(0, 4).map((color, idx) => (
-              <div
-                key={color.pcolor_id || idx}
-                className="swatch"
-                title={color.color_name || color.color?.color_name || ""}
-                style={{
-                  backgroundColor:
-                    color.color_code || color.color?.color_code || "#ccc",
-                }}
-              />
-            ))}
+            {colorList.slice(0, 4).map((color, idx) => {
+              const colorId = color.color_id || color.pcolor_id;
+              return (
+                <div
+                  key={colorId || idx}
+                  className={`swatch ${selectedColorId === colorId || (!selectedColorId && idx === 0) ? 'active' : ''}`}
+                  title={color.color_name || color.color?.color_name || ""}
+                  style={{
+                    backgroundColor:
+                      color.color_code || color.color?.color_code || "#ccc",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedColorId(colorId);
+                  }}
+                />
+              );
+            })}
           </div>
         </div>
       </div>

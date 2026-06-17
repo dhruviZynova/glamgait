@@ -318,6 +318,7 @@ function SingleProduct() {
           product_name: product.name, price: product.price, original_price: product.original_price,
           image_url: selectedColor.productimages?.[0]?.image_url || "",
           color_name: selectedColor.color.color_name,
+          color_code: selectedColor.color?.color_code || selectedColor.color_code || "",
           size_name: selectedSize?.size?.size_name || null, stock_qty: availableStock,
         };
         const idx = local.findIndex((i) => i.p_id === product.p_id && i.pcolor_id === payload.pcolor_id);
