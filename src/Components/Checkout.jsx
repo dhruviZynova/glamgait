@@ -324,7 +324,7 @@ const Checkout = () => {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -334,7 +334,7 @@ const Checkout = () => {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -344,7 +344,7 @@ const Checkout = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -354,7 +354,7 @@ const Checkout = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="md:col-span-2 space-y-2">
@@ -364,7 +364,7 @@ const Checkout = () => {
                     name="streetAddress"
                     value={formData.streetAddress}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -374,7 +374,7 @@ const Checkout = () => {
                     name="townCity"
                     value={formData.townCity}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -384,7 +384,7 @@ const Checkout = () => {
                     name="state"
                     value={formData.state}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -394,7 +394,7 @@ const Checkout = () => {
                     name="country"
                     value={formData.country}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -404,7 +404,7 @@ const Checkout = () => {
                     name="postcodeZip"
                     value={formData.postcodeZip}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
         </div>

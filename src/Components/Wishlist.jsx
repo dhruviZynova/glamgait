@@ -188,11 +188,6 @@ const Wishlist = () => {
                               backgroundColor: item.color_code || "#ccc",
                             }}
                           />
-                          {item.size_name && (
-                            <span className="text-[10px] font-bold text-gray-600 uppercase bg-gray-100/80 border border-gray-200 px-2 py-0.5 rounded">
-                              {item.size_name}
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>

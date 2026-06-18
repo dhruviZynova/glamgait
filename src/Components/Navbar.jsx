@@ -650,7 +650,7 @@ const Navbar = () => {
         >
           <div className="relative">
             <Heart size={22} className={`mb-0.5 transition-all duration-300 ${isWishlistActive ? "text-[#1C2F2F] fill-[#1C2F2F] scale-110" : "text-[#767676]"}`} />
-            <span className={`absolute -top-1.5 -right-2.5 bg-[#1C2F2F] text-white text-[9px] w-4.5 h-4.5 flex items-center justify-center rounded-full font-semibold transition-all duration-300 ${isWishlistActive ? "ring-2 ring-white scale-110" : ""}`}>
+            <span className={`absolute -top-1.5 -right-2.5 bg-[#1C2F2F] text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-semibold ${isWishlistActive ? "ring-2 ring-white " : ""}`}>
               {wishlistCount}
             </span>
           </div>
