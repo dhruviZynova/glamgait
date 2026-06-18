@@ -515,22 +515,27 @@ const Allproducts = () => {
 
   useEffect(() => {
     const fetchWishlist = async () => {
-      const identifier = user?.u_id || getGuestId();
       try {
-        const query = user?.u_id
-          ? `u_id=${identifier}`
-          : `guest_id=${identifier}`;
-        const res = await axiosInstance.get(`/getwishlist?${query}`);
-        if (res.data.status === 1) {
-          const items = res.data.data || [];
-          // Create fast lookup map: "p_id-pcolor_id" → true
+        if (user?.u_id) {
+          // Logged-in: fetch user wishlist (auth token sent automatically by axiosInstance)
+          const res = await axiosInstance.get(`/getwishlist?u_id=${user.u_id}`);
+          if (res.data.status === 1) {
+            const items = res.data.data || [];
+            const map = {};
+            items.forEach((item) => {
+              // Key: p_id + pcolor_id (same as what addtowishlist stores)
+              const key = `${item.p_id}-${item.pcolor_id}`;
+              map[key] = { wished: true, w_id: item.w_id };
+            });
+            setWishlistMap(map);
+          }
+        } else {
+          // Guest: read from localStorage
+          const local = JSON.parse(localStorage.getItem("localWishlist") || "[]");
           const map = {};
-          items.forEach((item) => {
+          local.forEach((item, i) => {
             const key = `${item.p_id}-${item.pcolor_id}`;
-            map[key] = {
-              wished: true,
-              w_id: item.w_id, // optional: for remove
-            };
+            map[key] = { wished: true, w_id: `local-${i}` };
           });
           setWishlistMap(map);
         }
@@ -539,30 +544,34 @@ const Allproducts = () => {
       }
     };
     fetchWishlist();
-  }, []);
-  const refreshWishlist = async () => {
-    const identifier = user?.u_id || getGuestId();
+  // Re-fetch whenever login state changes
+  }, [user?.u_id]);
+  const refreshWishlist = useCallback(async () => {
     try {
-      const query = user?.u_id
-        ? `u_id=${identifier}`
-        : `guest_id=${identifier}`;
-      const res = await axiosInstance.get(`/getwishlist?${query}`);
-      if (res.data.status === 1) {
-        const items = res.data.data || [];
+      if (user?.u_id) {
+        const res = await axiosInstance.get(`/getwishlist?u_id=${user.u_id}`);
+        if (res.data.status === 1) {
+          const items = res.data.data || [];
+          const map = {};
+          items.forEach((item) => {
+            const key = `${item.p_id}-${item.pcolor_id}`;
+            map[key] = { wished: true, w_id: item.w_id };
+          });
+          setWishlistMap(map);
+        }
+      } else {
+        const local = JSON.parse(localStorage.getItem("localWishlist") || "[]");
         const map = {};
-        items.forEach((item) => {
+        local.forEach((item, i) => {
           const key = `${item.p_id}-${item.pcolor_id}`;
-          map[key] = {
-            wished: true,
-            w_id: item.w_id,
-          };
+          map[key] = { wished: true, w_id: `local-${i}` };
         });
-        setWishlistMap(map); // ← Yeh update karega sab ProductCards ko
+        setWishlistMap(map);
       }
     } catch (err) {
       console.error("Wishlist refresh failed", err);
     }
-  };
+  }, [user?.u_id]);
 
   useEffect(() => {
     let title = "";
