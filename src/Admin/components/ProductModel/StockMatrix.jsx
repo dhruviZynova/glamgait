@@ -17,8 +17,8 @@ const StockMatrix = ({
   if (!formData.colors.some((c) => c.color_id)) return null;
 
   return (
-    <div className="bg-green-50 border-2 border-green-300 rounded-xl p-8">
-      <h3 className="text-2xl font-bold text-green-800 mb-6">
+    <div className="bg-gray-50 p-6 rounded-xl">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">
         Stock Adjustment
       </h3>
 
@@ -26,20 +26,20 @@ const StockMatrix = ({
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse">
             <thead>
-              <tr className="bg-green-100">
-                <th className="border border-green-400 px-6 py-4 text-left">
+              <tr className="bg-gray-100">
+                <th className="border border-gray-400 px-6 py-4 text-left">
                   Size → Color ↓
                 </th>
-                <th className="border border-green-400 px-6 py-4 text-center">
+                <th className="border border-gray-400 px-6 py-4 text-center">
                   Current Stock
                 </th>
-                <th className="border border-green-400 px-6 py-4 text-center">
+                <th className="border border-gray-400 px-6 py-4 text-center">
                   Add Stock
                 </th>
-                <th className="border border-green-400 px-6 py-4 text-center">
+                <th className="border border-gray-400 px-6 py-4 text-center">
                   Remove Stock
                 </th>
-                <th className="border border-green-400 px-6 py-4 text-center">
+                <th className="border border-gray-400 px-6 py-4 text-center">
                   New Total
                 </th>
               </tr>
@@ -128,7 +128,7 @@ const StockMatrix = ({
       ) : (
         <div>
           {/* Headings for Color-Only */}
-          <div className="grid grid-cols-5 gap-4 mb-4 px-4 font-bold text-green-800">
+          <div className="grid grid-cols-5 gap-4 mb-4 px-4 font-bold text-gray-800">
             <div className="col-span-1">Color</div>
             <div className="text-center">Current Stock</div>
             <div className="text-center">Add Stock</div>
@@ -156,7 +156,7 @@ const StockMatrix = ({
                 return (
                   <div
                     key={color.color_id}
-                    className="grid grid-cols-5 gap-4 items-center bg-white p-4 rounded-lg border border-green-200"
+                    className="grid grid-cols-5 gap-4 items-center bg-white p-4 rounded-lg border border-gray-200"
                   >
                     <div className="font-medium">{colorName}</div>
                     <div className="text-center font-bold">
@@ -193,7 +193,7 @@ const StockMatrix = ({
                         }
                       />
                     </div>
-                    <div className="text-center font-bold text-green-700">
+                    <div className="text-center font-bold text-gray-700">
                       {newTotal}
                     </div>
                   </div>
@@ -201,7 +201,7 @@ const StockMatrix = ({
               })}
           </div>
 
-          <p className="text-sm text-green-700 mt-4">
+          <p className="text-sm text-gray-700 mt-4">
             Enter amounts to add or remove. Remove cannot exceed current
             + added stock.
           </p>
