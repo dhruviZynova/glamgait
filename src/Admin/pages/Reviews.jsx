@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   TrashIcon,
   StarIcon,
@@ -16,11 +16,11 @@ import { Loader2 } from "lucide-react";
 
 const Reviews = () => {
   const adminData = adminInfo();
-  const [reviews, setReviews] = useState(null);
+  // Store all raw data fetched from server
+  const [allReviews, setAllReviews] = useState(null);
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [reviewsPerPage] = useState(10);
   const [productDropdownOpen, setProductDropdownOpen] = useState(false);
 
@@ -37,6 +37,7 @@ const Reviews = () => {
     name: "",
     image: null,
     preview: null,
+    productImage: "", // For showing image in dropdown
   });
 
   // Delete Modal
@@ -49,15 +50,15 @@ const Reviews = () => {
 
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch Reviews
-  const fetchReviews = async (page = 1) => {
+  // Fetch Reviews (Fetches a larger batch to enable client-side search)
+  const fetchReviews = async () => {
     try {
       const response = await adminAxios.post(
         `${ApiURL}/getalluserreviews`,
         {
-          page,
-          perPage: reviewsPerPage,
-          search: searchTerm,
+          page: 1,
+          perPage: 1000, // Fetch more records to search across
+          search: "", // We will handle search on the frontend
         },
         {
           headers: {
@@ -67,17 +68,13 @@ const Reviews = () => {
       );
       if (response.data.status === 1) {
         const data = response.data.data;
-        setReviews(data.reviews || []);
-        const totalCount = data.totalCount || 0;
-        setTotalPages(Math.ceil(totalCount / reviewsPerPage));
+        setAllReviews(data.reviews || []);
       } else {
-        setReviews([]);
-        setTotalPages(1);
+        setAllReviews([]);
       }
     } catch (error) {
       console.error("Error fetching reviews:", error);
-      setReviews([]);
-      setTotalPages(1);
+      setAllReviews([]);
     }
   };
 
@@ -92,10 +89,38 @@ const Reviews = () => {
     }
   };
 
+  // Initial load
   useEffect(() => {
-    fetchReviews(currentPage);
+    fetchReviews();
     fetchProducts();
-  }, [currentPage, searchTerm]);
+  }, []);
+
+  // Reset to page 1 when searching
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  // Client-Side Filtering Logic
+  const filteredReviews = useMemo(() => {
+    if (!allReviews) return [];
+    if (!searchTerm) return allReviews;
+
+    const lowerTerm = searchTerm.toLowerCase();
+    return allReviews.filter((review) => {
+      const reviewerMatch = review.reviewer_name?.toLowerCase().includes(lowerTerm);
+      const productMatch = review.product_name?.toLowerCase().includes(lowerTerm);
+      return reviewerMatch || productMatch;
+    });
+  }, [allReviews, searchTerm]);
+
+  // Client-Side Pagination Logic
+  const reviews = useMemo(() => {
+    const indexOfLastReview = currentPage * reviewsPerPage;
+    const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
+    return filteredReviews.slice(indexOfFirstReview, indexOfLastReview);
+  }, [filteredReviews, currentPage, reviewsPerPage]);
+
+  const totalPages = Math.ceil(filteredReviews.length / reviewsPerPage);
 
   const paginate = (page) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -112,7 +137,7 @@ const Reviews = () => {
         `${ApiURL}/deleteuserreview/${deleteModal.reviewId}`
       );
       toast.success("Review deleted");
-      fetchReviews(currentPage);
+      fetchReviews(); // Refresh all data
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to delete");
     } finally {
@@ -128,7 +153,7 @@ const Reviews = () => {
         is_published: newStatus,
       });
       toast.success(newStatus ? "Published" : "Unpublished");
-      fetchReviews(currentPage);
+      fetchReviews(); // Refresh all data
     } catch (error) {
       toast.error("Failed to update");
       console.error(error);
@@ -147,7 +172,9 @@ const Reviews = () => {
         preview: review.image_url
           ? `${ApiURL}/assets/UserReviews/${review.image_url}`
           : null,
-        customCreatedAt: review.custom_created_at || null, // already 'YYYY-MM-DD' or null
+        productImage: review.product_image || "", // Assuming you might have this field or you can look it up
+        customCreatedAt: review.custom_created_at || null,
+        is_fake: review.is_fake || false
       });
       setModal({ open: true, editMode: true, reviewId: review.r_id });
     } else {
@@ -164,6 +191,7 @@ const Reviews = () => {
       name: "",
       image: null,
       preview: null,
+      productImage: "",
     });
 
   // Add or Edit Review
@@ -183,7 +211,7 @@ const Reviews = () => {
       if (form.name) formData.append("user_name", form.name);
       if (form.image) formData.append("userReviewImage", form.image);
       if (form.customCreatedAt) {
-        formData.append("custom_created_at", form.customCreatedAt); // already 'YYYY-MM-DD'
+        formData.append("custom_created_at", form.customCreatedAt);
       }
       if (modal.editMode) {
         formData.append("r_id", modal.reviewId);
@@ -196,7 +224,7 @@ const Reviews = () => {
 
       setModal({ open: false, editMode: false, reviewId: null });
       resetForm();
-      fetchReviews(currentPage);
+      fetchReviews(); // Refresh all data
     } catch (error) {
       toast.error("Failed to save review");
       console.error(error);
@@ -234,13 +262,10 @@ const Reviews = () => {
           <div className="relative w-full sm:w-64">
             <input
               type="text"
-              placeholder="Search reviews..."
+              placeholder="Search reviewer or product..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
               value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
             <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           </div>
@@ -254,7 +279,7 @@ const Reviews = () => {
       </div>
 
       {/* Loading */}
-      {reviews === null ? (
+      {allReviews === null ? (
         <div className="glamloader-overlay" aria-label="Loading" role="status">
           <div className="glamloader-logo">
             KUNDRAT
@@ -271,7 +296,7 @@ const Reviews = () => {
         </div>
       ) : reviews.length === 0 ? (
         <div className="text-center py-16 text-gray-500 text-lg">
-          No reviews found
+          {searchTerm ? "No reviews found matching your search." : "No reviews found"}
         </div>
       ) : (
         <>
@@ -519,7 +544,7 @@ const Reviews = () => {
                     </span>
                   </button>
 
-                  {/* Dropdown - important mobile fix */}
+                  {/* Dropdown */}
                   {productDropdownOpen && (
                     <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-2xl max-h-[45vh] sm:max-h-72 overflow-y-auto">
                       {products.length === 0 ? (
@@ -531,24 +556,24 @@ const Reviews = () => {
                           <div
                             key={p.p_id}
                             onClick={() => {
+                              const img =
+                                p.productcolors?.[0]?.productimages?.[0]
+                                  ?.image_url ||
+                                p.image ||
+                                "";
                               setForm({
                                 ...form,
                                 product: p.p_id,
-                                productImage:
-                                  p.productcolors?.[0]?.productimages?.[0]
-                                    ?.image_url ||
-                                  p.image ||
-                                  "",
+                                productImage: img,
                               });
                               setProductDropdownOpen(false);
                             }}
                             className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
                           >
                             <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                              {p.productcolors?.[0]?.productimages?.[0]
-                                ?.image_url ? (
+                              {img ? (
                                 <img
-                                  src={`${ApiURL}/assets/Products/${p.productcolors[0].productimages[0].image_url}`}
+                                  src={`${ApiURL}/assets/Products/${img}`}
                                   alt=""
                                   className="w-full h-full object-cover"
                                 />
@@ -569,7 +594,7 @@ const Reviews = () => {
                 </div>
               </div>
 
-              {/* Rating - smaller on mobile */}
+              {/* Rating */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Rating <span className="text-red-500">*</span>
@@ -621,7 +646,7 @@ const Reviews = () => {
                 />
               </div>
 
-              {/* In your Add/Edit Review Modal - after Reviewer Name */}
+              {/* Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Display Date{" "}
@@ -629,7 +654,7 @@ const Reviews = () => {
                 </label>
                 <input
                   type="date"
-                  value={form.customCreatedAt || ""} // Expecting 'YYYY-MM-DD'
+                  value={form.customCreatedAt || ""}
                   onChange={(e) =>
                     setForm({
                       ...form,
@@ -645,7 +670,7 @@ const Reviews = () => {
                 </p>
               </div>
 
-              {/* Image Upload - better mobile layout */}
+              {/* Image Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Customer Photo (optional)
@@ -715,7 +740,7 @@ const Reviews = () => {
               </div>
             </div>
 
-            {/* Footer - better stacking on mobile */}
+            {/* Footer */}
             <div className="px-5 py-5 sm:px-6 sm:py-5 border-t border-gray-100 flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
               <button
                 type="button"

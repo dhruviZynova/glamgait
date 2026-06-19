@@ -223,10 +223,18 @@ const Cart = () => {
                           />
                           <div className="flex flex-col">
                             <span className="font-medium text-[#3D3D3D] font-[Oxygen] font-400 font-[18px]">{item.product_name}</span>
-                            <span className="text-sm text-[#949494] font-[Oxygen] font-400 font-[16px]">
-                              {item.color_name}
-                              {item.size_name && ` / ${item.size_name}`}
-                            </span>
+                            {/* Added Color Swatch here */}
+                            <div className="flex items-center gap-2 text-sm text-[#949494] font-[Oxygen] font-400 font-[16px]">
+                              {item.color_code && (
+                                <span
+                                  className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
+                                  style={{ backgroundColor: item.color_code }}
+                                  title={item.color_name}
+                                />
+                              )}
+                              <span className="capitalize">{item.color_name}</span>
+                              <span className="uppercase"> {item.size_name && ` / ${item.size_name}`} </span>
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -285,11 +293,20 @@ const Cart = () => {
                       alt={item.product_name}
                       className="w-32 h-40 object-cover rounded-lg"
                     />
-                    <div className="text-center w-full">
+                    <div className="text-start w-full">
                       <span className="font-medium text-[#3D3D3D] font-[Oxygen] font-400 font-[20px]">{item.product_name}</span>
-                      <p className="text-gray-400 text-sm mb-4">
-                        {item.color_name} {item.size_name && ` / ${item.size_name}`}
-                      </p>
+                      {/* Added Color Swatch here */}
+                      <div className="flex items-center justify-start gap-2 text-gray-400 text-sm mb-4">
+                        {item.color_code && (
+                          <span
+                            className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
+                            style={{ backgroundColor: item.color_code }}
+                            title={item.color_name}
+                          />
+                        )}
+                        <span className="capitalize">{item.color_name}</span>
+                        <span className="uppercase">{item.size_name && ` / ${item.size_name}`}</span>
+                      </div>
 
                       <div className="flex items-center justify-between border-t border-gray-100 pt-4">
                         <span className="text-gray-600 font-medium">₹{item.price.toFixed(0)}</span>

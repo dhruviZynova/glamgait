@@ -179,6 +179,7 @@ const Allproducts = () => {
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const sortDropdownRef = useRef(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const prevFilterValueRef = useRef(filterValue);
 
   const [activeFilterName, setActiveFilterName] = useState("");
   const [limit] = useState(18);
@@ -209,15 +210,22 @@ const Allproducts = () => {
   // Set selected filters from URL filterValue (infer type by matching in filters)
 
   useEffect(() => {
-    if (!filterValue || Object.keys(filters).length === 0) {
-      setSelectedSubcategories([]);
-      setSelectedFabrics([]);
-      setSelectedWorks([]);
-      setSelectedOccasions([]);
-      setSelectedStyles([]);
-      setActiveFilterName("");
+    if (prevFilterValueRef.current !== filterValue) {
+      prevFilterValueRef.current = filterValue;
+      if (!filterValue || Object.keys(filters).length === 0) {
+        setSelectedSubcategories([]);
+        setSelectedFabrics([]);
+        setSelectedWorks([]);
+        setSelectedOccasions([]);
+        setSelectedStyles([]);
+        setActiveFilterName("");
+        return;
+      }
+    } else if (!filterValue) {
+      // Don't reset manual filter selections if there's no URL filter and it hasn't changed
       return;
     }
+
     let matched = null;
     let type = null;
     // Check each filter list for matching slug
@@ -278,11 +286,26 @@ const Allproducts = () => {
   // Sync URL category with sidebar selection
   useEffect(() => {
     if (cateId) {
-      setSelectedCategories([cateId]);
+      setSelectedCategories([Number(cateId)]);
     } else {
       setSelectedCategories([]);
     }
   }, [cateId]);
+
+  // Reset other filters when all categories are unchecked on a category page
+  useEffect(() => {
+    const isAllProductsPage = !cate_name || cate_name === "All Products";
+    if (!isAllProductsPage && selectedCategories.length === 0) {
+      setSelectedSubcategories([]);
+      setSelectedFabrics([]);
+      setSelectedWorks([]);
+      setSelectedOccasions([]);
+      setSelectedStyles([]);
+      setSelectedSizes([]);
+      setSelectedColors([]);
+      setPriceRange([0, 100000]);
+    }
+  }, [selectedCategories, cate_name]);
 
   // Reset price range when category/collection changes
   useEffect(() => {
@@ -295,21 +318,32 @@ const Allproducts = () => {
       const isSearch = !!debouncedSearchTerm;
       const isAllProductsPage = !cate_name || cate_name === "All Products";
 
-      // Use global endpoint if searching, filtering by multiple categories, or on a generic page
-      const useGlobalEndpoint = isSearch || selectedCategories.length > 1 || isAllProductsPage;
+      // If we are on a category-specific page and no category checkboxes are checked, show no products
+      if (!isAllProductsPage && selectedCategories.length === 0) {
+        if (isFiltersLoading) {
+          return;
+        }
+        setProducts([]);
+        setTotalProducts(0);
+        setProductsLoading(false);
+        setHasLoadedOnce(true);
+        return;
+      }
+
+      // Use global endpoint if filtering by multiple categories, no categories selected, or on a generic page
+      const useGlobalEndpoint = selectedCategories.length > 1 || selectedCategories.length === 0 || isAllProductsPage;
       const endpoint = useGlobalEndpoint ? "/getallproducts" : `/productbycategory/${cate_name}`;
 
       // Build parameters
       const params = {
-        page: currentPage,
-        limit: limit,
-        perPage: limit,
-        search: debouncedSearchTerm,
+        page: debouncedSearchTerm ? 1 : currentPage,
+        limit: debouncedSearchTerm ? 1000 : limit,
+        perPage: debouncedSearchTerm ? 1000 : limit,
         // Pass selected categories as a comma-separated string if filtering,
         // otherwise fallback to the URL-based cateId
         cate_id: selectedCategories.length > 0
-          ? selectedCategories.join(",")
-          : (useGlobalEndpoint ? undefined : cateId),
+          ? selectedCategories.map(Number).join(",")
+          : (isAllProductsPage ? undefined : "0"),
         cate_name: useGlobalEndpoint ? undefined : cate_name,
         price_min: priceRange[0],
         price_max: priceRange[1],
@@ -365,7 +399,20 @@ const Allproducts = () => {
           };
         }
 
-        if (currentPage === 1) {
+        // Apply client-side case-insensitive search filter if search term is active
+        if (debouncedSearchTerm) {
+          const searchLower = debouncedSearchTerm.toLowerCase();
+          fetchedProducts = fetchedProducts.filter((p) =>
+            p.name?.toLowerCase().includes(searchLower)
+          );
+          pagination = {
+            totalCount: fetchedProducts.length,
+            totalPages: 1,
+            page: 1,
+          };
+        }
+
+        if (currentPage === 1 || debouncedSearchTerm) {
           setProducts(fetchedProducts);
         } else {
           setProducts((prev) => {
@@ -421,6 +468,7 @@ const Allproducts = () => {
     currentPage,
     debouncedSearchTerm,
     limit,
+    isFiltersLoading,
   ]);
 
   useEffect(() => {
@@ -449,8 +497,9 @@ const Allproducts = () => {
   ]);
 
   const toggleCategory = (val) => {
+    const numVal = Number(val);
     setSelectedCategories((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
+      prev.map(Number).includes(numVal) ? prev.map(Number).filter((v) => v !== numVal) : [...prev.map(Number), numVal]
     );
     setCurrentPage(1);
   };
@@ -544,7 +593,7 @@ const Allproducts = () => {
       }
     };
     fetchWishlist();
-  // Re-fetch whenever login state changes
+    // Re-fetch whenever login state changes
   }, [user?.u_id]);
   const refreshWishlist = useCallback(async () => {
     try {
@@ -680,7 +729,7 @@ const Allproducts = () => {
                                     <div className="flex items-center gap-3">
                                       <input
                                         type="checkbox"
-                                        checked={selectedCategories.includes(val.cate_id)}
+                                        checked={selectedCategories.map(Number).includes(Number(val.cate_id))}
                                         onChange={(e) => {
                                           e.stopPropagation();
                                           toggleCategory(val.cate_id);
@@ -1023,10 +1072,11 @@ const Allproducts = () => {
                               <input
                                 type="number"
                                 min={0}
-                                value={priceRange[0]}
-                                onChange={(e) =>
-                                  setPriceRange([Number(e.target.value), priceRange[1]])
-                                }
+                                value={priceRange[0] === 0 ? "" : priceRange[0]}
+                                onChange={(e) => {
+                                  const val = e.target.value === "" ? 0 : Number(e.target.value);
+                                  setPriceRange([val, priceRange[1]]);
+                                }}
                                 className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
                                 placeholder="Min"
                               />
@@ -1036,10 +1086,11 @@ const Allproducts = () => {
                               <input
                                 type="number"
                                 min={0}
-                                value={Math.ceil(priceRange[1] / 1000) * 1000}
-                                onChange={(e) =>
-                                  setPriceRange([priceRange[0], Number(e.target.value)])
-                                }
+                                value={priceRange[1] === 100000 ? "" : priceRange[1]}
+                                onChange={(e) => {
+                                  const val = e.target.value === "" ? 100000 : Number(e.target.value);
+                                  setPriceRange([priceRange[0], val]);
+                                }}
                                 className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
                                 placeholder="Max"
                               />
@@ -1051,7 +1102,7 @@ const Allproducts = () => {
                             </span>
                             <span className="text-xs text-[#2c2c2c]">to</span>
                             <span className="text-xs text-[#2c2c2c] font-medium py-1 rounded">
-                              ₹{Math.ceil(priceRange[1] / 1000) * 1000}
+                              ₹{priceRange[1]}
                             </span>
                           </div>
                         </div>
@@ -1074,41 +1125,8 @@ const Allproducts = () => {
                   ? `${activeFilterName} - ${categoryDisplayName} Collection`
                   : `${categoryDisplayName} Collection`}
               </h2>
-              {/* Search Bar - matches top image */}
-              <div className="w-full mb-6">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search An Item"
-                    className="w-full rounded-full border border-gray-200 py-3 pl-5 pr-24 text-gray-700 text-base focus:outline-none"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  />
-                  {searchTerm && (
-                    <button
-                      className="absolute right-12 top-1/2 -translate-y-1/2 bg-gray-500 hover:bg-gray-600 text-white rounded-full w-8 h-8 flex items-center justify-center"
-                      onClick={clearSearch}
-                      aria-label="Clear search"
-                      type="button"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  )}
-                  <button
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-700 hover:bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center"
-                    onClick={handleSearch}
-                    aria-label="Search"
-                    type="button"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
+
+
               <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <p className="text-sm text-gray-600">
                   Showing{" "}

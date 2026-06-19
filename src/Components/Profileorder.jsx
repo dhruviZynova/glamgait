@@ -4,7 +4,7 @@ import SideBar from "./SideBar";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
-import { Package, XCircle, RefreshCcw, Receipt, ArrowLeftRight, Loader2, Calendar, Truck, Eye } from "lucide-react";
+import { Package, RefreshCcw, Receipt, Loader2, Calendar, Truck, Eye } from "lucide-react"; // Removed ArrowLeftRight
 import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 import CancelOrderModal from "./CancelOrderModal";
@@ -24,7 +24,7 @@ const Profileorder = () => {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState(null);
-  const [isCreditNote, setIsCreditNote] = useState(false);
+  // Removed isCreditNote state
 
   const canShowInvoice = (order) => {
     if (!order) return false;
@@ -39,13 +39,7 @@ const Profileorder = () => {
     ].includes(order.status);
   };
 
-  const canShowCreditNote = (order) => {
-    if (!order) return false;
-    return [
-      ORDER_STATUS.CANCELLED,
-      ORDER_STATUS.RETURNED
-    ].includes(order.status);
-  };
+  // Removed canShowCreditNote helper function
 
   const navigate = useNavigate();
   const tabs = ["Active", "Completed", "Cancelled", "Returned"];
@@ -234,6 +228,10 @@ const Profileorder = () => {
                                 )}
                                 {item.color_name && <span className="text-gray-700 font-bold capitalize">{item.color_name}</span>}
                               </p>
+                              <p className="flex items-center gap-1.5">
+                                Size :
+                                <span className="text-gray-700 font-bold capitalize">{item.size_name || "Free Size"}</span>
+                              </p>
                               <p>
                                 Qty : <span className="text-gray-700 font-bold">{item.quantity}</span>
                               </p>
@@ -287,7 +285,7 @@ const Profileorder = () => {
                         <button
                           onClick={() => {
                             setSelectedOrderForInvoice(order);
-                            setIsCreditNote(false);
+                            // setIsCreditNote(false); removed
                             setShowInvoiceModal(true);
                           }}
                           className="w-full sm:w-auto bg-white border border-emerald-200 text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm"
@@ -296,19 +294,7 @@ const Profileorder = () => {
                           Invoice
                         </button>
                       )}
-                      {canShowCreditNote(order) && (
-                        <button
-                          onClick={() => {
-                            setSelectedOrderForInvoice(order);
-                            setIsCreditNote(true);
-                            setShowInvoiceModal(true);
-                          }}
-                          className="w-full sm:w-auto bg-white border border-rose-200 text-rose-600 px-4 py-2 rounded-xl font-semibold hover:bg-rose-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm"
-                        >
-                          <ArrowLeftRight size={14} />
-                          Credit Note
-                        </button>
-                      )}
+                      {/* Credit Note Button Removed */}
                       <button
                         onClick={() => navigate(`/orderdetails/${order.orderId}`, { state: { activeTab } })}
                         className="w-full sm:w-auto bg-[#063d32] text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-[#12584a] transition-all cursor-pointer text-sm flex items-center justify-center gap-1.5 shadow-sm"
@@ -347,7 +333,7 @@ const Profileorder = () => {
         isOpen={showInvoiceModal}
         onClose={() => setShowInvoiceModal(false)}
         order={selectedOrderForInvoice}
-        isCreditNote={isCreditNote}
+        isCreditNote={false} // Hardcoded to false as state was removed
       />
 
       <BrandBanner />

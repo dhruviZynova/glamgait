@@ -283,7 +283,17 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden lg:flex items-center space-x-8 mr-6">
+          <div
+            className="hidden lg:flex items-center space-x-8 mr-6"
+            onMouseLeave={(e) => {
+              const related = e.relatedTarget;
+              if (related && related.closest(".mega-menu-container")) {
+                return;
+              }
+              setShowMegaMenu(false);
+              setHoveredCategory(null);
+            }}
+          >
             {menuItems.map((item) => (
               <div
                 key={item.to}
@@ -298,6 +308,9 @@ const Navbar = () => {
                       fetchCategoryFilters(item.cate_id);
                       setShowMegaMenu(true);
                     }
+                  } else {
+                    setShowMegaMenu(false);
+                    setHoveredCategory(null);
                   }
                 }}
               >
@@ -418,7 +431,7 @@ const Navbar = () => {
         {/* Mega Menu – Desktop */}
         {showMegaMenu && hoveredCategory?.cate_id && Object.values(megaMenuData).some(items => items && items.length > 0) && (
           <div
-            className="max-w-5xl mx-auto absolute inset-x-0 top-full bg-[#f3f0ed] shadow-xl border-t"
+            className="mega-menu-container max-w-5xl mx-auto absolute inset-x-0 top-full bg-[#f3f0ed] shadow-xl border-t"
             onMouseEnter={() => setShowMegaMenu(true)}
             onMouseLeave={() => {
               setShowMegaMenu(false);
@@ -476,7 +489,7 @@ const Navbar = () => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-full focus:outline-none capitalize"
+                  className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-full focus:outline-none"
                   placeholder="Search..."
                 />
               </div>

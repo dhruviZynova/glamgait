@@ -206,12 +206,20 @@ function SingleProduct() {
         );
         if (idx !== -1) cartItems[idx].quantity += quantity;
         else cartItems.push({
-          p_id: product.p_id, pcolor_id: selectedColor.pcolor_id,
-          psize_id: selectedSize?.psize_id || null, quantity,
-          product_name: product.name, price: product.price, original_price: product.original_price,
+          p_id: product.p_id,
+          pcolor_id: selectedColor.pcolor_id,
+          psize_id: selectedSize?.psize_id ?? null,
+          quantity,
+          product_name: product.name,
+          price: product.price,
+          original_price: product.original_price,
           image_url: selectedColor.productimages?.[0]?.image_url || "",
           color_name: selectedColor.color.color_name,
-          size_name: selectedSize?.size?.size_name || null, available_stock: availableStock,
+          // ADD THIS LINE:
+          color_code: selectedColor.color.color_code || selectedColor.color_code || "",
+
+          size_name: selectedSize?.size?.size_name || null,
+          available_stock: availableStock,
         });
         localStorage.setItem("localCart", JSON.stringify(cartItems));
         window.dispatchEvent(new Event("cartUpdated"));
@@ -220,7 +228,9 @@ function SingleProduct() {
       }
       const res = await axiosInstance.post(`${ApiURL}/createcart`, {
         u_id: user.u_id, guest_id: null, p_id: product.p_id,
-        pcolor_id: selectedColor.pcolor_id, psize_id: selectedSize?.psize_id || null, quantity,
+        pcolor_id: selectedColor.pcolor_id ?? null, // Fix: ?? to handle ID 0
+        psize_id: selectedSize?.psize_id ?? null, // Fix: ?? to handle ID 0
+        quantity,
       });
       if (res.data.status === 1) {
         toast.success("Added to cart!");
@@ -234,6 +244,9 @@ function SingleProduct() {
   };
 
   const handleBuyNow = async () => {
+    // Safety check: ensure product data is loaded
+    if (!product || !product.p_id) return toast.error("Product data not loaded. Please wait.");
+
     if (!user?.u_id) {
       toast.error("Please login to buy this product");
       navigate("/login", { state: { from: `/product/${slug}` } });
@@ -246,24 +259,35 @@ function SingleProduct() {
     setBuyNowLoading(true);
     try {
       const res = await axiosInstance.post(`${ApiURL}/createcart`, {
-        u_id: user?.u_id || null,
-        guest_id: user?.u_id ? null : getGuestId(),
-        p_id: product.p_id, pcolor_id: selectedColor.pcolor_id,
-        psize_id: product.has_sizes ? selectedSize.psize_id : null, quantity,
+        u_id: user.u_id, // Match handleAddToCart logic
+        guest_id: null, // Match handleAddToCart logic (user is logged in)
+        p_id: product.p_id,
+        pcolor_id: selectedColor.pcolor_id ?? null, // Fix: ?? to handle ID 0
+        psize_id: selectedSize?.psize_id ?? null, // Fix: ?? to handle ID 0
+        quantity,
       });
       if (res.data.status === 1) {
         navigate("/checkout", {
           state: {
             cartItems: [{
-              p_id: product.p_id, product_name: product.name, price: product.price, quantity,
+              p_id: product.p_id,
+              product_name: product.name,
+              price: product.price,
+              quantity,
               image_url: selectedColor.productimages[0]?.image_url,
               color_name: selectedColor.color.color_name,
+              // ADD THIS LINE:
+              color_code: selectedColor.color.color_code,
+
               size_name: product.has_sizes ? selectedSize.size.size_name : "Free Size",
               pcolor_id: selectedColor.pcolor_id,
               psize_id: product.has_sizes ? selectedSize.psize_id : null,
             }],
           },
         });
+      } else {
+        // Handle specific backend error
+        toast.error(res.data.description || "Failed to initiate purchase");
       }
     } catch (err) {
       toast.error(err.message || "Buy Now failed");
@@ -314,7 +338,7 @@ function SingleProduct() {
         let local = JSON.parse(localStorage.getItem("localWishlist") || "[]");
         const payload = {
           p_id: product.p_id, sc_id: product.sc_id,
-          pcolor_id: selectedColor.pcolor_id, psize_id: selectedSize?.psize_id || null,
+          pcolor_id: selectedColor.pcolor_id, psize_id: selectedSize?.psize_id ?? null,
           product_name: product.name, price: product.price, original_price: product.original_price,
           image_url: selectedColor.productimages?.[0]?.image_url || "",
           color_name: selectedColor.color.color_name,
@@ -344,7 +368,7 @@ function SingleProduct() {
       } else {
         const res = await axiosInstance.post(`${ApiURL}/addtowishlist`, {
           u_id: user.u_id, guest_id: null, p_id: product.p_id, sc_id: product.sc_id,
-          pcolor_id: selectedColor.pcolor_id, psize_id: selectedSize?.psize_id || null,
+          pcolor_id: selectedColor.pcolor_id, psize_id: selectedSize?.psize_id ?? null,
         });
         if (res.data.status === 1) {
           toast.success("Added to wishlist");
@@ -587,7 +611,7 @@ function SingleProduct() {
               {product?.productcolors?.length > 0 && (
                 <div className="pb-2">
                   <p className="text-sm font-medium text-[#1E1512] mb-4">
-                    Color {selectedColor && <span className="text-[#9A8F87]">— {selectedColor.color.color_name}</span>}
+                    Color {selectedColor && <span className="text-[#9A8F87] capitalize">— {selectedColor.color.color_name}</span>}
                   </p>
                   <div className="flex flex-wrap gap-3">
                     {product.productcolors.map((color) => (
@@ -626,7 +650,7 @@ function SingleProduct() {
                         key={size.psize_id}
                         onClick={() => setSelectedSize(size)}
                         disabled={!size.in_stock}
-                        className={`min-w-[46px] h-10 px-3 rounded-lg text-sm font-medium border transition cursor-pointer
+                        className={`min-w-[46px] h-10 px-3 rounded-lg text-sm font-medium border transition uppercase cursor-pointer
                           ${selectedSize?.psize_id === size.psize_id
                             ? "bg-[#1E1512] text-white border-[#1E1512]"
                             : size.in_stock

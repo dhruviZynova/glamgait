@@ -75,6 +75,14 @@ const Styles = () => {
   // Add / Edit Style
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData?.name || formData.name.trim() === "") {
+      showToaster(0, "Style name is required");
+      return;
+    }
+    if (!formData?.cate_id) {
+      showToaster(0, "Please select a category");
+      return;
+    }
     setIsSubmitting(true);
     try {
       if (isEdit) {

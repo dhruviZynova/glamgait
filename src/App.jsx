@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { Routes, Route, BrowserRouter, Outlet } from "react-router-dom";
+import { Routes, Route, BrowserRouter, Outlet, useLocation } from "react-router-dom";
 import "./App.css";
 import { LoaderProvider } from "./Context/LoaderContext";
 import { CartProvider } from "./Context/CartContext";
@@ -11,6 +11,7 @@ import BackToTop from "./Ui/BackToTop";
 import WhatsAppIcon from "./Ui/WhatsappIcon";
 import Footer from "./Components/Footer";
 import SmartScrollManager from "./Components/SmartScrollManager";
+import ScrollToTop from "./Components/ScrollToTop";
 
 // --- Lazy Loaded Components ---
 // Client Pages
@@ -93,6 +94,26 @@ const SuspenseLoader = () => (
   </div>
 );
 
+const ClientLayout = () => {
+  const { pathname } = useLocation();
+  const hideHeaderFooter = [
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/verify-otp"
+  ].includes(pathname) || pathname.startsWith("/reset-password/");
+
+  return (
+    <>
+      {!hideHeaderFooter && <Navbar />}
+      <Outlet />
+      {!hideHeaderFooter && <Footer />}
+      {!hideHeaderFooter && <WhatsAppIcon />}
+      {!hideHeaderFooter && <BackToTop />}
+    </>
+  );
+};
+
 function App() {
   return (
     <UserProvider>
@@ -117,22 +138,13 @@ function App() {
             }}
           />
           <BrowserRouter>
+            <ScrollToTop />
             <GlobalLoader />
             <SmartScrollManager />
             <Suspense fallback={<SuspenseLoader />}>
               <Routes>
                 {/* Client Routes */}
-                <Route
-                  element={
-                    <>
-                      <Navbar />
-                      <Outlet />
-                      <Footer />
-                      <WhatsAppIcon />
-                      <BackToTop />
-                    </>
-                  }
-                >
+                <Route element={<ClientLayout />}>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/product/:slug" element={<SingleProductPage />} />
                   <Route path="/contact" element={<Contact />} />

@@ -76,6 +76,14 @@ const Sizes = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData?.size_name || formData.size_name.trim() === "") {
+      showToaster(0, "Size name is required");
+      return;
+    }
+    if (!formData?.cate_id) {
+      showToaster(0, "Please select a category");
+      return;
+    }
     setIsSubmitting(true);
     try {
       const payload = {

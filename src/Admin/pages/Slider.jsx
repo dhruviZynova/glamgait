@@ -222,7 +222,10 @@ const Sliders = () => {
                           setDeleteModal({
                             isOpen: true,
                             image_id: img.image_id,
-                            image_name: img.image,
+                            // FIX: Truncate long URL to prevent text overflow in modal
+                            image_name: img.image
+                              ? (img.image.length > 35 ? img.image.substring(0, 35) + "..." : img.image)
+                              : "this image",
                           })
                         }
                         className="bg-red-500 text-white p-1 rounded cursor-pointer"
@@ -241,7 +244,7 @@ const Sliders = () => {
       {/* Modal */}
       {modalOpen && (
         <div
-          className="fixed inset-0 bg-black/30 bg-opacity-50 flex justify-center items-center text-black p-4 z-50"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center text-black p-4 z-50"
           onClick={() => setModalOpen(false)}
         >
           <div

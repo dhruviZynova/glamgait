@@ -72,6 +72,14 @@ const Works = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData?.name || formData.name.trim() === "") {
+      showToaster(0, "Work name is required");
+      return;
+    }
+    if (!formData?.cate_id) {
+      showToaster(0, "Please select a category");
+      return;
+    }
     setIsSubmitting(true);
     try {
       if (isEdit) {
@@ -115,7 +123,7 @@ const Works = () => {
       if (response?.data?.status) fetchWorks();
     } catch (error) {
       console.error(error);
-      showToaster(0, "Error deleting work");
+      showToaster(error.message, "Error deleting work");
     } finally {
       setDeleteModal({ isOpen: false, work_id: null, name: "", isDeleting: false });
     }

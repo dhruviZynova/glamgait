@@ -73,6 +73,14 @@ const Occasions = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData?.name || formData.name.trim() === "") {
+      showToaster(0, "Occasion name is required");
+      return;
+    }
+    if (!formData?.cate_id) {
+      showToaster(0, "Please select a category");
+      return;
+    }
     setIsSubmitting(true);
     try {
       if (isEdit) {
@@ -214,6 +222,7 @@ const Occasions = () => {
                         setFormData({
                           name: occasion?.name,
                           occasion_id: occasion?.occasion_id,
+                          cate_id: occasion?.cate_id,
                         });
                         setIsModalOpen(true);
                       }}

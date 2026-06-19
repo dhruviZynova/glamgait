@@ -1,5 +1,6 @@
 // src/pages/Register.jsx
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -147,7 +148,9 @@ const Register = () => {
             </form>
 
             <p className="text-[12px] text-center text-gray-500 mt-6 leading-relaxed px-2">
-              By clicking Register you agree to <span className="text-xs text-[#1A2C2C] font-medium underline cursor-pointer">Terms & Conditions</span> and <span className="text-xs text-[#1A2C2C] font-medium underline cursor-pointer">Privacy Policy</span>.
+              By clicking Register you agree to <span className="text-xs text-[#1A2C2C] font-medium underline cursor-pointer">
+                <Link to="/terms-and-conditions">Terms & Conditions </Link></span> and <span className="text-xs text-[#1A2C2C] font-medium underline cursor-pointer">
+                <Link to="/privacy-policy">Privacy Policy</Link></span>.
             </p>
           </div>
 

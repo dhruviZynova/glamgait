@@ -5,6 +5,8 @@ import { useUser } from "../Context/UserContext";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useWishlist } from "../hooks/useWishlist";
+import { useQueryClient } from "@tanstack/react-query";
 
 import "../style/ProductCard.css";
 
@@ -33,11 +35,31 @@ const ProductCard = ({
   // color_id is the master color table ID and will cause "Invalid color".
   const currentColorId = currentColor?.pcolor_id ?? currentColor?.color_id ?? null;
 
-  // Wishlist key must match the key built from /getwishlist response (uses pcolor_id)
-  const wishlistKey = currentColorId ? `${product.p_id}-${currentColorId}` : null;
+  const queryClient = useQueryClient();
+  const { data: wishlistItems = [] } = useWishlist();
+  const currentColorName = currentColor?.color_name || currentColor?.color?.color_name || "";
 
-  const isWished = wishlistKey && wishlistMap ? !!wishlistMap[wishlistKey] : false;
-  const wishlistId = wishlistKey && wishlistMap ? wishlistMap[wishlistKey]?.w_id || null : null;
+  // Check if this product & selected color is in the wishlist
+  const isWished = React.useMemo(() => {
+    return wishlistItems.some(item => 
+      String(item.p_id) === String(product.p_id) && 
+      (
+        (item.pcolor_id && currentColorId && String(item.pcolor_id) === String(currentColorId)) ||
+        (item.color_name && currentColorName && item.color_name.toLowerCase() === currentColorName.toLowerCase())
+      )
+    );
+  }, [wishlistItems, product.p_id, currentColorId, currentColorName]);
+
+  const wishlistId = React.useMemo(() => {
+    const found = wishlistItems.find(item => 
+      String(item.p_id) === String(product.p_id) && 
+      (
+        (item.pcolor_id && currentColorId && String(item.pcolor_id) === String(currentColorId)) ||
+        (item.color_name && currentColorName && item.color_name.toLowerCase() === currentColorName.toLowerCase())
+      )
+    );
+    return found ? found.w_id : null;
+  }, [wishlistItems, product.p_id, currentColorId, currentColorName]);
 
   // Calculate discount percentage
   const discountPercentage = React.useMemo(() => {
@@ -125,12 +147,14 @@ const ProductCard = ({
         localStorage.setItem("localWishlist", JSON.stringify(localWishlist));
         toast.success("Removed from wishlist");
         window.dispatchEvent(new Event("wishlistUpdated"));
+        queryClient.invalidateQueries({ queryKey: ["wishlist"] });
         onWishlistChange && onWishlistChange();
       } else {
         localWishlist.push(payload);
         localStorage.setItem("localWishlist", JSON.stringify(localWishlist));
         toast.success("Added to wishlist");
         window.dispatchEvent(new Event("wishlistUpdated"));
+        queryClient.invalidateQueries({ queryKey: ["wishlist"] });
         onWishlistChange && onWishlistChange();
       }
       return;
@@ -147,6 +171,7 @@ const ProductCard = ({
         if (res.data.status === 1) {
           toast.success("Removed from wishlist");
           window.dispatchEvent(new Event("wishlistUpdated"));
+          queryClient.invalidateQueries({ queryKey: ["wishlist"] });
           onWishlistChange && onWishlistChange();
         } else {
           toast.error(res.data.description || "Failed to remove from wishlist");
@@ -171,13 +196,14 @@ const ProductCard = ({
         if (res.data.status === 1) {
           toast.success("Added to wishlist");
           window.dispatchEvent(new Event("wishlistUpdated"));
+          queryClient.invalidateQueries({ queryKey: ["wishlist"] });
           onWishlistChange && onWishlistChange();
         } else {
           toast.error(res.data.description || "Already in wishlist");
         }
       }
     } catch (err) {
-      toast.error("Wishlist action failed");
+      toast.error(err.response.data.description || "Wishlist action failed");
       console.error("[Wishlist] Error:", err);
     }
   };
@@ -246,10 +272,10 @@ const ProductCard = ({
           <div className="info-header">
             <h3 className="product-name">{product.name}</h3>
             <div className="product-price">
+              <span>₹{product.price}</span>
               {product.original_price > product.price && (
                 <span className="original-price">₹{product.original_price}</span>
               )}
-              <span>₹{product.price}</span>
             </div>
           </div>
 
