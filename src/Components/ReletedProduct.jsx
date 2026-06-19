@@ -75,25 +75,27 @@ const ReletedProduct = ({ cate_name, currentProductId, cate_id }) => {
   useEffect(() => {
     const fetchWishlist = async () => {
       const user = userInfo();
-      const identifier = user?.u_id || getGuestId();
+      if (!user?.u_id) {
+        const local = JSON.parse(localStorage.getItem("localWishlist") || "[]");
+        const map = {};
+        local.forEach((item, i) => {
+          map[`${item.p_id}-${item.pcolor_id}`] = { wished: true, w_id: `local-${i}` };
+        });
+        setWishlistMap(map);
+        return;
+      }
 
       try {
-        const query = user?.u_id
-          ? `u_id=${identifier}`
-          : `guest_id=${identifier}`;
-
-        const res = await axiosInstance.get(`/getwishlist?${query}`);
+        const res = await axiosInstance.get(`/getwishlist?u_id=${user.u_id}`);
 
         if (res.data.status === 1) {
           const items = res.data.data || [];
-
-          // Create fast lookup map: "p_id-pcolor_id" → true
           const map = {};
           items.forEach((item) => {
             const key = `${item.p_id}-${item.pcolor_id}`;
             map[key] = {
               wished: true,
-              w_id: item.w_id, // optional: for remove
+              w_id: item.w_id,
             };
           });
 
@@ -109,13 +111,17 @@ const ReletedProduct = ({ cate_name, currentProductId, cate_id }) => {
 
   const refreshWishlist = async () => {
     const user = userInfo();
-    const identifier = user?.u_id || getGuestId();
+    if (!user?.u_id) {
+      const local = JSON.parse(localStorage.getItem("localWishlist") || "[]");
+      const map = {};
+      local.forEach((item, i) => {
+        map[`${item.p_id}-${item.pcolor_id}`] = { wished: true, w_id: `local-${i}` };
+      });
+      setWishlistMap(map);
+      return;
+    }
     try {
-      const query = user?.u_id
-        ? `u_id=${identifier}`
-        : `guest_id=${identifier}`;
-
-      const res = await axiosInstance.get(`/getwishlist?${query}`);
+      const res = await axiosInstance.get(`/getwishlist?u_id=${user.u_id}`);
 
       if (res.data.status === 1) {
         const items = res.data.data || [];
@@ -127,7 +133,7 @@ const ReletedProduct = ({ cate_name, currentProductId, cate_id }) => {
             w_id: item.w_id,
           };
         });
-        setWishlistMap(map); // ← Yeh update karega sab ProductCards ko
+        setWishlistMap(map);
       }
     } catch (err) {
       console.error("Wishlist refresh failed", err);

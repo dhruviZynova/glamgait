@@ -7,7 +7,6 @@ import { ApiURL } from "../Variable";
 import toast from "react-hot-toast";
 import BrandBanner from "./BrandBanner";
 import ProductCard from "./ProductCard";
-import { getGuestId } from "../utils/guest";
 import CartSkeleton from "./skeletons/CartSkeleton";
 import { useCart, useUpdateCartQty, useRemoveFromCart } from "../hooks/useCart";
 import { useUser } from "../Context/UserContext";
@@ -40,12 +39,17 @@ const Cart = () => {
   }, []);
 
   const fetchWishlist = useCallback(async () => {
-    const identifier = user?.u_id || getGuestId();
+    if (!user?.u_id) {
+      const local = JSON.parse(localStorage.getItem("localWishlist") || "[]");
+      const map = {};
+      local.forEach((item, i) => {
+        map[`${item.p_id}-${item.pcolor_id}`] = { wished: true, w_id: `local-${i}` };
+      });
+      setWishlistMap(map);
+      return;
+    }
     try {
-      const query = user?.u_id
-        ? `u_id=${identifier}`
-        : `guest_id=${identifier}`;
-      const res = await axiosInstance.get(`/getwishlist?${query}`);
+      const res = await axiosInstance.get(`/getwishlist?u_id=${user.u_id}`);
       if (res.data.status === 1) {
         const items = res.data.data || [];
         const map = {};
@@ -146,7 +150,7 @@ const Cart = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f3f0ed] pt-16 px-4 md:px-10 lg:px-20">
+      <div className="min-h-screen pt-16 px-4 md:px-10 lg:px-20">
         <CartSkeleton count={3} />
       </div>
     );
@@ -154,7 +158,7 @@ const Cart = () => {
 
   if (cartItems.length === 0) {
     return (
-      <div className="bg-[#FAF7F2] h-screen flex items-center justify-center p-4">
+      <div className="h-screen flex items-center justify-center p-4">
         <div className="text-center">
           <div className="w-40 h-24 md:w-[300px] md:h-[200px] mx-auto">
             <img
@@ -183,7 +187,7 @@ const Cart = () => {
 
   return (
     <>
-      <div className="bg-[#f3f0ed] min-h-screen px-2 md:px-10 py-10 font-poppins">
+      <div className="min-h-screen px-2 md:px-10 py-10 font-poppins">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Section - Cart Items */}
           <ScrollReveal animation="fade-right" duration={800} className="flex-1">
@@ -219,10 +223,18 @@ const Cart = () => {
                           />
                           <div className="flex flex-col">
                             <span className="font-medium text-[#3D3D3D] font-[Oxygen] font-400 font-[18px]">{item.product_name}</span>
-                            <span className="text-sm text-[#949494] font-[Oxygen] font-400 font-[16px]">
-                              {item.color_name}
-                              {item.size_name && ` / ${item.size_name}`}
-                            </span>
+                            {/* Added Color Swatch here */}
+                            <div className="flex items-center gap-2 text-sm text-[#949494] font-[Oxygen] font-400 font-[16px]">
+                              {item.color_code && (
+                                <span
+                                  className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
+                                  style={{ backgroundColor: item.color_code }}
+                                  title={item.color_name}
+                                />
+                              )}
+                              <span className="capitalize">{item.color_name}</span>
+                              <span className="uppercase"> {item.size_name && ` / ${item.size_name}`} </span>
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -281,11 +293,20 @@ const Cart = () => {
                       alt={item.product_name}
                       className="w-32 h-40 object-cover rounded-lg"
                     />
-                    <div className="text-center w-full">
+                    <div className="text-start w-full">
                       <span className="font-medium text-[#3D3D3D] font-[Oxygen] font-400 font-[20px]">{item.product_name}</span>
-                      <p className="text-gray-400 text-sm mb-4">
-                        {item.color_name} {item.size_name && ` / ${item.size_name}`}
-                      </p>
+                      {/* Added Color Swatch here */}
+                      <div className="flex items-center justify-start gap-2 text-gray-400 text-sm mb-4">
+                        {item.color_code && (
+                          <span
+                            className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
+                            style={{ backgroundColor: item.color_code }}
+                            title={item.color_name}
+                          />
+                        )}
+                        <span className="capitalize">{item.color_name}</span>
+                        <span className="uppercase">{item.size_name && ` / ${item.size_name}`}</span>
+                      </div>
 
                       <div className="flex items-center justify-between border-t border-gray-100 pt-4">
                         <span className="text-gray-600 font-medium">₹{item.price.toFixed(0)}</span>
@@ -316,11 +337,6 @@ const Cart = () => {
                 <div className="flex justify-between items-center py-6 px-6">
                   <span className="uppercase tracking-wider text-sm font-medium text-[#4A4A4A] font-[Oxygen] font-400 font-[16px]">SUBTOTAL</span>
                   <span className="text-[#949494] font-[Oxygen] font-400 font-[16px]">₹{subtotal.toFixed(0)}</span>
-                </div>
-
-                <div className="border-t border-gray-200 flex justify-between items-center py-6 px-6">
-                  <span className="uppercase tracking-wider text-sm font-medium text-[#4A4A4A] font-[Oxygen] font-400 font-[16px]">DISCOUNT</span>
-                  <span className="text-[#949494] font-[Oxygen] font-400 font-[16px]">---</span>
                 </div>
 
                 <div className="border-t border-gray-200 flex justify-between items-center py-6 px-6">

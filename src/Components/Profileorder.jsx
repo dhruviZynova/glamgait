@@ -4,7 +4,7 @@ import SideBar from "./SideBar";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
-import { Package, XCircle, RefreshCcw, Receipt, ArrowLeftRight, Loader2, Calendar, Truck, Eye } from "lucide-react";
+import { Package, RefreshCcw, Receipt, Loader2, Calendar, Truck, Eye } from "lucide-react"; // Removed ArrowLeftRight
 import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 import CancelOrderModal from "./CancelOrderModal";
@@ -24,7 +24,7 @@ const Profileorder = () => {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState(null);
-  const [isCreditNote, setIsCreditNote] = useState(false);
+  // Removed isCreditNote state
 
   const canShowInvoice = (order) => {
     if (!order) return false;
@@ -39,13 +39,7 @@ const Profileorder = () => {
     ].includes(order.status);
   };
 
-  const canShowCreditNote = (order) => {
-    if (!order) return false;
-    return [
-      ORDER_STATUS.CANCELLED,
-      ORDER_STATUS.RETURNED
-    ].includes(order.status);
-  };
+  // Removed canShowCreditNote helper function
 
   const navigate = useNavigate();
   const tabs = ["Active", "Completed", "Cancelled", "Returned"];
@@ -133,28 +127,28 @@ const Profileorder = () => {
 
   return (
     <>
-      <div className="w-full lg:pt-8 pt-4 px-2 md:px-8 xl:px-24 min-h-screen">
-        <div className="flex flex-col md:flex-row font-poppins">
+      <div className="w-full lg:pt-8 py-4 px-2 md:px-8 xl:px-24">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-14 font-poppins">
           {/* Sidebar */}
           <div className="w-full md:w-1/3 lg:w-1/4">
             <SideBar />
           </div>
 
           {/* Main content */}
-          <ScrollReveal animation="fade-left" duration={800} className="flex-1 p-2 sm:p-6 md:p-8">
+          <ScrollReveal animation="fade-left" duration={800} className="flex-1">
             <h2 className="text-3xl font-semibold mb-8 text-[#3C4242] font-poppins">
               My Orders
             </h2>
 
             {/* Tabs */}
-            <div className="flex bg-gray-50 p-1 rounded-xl mb-8 overflow-x-auto w-full scrollbar-none whitespace-nowrap gap-1">
+            <div className="flex p-1 rounded-xl mb-8 overflow-x-auto w-full scrollbar-none whitespace-nowrap gap-1">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`relative py-2 px-5 sm:px-8 text-sm sm:text-base font-semibold transition-all duration-300 text-center rounded-lg cursor-pointer border-none outline-none focus:outline-none flex-shrink-0 ${activeTab === tab
-                      ? "text-white bg-[#063d32] shadow-sm"
-                      : "text-gray-500 hover:text-[#063d32] hover:bg-white/60"
+                  className={`relative py-2 text-sm sm:text-base font-semibold transition-all duration-300 text-center rounded-lg cursor-pointer border-none outline-none focus:outline-none flex-shrink-0 ${activeTab === tab
+                    ? "px-6 text-white bg-[#063d32] shadow-sm"
+                    : "px-4 text-gray-500 hover:text-[#063d32] hover:bg-white/60"
                     }`}
                 >
                   {tab}
@@ -169,7 +163,7 @@ const Profileorder = () => {
               ) : filteredOrders?.map((order) => (
                 <div
                   key={order.orderId}
-                  className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 hover:border-emerald-800/10 hover:shadow-md transition-all duration-300"
+                  className="bg-white rounded-2xl p-4 md:p-6 sm:p-8 shadow-sm border border-gray-100 hover:border-emerald-800/10 hover:shadow-md transition-all duration-300"
                 >
                   {/* Header Info */}
                   <div className="flex flex-col lg:flex-row justify-between gap-6 mb-6">
@@ -179,11 +173,19 @@ const Profileorder = () => {
                         <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-[#807D7E] font-medium">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5" />
-                            Date: {new Date(order.createdAt).toLocaleDateString()}
+                            Date: {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            })}
                           </span>
                           <span className="flex items-center gap-1">
                             <Truck className="w-3.5 h-3.5" />
-                            Delivery: {new Date(new Date(order.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                            Delivery: {new Date(new Date(order.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            })}
                           </span>
                         </div>
                       </div>
@@ -196,7 +198,7 @@ const Profileorder = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-[#807D7E] font-semibold">Payment:</span>
-                        <span className="text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded capitalize">{order.paymentStatus}</span>
+                        <span className="text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded-lg capitalize">{order.paymentStatus}</span>
                       </div>
                     </div>
                   </div>
@@ -204,26 +206,31 @@ const Profileorder = () => {
                   <div className="h-px bg-gray-50 w-full mb-6"></div>
 
                   {/* Product/Item Preview */}
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 md:gap-6">
                     <div className="flex flex-wrap gap-6 flex-1 w-full">
                       {order.orderItems.map((item) => (
                         <div key={item.orderItemId} className="flex gap-4 w-full sm:w-auto">
                           <img
                             src={`${ApiURL}/assets/Products/${item.imageUrl}`}
                             alt={item.productName}
-                            className="w-20 h-20 rounded-xl object-cover shadow-sm border border-gray-100"
+                            className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover shadow-sm transition-transform duration-300 group-hover:scale-105 border border-gray-50 flex-shrink-0"
                           />
                           <div className="flex flex-col justify-center">
                             <h4 className="font-bold text-[#3C4242] text-base mb-1 line-clamp-1">{item.productName}</h4>
                             <div className="space-y-0.5 text-xs text-[#807D7E] font-medium">
                               <p className="flex items-center gap-1.5">
-                                Colour : <span className="text-gray-700 font-bold capitalize">{item.color_name || "N/A"}</span>
+                                Color :
                                 {item.color_code && (
                                   <span
-                                    className="w-2.5 h-2.5 rounded-full border border-gray-300"
+                                    className="w-3 h-3 rounded-full border border-gray-300"
                                     style={{ backgroundColor: item.color_code }}
                                   ></span>
                                 )}
+                                {item.color_name && <span className="text-gray-700 font-bold capitalize">{item.color_name}</span>}
+                              </p>
+                              <p className="flex items-center gap-1.5">
+                                Size :
+                                <span className="text-gray-700 font-bold capitalize">{item.size_name || "Free Size"}</span>
                               </p>
                               <p>
                                 Qty : <span className="text-gray-700 font-bold">{item.quantity}</span>
@@ -238,7 +245,7 @@ const Profileorder = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex flex-wrap justify-end gap-2.5 w-full lg:w-auto mt-4 lg:mt-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-gray-50">
+                    <div className="flex flex-wrap justify-end gap-2.5 w-full lg:w-auto lg:mt-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-gray-50">
                       {[
                         ORDER_STATUS.PENDING,
                         ORDER_STATUS.ACCEPTED,
@@ -278,7 +285,7 @@ const Profileorder = () => {
                         <button
                           onClick={() => {
                             setSelectedOrderForInvoice(order);
-                            setIsCreditNote(false);
+                            // setIsCreditNote(false); removed
                             setShowInvoiceModal(true);
                           }}
                           className="w-full sm:w-auto bg-white border border-emerald-200 text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm"
@@ -287,19 +294,7 @@ const Profileorder = () => {
                           Invoice
                         </button>
                       )}
-                      {canShowCreditNote(order) && (
-                        <button
-                          onClick={() => {
-                            setSelectedOrderForInvoice(order);
-                            setIsCreditNote(true);
-                            setShowInvoiceModal(true);
-                          }}
-                          className="w-full sm:w-auto bg-white border border-rose-200 text-rose-600 px-4 py-2 rounded-xl font-semibold hover:bg-rose-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm"
-                        >
-                          <ArrowLeftRight size={14} />
-                          Credit Note
-                        </button>
-                      )}
+                      {/* Credit Note Button Removed */}
                       <button
                         onClick={() => navigate(`/orderdetails/${order.orderId}`, { state: { activeTab } })}
                         className="w-full sm:w-auto bg-[#063d32] text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-[#12584a] transition-all cursor-pointer text-sm flex items-center justify-center gap-1.5 shadow-sm"
@@ -338,7 +333,7 @@ const Profileorder = () => {
         isOpen={showInvoiceModal}
         onClose={() => setShowInvoiceModal(false)}
         order={selectedOrderForInvoice}
-        isCreditNote={isCreditNote}
+        isCreditNote={false} // Hardcoded to false as state was removed
       />
 
       <BrandBanner />

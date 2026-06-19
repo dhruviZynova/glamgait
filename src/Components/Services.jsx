@@ -7,7 +7,7 @@ import singlebanner from "../assets/singlebanner.jpg";
 
 const Services = () => {
   return (
-    <div className="bg-[#F3F0ED] z-12">
+    <div className="z-12">
       <div className="grid grid-cols-2 sm:grid-cols-2 md:flex justify-between items-center gap-2 md:gap-6 px-6 py-6 md:py-10 md:px-12 2xl:px-40 container mx-auto">
         <div className="flex items-start gap-3">
           <img

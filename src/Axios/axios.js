@@ -27,6 +27,7 @@ const publicAPIs = [
   "/getproductdetails",
   "/getsliders",
   "/getinstaimages",
+  "/getallproducts",
 ];
 
 // Normalize ApiURL: Remove trailing slash if present to prevent double-slashes in requests
@@ -83,7 +84,7 @@ const setupInterceptors = (instance, infoGetter, storageKey) => {
     (error) => {
       loaderService.hide();
 
-      // Handle Token Expiry (401 Unauthorized)
+      // Handle Token Expiry / Forbidden access (401 Unauthorized / 403 Forbidden)
       if (error?.response?.status === 401) {
         sessionStorage.removeItem(storageKey);
         if (!window.location.pathname.includes('/login')) {

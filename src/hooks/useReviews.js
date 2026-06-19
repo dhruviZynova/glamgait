@@ -2,11 +2,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getReviews, submitReview, editReview, deleteReview, toggleReviewLike } from "../api/reviews";
 import toast from "react-hot-toast";
 
-export function useReviews(p_id) {
+export function useReviews(p_id, currentUserId) {
   return useQuery({
-    queryKey: ["reviews", p_id],
+    queryKey: ["reviews", p_id, currentUserId],
     queryFn: async () => {
-      const res = await getReviews(p_id);
+      const res = await getReviews(p_id, currentUserId);
       if (res.status === 1) {
         return res.data || [];
       }
@@ -76,14 +76,23 @@ export function useDeleteReview(p_id) {
     },
     onSuccess: (data, r_id) => {
       toast.success(data.description || "Review deleted successfully!");
-      
+
+      // Remove from localStorage so the Write Review button shows up again
+      try {
+        const stored = JSON.parse(localStorage.getItem("glamgait_reviewed_pids") || "[]");
+        const updated = stored.filter(pid => Number(pid) !== Number(p_id));
+        localStorage.setItem("glamgait_reviewed_pids", JSON.stringify(updated));
+      } catch (e) {
+        console.error("Failed to update localStorage:", e);
+      }
+
       // Optimistically remove the deleted review from all potential cache key formats
       const keysToClean = [
         ["reviews", p_id],
         ["reviews", Number(p_id)],
         ["reviews", String(p_id)]
       ];
-      
+
       keysToClean.forEach(key => {
         queryClient.setQueryData(key, (old) => {
           if (!Array.isArray(old)) return [];

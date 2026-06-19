@@ -1,9 +1,8 @@
 import { BiUndo } from "react-icons/bi";
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import faceImg from "../assets/images/404img.png";
 import lanternImg from "../assets/images/longlight.webp";
-import fontimg from "../assets/images/fontimg.webp";
+import BrandBanner from "./BrandBanner";
 
 const NotFound = () => {
   const navigate = useNavigate();
@@ -44,10 +43,7 @@ const NotFound = () => {
         </button>
       </div>
 
-      {/* Large faded background text at bottom */}
-      <div className="w-full text-center select-none pointer-events-none z-0">
-        <img src={fontimg} alt="Background Text" className="w-full h-auto opacity-80" />
-      </div>
+      <BrandBanner />
     </div>
   );
 };

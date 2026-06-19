@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 import {
   PlusIcon,
   TrashIcon,
   ArrowPathIcon,
   PencilSquareIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { adminAxios } from "../../Axios/axios";
 import { ApiURL, showToaster } from "../../Variable";
@@ -14,6 +16,7 @@ const Announcement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [announcements, setAnnouncements] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     text: "",
     ann_id: null,
@@ -22,6 +25,7 @@ const Announcement = () => {
     isOpen: false,
     ann_id: null,
     text: "",
+    isDeleting: false,
   });
 
   // Fetch announcements
@@ -43,6 +47,7 @@ const Announcement = () => {
   // Add / Update announcement
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       let response;
       if (isEdit) {
@@ -64,6 +69,8 @@ const Announcement = () => {
     } catch (error) {
       console.error(error);
       showToaster(0, "Error saving announcement");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -73,6 +80,7 @@ const Announcement = () => {
   };
 
   const confirmDelete = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       const response = await adminAxios.delete(
         `${ApiURL}/deleteannouncement/${deleteModal.ann_id}`
@@ -82,8 +90,9 @@ const Announcement = () => {
     } catch (error) {
       console.error(error);
       showToaster(0, "Error deleting announcement");
+    } finally {
+      setDeleteModal({ isOpen: false, ann_id: null, text: "", isDeleting: false });
     }
-    setDeleteModal({ isOpen: false, ann_id: null, text: "" });
   };
 
   // Filter announcements by text
@@ -100,20 +109,23 @@ const Announcement = () => {
         </h1>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <input
-            type="text"
-            placeholder="Search announcements..."
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <div className="relative w-full sm:w-64">
+            <input
+              type="text"
+              placeholder="Search announcements..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+          </div>
           <button
             onClick={() => {
               setIsEdit(false);
               setFormData({ text: "", ann_id: null });
               setIsModalOpen(true);
             }}
-            className="w-full flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             <span>Add Announcement</span>
@@ -224,8 +236,10 @@ const Announcement = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer"
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer disabled:opacity-50"
                 >
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   {isEdit ? "Update" : "Create"}
                 </button>
               </div>
@@ -238,11 +252,12 @@ const Announcement = () => {
       <ConfirmDeleteModal
         isOpen={deleteModal.isOpen}
         onClose={() =>
-          setDeleteModal({ isOpen: false, ann_id: null, text: "" })
+          setDeleteModal({ isOpen: false, ann_id: null, text: "", isDeleting: false })
         }
         onConfirm={confirmDelete}
         itemType="announcement"
         itemName={deleteModal.text}
+        isDeleting={deleteModal.isDeleting}
       />
     </div>
   );

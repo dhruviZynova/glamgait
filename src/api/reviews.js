@@ -1,7 +1,11 @@
 import axiosInstance from "../Axios/axios";
 
 export const getReviews = async (p_id, currentUserId) => {
-  const res = await axiosInstance.post("/getuserreviews", { p_id: Number(p_id), currentUserId });
+  const body = { p_id: Number(p_id) };
+  if (currentUserId) {
+    body.currentUserId = Number(currentUserId);
+  }
+  const res = await axiosInstance.post("/getuserreviews", body);
   return res.data;
 };
 

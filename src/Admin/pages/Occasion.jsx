@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable";
 import { adminAxios } from "../../Axios/axios";
 import {
@@ -7,6 +7,7 @@ import {
   TrashIcon,
   ArrowPathIcon,
   PencilSquareIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
@@ -31,6 +32,7 @@ const Occasions = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [occasionData, setOccasionData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     occasion_id: null,
@@ -41,6 +43,7 @@ const Occasions = () => {
     occasion_id: null,
     cate_id: null,
     name: "",
+    isDeleting: false,
   });
 
   const fetchOccasions = async () => {
@@ -70,6 +73,15 @@ const Occasions = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData?.name || formData.name.trim() === "") {
+      showToaster(0, "Occasion name is required");
+      return;
+    }
+    if (!formData?.cate_id) {
+      showToaster(0, "Please select a category");
+      return;
+    }
+    setIsSubmitting(true);
     try {
       if (isEdit) {
         const response = await adminAxios.put(
@@ -90,14 +102,17 @@ const Occasions = () => {
       setIsEdit(false);
     } catch (error) {
       showToaster(0, error?.response?.data?.description || "Error saving occasion");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDelete = (occasion_id) => {
-    setDeleteModal({ isOpen: true, occasion_id });
+  const handleDelete = (occasion_id, name) => {
+    setDeleteModal({ isOpen: true, occasion_id, name, isDeleting: false });
   };
 
   const confirmDelete = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       const response = await adminAxios.post(
         `${ApiURL}/deleteoccasion`,
@@ -111,7 +126,7 @@ const Occasions = () => {
       console.error(error);
       showToaster(0, "Error deleting occasion");
     } finally {
-      setDeleteModal({ isOpen: false, occasion_id: null, name: "" });
+      setDeleteModal({ isOpen: false, occasion_id: null, name: "", isDeleting: false });
     }
   };
 
@@ -126,20 +141,23 @@ const Occasions = () => {
           Occasions Management
         </h1>
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <input
-            type="text"
-            placeholder="Search occasions..."
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <div className="relative w-full sm:w-64">
+            <input
+              type="text"
+              placeholder="Search occasions..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+          </div>
           <button
             onClick={() => {
               setIsEdit(false);
               setFormData({ name: "", occasion_id: null });
               setIsModalOpen(true);
             }}
-            className="w-full flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             <span>Add Occasion</span>
@@ -204,6 +222,7 @@ const Occasions = () => {
                         setFormData({
                           name: occasion?.name,
                           occasion_id: occasion?.occasion_id,
+                          cate_id: occasion?.cate_id,
                         });
                         setIsModalOpen(true);
                       }}
@@ -212,7 +231,7 @@ const Occasions = () => {
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
                     <button
-                      onClick={() => handleDelete(occasion?.occasion_id)}
+                      onClick={() => handleDelete(occasion?.occasion_id, occasion?.name)}
                       className="text-red-600 hover:text-red-900 cursor-pointer"
                     >
                       <TrashIcon className="h-5 w-5" />
@@ -347,8 +366,10 @@ const Occasions = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer"
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer disabled:opacity-50"
                 >
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   {isEdit ? "Update" : "Create"}
                 </button>
               </div>
@@ -359,11 +380,12 @@ const Occasions = () => {
       <ConfirmDeleteModal
         isOpen={deleteModal.isOpen}
         onClose={() =>
-          setDeleteModal({ isOpen: false, occasion_id: null, name: "" })
+          setDeleteModal({ isOpen: false, occasion_id: null, name: "", isDeleting: false })
         }
         onConfirm={confirmDelete}
         itemType="occasion"
         itemName={deleteModal.name}
+        isDeleting={deleteModal.isDeleting}
       />
     </div>
   );

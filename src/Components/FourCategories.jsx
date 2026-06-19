@@ -41,8 +41,7 @@ const FourCategories = () => {
   ];
 
   return (
-    <section className="relative px-4 py-10 md:py-16 bg-[#F3F0ED] overflow-hidden">
-
+    <section className="relative px-4 py-10 md:py-16 overflow-hidden">
 
       <div className="max-w-7xl mx-auto relative z-20">
         {/* Desktop Grid */}

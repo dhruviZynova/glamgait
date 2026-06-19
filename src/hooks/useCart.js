@@ -72,6 +72,7 @@ export function useAddToCart() {
             original_price: product.original_price,
             image_url: selectedColor.productimages?.[0]?.image_url || "",
             color_name: selectedColor.color?.color_name || "",
+            color_code: selectedColor.color?.color_code || selectedColor.color_code || "",
             size_name: selectedSize?.size?.size_name || null,
             available_stock: availableStock,
           });
@@ -84,6 +85,7 @@ export function useAddToCart() {
     onSuccess: (data) => {
       toast.success(data.description || "Added to cart!");
       queryClient.invalidateQueries({ queryKey: ["cart"] });
+      window.dispatchEvent(new Event("cartUpdated"));
     },
     onError: (err) => {
       toast.error(err.message || "Failed to add to cart");
@@ -150,6 +152,7 @@ export function useRemoveFromCart() {
     onSuccess: () => {
       toast.success("Removed from cart");
       queryClient.invalidateQueries({ queryKey: ["cart"] });
+      window.dispatchEvent(new Event("cartUpdated"));
     },
     onError: (err) => {
       toast.error(err.message || "Failed to remove item");

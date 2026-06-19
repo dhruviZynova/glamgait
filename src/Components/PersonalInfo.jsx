@@ -1,18 +1,16 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SideBar from "./SideBar";
 import AddAddress from "./AddAddress";
-import axiosInstance from "../Axios/axios";
-import { ApiURL, userInfo } from "../Variable";
+import { userInfo } from "../Variable";
 import toast from "react-hot-toast";
-import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 import ProfileInfoSkeleton from "./skeletons/ProfileInfoSkeleton";
-import { Loader2, User, Mail, Lock, Plus, MapPin, Trash2, Edit3, Home, Briefcase, AlertTriangle } from "lucide-react";
+import { Loader2, User, Mail, Lock, Plus, MapPin, Trash2, Pencil, Home, Briefcase, AlertTriangle, X } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useProfile, useUpdateProfile, useAddresses, useDeleteAddress } from "../hooks/useProfile";
 import ScrollReveal from "./Ui/ScrollReveal";
-
+import axiosInstance from "../Axios/axios";
 
 const PersonalInfo = () => {
   const navigate = useNavigate();
@@ -25,6 +23,13 @@ const PersonalInfo = () => {
   const [addressType, setAddressType] = useState("HOME");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState(null);
+
+  // Password Change Modal States
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const user = userInfo();
   const u_id = user?.u_id;
@@ -64,6 +69,44 @@ const PersonalInfo = () => {
         },
       }
     );
+  };
+
+  const handlePasswordChangeSubmit = async () => {
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      toast.error("All fields are required");
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters long");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const res = await axiosInstance.put(`/user/${u_id}`, {
+        old_password: oldPassword,
+        password: newPassword,
+      });
+
+      if (res.data.status === 1 || res.data.success === true) {
+        toast.success(res.data.description || "Password changed successfully!");
+        setPasswordModalOpen(false);
+        setOldPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        toast.error(res.data.description || "Failed to change password");
+      }
+    } catch (err) {
+      const errMsg = err.response?.data?.description || err.response?.data?.message || err.message || "Failed to change password";
+      toast.error(errMsg);
+    } finally {
+      setChangingPassword(false);
+    }
   };
 
   // DELETE address
@@ -110,14 +153,14 @@ const PersonalInfo = () => {
     <>
       {(
         <div className="min-h-screen">
-          <div className="w-full lg:pt-8 pt-4 px-2 md:px-8 xl:px-24 flex flex-col md:flex-row font-poppins">
+          <div className="w-full lg:pt-8 pt-4 px-2 md:px-8 xl:px-24 flex flex-col md:flex-row gap-6 md:gap-14 font-poppins">
             {/* Left Sidebar */}
             <div className="md:w-1/3 lg:w-1/4">
               <SideBar />
             </div>
 
             {/* Right Content */}
-            <ScrollReveal animation="fade-left" duration={800} className="flex-1 p-4 sm:p-6 md:p-8">
+            <ScrollReveal animation="fade-left" duration={800} className="flex-1">
               {/* Header section with avatar */}
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#063d32] to-[#1c2f2f] flex items-center justify-center text-white text-xl font-bold shadow-md">
@@ -134,7 +177,7 @@ const PersonalInfo = () => {
               ) : (
                 <div>
                   {/* Contact Details Card */}
-                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8 mb-10">
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-8 mb-10">
                     <h2 className="text-xl font-semibold text-[#3C4242] mb-6 flex items-center gap-2">
                       <User className="text-[#063d32] w-5 h-5" />
                       Contact Details
@@ -149,12 +192,12 @@ const PersonalInfo = () => {
                         ].map(({ label, field, icon: FieldIcon }) => (
                           <div
                             key={field}
-                            className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 border-b border-gray-50 last:border-b-0 gap-4"
+                            className="flex flex-row sm:justify-between sm:items-center py-4 border-b border-gray-50 last:border-b-0 gap-4"
                           >
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                               {editingField === field ? (
                                 <div className="max-w-md">
-                                  <label className="text-xs text-[#807D7E] font-medium uppercase tracking-wider block mb-1.5">
+                                  <label className="text-xs text-[#807D7E] font-medium tracking-wider block mb-1.5">
                                     {label}
                                   </label>
                                   <input
@@ -182,15 +225,15 @@ const PersonalInfo = () => {
                                   </div>
                                 </div>
                               ) : (
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3 min-w-0">
                                   <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-[#063d32] shrink-0">
                                     <FieldIcon className="w-5 h-5" />
                                   </div>
-                                  <div>
-                                    <p className="text-xs text-[#807D7E] font-medium uppercase tracking-wider">
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm text-[#807D7E] font-medium tracking-wider">
                                       {label}
                                     </p>
-                                    <p className={`text-base font-semibold text-[#3C4242] mt-0.5 ${field === "first_name" ? "capitalize" : ""}`}>
+                                    <p className={`text-base font-semibold text-[#3C4242] mt-0.5 break-all sm:break-normal ${field === "first_name" ? "capitalize" : ""}`}>
                                       {field === "password"
                                         ? "••••••••"
                                         : userData && userData[field]}
@@ -201,12 +244,12 @@ const PersonalInfo = () => {
                             </div>
 
                             <div className="sm:self-center">
-                              {isLoggedIn && editingField !== field && (
+                              {isLoggedIn && editingField !== field && field !== "email" && (
                                 <button
                                   className="text-sm font-semibold text-[#063d32] bg-emerald-50 hover:bg-emerald-100 px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
                                   onClick={() => {
                                     if (field === "password") {
-                                      navigate("/forgot-password");
+                                      setPasswordModalOpen(true);
                                     } else {
                                       handleEdit(field);
                                     }
@@ -259,7 +302,7 @@ const PersonalInfo = () => {
                         addresses.map((addr) => (
                           <div
                             key={addr.add_id}
-                            className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:border-emerald-800/10 hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
+                            className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 hover:border-emerald-800/10 hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
                           >
                             <div>
                               <div className="flex justify-between items-start mb-4 gap-2">
@@ -298,8 +341,8 @@ const PersonalInfo = () => {
                             <div className="flex items-center gap-4 border-t border-gray-50 pt-4 mt-auto">
                               <button
                                 className={`text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${addr.add_id.toString().startsWith('dummy')
-                                    ? 'text-gray-300 cursor-not-allowed'
-                                    : 'text-gray-600 hover:text-red-600'
+                                  ? 'text-gray-300 cursor-not-allowed'
+                                  : 'text-gray-600 hover:text-red-600'
                                   }`}
                                 onClick={() => !addr.add_id.toString().startsWith('dummy') && handleDeleteAddress(addr.add_id)}
                                 disabled={addr.add_id.toString().startsWith('dummy')}
@@ -310,13 +353,13 @@ const PersonalInfo = () => {
                               <div className="w-px h-4 bg-gray-200"></div>
                               <button
                                 className={`text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${addr.add_id.toString().startsWith('dummy')
-                                    ? 'text-gray-300 cursor-not-allowed'
-                                    : 'text-[#063d32] hover:text-[#12584a]'
+                                  ? 'text-gray-300 cursor-not-allowed'
+                                  : 'text-[#063d32] hover:text-[#12584a]'
                                   }`}
                                 onClick={() => !addr.add_id.toString().startsWith('dummy') && handleEditAddress(addr)}
                                 disabled={addr.add_id.toString().startsWith('dummy')}
                               >
-                                <Edit3 className="w-4 h-4" />
+                                <Pencil className="w-4 h-4" />
                                 Edit
                               </button>
                             </div>
@@ -376,6 +419,78 @@ const PersonalInfo = () => {
               >
                 {deletingAddress && <Loader2 size={14} className="animate-spin" />}
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Change Password Modal */}
+      {passwordModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-[#00000060] backdrop-blur-sm transition-all duration-300">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl border border-gray-100 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-[#3C4242] mb-4 flex items-center gap-2">
+                <Lock className="text-[#063d32] w-5 h-5" />
+                Change Password
+              </h3>
+              <button
+                onClick={() => {
+                  setPasswordModalOpen(false);
+                  setOldPassword("");
+                  setNewPassword("");
+                  setConfirmPassword("");
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer p-1 rounded-lg"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-[#807D7E] font-medium tracking-wider block mb-1.5">
+                  Old Password
+                </label>
+                <input
+                  type="password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none bg-gray-50/50 transition-all font-medium text-[#3C4242]"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-[#807D7E] font-medium tracking-wider block mb-1.5">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none bg-gray-50/50 transition-all font-medium text-[#3C4242]"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-[#807D7E] font-medium tracking-wider block mb-1.5">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none bg-gray-50/50 transition-all font-medium text-[#3C4242]"
+                />
+              </div>
+            </div>
+            <div className="mt-6">
+              <button
+                className="w-full py-2.5 rounded-xl text-sm font-semibold bg-[#063d32] text-white hover:bg-[#12584a] transition-colors cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60 shadow-sm"
+                onClick={handlePasswordChangeSubmit}
+                disabled={changingPassword}
+              >
+                {changingPassword && <Loader2 size={14} className="animate-spin" />}
+                Change Password
               </button>
             </div>
           </div>

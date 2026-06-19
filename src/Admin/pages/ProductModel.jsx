@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { ApiURL } from "../../Variable";
 import toast from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
@@ -272,6 +272,71 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
+    if (!formData.name || !formData.name.trim()) {
+      toast.error("Product Name is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.cate_id) {
+      toast.error("Category is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.sc_id) {
+      toast.error("Collection is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.f_id) {
+      toast.error("Fabric is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.work_id) {
+      toast.error("Work is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.occasion_id) {
+      toast.error("Occasion is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.style_id) {
+      toast.error("Style is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.price) {
+      toast.error("Price is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.original_price) {
+      toast.error("Original Price is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.sku || !formData.sku.trim()) {
+      toast.error("SKU is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (formData.colors.some((c) => !c.color_id)) {
+      toast.error("Please select a color");
+      setIsSubmitting(false);
+      return;
+    }
+    for (let i = 0; i < formData.colors.length; i++) {
+      const newImagesCount = formData.colors[i].images?.length || 0;
+      const existingImagesCount = existingMedia[i]?.images?.length || 0;
+      if (newImagesCount + existingImagesCount === 0) {
+        toast.error("Please upload at least one image or video for each color!");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     const colorIds = formData.colors.map((c) => c.color_id).filter(Boolean);
     if (new Set(colorIds).size !== colorIds.length) {
       toast.error("Duplicate colors not allowed!");
@@ -375,7 +440,7 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
             <p className="text-sm font-medium text-gray-500 animate-pulse">Loading latest product details...</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             <BasicDetailsSection
               formData={formData}
               handleInputChange={handleInputChange}
@@ -432,7 +497,9 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-900 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer">
+                className="flex items-center gap-2 px-6 py-2 bg-black text-white rounded-xl hover:bg-gray-900 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer disabled:opacity-50"
+              >
+                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                 {isSubmitting ? "Saving..." : (product ? "Update Product" : "Create Product")}
               </button>
             </div>

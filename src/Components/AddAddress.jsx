@@ -203,10 +203,9 @@ const AddAddress = ({
               type="tel"
               value={formData.phone_number}
               onChange={handleChange}
-              placeholder="Phone Number (10-15 digits)"
+              placeholder="Phone Number (10 digits)"
               required
               minLength={10}
-              maxLength={15}
               className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
             />
           </div>
@@ -216,7 +215,7 @@ const AddAddress = ({
             name="address"
             value={formData.address}
             onChange={handleChange}
-            placeholder="flat,house no,floor,building"
+            placeholder="Enter house number, building name"
             required
             className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
           />
@@ -226,7 +225,7 @@ const AddAddress = ({
             name="apartment"
             value={formData.apartment}
             onChange={handleChange}
-            placeholder="area ,street, sector, village"
+            placeholder="Enter area, street, landmark (optional)"
             className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#063d32]"
           />
 
@@ -282,22 +281,22 @@ const AddAddress = ({
             <button
               type="button"
               onClick={() => setAddressType("HOME")}
-              className={`px-6 py-2 rounded-md font-medium transition-all cursor-pointer ${addressType === "HOME"
+              className={`px-6 py-2 rounded-md font-medium transition-all cursor-pointer ${addressType?.toUpperCase() === "HOME"
                 ? "bg-[#063d32] text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
             >
-              HOME
+              Home
             </button>
             <button
               type="button"
               onClick={() => setAddressType("WORK")}
-              className={`px-6 py-2 rounded-md font-medium transition-all cursor-pointer ${addressType === "WORK"
+              className={`px-6 py-2 rounded-md font-medium transition-all cursor-pointer ${addressType?.toUpperCase() === "WORK"
                 ? "bg-[#063d32] text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
             >
-              WORK
+              Work
             </button>
           </div>
 
@@ -308,7 +307,7 @@ const AddAddress = ({
             className="w-full bg-[#063d32] text-white py-3 rounded-lg hover:bg-[#052d25] transition font-medium mt-8 disabled:opacity-70 cursor-pointer flex items-center justify-center gap-2"
           >
             {submitting && <Loader2 size={16} className="animate-spin" />}
-            {submitting ? "Saving..." : (editingAddress ? "UPDATE" : "ADD")}
+            {submitting ? "Saving..." : (editingAddress ? "Edit Address" : "Add Address")}
           </button>
         </form>
       </div>

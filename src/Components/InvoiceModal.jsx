@@ -157,11 +157,11 @@ const InvoiceModal = ({ isOpen, onClose, order, isCreditNote = false }) => {
   const documentNumber = `${documentPrefix}-${new Date(order.createdAt).getFullYear()}-${order.orderId}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
       <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
 
         {/* Modal Controls Bar (Always Visible, Non-printing) */}
-        <div className="no-print flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-100">
+        <div className="no-print flex flex-col sm:flex-row items-center justify-between gap-4 px-4 sm:px-6 py-4 bg-gray-50 border-b border-gray-100">
           <div className="flex items-center gap-1">
             {isCreditNote ? (
               <div className="p-1.5 text-[#1C2F2F] rounded-lg">
@@ -172,29 +172,28 @@ const InvoiceModal = ({ isOpen, onClose, order, isCreditNote = false }) => {
                 <Receipt size={18} />
               </div>
             )}
-            <span className="font-bold text-gray-800">
+            <span className="font-bold text-gray-800 text-sm sm:text-base">
               {isCreditNote ? "View Credit Note" : "View Tax Invoice"}
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handlePrint}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white rounded-lg hover:bg-gray-50 hover:text-black transition cursor-pointer shadow-sm"
-            >
-              <Printer size={16} />
-              Print
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white border rounded-lg transition cursor-pointer shadow-sm ${isCreditNote
-                ? "bg-[#1C2F2F] border-[#1C2F2F] hover:bg-[#152121] hover:border-[#152121]"
-                : "bg-[#1C2F2F] border-[#1C2F2F] hover:bg-[#152121] hover:border-[#152121]"
-                }`}
-            >
-              <Download size={16} />
-              Download PDF
-            </button>
+          <div className="flex items-center justify-between w-full sm:w-auto gap-3">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePrint}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-gray-700 bg-white rounded-lg hover:bg-gray-50 hover:text-black transition cursor-pointer shadow-sm"
+              >
+                <Printer size={14} />
+                Print
+              </button>
+              <button
+                onClick={handleDownloadPDF}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-white bg-[#1C2F2F] border border-[#1C2F2F] rounded-lg hover:bg-[#152121] transition cursor-pointer shadow-sm"
+              >
+                <Download size={14} />
+                Download PDF
+              </button>
+            </div>
             <button
               onClick={onClose}
               className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition cursor-pointer"
@@ -205,11 +204,11 @@ const InvoiceModal = ({ isOpen, onClose, order, isCreditNote = false }) => {
         </div>
 
         {/* Scrollable invoice container */}
-        <div id="invoice-capture-area" className="max-h-[80vh] overflow-y-auto p-6" ref={invoiceRef}>
+        <div id="invoice-capture-area" className="max-h-[80vh] overflow-y-auto p-4 sm:p-6" ref={invoiceRef}>
           <div className="print-shadow-none bg-white font-inter text-gray-800">
 
             {/* Invoice Header Branding */}
-            <div className="flex flex-row justify-between items-center gap-6 border-b-2 border-gray-100 pb-8 mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 border-b-2 border-gray-100 pb-8 mb-8">
               <div>
                 <div>
                   <img src={logo} alt="Logo" className="w-24 h-auto" />
@@ -222,7 +221,7 @@ const InvoiceModal = ({ isOpen, onClose, order, isCreditNote = false }) => {
                 </div>
               </div>
 
-              <div className="text-right">
+              <div className="text-left sm:text-right w-full sm:w-auto">
                 <div className={`inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-3 ${isCreditNote ? "bg-rose-50 text-rose-700 border border-rose-100" : "bg-emerald-50 text-emerald-700 border border-emerald-100"
                   }`}>
                   {isCreditNote ? "Credit Note" : "Tax Invoice"}
@@ -241,7 +240,7 @@ const InvoiceModal = ({ isOpen, onClose, order, isCreditNote = false }) => {
             </div>
 
             {/* Billing & Shipping Address grid */}
-            <div className="grid grid-cols-2 gap-8 mb-8 pb-8 border-b border-gray-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8 pb-8 border-b border-gray-100">
               <div>
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Billed To</h3>
                 <p className="font-semibold text-gray-900 text-base">
@@ -268,7 +267,7 @@ const InvoiceModal = ({ isOpen, onClose, order, isCreditNote = false }) => {
                 </div>
               </div>
 
-              <div className="border-l border-gray-100 pl-8">
+              <div className="border-t md:border-t-0 md:border-l border-gray-100 pt-6 md:pt-0 md:pl-8">
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Order Details</h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between py-1 border-b border-gray-50">
@@ -294,8 +293,8 @@ const InvoiceModal = ({ isOpen, onClose, order, isCreditNote = false }) => {
             </div>
 
             {/* Line Items Table */}
-            <div className="mb-8">
-              <table className="w-full text-left border-collapse">
+            <div className="mb-8 overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[500px]">
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Item Details</th>
@@ -310,7 +309,7 @@ const InvoiceModal = ({ isOpen, onClose, order, isCreditNote = false }) => {
                       <td className="py-4 pr-4">
                         <p className="font-bold text-gray-900 text-sm">{item.productName}</p>
                         <p className="text-xs text-gray-500 mt-1 capitalize">
-                          Color: {item.color_name || "N/A"} {item.size && ` | Size: ${item.size}`}
+                          {item.sku && `SKU: ${item.sku.toUpperCase()} | `}Color: {item.color_name || "N/A"} {item.size && ` | Size: ${item.size}`}
                         </p>
                       </td>
                       <td className="py-4 text-center text-sm font-semibold text-gray-900">{item.quantity}</td>
@@ -323,7 +322,7 @@ const InvoiceModal = ({ isOpen, onClose, order, isCreditNote = false }) => {
             </div>
 
             {/* Invoice Financial summary calculation */}
-            <div className="flex flex-row justify-between items-start gap-8 pt-6 border-t border-gray-200">
+            <div className="flex flex-col md:flex-row justify-between items-stretch md:items-start gap-6 pt-6 border-t border-gray-200">
               <div className="text-xs text-gray-500 max-w-sm">
                 <p className="font-bold text-gray-700 uppercase tracking-wider mb-2">Terms & Notes</p>
                 {isCreditNote ? (
@@ -333,11 +332,17 @@ const InvoiceModal = ({ isOpen, onClose, order, isCreditNote = false }) => {
                 )}
               </div>
 
-              <div className="w-80 space-y-3 font-semibold text-sm">
+              <div className="w-full md:w-80 space-y-3 font-semibold text-sm">
                 <div className="flex justify-between text-gray-500">
                   <span>Subtotal</span>
                   <span className="text-gray-900">₹{Math.round(subTotal)}</span>
                 </div>
+                {order.discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-600">
+                    <span>Discount</span>
+                    <span>-₹{Math.round(order.discountAmount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-gray-500">
                   <span>Shipping & Handling</span>
                   <span className="text-gray-900">₹{Math.round(shipping)}</span>
@@ -349,15 +354,15 @@ const InvoiceModal = ({ isOpen, onClose, order, isCreditNote = false }) => {
               </div>
             </div>
 
-            {/* Signature Area (Useful when printing / PDF saving) */}
-            <div className="mt-16 pt-8 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
+             {/* Signature Area (Useful when printing / PDF saving) */}
+            <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 text-xs text-gray-500 pb-8">
               <div>
                 <p>Support Team: support@kundrat.com</p>
                 <p>Website: www.kundrat.com</p>
               </div>
-              <div className="text-right">
+              <div className="text-left sm:text-right w-full sm:w-auto">
                 <p className="font-semibold text-gray-700 mb-6">Authorized Signatory</p>
-                <div className="h-0.5 w-32 bg-gray-300 ml-auto"></div>
+                <div className="h-0.5 w-32 bg-gray-300 mr-0 sm:ml-auto"></div>
                 <p className="mt-1 text-gray-400">Kundrat Lifestyle Pvt Ltd</p>
               </div>
             </div>

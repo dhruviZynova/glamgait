@@ -188,4 +188,8 @@
         padding: 0 10px 30px;
         margin-top: 20px;
     }
+
+    .bottom-img-wrapper {
+        aspect-ratio: 1 / 1.25;
+    }
 }

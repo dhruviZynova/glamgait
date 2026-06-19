@@ -7,11 +7,15 @@ import toast from "react-hot-toast";
 import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 import ScrollReveal from "./Ui/ScrollReveal";
+import { useQueryClient } from "@tanstack/react-query";
+import OfferList from "./OfferList";
+import CouponList from "./CouponList";
 
 const Checkout = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { cartItems = [], guestId: stateGuestId } = location.state || {};
+    const queryClient = useQueryClient();
 
     const [currentStep, setCurrentStep] = useState(1); // 1: Personal, 2: Billing, 3: Confirmation
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -23,9 +27,36 @@ const Checkout = () => {
     const addressDropdownRef = useRef(null);
     const isPlacingOrderRef = useRef(false);
 
+    // Offers and coupons states
+    const [offers, setOffers] = useState([]);
+    const [coupons, setCoupons] = useState([]);
+    const [couponCode, setCouponCode] = useState("");
+    const [couponDiscount, setCouponDiscount] = useState(0);
+    const [couponApplied, setCouponApplied] = useState(false);
+    const [offerDiscount, setOfferDiscount] = useState(0);
+    const [appliedOffer, setAppliedOffer] = useState(null);
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+
     const user = userInfo();
     const u_id = user?.u_id;
     const guestId = stateGuestId || getGuestId();
+
+    // Fetch offers and coupons
+    useEffect(() => {
+        const fetchOffersCoupons = async () => {
+            try {
+                const [offerRes, couponRes] = await Promise.all([
+                    axiosInstance.post(`/getoffers`),
+                    axiosInstance.post(`/getcoupons`),
+                ]);
+                setOffers(offerRes.data.data || []);
+                setCoupons(couponRes.data.data || []);
+            } catch (err) {
+                console.error("Error fetching offers/coupons:", err);
+            }
+        };
+        fetchOffersCoupons();
+    }, []);
 
     const [formData, setFormData] = useState({
         // Personal fields
@@ -118,8 +149,73 @@ const Checkout = () => {
         (acc, item) => acc + item.price * item.quantity,
         0
     ), [cartItems]);
+
+    // Evaluate auto-applied offers
+    useEffect(() => {
+        if (couponApplied) {
+            setOfferDiscount(0);
+            setAppliedOffer(null);
+            return;
+        }
+
+        let bestDiscount = 0;
+        let bestOffer = null;
+        const totalQty = cartItems.reduce((s, i) => s + i.quantity, 0);
+
+        offers.forEach((offer) => {
+            if (!offer.is_active) return;
+
+            let discount = 0;
+
+            if (offer.offer_type === "QTY" && totalQty >= offer.min_qty) {
+                discount = (subtotal * offer.discount_percent) / 100;
+            }
+
+            if (offer.offer_type === "CART" && subtotal >= offer.min_amount) {
+                discount = (subtotal * offer.discount_percent) / 100;
+            }
+
+            if (discount > bestDiscount) {
+                bestDiscount = discount;
+                bestOffer = offer;
+            }
+        });
+
+        setOfferDiscount(Math.round(bestDiscount));
+        setAppliedOffer(bestOffer);
+    }, [offers, cartItems, subtotal, couponApplied]);
+
+    const applyCoupon = () => {
+        if (!couponCode.trim()) return toast.error("Enter coupon code");
+
+        const coupon = coupons.find(
+            (c) => c.code === couponCode.toUpperCase() && c.is_active,
+        );
+
+        if (!coupon) return toast.error("Invalid or expired coupon");
+
+        if (subtotal < coupon.min_amount) {
+            return toast.error(`Minimum cart ₹${coupon.min_amount}`);
+        }
+
+        const discount = Math.round((subtotal * coupon.discount_percent) / 100);
+
+        setCouponDiscount(discount);
+        setCouponApplied(true);
+        setAppliedCoupon(coupon);
+        toast.success("Coupon applied successfully");
+    };
+
+    const removeCoupon = () => {
+        setCouponApplied(false);
+        setCouponCode("");
+        setCouponDiscount(0);
+        setAppliedCoupon(null);
+    };
+
     const shipping = location.state?.shippingCharge || 0;
-    const total = React.useMemo(() => subtotal + shipping, [subtotal, shipping]);
+    const totalDiscount = couponDiscount + offerDiscount;
+    const total = React.useMemo(() => Math.max(0, subtotal - totalDiscount + shipping), [subtotal, totalDiscount, shipping]);
 
     const steps = [
         { id: 1, name: "Personal" },
@@ -228,7 +324,7 @@ const Checkout = () => {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -238,7 +334,7 @@ const Checkout = () => {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -248,7 +344,7 @@ const Checkout = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -258,7 +354,7 @@ const Checkout = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="md:col-span-2 space-y-2">
@@ -268,7 +364,7 @@ const Checkout = () => {
                     name="streetAddress"
                     value={formData.streetAddress}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -278,7 +374,7 @@ const Checkout = () => {
                     name="townCity"
                     value={formData.townCity}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -288,7 +384,7 @@ const Checkout = () => {
                     name="state"
                     value={formData.state}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -298,7 +394,7 @@ const Checkout = () => {
                     name="country"
                     value={formData.country}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
             <div className="space-y-2">
@@ -308,7 +404,7 @@ const Checkout = () => {
                     name="postcodeZip"
                     value={formData.postcodeZip}
                     onChange={handleInputChange}
-                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1C2F2F] font-[Oxygen]"
+                    className="w-full bg-[#f9f9f9a1] border border-[#E9E9E9] rounded-[8px] px-4 py-3 focus:outline-none font-[Oxygen]"
                 />
             </div>
         </div>
@@ -489,6 +585,8 @@ const Checkout = () => {
                 address_id: selectedAddressId,
                 add_id: selectedAddressId,
                 payment_method: formData.paymentMethod.toLowerCase(),
+                coupon_code: couponApplied && appliedCoupon ? appliedCoupon.code : null,
+                offer_id: appliedOffer ? appliedOffer.offer_id : null,
             };
 
             const res = await axiosInstance.post(`/createorder`, orderData);
@@ -497,6 +595,11 @@ const Checkout = () => {
             if (apiBody.status !== 1) {
                 throw new Error(apiBody.message || "Order failed");
             }
+
+            // Clear cart from local storage and trigger navbar updates
+            localStorage.removeItem("localCart");
+            queryClient.invalidateQueries({ queryKey: ["cart"] });
+            window.dispatchEvent(new Event("cartUpdated"));
 
             if (formData.paymentMethod === "online") {
                 const checkoutUrl = apiBody?.data?.checkoutUrl;
@@ -536,12 +639,12 @@ const Checkout = () => {
 
     return (
         <>
-            <div className="bg-[#f3f0ed] min-h-screen px-2 md:px-10 py-10 font-poppins">
+            <div className="min-h-screen px-2 md:px-10 py-10 font-poppins">
                 <div className="">
-                    <div className="flex flex-col lg:flex-row gap-8">
+                    <div className="flex flex-col lg:flex-row items-start gap-8">
 
                         {/* Left Section - Form */}
-                        <ScrollReveal animation="fade-right" duration={800} className="bg-[#F3F0ED] flex-1 rounded-[10px] overflow-hidden border border-[#DEDFE1]">
+                        <ScrollReveal animation="fade-right" duration={800} className="w-full lg:w-[480px] flex-1 rounded-[10px] overflow-hidden border border-[#DEDFE1]">
                             {/* Steps Header */}
                             <div className="bg-[#E7DCD2]">
                                 <div className="flex justify-between items-center px-4 md:px-10 py-6">
@@ -549,7 +652,7 @@ const Checkout = () => {
                                         <button
                                             key={step.id}
                                             onClick={() => setCurrentStep(step.id)}
-                                            className={`text-sm md:text-lg font-medium font-[Oxygen] transition-colors duration-300 cursor-pointer ${currentStep === step.id ? "text-[#000000]" : "text-[#767676]"
+                                            className={`text-md md:text-lg font-medium font-[Oxygen] transition-colors duration-300 cursor-pointer ${currentStep === step.id ? "text-[#000000]" : "text-[#767676]"
                                                 }`}
                                         >
                                             {step.name}
@@ -580,16 +683,16 @@ const Checkout = () => {
 
                         {/* Right Section - Cart Details */}
                         <ScrollReveal animation="fade-left" duration={800} className="w-full lg:w-[480px]">
-                            <div className="bg-[#F3F0ED] rounded-[10px] overflow-hidden border border-[#DEDFE1]">
+                            <div className="rounded-[10px] overflow-hidden border border-[#DEDFE1]">
                                 <div className="bg-[#E7DCD2] px-4 md:px-10 py-6">
                                     <h3 className="text-2xl font-medium text-[#000000] font-[Oxygen]">Cart Details</h3>
                                 </div>
 
                                 <div className=" ">
                                     {/* Table Header */}
-                                    <div className="flex justify-between px-4 md:px-10 py-6 text-md font-medium text-[#3D3D3D] font-[Oxygen] uppercase tracking-wide">
+                                    <div className="flex justify-between px-4 md:px-10 py-6 text-xs md:text-md font-medium text-[#3D3D3D] font-[Oxygen] uppercase tracking-wide">
                                         <span className="w-1/2">PRODUCT</span>
-                                        <span className="w-1/4 text-center">Quantity</span>
+                                        <span className="w-1/4 text-center">QTY</span>
                                         <span className="w-1/4 text-right">SUBTOTAL</span>
                                     </div>
 
@@ -598,14 +701,37 @@ const Checkout = () => {
                                     {/* Product List */}
                                     <div className="space-y-8 px-4 md:px-10 py-6">
                                         {cartItems.map((item, index) => (
-                                            <div key={item.cart_id || index} className="flex items-center text-[#767676] font-[Oxygen] text-lg">
+                                            <div key={item.cart_id || index} className="flex items-start text-[#767676] font-[Oxygen] text-sm md:text-lg">
                                                 <div className="w-1/2 flex flex-col">
-                                                    <span className="font-normal">{item.product_name}</span>
+                                                    <span className="font-medium text-[#3D3D3D] leading-tight">{item.product_name}</span>
+
+                                                    {/* --- UPDATED DYNAMIC COLOR SECTION --- */}
+                                                    {(item.color_name || item.size_name) && (
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            {/* Dynamic Color Circle */}
+                                                            {item.color_code && (
+                                                                <div
+                                                                    className="w-4 h-4 rounded-full border border-gray-200 shadow-sm flex-shrink-0"
+                                                                    style={{ backgroundColor: item.color_code }}
+                                                                    title={item.color_name}
+                                                                />
+                                                            )}
+
+                                                            {/* Text Label: Color / Size */}
+                                                            <span className="text-xs text-[#9A8F87] flex items-center gap-1">
+                                                                {item.color_name && <span className="capitalize">{item.color_name}</span>}
+                                                                {(item.color_name && item.size_name) && <span className="text-gray-400">/</span>}
+                                                                {item.size_name && <span className="uppercase">{item.size_name}</span>}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {/* --- END UPDATED SECTION --- */}
+
                                                 </div>
-                                                <span className="w-1/4 text-center">
+                                                <span className="w-1/4 text-center pt-1">
                                                     {item.quantity < 10 ? `0${item.quantity}` : item.quantity}
                                                 </span>
-                                                <span className="w-1/4 text-right">
+                                                <span className="w-1/4 text-right pt-1">
                                                     ₹{(item.price * item.quantity).toFixed(0)}
                                                 </span>
                                             </div>
@@ -628,11 +754,91 @@ const Checkout = () => {
                                             <span className="text-[#767676] text-lg">{shipping > 0 ? `₹${shipping.toFixed(0)}` : "Free"}</span>
                                         </div>
 
+                                        {offerDiscount > 0 && (
+                                            <>
+                                                <div className="border-b border-dashed border-[#d7d4d4]"></div>
+                                                <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6 text-green-700">
+                                                    <span className="text-md font-medium uppercase tracking-wide">Offer Discount</span>
+                                                    <span className="text-lg font-semibold">- ₹{offerDiscount}</span>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {couponApplied && couponDiscount > 0 && (
+                                            <>
+                                                <div className="border-b border-dashed border-[#d7d4d4]"></div>
+                                                <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6 text-blue-700">
+                                                    <span className="text-md font-medium uppercase tracking-wide">Coupon Discount ({appliedCoupon?.code})</span>
+                                                    <span className="text-lg font-semibold">- ₹{couponDiscount}</span>
+                                                </div>
+                                            </>
+                                        )}
+
                                         <div className="border-b border-dashed border-[#d7d4d4]"></div>
 
                                         <div className="flex justify-between items-center font-[Oxygen] px-4 md:px-10 py-6">
                                             <span className="text-md font-medium text-[#3D3D3D] tracking-wide">Total</span>
                                             <span className="text-[#767676] text-2xl font-semibold">₹{total.toFixed(0)}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Coupon and Offers Promo Section */}
+                                    <div className="px-4 md:px-10 py-6 border-t border-[#DEDFE1] bg-gray-50/70">
+                                        <h4 className="text-sm font-semibold text-[#1C2F2F] mb-4 font-[Oxygen] uppercase tracking-wider">Promotions & Coupons</h4>
+
+                                        {/* Coupon Input */}
+                                        <div className="mt-2">
+                                            {!couponApplied ? (
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        value={couponCode}
+                                                        onChange={(e) => setCouponCode(e.target.value)}
+                                                        placeholder="Enter Coupon code"
+                                                        className="border border-gray-300 p-2.5 rounded-lg w-full text-sm font-[Oxygen] focus:outline-none uppercase"
+                                                    />
+                                                    <button
+                                                        onClick={applyCoupon}
+                                                        className="bg-[#1C2F2F] hover:bg-black text-white px-5 rounded-lg text-sm font-medium font-[Oxygen] transition-colors cursor-pointer"
+                                                    >
+                                                        Apply
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex justify-between items-center bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                                    <div>
+                                                        <p className="text-xs text-blue-800 font-semibold font-[Oxygen]">Coupon Applied</p>
+                                                        <p className="text-sm font-mono font-bold text-blue-900">{appliedCoupon?.code}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={removeCoupon}
+                                                        className="text-red-600 text-sm font-semibold hover:underline font-[Oxygen] cursor-pointer"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Auto-applied offer notification */}
+                                        {!couponApplied && appliedOffer && offerDiscount > 0 && (
+                                            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-4 flex justify-between items-center">
+                                                <div className="flex-1 pr-2">
+                                                    <p className="text-xs text-green-800 font-semibold font-[Oxygen]">🎉 Best Offer Auto-Applied</p>
+                                                    <p className="text-xs text-green-900 font-medium font-[Oxygen] mt-0.5 leading-relaxed">
+                                                        {appliedOffer.offer_type === "QTY"
+                                                            ? `Buy ${appliedOffer.min_qty}+ items & get ${appliedOffer.discount_percent}% OFF`
+                                                            : `Flat ${appliedOffer.discount_percent}% OFF on orders above ₹${appliedOffer.min_amount}`
+                                                        }
+                                                    </p>
+                                                </div>
+                                                <span className="font-bold text-green-800 text-sm">- ₹{offerDiscount}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Lists of all active promotions */}
+                                        <div className="mt-4 space-y-4">
+                                            <OfferList offers={offers} />
+                                            <CouponList coupons={coupons} />
                                         </div>
                                     </div>
                                 </div>
@@ -650,11 +856,17 @@ const Checkout = () => {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
                     <div
                         className="absolute inset-0 bg-[#00000040] backdrop-blur-sm"
-                        onClick={() => setShowSuccessModal(false)}
+                        onClick={() => {
+                            setShowSuccessModal(false);
+                            navigate(u_id ? "/myorders" : "/");
+                        }}
                     ></div>
                     <div className="bg-white rounded-[24px] p-8 md:p-12 w-full max-w-[650px] relative z-10 shadow-xl animate-fadeIn scale-up text-center space-y-8">
                         <button
-                            onClick={() => setShowSuccessModal(false)}
+                            onClick={() => {
+                                setShowSuccessModal(false);
+                                navigate(u_id ? "/myorders" : "/");
+                            }}
                             className="absolute top-6 right-6 text-[#767676] hover:text-[#000] transition-colors cursor-pointer"
                         >
                             <X size={24} />

@@ -73,10 +73,6 @@ const Users = () => {
     }
   };
 
-  const handleDelete = (userId, first_name) => {
-    setDeleteModal({ isOpen: true, userId, first_name });
-  };
-
   const confirmDelete = async () => {
     try {
       await adminAxios.delete(`${ApiURL}/user/delete/${deleteModal.userId}`);
@@ -100,11 +96,12 @@ const Users = () => {
           <input
             type="text"
             placeholder="Search by name or email..."
-            className="w-full px-4 py-2 border rounded-xl focus:outline-none"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSearch()}
           />
+          <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
         </div>
       </div>
 

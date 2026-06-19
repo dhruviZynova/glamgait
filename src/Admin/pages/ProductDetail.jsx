@@ -3,15 +3,14 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   RefreshCw,
-  Edit,
-  Trash2,
   ArrowLeft,
-  Palette,
-  Ruler,
-  AlertCircle,
-  CheckCircle,
+  Tag,
+  Package,
+  Layers,
+  Play,
 } from "lucide-react";
 import ProductModal from "./ProductModel";
+import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import { ApiURL, showToaster } from "../../Variable";
 import { adminAxios } from "../../Axios/axios";
 
@@ -19,10 +18,10 @@ const ProductDetail = () => {
   const { p_id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
+  const [activeTab, setActiveTab] = useState("DETAILS");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState(null);
   const [mainMedia, setMainMedia] = useState("");
-  const [showStockMatrix, setShowStockMatrix] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchProduct = async () => {
@@ -33,20 +32,20 @@ const ProductDetail = () => {
       );
       const productData = response.data.data;
 
-      // Build stock lookup: { "pcolor_id-psize_id": remaining_qty }
       const stockMap = {};
       productData.productvariants?.forEach((v) => {
         stockMap[`${v.pcolor_id}-${v.psize_id}`] = v.remaining_qty;
       });
 
-      // Attach stock to each size under each color
       const enhancedColors =
         productData.productcolors?.map((color) => {
           let sizesWithStock = [];
           let colorTotalStock = 0;
 
-          if (productData.productsizes && productData.productsizes.length > 0) {
-            // Size-wise stock
+          if (
+            productData.productsizes &&
+            productData.productsizes.length > 0
+          ) {
             sizesWithStock = productData.productsizes.map((ps) => {
               const key = `${color.pcolor_id}-${ps.psize_id}`;
               const qty = stockMap[key] || 0;
@@ -59,7 +58,6 @@ const ProductDetail = () => {
               };
             });
           } else {
-            // No sizes → use total variant qty for this color
             const variant = productData.productvariants?.find(
               (v) => v.pcolor_id === color.pcolor_id
             );
@@ -67,7 +65,7 @@ const ProductDetail = () => {
             sizesWithStock = [
               {
                 psize_id: null,
-                size: { size_name: "Free Size" }, // or "One Size"
+                size: { size_name: "Free Size" },
                 remaining_qty: colorTotalStock,
                 in_stock: colorTotalStock > 0,
                 low_stock: colorTotalStock > 0 && colorTotalStock <= 5,
@@ -94,12 +92,14 @@ const ProductDetail = () => {
 
       setProduct(enhancedProduct);
 
-      // Auto-select first color (regardless of stock)
       if (enhancedColors.length > 0) {
         setSelectedColor(enhancedColors[0]);
       }
     } catch (error) {
-      showToaster(0, error?.response?.data?.description || "Error fetching product");
+      showToaster(
+        0,
+        error?.response?.data?.description || "Error fetching product"
+      );
       navigate("/admin/product");
     } finally {
       setLoading(false);
@@ -130,17 +130,37 @@ const ProductDetail = () => {
     setMainMedia(`${ApiURL}/assets/Products/${imageUrl}`);
   };
 
-  const handleDelete = async () => {
-    if (window.confirm("Delete this product permanently?")) {
-      try {
-        await adminAxios.delete(`${ApiURL}/deleteproduct/${p_id}`);
-        showToaster(1, "Product deleted");
-        navigate("/admin/product");
-      } catch (error) {
-        showToaster(0, error?.response?.data?.description || "Error deleting product");
-      }
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    isDeleting: false,
+  });
+
+  const handleDeleteClick = () => {
+    setDeleteModal({ isOpen: true, isDeleting: false });
+  };
+
+  const confirmDelete = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
+    try {
+      await adminAxios.delete(`${ApiURL}/deleteproduct/${p_id}`);
+      showToaster(1, "Product deleted");
+      navigate("/admin/product");
+    } catch (error) {
+      showToaster(
+        0,
+        error?.response?.data?.description || "Error deleting product"
+      );
+      setDeleteModal({ isOpen: false, isDeleting: false });
     }
   };
+
+  const discountPercent =
+    product?.original_price && product?.original_price > product?.price
+      ? Math.round(
+        ((product.original_price - product.price) / product.original_price) *
+        100
+      )
+      : 0;
 
   if (loading) {
     return (
@@ -151,9 +171,24 @@ const ProductDetail = () => {
         </div>
         <div className="glamloader-ring">
           <svg viewBox="0 0 72 72">
-            <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
-            <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
-            <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+            <circle
+              className="glamloader-ring-track"
+              cx="36"
+              cy="36"
+              r="32"
+            />
+            <circle
+              className="glamloader-ring-arc glamloader-ring-arc--a2"
+              cx="36"
+              cy="36"
+              r="32"
+            />
+            <circle
+              className="glamloader-ring-arc glamloader-ring-arc--a1"
+              cx="36"
+              cy="36"
+              r="32"
+            />
           </svg>
           <div className="glamloader-ring-dot" />
         </div>
@@ -169,128 +204,274 @@ const ProductDetail = () => {
     );
   }
 
+  const tabs = ["DESCRIPTION", "DETAILS", "STOCK MATRIX"];
+
+  const detailRows = [
+    product.category &&
+    (product.category.cate_name || product.category.name) && {
+      label: "Category",
+      value: product.category.cate_name || product.category.name,
+      icon: <Layers className="w-4 h-4" />,
+    },
+    product.subcategory &&
+    (product.subcategory.name || product.subcategory.subcate_name) && {
+      label: "Collection",
+      value: product.subcategory.name || product.subcategory.subcate_name,
+      icon: <Package className="w-4 h-4" />,
+    },
+    product.fabric &&
+    (product.fabric.name ||
+      product.fabric.fabric_name ||
+      product.fabric.f_name) && {
+      label: "Fabric",
+      value:
+        product.fabric.name ||
+        product.fabric.fabric_name ||
+        product.fabric.f_name,
+      icon: <Tag className="w-4 h-4" />,
+    },
+    product.work &&
+    (product.work.name ||
+      product.work.work_name ||
+      product.work.w_name) && {
+      label: "Work",
+      value:
+        product.work.name ||
+        product.work.work_name ||
+        product.work.w_name,
+      icon: <Tag className="w-4 h-4" />,
+    },
+    product.occasion &&
+    (product.occasion.name ||
+      product.occasion.occasion_name ||
+      product.occasion.o_name) && {
+      label: "Occasion",
+      value:
+        product.occasion.name ||
+        product.occasion.occasion_name ||
+        product.occasion.o_name,
+      icon: <Tag className="w-4 h-4" />,
+    },
+    product.style &&
+    (product.style.name ||
+      product.style.style_name ||
+      product.style.s_name) && {
+      label: "Style",
+      value:
+        product.style.name ||
+        product.style.style_name ||
+        product.style.s_name,
+      icon: <Tag className="w-4 h-4" />,
+    },
+    product.weight > 0 && {
+      label: "Weight",
+      value: `${product.weight} kg`,
+      icon: <Package className="w-4 h-4" />,
+    },
+    (product.length > 0 || product.width > 0 || product.height > 0) && {
+      label: "Dimensions (L × W × H)",
+      value: `${product.length || 0} × ${product.width || 0} × ${product.height || 0
+        } cm`,
+      icon: <Package className="w-4 h-4" />,
+    },
+  ].filter(Boolean);
+
   return (
-    <div className="pb-8">
+    <div className="pb-12 px-4 sm:px-6 lg:px-10 mx-auto mt-2 sm:mt-4 lg:mt-6 max-w-[1400px]">
       {/* Header */}
-      <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="mb-8 flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-700 hover:text-black cursor-pointer"
+          className="group flex items-center gap-2 text-gray-400 hover:text-gray-800 transition-colors cursor-pointer text-sm font-medium"
         >
-          <ArrowLeft /> Back
+          <ArrowLeft
+            size={16}
+            className="transition-transform group-hover:-translate-x-0.5"
+          />
+          <span className="uppercase tracking-wider text-xs">Back</span>
         </button>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-black text-white px-5 py-3 rounded-lg flex items-center gap-2 hover:bg-gray-800 cursor-pointer"
-          >
-            <Edit size={18} /> Edit Product
-          </button>
-          <button
-            onClick={handleDelete}
-            className="bg-red-600 text-white px-5 py-3 rounded-lg flex items-center gap-2 hover:bg-red-700 cursor-pointer"
-          >
-            <Trash2 size={18} /> Delete
-          </button>
-        </div>
+        <div className="h-4 w-px bg-gray-200" />
+        <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">
+          Product Detail
+        </span>
       </div>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Left: Media + Color Selector */}
-        <div className="space-y-6">
-          {/* Main Media */}
-          {/* Main Media */}
-          <div className="bg-white rounded-2xl overflow-hidden shadow-lg">
-            {mainMedia ? (
+      <div className="flex flex-col lg:flex-row gap-10 xl:gap-14">
+        {/* ─── Left: Media Gallery ─── */}
+        <div className="flex flex-col-reverse md:flex-row gap-4 lg:gap-5 flex-shrink-0">
+          {/* Thumbnails Strip */}
+          {selectedColor?.productimages?.length > 0 && (
+            <div
+              className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto pb-2 md:pb-0 md:p-1 justify-start w-full md:w-[80px] lg:w-[92px] flex-shrink-0 scroll-smooth"
+              style={{ maxHeight: "580px" }}
+            >
+              {selectedColor.productimages.map((img, idx) => {
+                const mediaUrl = `${ApiURL}/assets/Products/${img.image_url}`;
+                const isVideo = /\.(mp4|webm|mov|avi)$/i.test(
+                  img.image_url
+                );
+                const isActive = mainMedia === mediaUrl;
+
+                return (
+                  <button
+                    key={img.image_id || idx}
+                    onClick={() => handleThumbnailClick(img.image_url)}
+                    className={`w-[72px] h-[96px] lg:w-[80px] lg:h-[106px] flex-shrink-0 rounded-lg overflow-hidden transition-all duration-200 cursor-pointer relative group ${isActive
+                      ? "ring-1 ring-gray-900 ring-offset-1 shadow-md"
+                      : "ring-1 ring-gray-200 hover:ring-gray-300 hover:shadow-sm"
+                      }`}
+                  >
+                    {isVideo ? (
+                      <div className="w-full h-full bg-gray-100 relative">
+                        <video
+                          src={mediaUrl}
+                          className="w-full h-full object-cover"
+                          muted
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                          <Play className="w-5 h-5 text-white fill-white" />
+                        </div>
+                      </div>
+                    ) : (
+                      <img
+                        src={mediaUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Main Media — fixed height 580px */}
+          <div className="bg-[#f7f7f8] rounded-xl shadow-lg overflow-hidden flex-shrink-0" style={{ width: "460px", height: "580px" }}>
+            {mainMedia && !mainMedia.includes("undefined") ? (
               (() => {
                 const isVideo = /\.(mp4|webm|mov|avi)$/i.test(mainMedia);
-                const imageUrl = selectedColor?.productimages?.[0]?.image_url;
+                const imageUrl =
+                  selectedColor?.productimages?.[0]?.image_url;
 
                 return isVideo ? (
-                  <div className="relative">
-                    <video
-                      src={mainMedia}
-                      controls
-                      className="w-full aspect-[3/4] object-cover"
-                      poster={
-                        imageUrl
-                          ? `${ApiURL}/assets/Products/${imageUrl}`
-                          : undefined
-                      }
-                    >
-                      <source src={mainMedia} type="video/mp4" />
-                      <source src={mainMedia} type="video/webm" />
-                      Your browser does not support the video tag.
-                    </video>
-                    {/* Play icon overlay (optional, for consistency) */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="bg-white/80 rounded-full p-4 shadow-lg">
-                        <svg
-                          className="w-12 h-12 text-black"
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
+                  <video
+                    src={mainMedia}
+                    controls
+                    className="w-full h-full object-cover object-top"
+                    poster={
+                      imageUrl
+                        ? `${ApiURL}/assets/Products/${imageUrl}`
+                        : undefined
+                    }
+                  >
+                    <source src={mainMedia} type="video/mp4" />
+                    <source src={mainMedia} type="video/webm" />
+                    Your browser does not support the video tag.
+                  </video>
                 ) : (
                   <img
                     src={mainMedia}
-                    alt="Main"
-                    className="w-full aspect-[3/4] object-cover"
+                    alt={product.name}
+                    className="w-full h-full object-cover object-top"
                   />
                 );
               })()
             ) : (
-              <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full aspect-[3/4] flex items-center justify-center text-gray-500">
-                No Media
+              <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 gap-3">
+                <Package className="w-12 h-12" />
+                <span className="text-sm font-medium">No Image Available</span>
               </div>
             )}
           </div>
+        </div>
 
-          {/* Thumbnails */}
-          {selectedColor?.productimages?.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {selectedColor.productimages.map((img) => {
-                  const mediaUrl = `${ApiURL}/assets/Products/${img.image_url}`;
-                  const isVideo = /\.(mp4|webm|mov|avi)$/i.test(img.image_url);
+        {/* ─── Right: Product Info ─── */}
+        <div className="flex-1 min-w-0 pt-0 lg:pt-1">
+          {/* Product Name */}
+          <h1 className="text-[22px] sm:text-2xl font-semibold text-gray-900 leading-snug tracking-tight mb-3">
+            {product.name}
+          </h1>
+
+          {/* SKU Badge */}
+          <div className="mb-5">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-md uppercase tracking-wider">
+              SKU
+              <span className="text-gray-900 font-bold">
+                {product.sku || "N/A"}
+              </span>
+            </span>
+          </div>
+
+          {/* Price Block */}
+          <div className="mb-6 flex items-end gap-3 flex-wrap">
+            {product.original_price > product.price && (
+              <>
+                <span className="text-gray-400 line-through text-base font-normal">
+                  ₹{product.original_price}
+                </span>
+                <span className="inline-flex items-center px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-md">
+                  {discountPercent}% OFF
+                </span>
+              </>
+            )}
+            <span className="text-3xl font-bold text-gray-900 tracking-tight">
+              ₹{product.price}
+            </span>
+          </div>
+
+          {/* Color Swatches */}
+          {product.productcolors.length > 0 && (
+            <div className="mb-7">
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                Color
+                {selectedColor?.color?.color_name && (
+                  <span className="text-gray-900 font-bold normal-case tracking-normal ml-1.5">
+                    — {selectedColor.color.color_name}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                {product.productcolors.map((color) => {
+                  const isSelected =
+                    selectedColor?.pcolor_id === color.pcolor_id;
+                  const outOfStock = !color.has_stock;
+                  const colorCode =
+                    color.color?.color_code || color.color_code || "#ccc";
 
                   return (
                     <button
-                      key={img.image_id}
-                      onClick={() => handleThumbnailClick(img.image_url)}
-                      className={`w-20 h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all relative cursor-pointer ${mainMedia === mediaUrl
-                        ? "border-black"
-                        : "border-gray-300"
+                      key={color.pcolor_id}
+                      onClick={() => handleColorChange(color)}
+                      disabled={outOfStock}
+                      title={color.color?.color_name}
+                      className={`relative w-9 h-9 rounded-full transition-all duration-200 flex items-center justify-center ${isSelected
+                        ? "ring-1 ring-gray-900 ring-offset-[3px]"
+                        : ""
+                        } ${outOfStock
+                          ? "cursor-not-allowed opacity-40"
+                          : "cursor-pointer"
                         }`}
+                      style={{ backgroundColor: colorCode }}
                     >
-                      {isVideo ? (
-                        <div className="relative w-full h-full">
-                          <video
-                            src={mediaUrl}
-                            className="w-full h-full object-cover"
-                            muted
+                      {isSelected && (
+                        <svg
+                          className="w-4 h-4 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={3}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M5 13l4 4L19 7"
                           />
-                          {/* Play icon on thumbnail */}
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                            <svg
-                              className="w-6 h-6 text-white"
-                              fill="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </div>
+                        </svg>
+                      )}
+                      {outOfStock && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-full h-[2px] bg-gray-500 rotate-45 rounded-full" />
                         </div>
-                      ) : (
-                        <img
-                          src={mediaUrl}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
                       )}
                     </button>
                   );
@@ -299,195 +480,183 @@ const ProductDetail = () => {
             </div>
           )}
 
-          {/* Color Selector */}
-          <div className="bg-white p-5 rounded-2xl shadow">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Palette className="w-5 h-5" /> Available Colors
-            </h3>
-            <div className="flex flex-wrap gap-3">
-              {product.productcolors.map((color) => {
-                const isSelected = selectedColor?.pcolor_id === color.pcolor_id;
-                const outOfStock = !color.has_stock;
-
-                return (
-                  <button
-                    key={color.pcolor_id}
-                    onClick={() => handleColorChange(color)}
-                    disabled={outOfStock}
-                    className={`relative w-12 h-12 rounded-full transition-all ${isSelected
-                      ? "ring-2 ring-offset-1 ring-black"
-                      : "ring-1 ring-offset-1 ring-gray-300 hover:ring-black"
-                      } ${outOfStock ? "cursor-not-allowed" : ""}`}
-                    style={{ backgroundColor: color.color?.color_code || color.color_code || "#ccc" }}
-                    title={color.color?.color_name}
-                  >
-                    {isSelected && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-3 h-3 bg-white rounded-full border-2 border-black" />
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Details + Stock */}
-        <div className="space-y-6">
-          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg">
-            <h1 className="text-2xl font-medium mb-4">{product.name}</h1>
-
-            {/* Price */}
-            <div className="mb-6">
-              <span className="text-3xl font-bold">₹{product.price}</span>
-              {product.original_price > product.price && (
-                <span className="text-xl text-gray-500 line-through ml-3">
-                  ₹{product.original_price}
-                </span>
+          {/* Action Buttons */}
+          <div className="flex gap-3 mb-8">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-gray-900 text-white px-7 py-2.5 font-semibold text-sm hover:bg-gray-800 active:bg-gray-950 transition-all duration-150 tracking-wider rounded-lg cursor-pointer"
+            >
+              Edit Product
+            </button>
+            <button
+              onClick={handleDeleteClick}
+              disabled={deleteModal.isDeleting}
+              className="border border-gray-300 text-gray-600 px-7 py-2.5 font-semibold text-sm hover:border-red-300 hover:text-red-600 hover:bg-red-50 active:bg-red-100 transition-all duration-150 tracking-wider rounded-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {deleteModal.isDeleting ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                "Delete"
               )}
+            </button>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-gray-200" />
+
+          {/* ─── Tabs ─── */}
+          <div className="mt-8">
+            <div className="flex gap-0 border-b border-gray-200 overflow-x-auto">
+              {tabs.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`relative px-0 pb-3.5 text-[11px] font-bold tracking-[0.12em] uppercase transition-colors duration-200 cursor-pointer whitespace-nowrap mr-8 last:mr-0 ${activeTab === tab
+                    ? "text-gray-900"
+                    : "text-gray-400 hover:text-gray-600"
+                    }`}
+                >
+                  {tab}
+                  {activeTab === tab && (
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gray-900 rounded-full" />
+                  )}
+                </button>
+              ))}
             </div>
 
-            {/* Stock Summary */}
-            <div className="mb-8 p-5 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Total Available Stock</p>
-                  <p className="text-3xl font-bold text-green-700">
-                    {product.total_stock || 0}
+            <div className="pt-7 pb-2">
+              {/* ── DESCRIPTION TAB ── */}
+              {activeTab === "DESCRIPTION" && (
+                <div className="max-w-2xl">
+                  <p className="text-[15px] text-gray-600 leading-relaxed whitespace-pre-line">
+                    {product.description || "No description available."}
                   </p>
                 </div>
-                {product.has_any_stock ? (
-                  <CheckCircle className="w-12 h-12 text-green-600" />
-                ) : (
-                  <AlertCircle className="w-12 h-12 text-red-600" />
-                )}
-              </div>
-              {!product.has_any_stock && (
-                <p className="mt-3 text-red-600 font-semibold">
-                  Currently Out of Stock
-                </p>
               )}
-            </div>
 
-            {/* Size + Stock for Selected Color */}
-            {selectedColor && (
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                  <Ruler className="w-6 h-6" />
-                  Available Sizes - {selectedColor.color?.color_name}
-                </h3>
-
-                {selectedColor.sizes.length > 1 ||
-                  selectedColor.sizes[0]?.psize_id ? (
-                  // Multiple sizes or real sizes
-                  <div className="grid grid-cols-3 sm:grid-cols-3 gap-3">
-                    {selectedColor.sizes.map((size) => {
-                      const qty = size.remaining_qty;
-                      return (
-                        <div
-                          key={size.psize_id || "free"}
-                          className={`p-4 rounded-xl text-center font-medium border-2 transition-all ${qty > 0
-                            ? size.low_stock
-                              ? "border-orange-500 bg-orange-50 text-orange-700"
-                              : "border-green-500 bg-green-50 text-green-700"
-                            : "border-gray-300 bg-gray-100 text-gray-400 line-through"
-                            }`}
-                        >
-                          <div className="text-lg">
-                            {size.size?.size_name || "One Color"}
-                          </div>
-                          <div className="text-xs mt-1">
-                            {qty > 0
-                              ? qty <= 5
-                                ? `Only ${qty} left`
-                                : `${qty} in stock`
-                              : "Out of Stock"}
-                          </div>
+              {/* ── DETAILS TAB ── */}
+              {activeTab === "DETAILS" && (
+                <div className="max-w-2xl">
+                  <div className="divide-y divide-gray-100">
+                    {detailRows.map((row, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center py-3.5 gap-4"
+                      >
+                        <div className="flex items-center gap-2.5 w-[180px] flex-shrink-0">
+                          <span className="text-gray-300">{row.icon}</span>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {row.label}
+                          </span>
                         </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  // No sizes → show total for color
-                  <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl text-center">
-                    <p className="text-lg font-semibold text-green-800">
-                      One Size · {selectedColor.total_available} in stock
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-            {/* Toggle Full Stock Matrix */}
-            <button
-              onClick={() => setShowStockMatrix(!showStockMatrix)}
-              className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2"
-            >
-              {showStockMatrix ? "Hide" : "Show"} Full Stock Matrix
-            </button>
-
-            {showStockMatrix && (
-              <div className="mt-6 overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="border p-3 text-left">Size → Color</th>
-                      {product.productcolors.map((c) => (
-                        <th
-                          key={c.pcolor_id}
-                          className="border p-3 text-center"
-                        >
-                          {c.color?.color_name}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {product.productsizes.map((ps) => (
-                      <tr key={ps.psize_id}>
-                        <td className="border p-3 font-medium bg-gray-50">
-                          {ps.size?.size_name}
-                        </td>
-                        {product.productcolors.map((color) => {
-                          const sizeInColor = color.sizes.find(
-                            (s) => s.psize_id === ps.psize_id
-                          );
-                          const qty = sizeInColor?.remaining_qty || 0;
-                          return (
-                            <td
-                              key={color.pcolor_id}
-                              className="border p-3 text-center"
-                            >
-                              <span
-                                className={`font-bold ${qty > 0 ? "text-green-600" : "text-red-600"
-                                  }`}
-                              >
-                                {qty}
-                              </span>
-                            </td>
-                          );
-                        })}
-                      </tr>
+                        <span className="text-sm text-gray-500 capitalize">
+                          {row.value}
+                        </span>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    {detailRows.length === 0 && (
+                      <div className="py-10 text-center text-gray-400 text-sm">
+                        No details available.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
-            {/* Other Info */}
-            <div className="mt-10 space-y-4 text-gray-700">
-              <p className="text-sm text-gray-700">
-                <span className="font-semibold text-gray-900">SKU:</span> {product.sku || "N/A"}
-              </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-semibold text-gray-900">Category:</span> {product.subcategory?.name || "N/A"}
-              </p>
-              <p className="text-sm font-semibold text-gray-900">
-                Description:
-              </p>
-              <p className="whitespace-pre-line text-sm text-gray-700">
-                {product.description || "No description"}
-              </p>
+              {/* ── STOCK MATRIX TAB ── */}
+              {activeTab === "STOCK MATRIX" && (
+                <div className="max-w-3xl overflow-x-auto">
+                  <div className="border border-gray-200 rounded-xl overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50">
+                          <th className="p-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-[140px]">
+                            Size
+                          </th>
+                          {product.productcolors.map((c) => (
+                            <th
+                              key={c.pcolor_id}
+                              className="p-3.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 border-l border-gray-100"
+                            >
+                              <div className="flex flex-row items-center justify-center gap-1.5">
+                                <span
+                                  className="w-4 h-4 rounded-full inline-block ring-1 ring-gray-200"
+                                  style={{
+                                    backgroundColor:
+                                      c.color?.color_code ||
+                                      c.color_code ||
+                                      "#ccc",
+                                  }}
+                                />
+                                <span className="normal-case tracking-normal font-semibold text-gray-700 text-xs">
+                                  {c.color?.color_name || "N/A"}
+                                </span>
+                              </div>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {product.productsizes?.length > 0
+                          ? product.productsizes.map((s) => {
+                            return (
+                              <tr
+                                key={s.psize_id}
+                                className="hover:bg-gray-50/60 transition-colors"
+                              >
+                                <td className="p-3.5 text-sm font-semibold text-gray-800 bg-gray-50/50">
+                                  {s.size?.size_name || "N/A"}
+                                </td>
+                                {product.productcolors.map((c) => {
+                                  const variant =
+                                    product.productvariants?.find(
+                                      (v) =>
+                                        v.pcolor_id === c.pcolor_id &&
+                                        v.psize_id === s.psize_id
+                                    );
+                                  const qty = variant?.remaining_qty || 0;
+                                  return (
+                                    <td
+                                      key={c.pcolor_id}
+                                      className="p-3.5 text-center border-l border-gray-100"
+                                    >
+                                      <StockBadge qty={qty} />
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            );
+                          })
+                          : (() => {
+                            return (
+                              <tr className="hover:bg-gray-50/60 transition-colors">
+                                <td className="p-3.5 text-sm font-semibold text-gray-800 bg-gray-50/50">
+                                  Free Size
+                                </td>
+                                {product.productcolors.map((c) => {
+                                  const variant =
+                                    product.productvariants?.find(
+                                      (v) => v.pcolor_id === c.pcolor_id
+                                    );
+                                  const qty = variant?.remaining_qty || 0;
+                                  return (
+                                    <td
+                                      key={c.pcolor_id}
+                                      className="p-3.5 text-center border-l border-gray-100"
+                                    >
+                                      <StockBadge qty={qty} />
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            );
+                          })()}
+
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -502,8 +671,40 @@ const ProductDetail = () => {
         product={product}
         refreshProducts={fetchProduct}
       />
+
+      <ConfirmDeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, isDeleting: false })}
+        onConfirm={confirmDelete}
+        itemType="product"
+        itemName={product?.name}
+        isDeleting={deleteModal.isDeleting}
+      />
     </div>
   );
 };
+
+/* ─── Reusable Stock Badge ─── */
+function StockBadge({ qty }) {
+  if (qty === 0) {
+    return (
+      <span className="inline-flex items-center justify-center min-w-[36px] px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-50 text-red-600 ring-1 ring-red-100">
+        0
+      </span>
+    );
+  }
+  if (qty <= 5) {
+    return (
+      <span className="inline-flex items-center justify-center min-w-[36px] px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 ring-1 ring-amber-100">
+        {qty}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center justify-center min-w-[36px] px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+      {qty}
+    </span>
+  );
+}
 
 export default ProductDetail;

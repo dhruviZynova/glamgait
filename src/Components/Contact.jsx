@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import longlight from "../assets/images/longlight.webp";
-import faqbgimg from "../assets/images/faqbgimg.webp";
+import faqbgimg from "../assets/images/faqbgimg.png";
 import location from "../assets/location.svg";
 import phone from "../assets/phone.svg";
 import mail from "../assets/mail.svg";
@@ -56,9 +56,9 @@ const Contact = () => {
       </Helmet>
       {/* Main Contact Section */}
       <section className="relative pt-24 pb-16 px-2 md:px-12 lg:px-20 z-20">
-        
+
         {/* Hanging Lantern (Top Left) */}
-        <ScrollReveal 
+        <ScrollReveal
           className="absolute -top-12 -lg-top-14 left-0 md:left-4 -lg:left-8 z-20 pointer-events-none"
           animation="fade-down"
           duration={1200}
@@ -69,7 +69,7 @@ const Contact = () => {
             className="w-24 md:w-32 lg:w-44 xl:w-56 h-auto drop-shadow-lg"
           />
         </ScrollReveal>
- 
+
         {/* Header */}
         <ScrollReveal animation="fade-up" duration={800}>
           <div className="text-center mb-12 md:mb-16 relative z-10">
@@ -81,94 +81,94 @@ const Contact = () => {
             </p>
           </div>
         </ScrollReveal>
- 
+
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-8 relative z-10 items-start">
-          
+
           {/* Left Column - Form */}
-          <ScrollReveal 
-            className="w-full flex flex-col" 
-            animation="fade-right" 
-            duration={1000} 
+          <ScrollReveal
+            className="w-full flex flex-col"
+            animation="fade-right"
+            duration={1000}
             delay={150}
           >
-            <div className="bg-white/50 backdrop-blur-sm px-4 py-10 md:p-10 rounded-2xl shadow-xl shadow-gray-200/50">
-              <h2 className="text-2xl md:text-3xl font-[Judson] text-[#000000] mb-8 border-l-4 border-[#003124] pl-4">
+            <div className="bg-white/95 border border-gray-100 backdrop-blur-md px-6 py-10 md:p-10 rounded-3xl shadow-2xl shadow-emerald-950/5">
+              <h2 className="text-2xl md:text-3xl font-[Judson] text-[#003124] mb-8 border-l-4 border-[#003124] pl-4 font-bold">
                 Leave us a message
               </h2>
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="group relative">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="contact-name"
+                    className="text-xs font-bold text-[#003124] uppercase tracking-wider mb-2"
+                  >
+                    Full Name
+                  </label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    placeholder=" "
+                    placeholder="Enter your full name"
                     id="contact-name"
-                    className="peer w-full bg-white px-4 pt-6 pb-2 rounded-lg border-b-1 border-gray-200 outline-none focus:border-[#003124] transition-all text-gray-800 placeholder-transparent"
+                    className="w-full bg-gray-50/50 px-4 py-3.5 rounded-xl border border-gray-200 outline-none transition-all text-gray-800 font-sans text-sm"
                   />
-                  <label
-                    htmlFor="contact-name"
-                    className="absolute left-4 top-1 text-xs font-600 text-[#003124] transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-4 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#003124]"
-                  >
-                    Full Name
-                  </label>
                 </div>
- 
-                <div className="group relative">
+
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="contact-email"
+                    className="text-xs font-bold text-[#003124] uppercase tracking-wider mb-2"
+                  >
+                    Email Address
+                  </label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder=" "
+                    placeholder="Enter your email address"
                     id="contact-email"
-                    className="peer w-full bg-white px-4 pt-6 pb-2 rounded-lg border-b-1 border-gray-200 outline-none focus:border-[#003124] transition-all text-gray-800 placeholder-transparent"
+                    className="w-full bg-gray-50/50 px-4 py-3.5 rounded-xl border border-gray-200 outline-none transition-all text-gray-800 font-sans text-sm"
                   />
-                  <label
-                    htmlFor="contact-email"
-                    className="absolute left-4 top-1 text-xs font-600 text-[#003124] transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-4 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#003124]"
-                  >
-                    Email Address
-                  </label>
                 </div>
- 
-                <div className="group relative">
+
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="contact-message"
+                    className="text-xs font-bold text-[#003124] uppercase tracking-wider mb-2"
+                  >
+                    Your Message
+                  </label>
                   <textarea
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder=" "
+                    placeholder="Write your message here..."
                     id="contact-message"
-                    className="peer w-full bg-white px-4 pt-6 pb-2 rounded-lg border-b-1 border-gray-200 outline-none focus:border-[#003124] transition-all text-gray-800 h-40 resize-none placeholder-transparent"
+                    className="w-full bg-gray-50/50 px-4 py-3.5 rounded-xl border border-gray-200 outline-none transition-all text-gray-800 h-36 resize-none font-sans text-sm"
                   />
-                  <label
-                    htmlFor="contact-message"
-                    className="absolute left-4 top-1 text-xs font-600 text-[#003124] transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-4 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#003124]"
-                  >
-                    Your Message
-                  </label>
                 </div>
- 
+
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full md:w-auto min-w-[200px] bg-[#003124] text-white font-[Poppins] py-4 px-8 rounded-full font-semibold tracking-widest hover:bg-[#004d39] hover:shadow-lg hover:transform hover:-translate-y-1 transition-all disabled:opacity-50 disabled:translate-y-0 cursor-pointer"
+                  className="w-full md:w-auto min-w-[200px] bg-[#003124] text-white font-[Poppins] py-4 px-8 rounded-xl font-semibold tracking-widest hover:bg-[#004d39] hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:scale-100 cursor-pointer shadow-md shadow-emerald-900/10"
                 >
-                  {loading ? "SENDING..." : "SEND"}
+                  {loading ? "SENDING..." : "SEND MESSAGE"}
                 </button>
               </form>
             </div>
           </ScrollReveal>
- 
+
           {/* Right Column - Info */}
-          <ScrollReveal 
-            className="w-full flex flex-col justify-center space-y-6 md:space-y-12 lg:pl-10 py-8 lg:py-0"
+          <ScrollReveal
+            className="w-full flex flex-col justify-center gap-6 lg:pl-10 py-8 lg:py-0"
             animation="fade-left"
             duration={1000}
             delay={250}
           >
-            <div className="space-y-2 md:space-y-8">
+            <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2 md:gap-5 group">
                 <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center transition-transform">
                   <img src={location} alt="Location" className="w-4 h-4 md:w-6 md:h-6 object-contain" />
@@ -180,7 +180,7 @@ const Contact = () => {
                   </p>
                 </div>
               </div>
- 
+
               <div className="flex items-center gap-2 md:gap-5 group">
                 <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center transition-transform">
                   <img src={phone} alt="Phone" className="w-4 h-4 md:w-6 md:h-6 object-contain" />
@@ -191,7 +191,7 @@ const Contact = () => {
                   </p>
                 </div>
               </div>
- 
+
               <div className="flex items-center gap-2 md:gap-5 group">
                 <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center transition-transform">
                   <img src={mail} alt="Email" className="w-4 h-4 md:w-6 md:h-6 object-contain" />
@@ -203,7 +203,7 @@ const Contact = () => {
                 </div>
               </div>
             </div>
- 
+
             {/* Social Icons */}
             <div className="">
               <div className="flex items-center gap-4">
@@ -224,12 +224,12 @@ const Contact = () => {
               </div>
             </div>
           </ScrollReveal>
- 
+
         </div>
       </section>
- 
+
       {/* Decorative Monument (Bottom Right) */}
-      <ScrollReveal 
+      <ScrollReveal
         className="absolute bottom-0 right-0 w-full md:w-1/2 h-1/2 pointer-events-none"
         animation="blur-in"
         duration={1500}
@@ -238,7 +238,7 @@ const Contact = () => {
         <img
           src={faqbgimg}
           alt="Decorative Monuments"
-          className="absolute bottom-0 right-0 z-10 -scale-x-100 w-full max-w-[300px] md:max-w-[450px] lg:max-w-[600px] h-auto object-contain opacity-40 md:opacity-70 translate-y-10"
+          className="absolute bottom-0 right-0 z-10 -scale-x-100 w-full max-w-[300px] md:max-w-[450px] lg:max-w-[600px] h-auto object-contain opacity-40 md:opacity-80 translate-y-10"
         />
       </ScrollReveal>
 

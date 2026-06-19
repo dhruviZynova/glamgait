@@ -4,12 +4,10 @@ import { useSearchParams, Link } from "react-router-dom";
 import ProductCard from "../Components/ProductCard";
 import axiosInstance from "../Axios/axios";
 import ScrollToTop from "../Components/ScrollToTop";
-import { userInfo } from "../Variable";
-import { getGuestId } from "../utils/guest";
+import { userInfo, createSlug } from "../Variable";
+import { getCategories as getCachedCategories } from "../utils/dataCache";
 
 const SearchResults = () => {
-  ScrollToTop();
-
   const [searchParams] = useSearchParams();
   const query = searchParams.get("query")?.trim() || "";
 
@@ -21,6 +19,23 @@ const SearchResults = () => {
   const [wishlistMap, setWishlistMap] = useState({});
   const [reviewsSummary, setReviewsSummary] = useState({});
 
+  const [firstCategorySlug, setFirstCategorySlug] = useState("");
+
+  useEffect(() => {
+    const fetchFirstCategory = async () => {
+      try {
+        const data = await getCachedCategories(axiosInstance);
+        if (data && data.length > 0) {
+          const firstCat = data[0];
+          const slug = createSlug(firstCat.cate_name);
+          setFirstCategorySlug(slug);
+        }
+      } catch (err) {
+        console.error("Error fetching first category for Shop Now button:", err);
+      }
+    };
+    fetchFirstCategory();
+  }, []);
 
   useEffect(() => {
     if (!query) {
@@ -34,17 +49,20 @@ const SearchResults = () => {
       try {
         const response = await axiosInstance.get("/getallproducts", {
           params: {
-            search: query,
-            page: currentPage,
-            perPage: 20, // or 12, 24 as you prefer
+            perPage: 1000,
           },
         });
 
         if (response.data.status === 1) {
-          const data = response.data.data;
-          setProducts(data.productData || []);
-          setTotalResults(data.totalCount || 0);
-          setTotalPages(data.totalPages || 1);
+          const allProducts = response.data.data?.productData || [];
+          const queryLower = query.toLowerCase();
+          const filtered = allProducts.filter((product) =>
+            product.name?.toLowerCase().includes(queryLower)
+          );
+
+          setProducts(filtered);
+          setTotalResults(filtered.length);
+          setTotalPages(1);
         } else {
           setProducts([]);
           setTotalResults(0);
@@ -63,25 +81,27 @@ const SearchResults = () => {
   useEffect(() => {
     const fetchWishlist = async () => {
       const user = userInfo();
-      const identifier = user?.u_id || getGuestId();
+      if (!user?.u_id) {
+        const local = JSON.parse(localStorage.getItem("localWishlist") || "[]");
+        const map = {};
+        local.forEach((item, i) => {
+          map[`${item.p_id}-${item.pcolor_id}`] = { wished: true, w_id: `local-${i}` };
+        });
+        setWishlistMap(map);
+        return;
+      }
 
       try {
-        const query = user?.u_id
-          ? `u_id=${identifier}`
-          : `guest_id=${identifier}`;
-
-        const res = await axiosInstance.get(`/getwishlist?${query}`);
+        const res = await axiosInstance.get(`/getwishlist?u_id=${user.u_id}`);
 
         if (res.data.status === 1) {
           const items = res.data.data || [];
-
-          // Create fast lookup map: "p_id-pcolor_id" → true
           const map = {};
           items.forEach((item) => {
             const key = `${item.p_id}-${item.pcolor_id}`;
             map[key] = {
               wished: true,
-              w_id: item.w_id, // optional: for remove
+              w_id: item.w_id,
             };
           });
 
@@ -97,13 +117,17 @@ const SearchResults = () => {
 
   const refreshWishlist = async () => {
     const user = userInfo();
-    const identifier = user?.u_id || getGuestId();
+    if (!user?.u_id) {
+      const local = JSON.parse(localStorage.getItem("localWishlist") || "[]");
+      const map = {};
+      local.forEach((item, i) => {
+        map[`${item.p_id}-${item.pcolor_id}`] = { wished: true, w_id: `local-${i}` };
+      });
+      setWishlistMap(map);
+      return;
+    }
     try {
-      const query = user?.u_id
-        ? `u_id=${identifier}`
-        : `guest_id=${identifier}`;
-
-      const res = await axiosInstance.get(`/getwishlist?${query}`);
+      const res = await axiosInstance.get(`/getwishlist?u_id=${user.u_id}`);
 
       if (res.data.status === 1) {
         const items = res.data.data || [];
@@ -115,7 +139,7 @@ const SearchResults = () => {
             w_id: item.w_id,
           };
         });
-        setWishlistMap(map); // ← Yeh update karega sab ProductCards ko
+        setWishlistMap(map);
       }
     } catch (err) {
       console.error("Wishlist refresh failed", err);
@@ -238,10 +262,10 @@ const SearchResults = () => {
           <div className="text-center py-20">
             <p className="text-6xl mb-4">😔</p>
             <p className="text-2xl text-gray-700 mb-4">
-              No products found for "<strong>{query}</strong>"
+              No products found for "<strong className="capitalize">{query}</strong>"
             </p>
             <Link
-              to="/shop"
+              to={firstCategorySlug ? `/collections/${firstCategorySlug}` : "/collections/lehengas"}
               className="inline-block bg-black text-white px-8 py-4 rounded-full hover:bg-gray-800 transition text-lg"
             >
               Browse All Products

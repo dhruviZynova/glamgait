@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
 import { useNavigate, useLocation } from "react-router-dom";
-import axiosInstance from "../Axios/axios";
-import { ApiURL } from "../Variable";
+import { forgotPassword } from "../api/user";
 import toast from "react-hot-toast";
 import BrandBanner from "./BrandBanner";
 import { FaArrowLeft } from "react-icons/fa";
@@ -15,27 +14,34 @@ const ForgotPassword = () => {
   const from = location.state?.from || "/";
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setEmailError("");
+
+    // Validate email
+    if (!email) {
+      setEmailError("Email is required");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+
+    if (loading) return;
     setLoading(true);
 
     try {
-      const response = await axiosInstance.post(`${ApiURL}/auth/forgot-password`, {
-        email,
-      });
-
-      if (response.data.status === 1) {
-        navigate("/verify-otp", {
-          state: {
-            email: email,
-            from: from
-          }
-        });
-        toast.success(response.data.description || "OTP sent to your email");
+      const data = await forgotPassword(email);
+      // Backend may return status in response.data or data directly
+      if (data && (data.status === 1 || data.success === true)) {
+        toast.success(data.description || data.message || "Password reset link sent to your email!");
         setEmail("");
       } else {
-        toast.error(response.data.description || "Failed to send reset link");
+        toast.error(data?.description || data?.message || "Failed to send recovery link");
       }
     } catch (err) {
       const errMsg = err.response?.data?.description || err.response?.data?.message || err.message || "An error occurred. Please try again later.";
@@ -52,7 +58,7 @@ const ForgotPassword = () => {
         <ScrollReveal animation="fade-up" duration={800} className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
 
           {/* Left Side: Form */}
-          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
+          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white shadow-lg rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
             <div className="absolute top-8 left-8 lg:left-14">
               <button
                 onClick={() => navigate("/login", { state: { from } })}
@@ -77,11 +83,17 @@ const ForgotPassword = () => {
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (emailError) setEmailError("");
+                    }}
                     required
                     placeholder="e.g. name@example.com"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400"
+                    className={`w-full px-4 py-3 border ${emailError ? "border-red-500" : "border-gray-200"} rounded-full focus:outline-none focus:ring-1 focus:ring-[#1A2C2C] text-sm text-gray-600 placeholder-gray-400`}
                   />
+                  {emailError && (
+                    <p className="text-xs text-red-500 mt-1 pl-2 font-poppins">{emailError}</p>
+                  )}
                 </div>
 
                 <button
@@ -93,7 +105,7 @@ const ForgotPassword = () => {
                     {loading ? (
                       <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     ) : (
-                      "Send Recovery Link"
+                      "Send Otp"
                     )}
                   </span>
                 </button>
@@ -104,7 +116,7 @@ const ForgotPassword = () => {
                   Remember password?{" "}
                   <span
                     onClick={() => navigate("/login", { state: { from } })}
-                    className="text-[#1A2C2C] font-medium hover:underline underline-offset-4 cursor-pointer ml-1 transition-all"
+                    className="text-xs text-[#1A2C2C] font-medium underline cursor-pointer ml-1"
                   >
                     Login now
                   </span>
@@ -118,7 +130,7 @@ const ForgotPassword = () => {
             <img
               src={loginbgimg}
               alt="Mosque Illustration"
-              className="md:absolute top-0 right-0 w-full h-[105%] md:h-[115%] object-cover md:object-top rounded-b-xl md:rounded-bl-none md:rounded-r-xl z-0"
+              className="md:absolute top-0 right-0 w-full h-[105%] md:h-[115%] object-cover md:object-top rounded-b-xl md:rounded-bl-none md:rounded-r-none z-0"
             />
           </div>
         </ScrollReveal>

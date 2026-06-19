@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "reactstrap";
 import { adminAxios } from "../../Axios/axios";
 import { useForm } from "react-hook-form";
-import { Pencil, PlusCircle, Trash2 } from "lucide-react";
+import { Pencil, PlusIcon, Trash2, Loader2, Search } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
@@ -20,13 +20,18 @@ const Sliders = () => {
     isOpen: false,
     image_id: null,
     image_name: "",
+    isDeleting: false,
   });
 
   // Handle file selection
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files).filter((file) =>
-      file.type.startsWith("image/")
-    );
+    const files = Array.from(e.target.files).filter((file) => {
+      if (file.size > 5 * 1024 * 1024) {
+        showToaster(0, `Image "${file.name}" exceeds 5MB size limit.`);
+        return false;
+      }
+      return file.type.startsWith("image/");
+    });
 
     setSelectedImages((prev) => {
       if (prev.length + files.length > 3 && !editingImage) {
@@ -92,6 +97,7 @@ const Sliders = () => {
   };
 
   const deleteSliderFunction = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       const response = await adminAxios.delete(
         `${ApiURL}/deleteslider/${deleteModal.image_id}`
@@ -106,7 +112,7 @@ const Sliders = () => {
     } catch (error) {
       console.error(error);
     } finally {
-      setDeleteModal({ isOpen: false, image_id: null, image_name: "" });
+      setDeleteModal({ isOpen: false, image_id: null, image_name: "", isDeleting: false });
     }
   };
 
@@ -141,18 +147,21 @@ const Sliders = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start gap-6 sm:items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800 text-left">Images</h2>
           <div className="md:flex justify-items-center w-full sm:w-auto space-y-2 md:space-y-0 gap-2">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className=" text-black placeholder-gray-400 border border-gray-600 focus:outline-none p-2 rounded-md w-full "
-            />
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full text-black placeholder-gray-400 border border-gray-600 focus:outline-none pl-10 pr-4 py-2 rounded-md"
+              />
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+            </div>
             <Button
               onClick={handleAddImages}
-              className="flex w-full items-center justify-center gap-2 bg-black hover:bg-black text-white px-4 py-2 rounded-lg cursor-pointer"
+              className="flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
             >
-              <PlusCircle size={20} /> Add Images
+              <PlusIcon size={20} /> Add Images
             </Button>
           </div>
         </div>
@@ -213,7 +222,10 @@ const Sliders = () => {
                           setDeleteModal({
                             isOpen: true,
                             image_id: img.image_id,
-                            image_name: img.image,
+                            // FIX: Truncate long URL to prevent text overflow in modal
+                            image_name: img.image
+                              ? (img.image.length > 35 ? img.image.substring(0, 35) + "..." : img.image)
+                              : "this image",
                           })
                         }
                         className="bg-red-500 text-white p-1 rounded cursor-pointer"
@@ -232,7 +244,7 @@ const Sliders = () => {
       {/* Modal */}
       {modalOpen && (
         <div
-          className="fixed inset-0 bg-black/30 bg-opacity-50 flex justify-center items-center text-black p-4 z-50"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center text-black p-4 z-50"
           onClick={() => setModalOpen(false)}
         >
           <div
@@ -282,7 +294,7 @@ const Sliders = () => {
             <div className="flex justify-end gap-4 mt-4">
               <Button
                 onClick={() => setModalOpen(false)}
-                className="bg-gray-200 px-8 py-2  text-gray-700 rounded hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium"
+                className="bg-gray-200 px-8 py-2  text-gray-700 rounded hover:bg-gray-300 transition-all duration-200 shadow-sm text-sm font-medium cursor-pointer"
                 aria-label="Cancel"
               >
                 Cancel
@@ -290,12 +302,13 @@ const Sliders = () => {
               <Button
                 type="submit"
                 disabled={addLoading}
-                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black"
+                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-black cursor-pointer"
                 onClick={saveSliderImages}
                 aria-label={
                   editingImage ? "Update slider image" : "Add slider images"
                 }
               >
+                {addLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {editingImage ? "Update" : "Add"}
               </Button>
             </div>
@@ -305,11 +318,12 @@ const Sliders = () => {
       <ConfirmDeleteModal
         isOpen={deleteModal.isOpen}
         onClose={() =>
-          setDeleteModal({ isOpen: false, image_id: null, image_name: "" })
+          setDeleteModal({ isOpen: false, image_id: null, image_name: "", isDeleting: false })
         }
         onConfirm={deleteSliderFunction}
         itemType="slider image"
         itemName={deleteModal.image_name}
+        isDeleting={deleteModal.isDeleting}
       />
     </>
   );

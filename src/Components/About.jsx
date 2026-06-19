@@ -54,34 +54,32 @@ const About = () => {
         <title>About Us | Kundrat</title>
         <meta name="description" content="Learn more about Kundrat. Establishing a new standard in Indian & Muslim Modest Fashion since 2020." />
       </Helmet>
-      
+
       {/* Hero Section */}
       <section className="about-hero" style={{ backgroundImage: `url(${aboutHeroNew})` }}>
         <div className="hero-overlay"></div>
-        <ScrollReveal animation="fade-up" duration={1000}>
-          <div className="hero-content">
-            <span className="hero-subtitle">Redefining Modesty</span>
-            <h1 className="hero-title">Elegance in <br /> Every Fold</h1>
-          </div>
-        </ScrollReveal>
+        <div className="hero-content">
+          <span className="hero-subtitle">Redefining Modesty</span>
+          <h1 className="hero-title">Elegance in <br /> Every Fold</h1>
+        </div>
       </section>
 
       {/* Brand Story Section */}
       <section className="about-section">
         <div className="section-grid">
-          
-          <ScrollReveal 
-            className="image-container" 
-            animation="fade-right" 
+
+          <ScrollReveal
+            className="image-container"
+            animation="fade-right"
             duration={1000}
           >
             <img src={storyImg} alt="Kundrat Fashion" />
           </ScrollReveal>
 
-          <ScrollReveal 
-            className="content-area" 
-            animation="fade-left" 
-            duration={1000} 
+          <ScrollReveal
+            className="content-area"
+            animation="fade-left"
+            duration={1000}
             delay={150}
           >
             <div>
@@ -99,8 +97,8 @@ const About = () => {
       </section>
 
       {/* Values Section */}
-      <section className="about-section bg-white/50">
-        
+      <section className="about-section" style={{ backgroundColor: '#F3F0ED' }}>
+
         <ScrollReveal animation="fade-up" duration={800}>
           <div className="text-center mb-16">
             <span className="content-label">Our Philosophy</span>
@@ -110,10 +108,10 @@ const About = () => {
 
         <div className="values-grid">
           {values.map((value, index) => (
-            <ScrollReveal 
-              key={index} 
-              animation="fade-up" 
-              duration={800} 
+            <ScrollReveal
+              key={index}
+              animation="fade-up"
+              duration={800}
               delay={index * 100}
             >
               <div className="value-card h-full">
@@ -132,7 +130,7 @@ const About = () => {
       <section className="legacy-section">
         <img src={pattern} alt="" className="legacy-bg-pattern" />
         <div className="legacy-content">
-          
+
           <ScrollReveal animation="fade-up" duration={900}>
             <h2 className="content-title" style={{ color: 'white' }}>Our Global Reach</h2>
             <p className="content-text" style={{ color: 'rgba(255,255,255,0.8)', maxWidth: '800px', margin: '0 auto', marginBottom: '3rem' }}>

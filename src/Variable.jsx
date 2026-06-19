@@ -94,7 +94,7 @@ export const validationFunction = {
 };
 
 export const getFullImageUrl = (imagePath, defaultFolder = "Category") => {
-  if (!imagePath || typeof imagePath !== "string") return "";
+  if (!imagePath || typeof imagePath !== "string") return null;
 
   // If it's already a full URL or a local blob URL
   if (imagePath.startsWith("http") || imagePath.startsWith("blob:")) {

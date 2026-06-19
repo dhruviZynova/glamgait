@@ -8,7 +8,7 @@ const ReturnsDetails = ({ onClose }) => {
       <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
         {/* ❌ Close Icon */}
         <button
-          className="absolute top-4 right-4 text-gray-600 hover:text-black"
+          className="absolute top-4 right-4 text-gray-600 hover:text-black cursor-pointer"
           onClick={onClose}
         >
           <X className="w-6 h-6" />

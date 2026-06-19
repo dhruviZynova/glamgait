@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, razorpayKEY } from "../Variable";
 import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle,
   XCircle,
@@ -30,12 +31,21 @@ const OrderConfirmation = () => {
   // Robust orderId resolution
   const orderId = queryOrderId || location.state?.orderId || sessionStorage.getItem('lastOrderId');
 
+  const queryClient = useQueryClient();
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState(queryStatus || location.state?.status || "success");
   const [loading, setLoading] = useState(true);
   const [switchingToCod, setSwitchingToCod] = useState(false);
   const [retryingPayment, setRetryingPayment] = useState(false);
   const [showFullDetails, setShowFullDetails] = useState(false);
+
+  useEffect(() => {
+    if (status === "success") {
+      localStorage.removeItem("localCart");
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      window.dispatchEvent(new Event("cartUpdated"));
+    }
+  }, [status, queryClient]);
 
   // Fetch Order Details
   useEffect(() => {
@@ -255,7 +265,7 @@ const OrderConfirmation = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F3F0ED] flex flex-col items-center justify-center font-[Oxygen]">
+      <div className="min-h-screen flex flex-col items-center justify-center font-[Oxygen]">
         <Loader2 className="w-12 h-12 text-[#1C2F2F] animate-spin mb-4" />
         <p className="text-[#3D3D3D] text-lg font-medium">Retrieving transaction summary...</p>
       </div>
@@ -285,7 +295,7 @@ const OrderConfirmation = () => {
 
   if (status === "success" && !showFullDetails) {
     return (
-      <div className="min-h-screen bg-[#F3F0ED] py-16 px-4 md:px-8 font-[Oxygen] flex flex-col items-center justify-center">
+      <div className="min-h-screen py-16 px-4 md:px-8 font-[Oxygen] flex flex-col items-center justify-center">
         <div className="bg-white rounded-[24px] p-8 md:p-12 w-full max-w-[650px] relative shadow-xl text-center space-y-8 animate-fadeIn">
           <div className="flex justify-center">
             <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-[3px] border-[#000] flex items-center justify-center">
@@ -322,7 +332,7 @@ const OrderConfirmation = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F3F0ED] py-16 px-4 md:px-8 font-[Oxygen] flex flex-col items-center justify-center">
+    <div className="min-h-screen py-16 px-4 md:px-8 font-[Oxygen] flex flex-col items-center justify-center">
       <div className={`w-full max-w-2xl bg-white rounded-3xl shadow-[0_20px_50px_rgba(28,47,47,0.06)] border ${cardBorderColor} overflow-hidden transition-all duration-500 hover:shadow-[0_25px_60px_rgba(28,47,47,0.1)]`}>
 
         {/* Upper Hero Header */}

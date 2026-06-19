@@ -223,7 +223,12 @@ const Navbar = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
+      const capitalized = searchQuery
+        .trim()
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+      navigate(`/search?query=${encodeURIComponent(capitalized)}`);
       setSearchQuery("");
       setIsMobileSearchOpen(false);
     }
@@ -264,15 +269,13 @@ const Navbar = () => {
   return (
     <>
       {/* Announcement Bar */}
-      <div className="bg-[#23403b] text-white text-xs md:text-sm py-2 text-center font-Montserrat font-medium">
-        {announcements.length > 0 ? (
+      {announcements.length > 0 && (
+        <div className="bg-[#23403b] text-white text-xs md:text-sm py-2 text-center font-Montserrat font-medium">
           <div className="transition-all duration-500 ease-in-out">
-            {announcements[currentAnnouncement]?.message || "Enjoy Free Shipping On All Orders"}
+            {announcements[currentAnnouncement]?.text || ""}
           </div>
-        ) : (
-          "Enjoy Free Shipping On All Orders"
-        )}
-      </div>
+        </div>
+      )}
       <nav ref={navRef} className="sticky bg-white shadow-md top-0 z-50">
         <div className="mx-auto px-2 md:px-10 lg:px-20 py-3 flex justify-between items-center">
           <Link to="/">
@@ -280,7 +283,17 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden lg:flex items-center space-x-8 mr-6">
+          <div
+            className="hidden lg:flex items-center space-x-8 mr-6"
+            onMouseLeave={(e) => {
+              const related = e.relatedTarget;
+              if (related && related.closest(".mega-menu-container")) {
+                return;
+              }
+              setShowMegaMenu(false);
+              setHoveredCategory(null);
+            }}
+          >
             {menuItems.map((item) => (
               <div
                 key={item.to}
@@ -295,16 +308,19 @@ const Navbar = () => {
                       fetchCategoryFilters(item.cate_id);
                       setShowMegaMenu(true);
                     }
+                  } else {
+                    setShowMegaMenu(false);
+                    setHoveredCategory(null);
                   }
                 }}
               >
                 <Link
                   to={item.to}
                   className={`text-[16px] capitalize transition-all duration-300 ${(location.pathname.startsWith("/collections") && item.cate_slug && location.pathname.includes(item.cate_slug)) ||
-                      (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug) ||
-                      (location.pathname === item.to)
-                      ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
-                      : "text-[#767676] font-medium hover:text-[#1C2F2F]"
+                    (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug) ||
+                    (location.pathname === item.to)
+                    ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
+                    : "text-[#767676] font-medium hover:text-[#1C2F2F]"
                     }`}
                 >
                   {item.label}
@@ -415,7 +431,7 @@ const Navbar = () => {
         {/* Mega Menu – Desktop */}
         {showMegaMenu && hoveredCategory?.cate_id && Object.values(megaMenuData).some(items => items && items.length > 0) && (
           <div
-            className="max-w-5xl mx-auto absolute inset-x-0 top-full bg-[#f3f0ed] shadow-xl border-t"
+            className="mega-menu-container max-w-5xl mx-auto absolute inset-x-0 top-full bg-[#f3f0ed] shadow-xl border-t"
             onMouseEnter={() => setShowMegaMenu(true)}
             onMouseLeave={() => {
               setShowMegaMenu(false);
@@ -457,32 +473,30 @@ const Navbar = () => {
             </div>
           </div>
         )}
-      </nav>
-
-      {/* Mobile Search & Drawer */}
-      {isMobileSearchOpen && (
-        <div
-          className={`fixed ${isAtBottom ? "bottom-0" : ""
-            } w-full bg-white shadow-md px-4 py-3 flex items-center justify-center z-60`}
-          ref={desktopSearchRef}
-        >
-          <form
-            onSubmit={handleSearch}
-            className="flex w-full max-w-xl items-center"
+        {/* Search Bar */}
+        {isMobileSearchOpen && (
+          <div
+            className="absolute top-full left-0 w-full bg-white shadow-md px-4 py-3 flex items-center justify-center z-40 border-t border-gray-50"
+            ref={desktopSearchRef}
           >
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-full focus:outline-none"
-                placeholder="Search..."
-              />
-            </div>
-          </form>
-        </div>
-      )}
+            <form
+              onSubmit={handleSearch}
+              className="flex w-full max-w-xl items-center"
+            >
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-full focus:outline-none"
+                  placeholder="Search..."
+                />
+              </div>
+            </form>
+          </div>
+        )}
+      </nav>
 
       {isOpen && (
         <>
@@ -500,7 +514,7 @@ const Navbar = () => {
             >
               <X size={24} />
             </button>
-            <div className="p-6 pt-16 space-y-1 overflow-y-auto h-full">
+            <div className="p-6 pt-24 space-y-1 overflow-y-auto h-full">
               {menuItems.map((item) => (
                 <div
                   key={item.to}
@@ -513,10 +527,10 @@ const Navbar = () => {
                           to={item.to}
                           onClick={() => setIsOpen(false)}
                           className={`flex-grow py-4 capitalize transition-colors ${location.pathname === item.to ||
-                              (item.cate_slug && location.pathname.includes(item.cate_slug)) ||
-                              (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug)
-                              ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
-                              : "text-gray-900 font-medium"
+                            (item.cate_slug && location.pathname.includes(item.cate_slug)) ||
+                            (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug)
+                            ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
+                            : "text-gray-900 font-medium"
                             }`}
                         >
                           {item.label}
@@ -649,7 +663,7 @@ const Navbar = () => {
         >
           <div className="relative">
             <Heart size={22} className={`mb-0.5 transition-all duration-300 ${isWishlistActive ? "text-[#1C2F2F] fill-[#1C2F2F] scale-110" : "text-[#767676]"}`} />
-            <span className={`absolute -top-1.5 -right-2.5 bg-[#1C2F2F] text-white text-[9px] w-4.5 h-4.5 flex items-center justify-center rounded-full font-semibold transition-all duration-300 ${isWishlistActive ? "ring-2 ring-white scale-110" : ""}`}>
+            <span className={`absolute -top-1.5 -right-2.5 bg-[#1C2F2F] text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-semibold ${isWishlistActive ? "ring-2 ring-white " : ""}`}>
               {wishlistCount}
             </span>
           </div>

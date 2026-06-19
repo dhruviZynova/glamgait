@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   FaTrash,
   FaRupeeSign,
@@ -7,6 +7,7 @@ import {
   FaTruck,
   FaBoxOpen,
   FaDownload,
+  FaSearch,
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
@@ -30,15 +31,16 @@ const AdminOrders = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  const [totalPages, setTotalPages] = useState(1);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [openOrderId, setOpenOrderId] = useState(null);
   const [logistics, setLogistics] = useState([]);
   const [selectedLogistic, setSelectedLogistic] = useState(null);
   const [loadingLogistics, setLoadingLogistics] = useState(false);
   const [trackingDetails, setTrackingDetails] = useState([]);
-  const limit = 20;
+  const limit = 10000;
 
   const getStatusInfo = (status) => {
     const s = parseInt(status);
@@ -48,29 +50,21 @@ const AdminOrders = () => {
     };
   };
 
-  // Consolidate fetching logic
+  // Fetch orders on mount (fetches all data for client-side filtering)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchOrders(currentPage, searchTerm);
-    }, searchTerm ? 600 : 0);
-    return () => clearTimeout(timer);
-  }, [currentPage, searchTerm]);
+    fetchOrders();
+  }, []);
 
-  // Reset to page 1 when search term changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
-
-  const fetchOrders = async (page = 1, search = "") => {
+  // Fetch logic - removed 'search' param to get full dataset
+  const fetchOrders = async () => {
     try {
-      const response = await adminAxios.post(`${ApiURL}/getallorders`, {
-        page,
+      const payload = {
+        page: 1,
         limit,
-        search,
-      });
+      };
+      const response = await adminAxios.post(`${ApiURL}/getallorders`, payload);
       if (response?.data?.status === 1) {
         setOrders(response.data.data.orders || []);
-        setTotalPages(response.data.data.totalPages || 1);
       } else {
         setOrders([]);
       }
@@ -80,8 +74,42 @@ const AdminOrders = () => {
     }
   };
 
+  // Reset to page 1 when search term or status filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedStatus]);
+
+  // Client-Side Filtering Logic (Updated for Order ID & First Letter)
+  const filteredOrders = useMemo(() => {
+    if (!orders) return [];
+
+    let result = orders;
+
+    // 1. Filter by Status
+    if (selectedStatus !== "all") {
+      result = result.filter(
+        (order) => parseInt(order.status) === parseInt(selectedStatus)
+      );
+    }
+
+    // 2. Filter by Search Term (Order ID & Customer First Letter)
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((order) => {
+        // Check Order ID (contains term anywhere)
+        const idMatch = order.orderId?.toString().includes(term);
+
+        // Check Customer First Name (starts with term)
+        const nameMatch = order.address?.first_name?.toLowerCase().startsWith(term);
+
+        return idMatch || nameMatch;
+      });
+    }
+
+    return result;
+  }, [orders, selectedStatus, searchTerm]);
+
   const toggleOrder = (orderId) => {
-    // clear tracking when switching orders
     if (openOrderId !== orderId) {
       setTrackingDetails([]);
     }
@@ -101,7 +129,7 @@ const AdminOrders = () => {
       setLoadingLogistics(true);
       const res = await adminAxios.post(
         `${ApiURL}/get-logistics/${expressflyOrderId}`,
-        {},
+        {}
       );
       if (res.data.status === 1) {
         setLogistics(Object.values(res.data.data));
@@ -129,7 +157,7 @@ const AdminOrders = () => {
       toast.dismiss("ship");
       if (res.data.status === 1) {
         toast.success("Order shipped!");
-        fetchOrders(currentPage, searchTerm);
+        fetchOrders();
       } else {
         toast.error(res.data.message || "Shipping failed");
       }
@@ -157,15 +185,18 @@ const AdminOrders = () => {
 
   const cancelOrder = async (orderId) => {
     if (!window.confirm("Cancel this order?")) return;
+    toast.loading("Cancelling order...", { id: "cancelOrder" });
     try {
       const res = await adminAxios.put(`${ApiURL}/cancelorder`, {
         order_id: orderId,
       });
+      toast.dismiss("cancelOrder");
       if (res.data.status === 1) {
         toast.success("Order cancelled");
-        fetchOrders(currentPage, searchTerm);
+        fetchOrders();
       }
     } catch {
+      toast.dismiss("cancelOrder");
       toast.error("Failed to cancel");
     }
   };
@@ -173,13 +204,16 @@ const AdminOrders = () => {
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
       toast.loading("Updating status...", { id: "updateStatus" });
-      const res = await adminAxios.put(`${ApiURL}/updateorderstatus/${orderId}`, {
-        status: newStatus,
-      });
+      const res = await adminAxios.put(
+        `${ApiURL}/updateorderstatus/${orderId}`,
+        {
+          status: newStatus,
+        }
+      );
       toast.dismiss("updateStatus");
       if (res.data.status === 1) {
         toast.success("Order status updated");
-        fetchOrders(currentPage, searchTerm);
+        fetchOrders();
       } else {
         toast.error(res.data.description || "Failed to update status");
       }
@@ -188,6 +222,17 @@ const AdminOrders = () => {
       toast.error(error.message || "Error updating status");
     }
   };
+
+  const itemsPerPage = 20;
+  const displayOrders = filteredOrders
+    ? filteredOrders.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    )
+    : null;
+  const totalPages = filteredOrders
+    ? Math.ceil(filteredOrders.length / itemsPerPage)
+    : 1;
 
   return (
     <div className="pb-8 min-h-screen bg-gray-50" ref={containerRef}>
@@ -206,41 +251,88 @@ const AdminOrders = () => {
           <div className="relative group w-full md:w-96">
             <input
               type="text"
-              placeholder="Search by ID, name, phone..."
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none"
+              placeholder="Search by Order ID or Customer Name ..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            <FaSearch className="absolute left-3 top-3 text-gray-400" size={14} />
           </div>
+        </div>
+
+        {/* Status Filter Tabs */}
+        <div className="mb-6 flex gap-2 overflow-x-auto py-2 pl-2 scrollbar-none">
+          {[
+            { key: "all", label: "All Orders" },
+            ...Object.entries(STATUS_LABELS).map(([key, label]) => ({
+              key,
+              label,
+            })),
+          ].map((tab) => {
+            const isActive = selectedStatus === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setSelectedStatus(tab.key)}
+                className={`px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-250 cursor-pointer ${isActive
+                    ? "bg-black text-white"
+                    : "bg-white text-gray-600 hover:text-black border border-gray-100 hover:border-gray-200"
+                  }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Orders Grid */}
         <div className="grid gap-6">
-          {orders === null ? (
-            <div className="glamloader-overlay" aria-label="Loading" role="status">
+          {displayOrders === null ? (
+            <div
+              className="glamloader-overlay"
+              aria-label="Loading"
+              role="status"
+            >
               <div className="glamloader-logo">
                 KUNDRAT
                 <div className="glamloader-logo-fill">KUNDRAT</div>
               </div>
               <div className="glamloader-ring">
                 <svg viewBox="0 0 72 72">
-                  <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
-                  <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
-                  <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
+                  <circle
+                    className="glamloader-ring-track"
+                    cx="36"
+                    cy="36"
+                    r="32"
+                  />
+                  <circle
+                    className="glamloader-ring-arc glamloader-ring-arc--a2"
+                    cx="36"
+                    cy="36"
+                    r="32"
+                  />
+                  <circle
+                    className="glamloader-ring-arc glamloader-ring-arc--a1"
+                    cx="36"
+                    cy="36"
+                    r="32"
+                  />
                 </svg>
                 <div className="glamloader-ring-dot" />
               </div>
             </div>
-          ) : orders.length === 0 ? (
+          ) : displayOrders.length === 0 ? (
             <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-gray-200">
               <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FaBoxOpen className="text-gray-300 text-3xl" />
               </div>
               <h3 className="text-lg font-bold text-gray-900">No orders found</h3>
-              <p className="text-gray-500 mt-1 text-sm">Try adjusting your search filters</p>
+              <p className="text-gray-500 mt-1 text-sm">
+                Try adjusting your search filters
+              </p>
             </div>
           ) : (
-            orders.map((order) => {
+            displayOrders.map((order) => {
               const status = getStatusInfo(order.status);
               return (
                 <div
@@ -249,14 +341,16 @@ const AdminOrders = () => {
                 >
                   {/* Card Header/Row */}
                   <div
-                    className={`p-6 cursor-pointer transition-colors ${openOrderId === order.orderId ? "bg-gray-50/50" : "hover:bg-gray-50/30"
+                    className={`p-6 cursor-pointer transition-colors ${openOrderId === order.orderId
+                        ? "bg-gray-50/50"
+                        : "hover:bg-gray-50/30"
                       }`}
                     onClick={() => toggleOrder(order.orderId)}
                   >
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 items-center">
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                          Reference
+                          Order ID
                         </span>
                         <p className="text-base font-bold text-gray-900">
                           #{order.orderId}
@@ -279,7 +373,7 @@ const AdminOrders = () => {
                         </span>
                         <div className="flex flex-col">
                           <p className="text-base font-bold text-gray-900">
-                            ₹{order.grandTotal.toFixed(2)}
+                            ₹{Math.round(order.grandTotal)}
                           </p>
                           <span className="text-[10px] font-medium text-gray-500">
                             {order.paymentStatus}
@@ -313,8 +407,8 @@ const AdminOrders = () => {
                         )}
                         <div
                           className={`p-2 rounded-xl transition-all duration-200 ${openOrderId === order.orderId
-                            ? "bg-black text-white rotate-180"
-                            : "bg-gray-100 text-gray-400"
+                              ? "bg-black text-white rotate-180"
+                              : "bg-gray-100 text-gray-400"
                             }`}
                         >
                           <FaChevronDown size={14} />
@@ -340,7 +434,7 @@ const AdminOrders = () => {
                           <div className="space-y-4">
                             <div className="space-y-1">
                               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                Recipient
+                                Customer Name
                               </p>
                               <p className="text-sm font-bold text-gray-800">
                                 {order.address.first_name}{" "}
@@ -406,9 +500,6 @@ const AdminOrders = () => {
                                     }
                                     alt={item.productName}
                                     className="w-14 h-14 object-cover rounded-lg shadow-sm"
-                                    onError={(e) =>
-                                      (e.target.src = "/placeholder.jpg")
-                                    }
                                   />
                                   <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
                                     {item.quantity}
@@ -419,6 +510,11 @@ const AdminOrders = () => {
                                     {item.productName}
                                   </h4>
                                   <div className="flex flex-wrap gap-2 mt-1">
+                                    {item.sku && (
+                                      <span className="text-[9px] font-extrabold bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded uppercase">
+                                        SKU: {item.sku}
+                                      </span>
+                                    )}
                                     {item.size && (
                                       <span className="text-[9px] font-extrabold bg-gray-200 px-1.5 py-0.5 rounded uppercase">
                                         Size: {item.size}
@@ -454,13 +550,23 @@ const AdminOrders = () => {
                               <div className="flex justify-between">
                                 <span className="text-gray-400">SUBTOTAL</span>
                                 <span className="text-gray-800">
-                                  ₹{order.totalPrice.toFixed(2)}
+                                  ₹{Math.round(order.totalPrice)}
                                 </span>
                               </div>
+                              {order.discountAmount > 0 && (
+                                <div className="flex justify-between text-emerald-600">
+                                  <span className="text-emerald-600">
+                                    DISCOUNT
+                                  </span>
+                                  <span className="text-emerald-600">
+                                    -₹{Math.round(order.discountAmount)}
+                                  </span>
+                                </div>
+                              )}
                               <div className="flex justify-between">
                                 <span className="text-gray-400">SHIPPING</span>
                                 <span className="text-gray-800">
-                                  ₹{order.shippingCharge.toFixed(2)}
+                                  ₹{Math.round(order.shippingCharge)}
                                 </span>
                               </div>
                               <div className="border-t border-gray-200 pt-3 flex justify-between text-base">
@@ -468,7 +574,7 @@ const AdminOrders = () => {
                                   TOTAL
                                 </span>
                                 <span className="text-black font-extrabold">
-                                  ₹{order.grandTotal.toFixed(2)}
+                                  ₹{Math.round(order.grandTotal)}
                                 </span>
                               </div>
                             </div>
@@ -486,84 +592,101 @@ const AdminOrders = () => {
                                   <div className="relative">
                                     <button
                                       type="button"
-                                      onClick={() => setOpenDropdownKey(openDropdownKey === `carrier-${order.orderId}` ? null : `carrier-${order.orderId}`)}
+                                      onClick={() =>
+                                        setOpenDropdownKey(
+                                          openDropdownKey ===
+                                            `carrier-${order.orderId}`
+                                            ? null
+                                            : `carrier-${order.orderId}`
+                                        )
+                                      }
                                       className="flex items-center justify-between w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm font-bold focus:outline-none transition-all cursor-pointer"
                                     >
                                       <span>
-                                        {selectedLogistic ? `${selectedLogistic.logistic} – ₹${selectedLogistic.total}` : "Select Carrier"}
+                                        {selectedLogistic
+                                          ? `${selectedLogistic.logistic} – ₹${selectedLogistic.total}`
+                                          : "Select Carrier"}
                                       </span>
                                       <FaChevronDown
-                                        className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${openDropdownKey === `carrier-${order.orderId}` ? "rotate-180 text-[#0f1115]" : ""
+                                        className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${openDropdownKey ===
+                                            `carrier-${order.orderId}`
+                                            ? "rotate-180 text-[#0f1115]"
+                                            : ""
                                           }`}
                                       />
                                     </button>
 
-                                    {openDropdownKey === `carrier-${order.orderId}` && (
-                                      <div className="absolute left-0 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            setSelectedLogistic(null);
-                                            setOpenDropdownKey(null);
-                                          }}
-                                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-semibold ${!selectedLogistic
-                                            ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                                            }`}
-                                        >
-                                          <span>Select Carrier</span>
-                                          {!selectedLogistic && (
-                                            <svg
-                                              className="w-4 h-4 text-[#0f1115]"
-                                              fill="none"
-                                              stroke="currentColor"
-                                              viewBox="0 0 24 24"
-                                            >
-                                              <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2.5"
-                                                d="M5 13l4 4L19 7"
-                                              />
-                                            </svg>
-                                          )}
-                                        </button>
-                                        {logistics.map((l) => {
-                                          const isSelected = selectedLogistic?.logistic_id === l.logistic_id;
-                                          return (
-                                            <button
-                                              key={l.logistic_id}
-                                              type="button"
-                                              onClick={() => {
-                                                setSelectedLogistic(l);
-                                                setOpenDropdownKey(null);
-                                              }}
-                                              className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${isSelected
+                                    {openDropdownKey ===
+                                      `carrier-${order.orderId}` && (
+                                        <div className="absolute left-0 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setSelectedLogistic(null);
+                                              setOpenDropdownKey(null);
+                                            }}
+                                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-semibold ${!selectedLogistic
                                                 ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
                                                 : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                                                }`}
-                                            >
-                                              <span>{l.logistic} – ₹{l.total}</span>
-                                              {isSelected && (
-                                                <svg
-                                                  className="w-4 h-4 text-[#0f1115]"
-                                                  fill="none"
-                                                  stroke="currentColor"
-                                                  viewBox="0 0 24 24"
-                                                >
-                                                  <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2.5"
-                                                    d="M5 13l4 4L19 7"
-                                                  />
-                                                </svg>
-                                              )}
-                                            </button>
-                                          );
-                                        })}
-                                      </div>
-                                    )}
+                                              }`}
+                                          >
+                                            <span>Select Carrier</span>
+                                            {!selectedLogistic && (
+                                              <svg
+                                                className="w-4 h-4 text-[#0f1115]"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                              >
+                                                <path
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  strokeWidth="2.5"
+                                                  d="M5 13l4 4L19 7"
+                                                />
+                                              </svg>
+                                            )}
+                                          </button>
+                                          {logistics.map((l) => {
+                                            const isSelected =
+                                              selectedLogistic?.logistic_id ===
+                                              l.logistic_id;
+                                            return (
+                                              <button
+                                                key={l.logistic_id}
+                                                type="button"
+                                                onClick={() => {
+                                                  setSelectedLogistic(l);
+                                                  setOpenDropdownKey(null);
+                                                }}
+                                                className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${isSelected
+                                                    ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                                  }`}
+                                              >
+                                                <span>
+                                                  {l.logistic} – ₹{l.total}
+                                                </span>
+                                                {isSelected && (
+                                                  <svg
+                                                    className="w-4 h-4 text-[#0f1115]"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                  >
+                                                    <path
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"
+                                                      strokeWidth="2.5"
+                                                      d="M5 13l4 4L19 7"
+                                                    />
+                                                  </svg>
+                                                )}
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
                                   </div>
 
                                   {selectedLogistic && (
@@ -587,13 +710,17 @@ const AdminOrders = () => {
                                     className="w-full py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-sm active:scale-95 cursor-pointer"
                                   >
                                     {loadingLogistics ? (
-                                      <FaSpinner size={14} className="animate-spin mx-auto" />
+                                      <FaSpinner
+                                        size={14}
+                                        className="animate-spin mx-auto"
+                                      />
                                     ) : (
                                       "Ship Dispatch"
                                     )}
                                   </button>
                                 </div>
                               )}
+
                               <div className="pt-2">
                                 <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest block mb-2">
                                   Update Status
@@ -601,65 +728,88 @@ const AdminOrders = () => {
                                 <div className="relative">
                                   <button
                                     type="button"
-                                    onClick={() => setOpenDropdownKey(openDropdownKey === `status-${order.orderId}` ? null : `status-${order.orderId}`)}
+                                    onClick={() =>
+                                      setOpenDropdownKey(
+                                        openDropdownKey ===
+                                          `status-${order.orderId}`
+                                          ? null
+                                          : `status-${order.orderId}`
+                                      )
+                                    }
                                     className="flex items-center justify-between w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm font-bold focus:outline-none transition-all cursor-pointer"
                                   >
                                     <span>
-                                      {STATUS_LABELS[order.status] || "Unknown"}
+                                      {STATUS_LABELS[order.status] ||
+                                        "Unknown"}
                                     </span>
                                     <FaChevronDown
-                                      className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${openDropdownKey === `status-${order.orderId}` ? "rotate-180 text-[#0f1115]" : ""
+                                      className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${openDropdownKey ===
+                                          `status-${order.orderId}`
+                                          ? "rotate-180 text-[#0f1115]"
+                                          : ""
                                         }`}
                                     />
                                   </button>
 
-                                  {openDropdownKey === `status-${order.orderId}` && (
-                                    <div className="absolute left-0 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
-                                      {Object.values(ORDER_STATUS).map((value) => {
-                                        const isSelected = order.status === value;
-                                        return (
-                                          <button
-                                            key={value}
-                                            type="button"
-                                            onClick={() => {
-                                              updateOrderStatus(order.orderId, value);
-                                              setOpenDropdownKey(null);
-                                            }}
-                                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-semibold ${isSelected
-                                              ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                                              }`}
-                                          >
-                                            <span>{STATUS_LABELS[value]}</span>
-                                            {isSelected && (
-                                              <svg
-                                                className="w-4 h-4 text-[#0f1115]"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
+                                  {openDropdownKey ===
+                                    `status-${order.orderId}` && (
+                                      <div className="absolute left-0 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto max-h-60 z-[100] transform origin-top transition-all duration-200">
+                                        {Object.values(ORDER_STATUS).map(
+                                          (value) => {
+                                            const isSelected =
+                                              order.status === value;
+                                            return (
+                                              <button
+                                                key={value}
+                                                type="button"
+                                                onClick={() => {
+                                                  updateOrderStatus(
+                                                    order.orderId,
+                                                    value
+                                                  );
+                                                  setOpenDropdownKey(null);
+                                                }}
+                                                className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-semibold ${isSelected
+                                                    ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                                  }`}
                                               >
-                                                <path
-                                                  strokeLinecap="round"
-                                                  strokeLinejoin="round"
-                                                  strokeWidth="2.5"
-                                                  d="M5 13l4 4L19 7"
-                                                />
-                                              </svg>
-                                            )}
-                                          </button>
-                                        );
-                                      })}
-                                    </div>
-                                  )}
+                                                <span>
+                                                  {STATUS_LABELS[value]}
+                                                </span>
+                                                {isSelected && (
+                                                  <svg
+                                                    className="w-4 h-4 text-[#0f1115]"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                  >
+                                                    <path
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"
+                                                      strokeWidth="2.5"
+                                                      d="M5 13l4 4L19 7"
+                                                    />
+                                                  </svg>
+                                                )}
+                                              </button>
+                                            );
+                                          }
+                                        )}
+                                      </div>
+                                    )}
                                 </div>
                               </div>
 
-                              <button
-                                onClick={() => cancelOrder(order.orderId)}
-                                className="w-full py-3 bg-white border border-rose-200 text-rose-600 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-rose-50 transition-all active:scale-95 cursor-pointer"
-                              >
-                                <FaTrash size={12} /> Cancel Order
-                              </button>
+                              {/* Cancel Order Button - Hidden if Delivered OR Cancelled */}
+                              {status.label !== "Delivered" && status.label !== "Cancelled" && (
+                                <button
+                                  onClick={() => cancelOrder(order.orderId)}
+                                  className="w-full py-3 bg-white border border-rose-200 text-rose-600 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-rose-50 transition-all active:scale-95 cursor-pointer"
+                                >
+                                  <FaTrash size={12} /> Cancel Order
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -686,8 +836,8 @@ const AdminOrders = () => {
                 key={i + 1}
                 onClick={() => setCurrentPage(i + 1)}
                 className={`px-5 py-2.5 rounded-2xl font-bold transition-all duration-200 ${currentPage === i + 1
-                  ? "bg-black text-white shadow-lg scale-110"
-                  : "bg-white text-gray-500 hover:text-black border border-gray-100"
+                    ? "bg-black text-white shadow-lg scale-110"
+                    : "bg-white text-gray-500 hover:text-black border border-gray-100"
                   }`}
               >
                 {i + 1}

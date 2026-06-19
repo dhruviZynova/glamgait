@@ -28,7 +28,7 @@ const MediaSection = ({
   return (
     <div className="bg-gray-50 p-6 rounded-xl" ref={containerRef}>
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Colors & Media (Images + Videos)
+        Colors & Media (Images + Videos) *
       </h3>
       {formData.colors.map((color, i) => {
         const selectedColorIds = formData.colors
@@ -161,7 +161,7 @@ const MediaSection = ({
                       colors: prev.colors.filter((_, idx) => idx !== i),
                     }));
                   }}
-                  className="text-red-600"
+                  className="text-red-600 cursor-pointer"
                 >
                   <Trash2 />
                 </button>

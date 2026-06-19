@@ -3,7 +3,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import ProductCard from "./ProductCard";
 import axiosInstance from "../Axios/axios";
 import { ApiURL, userInfo } from "../Variable";
-import { getGuestId } from "../utils/guest";
 
 const NewArrivels = () => {
   const [activeTab, setActiveTab] = useState("newArrivals");
@@ -34,25 +33,27 @@ const NewArrivels = () => {
   useEffect(() => {
     const fetchWishlist = async () => {
       const user = userInfo();
-      const identifier = user?.u_id || getGuestId();
+      if (!user?.u_id) {
+        const local = JSON.parse(localStorage.getItem("localWishlist") || "[]");
+        const map = {};
+        local.forEach((item, i) => {
+          map[`${item.p_id}-${item.pcolor_id}`] = { wished: true, w_id: `local-${i}` };
+        });
+        setWishlistMap(map);
+        return;
+      }
 
       try {
-        const query = user?.u_id
-          ? `u_id=${identifier}`
-          : `guest_id=${identifier}`;
-
-        const res = await axiosInstance.get(`/getwishlist?${query}`);
+        const res = await axiosInstance.get(`/getwishlist?u_id=${user.u_id}`);
 
         if (res.data.status === 1) {
           const items = res.data.data || [];
-
-          // Create fast lookup map: "p_id-pcolor_id" → true
           const map = {};
           items.forEach((item) => {
             const key = `${item.p_id}-${item.pcolor_id}`;
             map[key] = {
               wished: true,
-              w_id: item.w_id, // optional: for remove
+              w_id: item.w_id,
             };
           });
 
@@ -68,13 +69,17 @@ const NewArrivels = () => {
 
   const refreshWishlist = async () => {
     const user = userInfo();
-    const identifier = user?.u_id || getGuestId();
+    if (!user?.u_id) {
+      const local = JSON.parse(localStorage.getItem("localWishlist") || "[]");
+      const map = {};
+      local.forEach((item, i) => {
+        map[`${item.p_id}-${item.pcolor_id}`] = { wished: true, w_id: `local-${i}` };
+      });
+      setWishlistMap(map);
+      return;
+    }
     try {
-      const query = user?.u_id
-        ? `u_id=${identifier}`
-        : `guest_id=${identifier}`;
-
-      const res = await axiosInstance.get(`/getwishlist?${query}`);
+      const res = await axiosInstance.get(`/getwishlist?u_id=${user.u_id}`);
 
       if (res.data.status === 1) {
         const items = res.data.data || [];
@@ -86,7 +91,7 @@ const NewArrivels = () => {
             w_id: item.w_id,
           };
         });
-        setWishlistMap(map); // ← Yeh update karega sab ProductCards ko
+        setWishlistMap(map);
       }
     } catch (err) {
       console.error("Wishlist refresh failed", err);
@@ -127,7 +132,7 @@ const NewArrivels = () => {
   }, [fetchAllReviewsSummary]);
 
   return (
-    <section className="relative sm:pt-0 md:pt-16 md:px-4 bg-[#F3F0ED] overflow-hidden">
+    <section className="relative sm:pt-0 md:pt-16 md:px-4 overflow-hidden">
       {/* Title and Description */}
       <div className="text-center max-w-4xl mx-auto mb-8 relative z-20">
         <h2 className="text-[30px] md:text-[34px] xl:text-[34px] font-bold text-gray-800 mb-2">

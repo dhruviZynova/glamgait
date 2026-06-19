@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 // src/pages/admin/PromotionsManagement.jsx
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable"; // adjust path if needed
 import { adminAxios } from "../../Axios/axios";
 import {
@@ -14,6 +14,17 @@ import {
 } from "@heroicons/react/24/outline";
 
 const PromotionsManagement = () => {
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "—";
+    const day = date.getDate();
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+  };
+
   const [activeTab, setActiveTab] = useState("offers"); // "offers" | "coupons"
   const [offers, setOffers] = useState([]);
   const [coupons, setCoupons] = useState([]);
@@ -44,6 +55,9 @@ const PromotionsManagement = () => {
     id: null,
     type: null, // "offer" | "coupon"
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchOffers = async () => {
     try {
@@ -102,6 +116,7 @@ const PromotionsManagement = () => {
     const idField = deleteModal.type === "offer" ? "offer_id" : "coupon_id";
 
     try {
+      setIsDeleting(true);
       const res = await adminAxios.post(`${ApiURL}/${endpoint}`, {
         [idField]: deleteModal.id,
       });
@@ -113,6 +128,7 @@ const PromotionsManagement = () => {
     } catch (err) {
       showToaster(0, "Error deleting item");
     } finally {
+      setIsDeleting(false);
       setDeleteModal({ isOpen: false, id: null, type: null });
     }
   };
@@ -129,6 +145,7 @@ const PromotionsManagement = () => {
         : "addcoupon";
 
     try {
+      setIsSubmitting(true);
       const res = await adminAxios[isEdit ? "put" : "post"](
         `${ApiURL}/${endpoint}`,
         formData
@@ -145,6 +162,8 @@ const PromotionsManagement = () => {
       }
     } catch (err) {
       showToaster(0, "Error saving promotion");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -307,8 +326,7 @@ const PromotionsManagement = () => {
                       ₹{item.min_amount || "0"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {new Date(item.start_date).toLocaleDateString()} –{" "}
-                      {new Date(item.end_date).toLocaleDateString()}
+                      {formatDate(item.start_date)} – {formatDate(item.end_date)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
@@ -608,15 +626,24 @@ const PromotionsManagement = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                  disabled={isSubmitting}
+                  className="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
+                  disabled={isSubmitting}
+                  className="px-5 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
-                  {isEdit ? "Update" : "Create"}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {isEdit ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    isEdit ? "Update" : "Create"
+                  )}
                 </button>
               </div>
             </form>
@@ -639,15 +666,24 @@ const PromotionsManagement = () => {
                 onClick={() =>
                   setDeleteModal({ isOpen: false, id: null, type: null })
                 }
-                className="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                disabled={isDeleting}
+                className="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDelete}
-                className="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                disabled={isDeleting}
+                className="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
-                Delete
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete"
+                )}
               </button>
             </div>
           </div>

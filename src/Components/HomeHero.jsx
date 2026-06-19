@@ -1,106 +1,70 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { Autoplay } from "swiper/modules";
+import axiosInstance from "../Axios/axios";
+import { getFullImageUrl } from "../Variable";
 
 import image1 from "../assets/images/bgimage5.png";
-import image2 from "../assets/images/ramadan_fashion_hero_banner.webp";
+import image2 from "../assets/images/bgimage7.png";
 
-const slides = [
-  {
-    id: 1,
-    image: image1,
-    subtitle: "Kundrat Signature",
-    title: "The Timeless \n Heritage Saree",
-    description: "Experience the allure of hand-woven luxury. Crafted with premium silk and intricate zari embroidery, our signature sarees are designed for your most celebrated moments.",
-    align: "left",
-    subColor: "text-gray-700",
-    textColor: "text-black",
-    descColor: "text-black-700",
-    btnPrimary: "bg-gray-900 text-white hover:bg-gray-800 border-gray-900",
-    btnSecondary: "bg-transparent border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white",
-    btnPrimaryText: "Shop Sarees",
-    btnSecondaryText: "Our Heritage",
-    bgClass: "bg-[75%_center] md:bg-center",
-    gradientMobile: "linear-gradient(60deg, rgba(252, 249, 245, 0.69) 0%, rgba(252, 249, 245, 0.37) 100%)",
-    gradientDesktop: "linear-gradient(90deg, rgba(252, 249, 245, 0.95) 0%, rgba(252, 249, 245, 0.5) 50%, rgba(252, 249, 245, 0) 100%)"
-  },
-  {
-    id: 2,
-    image: image2,
-    subtitle: "Modest Luxury",
-    title: "Elegance in \n Modest Wear",
-    description: "Discover a refined collection of designer abayas and modest gowns. Flowing silhouettes tailored in premium, breathable fabrics, embellished with delicate gold artistry.",
-    align: "right",
-    subColor: "text-amber-200 font-medium",
-    textColor: "text-white",
-    descColor: "text-gray-200",
-    btnPrimary: "bg-amber-500 text-gray-950 hover:bg-amber-400 border-amber-500",
-    btnSecondary: "bg-transparent border-white text-white hover:bg-white hover:text-gray-950",
-    btnPrimaryText: "Shop Modest Wear",
-    btnSecondaryText: "Explore Styles",
-    bgClass: "bg-[28%_top] md:bg-top",
-    gradientMobile: "linear-gradient(180deg, rgba(24, 18, 15, 0.45) 0%, rgba(32, 28, 26, 0.44) 100%)",
-    gradientDesktop: "linear-gradient(270deg, rgba(24, 18, 15, 0.95) 0%, rgba(24, 18, 15, 0.5) 50%, rgba(24, 18, 15, 0) 100%)"
-  }
+const defaultSlides = [
+  { id: 1, image: image1 },
+  { id: 2, image: image2 }
 ];
 
 const HomeHero = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [slides, setSlides] = useState([]);
+
+  useEffect(() => {
+    const fetchSliders = async () => {
+      try {
+        const response = await axiosInstance.get("/getsliders");
+        if (response?.data?.status === 1 && response?.data?.data?.length > 0) {
+          const apiSlides = response.data.data.map((item, index) => ({
+            id: item.image_id || index,
+            image: getFullImageUrl(item.image, "Slider")
+          }));
+          setSlides(apiSlides);
+        } else {
+          setSlides(defaultSlides);
+        }
+      } catch (error) {
+        console.error("Error fetching slider images:", error);
+        setSlides(defaultSlides);
+      }
+    };
+
+    fetchSliders();
+  }, []);
+
+  if (slides.length === 0) {
+    return (
+      <section className="w-full h-[30vh] sm:h-[50vh] md:h-[100vh] animate-pulse flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#113d33]/20 border-t-[#113d33] rounded-full animate-spin"></div>
+      </section>
+    );
+  }
 
   return (
-    <section className="w-full relative h-[60vh] md:h-[85vh]">
-      {/* React 19 Preload Link - hoisted automatically to document <head> for LCP optimization */}
-      <link rel="preload" as="image" href={image1} fetchPriority="high" />
-
-      {/* Backgrounds Rendered Outside Swiper so parallax works perfectly on desktop */}
-      {slides.map((slide, index) => (
-        <div
-          key={`bg-${slide.id}`}
-          className={`absolute inset-0 bg-cover ${slide.bgClass} bg-fixed transition-opacity duration-1000 ease-in-out ${index === activeIndex ? "opacity-100 z-0" : "opacity-0 -z-10"
-            }`}
-          style={{ backgroundImage: `url(${slide.image})` }}
-        >
-          {/* Mobile Overlay - covers entire mobile view cleanly */}
-          <div
-            className="absolute inset-0 block md:hidden"
-            style={{ background: slide.gradientMobile }}
-          ></div>
-
-          {/* Desktop Overlay - fades elegantly for desktop viewports */}
-          <div
-            className="absolute inset-0 hidden md:block"
-            style={{ background: slide.gradientDesktop }}
-          ></div>
-        </div>
-      ))}
+    <section className="w-full h-[30vh] sm:h-[50vh] md:h-[100vh] relative overflow-hidden">
+      {slides[0]?.image && <link rel="preload" as="image" href={slides[0].image} fetchPriority="high" />}
 
       <Swiper
         modules={[Autoplay]}
         autoplay={{ delay: 5000, disableOnInteraction: false }}
         loop={true}
         speed={1000}
-        onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-        className="w-full h-full relative z-10"
+        className="w-full h-full"
       >
         {slides.map((slide) => (
-          <SwiperSlide key={slide.id}>
-            <div className={`w-full h-full relative flex items-center ${slide.align === 'right' ? 'justify-end' : 'justify-start'}`}>
-              {/* Hero Content */}
-              <div className="relative z-10 px-2 md:px-16 lg:px-24 w-full">
-                <div className={`max-w-xl text-left ${slide.align === 'right' ? 'ml-auto' : 'mr-auto'}`}>
-                  <span className={`block text-sm md:text-base font-semibold tracking-widest uppercase mb-3 ${slide.subColor}`}>
-                    {slide.subtitle}
-                  </span>
-                  <h1 className={`text-2xl md:text-6xl font-serif mb-2 md:mb-6 leading-tight whitespace-pre-line ${slide.textColor}`}>
-                    {slide.title}
-                  </h1>
-                  <p className={`text-sm md:text-lg mb-4 md:mb-8 leading-relaxed ${slide.descColor}`}>
-                    {slide.description}
-                  </p>
-                </div>
-              </div>
-            </div>
+          <SwiperSlide key={slide.id} className="relative w-full h-full">
+            <img
+              src={slide.image}
+              alt="Slider Banner"
+              className="w-full h-full object-cover object-top"
+            />
+            <div className="absolute inset-0 bg-black/10 pointer-events-none" />
           </SwiperSlide>
         ))}
       </Swiper>

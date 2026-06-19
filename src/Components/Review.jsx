@@ -1,29 +1,61 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Link, useLocation } from "react-router-dom";
-import axiosInstance from "../Axios/axios";
+import React, { useEffect, useState, useMemo } from "react";
 import { ApiURL, userInfo } from "../Variable";
-import { Star, ChevronRight, ShoppingBag, CheckCircle, ImagePlus, X, ThumbsUp, ThumbsDown, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Star, ThumbsUp, ThumbsDown, Trash2, X } from "lucide-react";
 import toast from "react-hot-toast";
-import { ORDER_STATUS } from "../utils/constants";
-import { useReviews, useSubmitReview, useEditReview, useDeleteReview, useToggleReviewLike } from "../hooks/useReviews";
-import { useOrders } from "../hooks/useOrders";
+import { useReviews, useDeleteReview, useToggleReviewLike } from "../hooks/useReviews";
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 const getInitials = (name) => {
   if (!name) return "?";
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("") || "?";
+  return (
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() ?? "")
+      .join("") || "?"
+  );
 };
 
-const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onToggleLike, isToggling }) => {
-  const [liked, setLiked] = useState(review?.liked || review?.userAction === "like" || false);
-  const [disliked, setDisliked] = useState(review?.disliked || review?.userAction === "dislike" || false);
-  const [likeCount, setLikeCount] = useState(review?.likes ?? review?.like_count ?? 0);
-  const [dislikeCount, setDislikeCount] = useState(review?.dislikes ?? review?.dislike_count ?? 0);
+const getReviewStatus = (review) => {
+  if (!review) return null;
+  if (
+    review.status === "pending" ||
+    review.status === "approved" ||
+    review.status === "rejected"
+  ) {
+    return review.status;
+  }
+  const pub = review.is_published;
+  if (pub === undefined || pub == 1 || pub === true || String(pub) === "1")
+    return "approved";
+  if (pub == 2 || String(pub) === "2" || pub === "rejected") return "rejected";
+  return "pending";
+};
+
+// ── ReviewCard ────────────────────────────────────────────────────────────────
+
+const ReviewCard = ({
+  review,
+  displayDate,
+  currentUser,
+  onDelete,
+  onToggleLike,
+  isToggling,
+}) => {
+  const [liked, setLiked] = useState(
+    review?.liked || review?.userAction === "like" || false
+  );
+  const [disliked, setDisliked] = useState(
+    review?.disliked || review?.userAction === "dislike" || false
+  );
+  const [likeCount, setLikeCount] = useState(
+    review?.likes ?? review?.like_count ?? 0
+  );
+  const [dislikeCount, setDislikeCount] = useState(
+    review?.dislikes ?? review?.dislike_count ?? 0
+  );
 
   useEffect(() => {
     setLiked(review?.liked || review?.userAction === "like" || false);
@@ -32,12 +64,17 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
     setDislikeCount(review?.dislikes ?? review?.dislike_count ?? 0);
   }, [review]);
 
-  const isAuthor = currentUser?.u_id && (
-    String(review.u_id || review.user_id) === String(currentUser.u_id)
-  );
+  const isAuthor =
+    currentUser?.u_id &&
+    String(review.u_id || review.user_id) === String(currentUser.u_id);
+
+  const getReviewImageUrl = (img) => {
+    if (!img) return "";
+    if (img.startsWith("http://") || img.startsWith("https://")) return img;
+    return `${ApiURL}/assets/UserReviews/${img}`;
+  };
 
   const handleLike = () => {
-    // ❌ Prevent owner from liking their own review
     if (isAuthor) {
       toast.error("You cannot like your own review.");
       return;
@@ -47,7 +84,6 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
       toast.error("Please login to like reviews");
       return;
     }
-    // Optimistic UI updates
     if (liked) {
       setLiked(false);
       setLikeCount((c) => c - 1);
@@ -59,13 +95,10 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
         setDislikeCount((c) => c - 1);
       }
     }
-    if (onToggleLike) {
-      onToggleLike(review.r_id || review.review_id, "like");
-    }
+    if (onToggleLike) onToggleLike(review.r_id || review.review_id, "like");
   };
 
   const handleDislike = () => {
-    // ❌ Prevent owner from disliking their own review
     if (isAuthor) {
       toast.error("You cannot dislike your own review.");
       return;
@@ -75,7 +108,6 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
       toast.error("Please login to dislike reviews");
       return;
     }
-    // Optimistic UI updates
     if (disliked) {
       setDisliked(false);
       setDislikeCount((c) => c - 1);
@@ -87,20 +119,36 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
         setLikeCount((c) => c - 1);
       }
     }
-    if (onToggleLike) {
-      onToggleLike(review.r_id || review.review_id, "dislike");
-    }
+    if (onToggleLike) onToggleLike(review.r_id || review.review_id, "dislike");
   };
 
+  const avatarTheme = useMemo(() => {
+    const themes = [
+      { bg: "bg-[#F5F1EE]", text: "text-[#8C7A70]" },
+      { bg: "bg-[#EAEFF2]", text: "text-[#5B7B88]" },
+      { bg: "bg-[#EBECE1]", text: "text-[#6C755E]" },
+      { bg: "bg-[#F5EBEB]", text: "text-[#9E6F6F]" },
+      { bg: "bg-[#ECE6F2]", text: "text-[#7B5B94]" },
+    ];
+    const name = review?.reviewer_name || "";
+    if (!name) return themes[0];
+    const code = name.charCodeAt(0) + (name.charCodeAt(1) || 0);
+    return themes[code % themes.length];
+  }, [review?.reviewer_name]);
+
+  const imageUrls = review?.image_url
+    ? review.image_url.split(",").filter(Boolean)
+    : [];
+
   return (
-    <div className="border border-[#D3D3D3] rounded-[14px] p-4 md:p-6 mb-6 relative group">
+    <div className="bg-white border border-[#E8E0DA] rounded-[16px] p-4 md:p-6 transition-shadow hover:shadow-md relative group">
       <div className="flex gap-4 sm:gap-6">
-        <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#D9D9D9] flex items-center justify-center text-[#555] text-sm sm:text-base font-semibold select-none">
+        <div className={`flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-full ${avatarTheme.bg} flex items-center justify-center ${avatarTheme.text} text-sm sm:text-base font-semibold select-none border border-black/5`}>
           {getInitials(review?.reviewer_name)}
         </div>
         <div className="flex-1">
-          <div className="flex justify-between items-center mb-3">
-            <h4 className="text-[#3D3D3D] font-semibold text-base sm:text-lg font-[oxygen] capitalize">
+          <div className="flex justify-between items-center mb-2">
+            <h4 className="text-[#1E1512] font-semibold text-base sm:text-lg font-[oxygen] capitalize flex items-center gap-2">
               {review?.reviewer_name}
             </h4>
             <div className="flex items-center gap-0.5">
@@ -108,67 +156,77 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
                 <Star
                   key={i}
                   size={16}
-                  className={i < review?.rating ? "fill-[#7B7B7B] text-[#7B7B7B]" : "text-[#D1D1D1]"}
+                  className={
+                    i < review?.rating
+                      ? "fill-[#FBBF24] text-[#FBBF24]"
+                      : "text-[#E5E7EB] fill-[#E5E7EB]"
+                  }
                 />
               ))}
             </div>
           </div>
 
-          <p className="text-[#949494] text-sm sm:text-base leading-relaxed mb-4 font-[oxygen]">
+          <p className="text-[#5C504A] text-sm sm:text-base leading-relaxed mb-4 font-[oxygen]">
             {review?.message}
           </p>
 
-          {review?.image_url && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {review.image_url.split(",").map((img, i) => (
+          {imageUrls.length > 0 && (
+            <div className="flex flex-wrap gap-3 mb-4">
+              {imageUrls.map((img, i) => (
                 <img
                   key={i}
-                  src={img}
-                  alt={`Review ${i}`}
-                  className="w-10 h-10 object-cover rounded-lg border border-[#eee] hover:opacity-90 cursor-pointer transition-opacity"
-                  onClick={() => window.open(img, "_blank")}
+                  src={getReviewImageUrl(img)}
+                  alt={`Review ${i + 1}`}
+                  className="w-14 h-14 sm:w-20 sm:h-20 object-cover rounded-lg border border-[#E8E0DA] hover:border-[#1E1512] hover:scale-105 transition-all cursor-pointer shadow-sm"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                  onClick={() => window.open(getReviewImageUrl(img), "_blank")}
                 />
               ))}
             </div>
           )}
 
-          <div className="flex items-center gap-5 text-[#3D3D3D] text-xs sm:text-sm font-medium">
-
-            {/* ✅ Like Button - Always visible, disabled for owner */}
+          <div className="flex items-center gap-5 text-[#5C504A] text-xs sm:text-sm font-medium">
+            {/* Like */}
             <button
               onClick={handleLike}
               disabled={isAuthor || isToggling}
-              title={isAuthor ? "You cannot react to your own review" : "Like this review"}
-              className={`flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${liked ? "text-black" : "text-[#AEAEAE] hover:text-black"
+              title={
+                isAuthor
+                  ? "You cannot react to your own review"
+                  : "Like this review"
+              }
+              className={`flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${liked ? "text-[#1E1512] font-semibold" : "text-[#AEAEAE] hover:text-[#1E1512]"
                 }`}
             >
-              <ThumbsUp size={16} fill={liked ? "currentColor" : "none"} className={isToggling ? "animate-pulse" : ""} />
+              <ThumbsUp
+                size={16}
+                fill={liked ? "currentColor" : "none"}
+                className={isToggling ? "animate-pulse" : ""}
+              />
               {likeCount > 0 && <span>{likeCount}</span>}
             </button>
 
-            {/* ✅ Dislike Button - Always visible, disabled for owner */}
+            {/* Dislike */}
             <button
               onClick={handleDislike}
               disabled={isAuthor || isToggling}
-              title={isAuthor ? "You cannot react to your own review" : "Dislike this review"}
-              className={`flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${disliked ? "text-black" : "text-[#AEAEAE] hover:text-black"
+              title={
+                isAuthor
+                  ? "You cannot react to your own review"
+                  : "Dislike this review"
+              }
+              className={`flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${disliked ? "text-[#1E1512] font-semibold" : "text-[#AEAEAE] hover:text-[#1E1512]"
                 }`}
             >
-              <ThumbsDown size={16} fill={disliked ? "currentColor" : "none"} className={isToggling ? "animate-pulse" : ""} />
+              <ThumbsDown
+                size={16}
+                fill={disliked ? "currentColor" : "none"}
+                className={isToggling ? "animate-pulse" : ""}
+              />
               {dislikeCount > 0 && <span>{dislikeCount}</span>}
             </button>
 
-            {/* ✅ Edit/Delete - Only visible for owner */}
-            {isAuthor && onEdit && (
-              <button
-                onClick={() => onEdit(review)}
-                className="p-1.5 rounded-full bg-gray-50 text-gray-400 hover:text-black hover:bg-gray-200 transition-all cursor-pointer"
-                title="Edit your review"
-              >
-                <Pencil size={16} />
-              </button>
-            )}
-
+            {/* Delete — owner only */}
             {isAuthor && onDelete && (
               <button
                 onClick={() => onDelete(review.r_id || review.review_id)}
@@ -179,7 +237,9 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
               </button>
             )}
 
-            <span className="text-[#AEAEAE] font-normal">{displayDate(review)}</span>
+            <span className="text-[#AEAEAE] font-normal">
+              {displayDate(review)}
+            </span>
           </div>
         </div>
       </div>
@@ -187,145 +247,37 @@ const ReviewCard = ({ review, displayDate, currentUser, onEdit, onDelete, onTogg
   );
 };
 
-const Review = ({ p_id, productName, onReviewChange }) => {
-  const [selectedStars, setSelectedStars] = useState(5);
-  const [reviewContent, setReviewContent] = useState("");
-  const [uploadedImages, setUploadedImages] = useState([]);
+// ── Main Review Component ─────────────────────────────────────────────────────
+
+const Review = ({ p_id: propPId, productId, onReviewChange }) => {
+  const p_id = propPId || productId;
   const [visibleCount, setVisibleCount] = useState(3);
-  const location = useLocation();
-  const userRaw = userInfo();
-
-  // Memoize user to prevent infinite loops since userInfo() returns a new object on every call
-  const user = useMemo(() => userRaw, [JSON.stringify(userRaw)]);
-
-  const [reviewerName, setReviewerName] = useState("");
-  const [reviewerEmail, setReviewerEmail] = useState("");
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingReviewId, setEditingReviewId] = useState(null);
-
-  // TanStack Queries & Mutations
-  // ✅ FIX: Destructure 'refetch' from useReviews to manually refresh the list
-  const { data: reviews = [], isLoading: isLoadingReviews, refetch: refetchReviews } = useReviews(p_id);
-  const { data: orders = [], isLoading: isLoadingOrders } = useOrders();
-
-  const submitReviewMutation = useSubmitReview(p_id);
-  const toggleLikeMutation = useToggleReviewLike(p_id, user?.u_id);
-  const editReviewMutation = useEditReview(p_id);
-  const deleteReviewMutation = useDeleteReview(p_id);
-
   const [deletingReviewId, setDeletingReviewId] = useState(null);
   const [deletingConfirm, setDeletingConfirm] = useState(false);
-  const [userReviewForProduct, setUserReviewForProduct] = useState(null);
-  const [checkingUserReview, setCheckingUserReview] = useState(false);
-  const [hasSubmittedLocally, setHasSubmittedLocally] = useState(false);
 
-  const checkUserReview = useCallback(async () => {
-    if (!p_id || !user?.u_id) return;
-    setCheckingUserReview(true);
-    try {
-      const res = await axiosInstance.post("/getuserreviews", { p_id: Number(p_id) });
-      if (res.data.status === 1) {
-        const list = res.data.data || [];
-        const userRev = list.find(r => String(r.u_id || r.user_id) === String(user.u_id));
-        setUserReviewForProduct(userRev || null);
-      }
-    } catch (err) {
-      console.error("Error checking user review:", err);
-    } finally {
-      setCheckingUserReview(false);
-    }
-  }, [p_id, user?.u_id]);
+  const userRaw = userInfo();
+  const user = useMemo(() => userRaw, [JSON.stringify(userRaw)]);
 
-  useEffect(() => {
-    checkUserReview();
-  }, [checkUserReview]);
+  const {
+    data: reviews = [],
+    isLoading: isLoadingReviews,
+    refetch: refetchReviews,
+  } = useReviews(p_id, user?.u_id);
 
-  const alreadyReviewed = useMemo(() => {
-    if (!user?.u_id) return false;
-    return reviews.some((r) => String(r.u_id || r.user_id) === String(user.u_id));
-  }, [reviews, user?.u_id]);
+  const toggleLikeMutation = useToggleReviewLike(p_id, user?.u_id);
+  const deleteReviewMutation = useDeleteReview(p_id);
 
-  const hasOrders = useMemo(() => {
-    if (!user?.u_id) return false;
-    if (isLoadingOrders) return null; // null = still loading
+  const publishedReviews = useMemo(
+    () => reviews.filter((r) => getReviewStatus(r) === "approved"),
+    [reviews]
+  );
 
-    return orders.some(order =>
-      (parseInt(order.status) === ORDER_STATUS.DELIVERED || order.status_label === "Delivered") &&
-      order.orderItems && order.orderItems.some(item => {
-        const itemId = item.p_id || item.product_id || item.pid || item.id || item.productId;
-        const idMatch = itemId && String(itemId) === String(p_id);
-        const nameMatch = productName && item.productName &&
-          String(item.productName).trim().toLowerCase() === String(productName).trim().toLowerCase();
-
-        return idMatch || nameMatch;
-      })
-    );
-  }, [orders, isLoadingOrders, user?.u_id, p_id, productName]);
-
-  const shouldShowReviewSection = useMemo(() => {
-    if (!user?.u_id) return true; // Show login prompt
-    if (isEditing) return true;
-    if (hasOrders === false) return false;
-
-    const isPublished = alreadyReviewed ||
-      userReviewForProduct?.is_published == 1 ||
-      userReviewForProduct?.is_published === true ||
-      userReviewForProduct?.is_published === "1";
-
-    if (isPublished) return false; // Hide completely once approved and published
-    if (hasSubmittedLocally) return true; // Show section to render pending message
-    if (!userReviewForProduct) return true;
-    if (userReviewForProduct.is_published !== 1 && userReviewForProduct.is_published !== true) return true;
-    return false;
-  }, [user?.u_id, isEditing, hasOrders, userReviewForProduct, hasSubmittedLocally, alreadyReviewed]);
-
-  useEffect(() => {
-    if (alreadyReviewed) {
-      setHasSubmittedLocally(false);
-    }
-  }, [alreadyReviewed]);
-
-  useEffect(() => {
-    if (user && !isEditing) {
-      setReviewerName(user.first_name || user.name || "");
-      setReviewerEmail(user.email || "");
-    }
-  }, [user?.u_id, user?.email, isEditing]);
-
-  // ── Toggle Like handler ──────────────────────────────────────────────────
   const handleToggleLike = (r_id, action) => {
     if (!user?.u_id) {
       toast.error(`Please login to ${action} reviews`);
       return;
     }
     toggleLikeMutation.mutate({ r_id, action });
-  };
-
-  const handleEdit = (review) => {
-    setIsEditing(true);
-    setEditingReviewId(review.r_id || review.review_id);
-    setReviewerName(review.reviewer_name || "");
-    setReviewerEmail(review.reviewer_email || "");
-    setReviewContent(review.message || "");
-    setSelectedStars(review.rating || 5);
-    setUploadedImages([]);
-
-    // Smooth scroll to form
-    const formElement = document.getElementById("review-form-section");
-    if (formElement) {
-      formElement.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  const cancelEdit = () => {
-    setIsEditing(false);
-    setEditingReviewId(null);
-    setReviewerName(user.first_name || user.name || "");
-    setReviewerEmail(user.email || "");
-    setReviewContent("");
-    setSelectedStars(5);
-    setUploadedImages([]);
   };
 
   const handleDelete = (reviewId) => {
@@ -335,77 +287,22 @@ const Review = ({ p_id, productName, onReviewChange }) => {
   const confirmDelete = () => {
     if (!deletingReviewId || deletingConfirm) return;
     setDeletingConfirm(true);
-
     deleteReviewMutation.mutate(deletingReviewId, {
       onSuccess: () => {
         setDeletingReviewId(null);
-        if (onReviewChange) {
-          onReviewChange();
-        }
-        setHasSubmittedLocally(false);
-        setUserReviewForProduct(null); // Clear instantly
-        // ✅ FIX: Call checkUserReview to update the "Write Review" section visibility
-        checkUserReview();
-        // ✅ FIX: Call refetchReviews to update the review list immediately without refresh
+        if (onReviewChange) onReviewChange();
         refetchReviews();
       },
       onSettled: () => {
         setDeletingConfirm(false);
-      }
-    });
-  };
-
-  const submitting = submitReviewMutation.isPending || editReviewMutation.isPending;
-
-  // ── 3. Submit review (Add or Update) ──────────────────────────────────────
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!p_id || submitting) return;
-
-    if (selectedStars === 0) {
-      toast.error("Please select a rating");
-      return;
-    }
-
-    const formData = new FormData();
-    if (isEditing) {
-      formData.append("r_id", editingReviewId);
-    }
-    formData.append("p_id", Number(p_id));
-    formData.append("rating", selectedStars);
-    formData.append("message", reviewContent);
-    formData.append("reviewer_name", reviewerName);
-    formData.append("reviewer_email", reviewerEmail);
-
-    // Handle images
-    uploadedImages.forEach((img) => {
-      if (img instanceof File) {
-        formData.append("userReviewImage", img);
-      }
-    });
-
-    const mutation = isEditing ? editReviewMutation : submitReviewMutation;
-    mutation.mutate(formData, {
-      onSuccess: () => {
-        setSelectedStars(5);
-        setReviewContent("");
-        setUploadedImages([]);
-        setIsEditing(false);
-        setEditingReviewId(null);
-        if (onReviewChange) {
-          onReviewChange();
-        }
-        setHasSubmittedLocally(true);
-        checkUserReview();
-        // ✅ FIX: Refetch reviews after submitting/editing to show the updated/new review immediately
-        refetchReviews();
-      }
+      },
     });
   };
 
   const toggleVisible = () => {
-    if (visibleCount === 3) setVisibleCount(reviews?.length);
-    else setVisibleCount(3);
+    setVisibleCount((prev) =>
+      prev === 3 ? publishedReviews.length : 3
+    );
   };
 
   const displayDate = (review) => {
@@ -414,235 +311,126 @@ const Review = ({ p_id, productName, onReviewChange }) => {
     const date = new Date(dateStr);
     const now = new Date();
     const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-
     if (diffInMinutes < 60) return `${diffInMinutes}m`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`;
     return `${Math.floor(diffInMinutes / 1440)}d`;
   };
 
-  // ── Decide what to render in the "write a review" box ────────────────────
-  const renderReviewFormArea = () => {
-    // Not logged in
-    if (!user?.u_id) {
-      return (
-        <div className="text-center py-8">
-          <p className="text-[#949494] font-[oxygen]">
-            Please{" "}
-            <Link
-              to="/login"
-              state={{ from: location.pathname + location.search }}
-              className="text-black underline font-semibold"
-            >
-              login
-            </Link>{" "}
-            to write a review.
-          </p>
-        </div>
-      );
+  // Calculate review stats
+  const stats = useMemo(() => {
+    if (publishedReviews.length === 0) {
+      return {
+        averageRating: "0.0",
+        totalRatings: 0,
+        distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+      };
     }
 
-    // Still loading order status
-    if (hasOrders === null) {
-      return (
-        <div className="text-center py-8">
-          <div className="w-6 h-6 border-2 border-t-transparent border-[#1C2F2F] rounded-full animate-spin mx-auto" />
-        </div>
-      );
-    }
+    const total = publishedReviews.reduce((sum, r) => sum + Number(r.rating || 0), 0);
+    const average = (total / publishedReviews.length).toFixed(1);
 
-    if (!hasOrders && !isEditing) {
-      return null;
-    }
-
-    // User already reviewed this product (either published or pending)
-    if ((userReviewForProduct || hasSubmittedLocally) && !isEditing) {
-      const isPublished = alreadyReviewed ||
-        userReviewForProduct?.is_published == 1 ||
-        userReviewForProduct?.is_published === true ||
-        userReviewForProduct?.is_published === "1";
-
-      if (!isPublished) {
-        return (
-          <div className="text-center py-6 bg-amber-50 rounded-xl border border-amber-100 p-4">
-            <p className="text-amber-800 font-semibold text-sm flex items-center justify-center gap-2">
-              <CheckCircle size={16} className="text-amber-500 animate-pulse" />
-              Your review was added successfully and will be shown after admin approval.
-            </p>
-          </div>
-        );
+    const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    publishedReviews.forEach((r) => {
+      const val = Math.round(Number(r.rating || 0));
+      if (distribution[val] !== undefined) {
+        distribution[val]++;
       }
-      return null;
-    }
+    });
 
-    // Show the review form
-    return (
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2 flex flex-col gap-2">
-            <label className="text-[#3D3D3D] text-md font-medium font-[oxygen]">
-              Your Name:
-            </label>
-            <input
-              type="text"
-              value={reviewerName}
-              onChange={(e) => setReviewerName(e.target.value)}
-              placeholder="Enter your name"
-              className="w-full bg-[#FAFAFA] border border-[#00000026] rounded-full px-6 py-4 text-[#414141] capitalize focus:outline-none transition"
-            />
-          </div>
-          <div className="space-y-2 flex flex-col gap-2">
-            <label className="text-[#3D3D3D] text-md font-medium font-[oxygen]">
-              Your Email:
-            </label>
-            <input
-              type="email"
-              value={reviewerEmail}
-              onChange={(e) => setReviewerEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="w-full bg-[#FAFAFA] border border-[#00000026] rounded-full px-6 py-4 text-[#414141] focus:outline-none transition"
-            />
-          </div>
-        </div>
-
-        {/* Review text */}
-        <div className="space-y-2">
-          <textarea
-            value={reviewContent}
-            onChange={(e) => setReviewContent(e.target.value)}
-            placeholder="Write your review..."
-            className="w-full bg-[#FAFAFA] border border-[#00000026] rounded-[22px] px-6 py-4 min-h-[150px] text-[#414141] focus:outline-none transition resize-none"
-            required
-          />
-        </div>
-
-        {/* Image Upload */}
-        <div className="space-y-3">
-          <label className="text-[#3D3D3D] text-md font-medium font-[oxygen] block">
-            Add Photos (optional)
-          </label>
-
-          {/* Drop zone */}
-          <label className="flex flex-col items-center justify-center gap-2 w-full border-2 border-dashed border-[#00000020] rounded-[16px] px-6 py-5 cursor-pointer transition bg-[#FAFAFA]">
-            <ImagePlus size={24} className="text-[#AEAEAE]" />
-            <span className="text-sm text-[#949494] font-[oxygen]">
-              Click to upload images
-            </span>
-            <input
-              type="file"
-              name="userReviewImage"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={(e) => {
-                const files = Array.from(e.target.files);
-                setUploadedImages((prev) => [...prev, ...files]);
-                e.target.value = "";
-              }}
-            />
-          </label>
-
-          {/* Preview thumbnails */}
-          {uploadedImages.length > 0 && (
-            <div className="flex flex-wrap gap-3 mt-2">
-              {uploadedImages.map((file, idx) => (
-                <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-[#00000015] shadow-sm">
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt={`preview-${idx}`}
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setUploadedImages((prev) => prev.filter((_, i) => i !== idx))
-                    }
-                    className="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full p-0.5 hover:bg-black transition cursor-pointer"
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <span className="text-[#3D3D3D] text-md font-medium font-[oxygen]">
-              Your Ratings:
-            </span>
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setSelectedStars(star)}
-                  className="transition-transform hover:scale-110 cursor-pointer"
-                >
-                  <Star
-                    size={24}
-                    className={
-                      star <= selectedStars
-                        ? "fill-[#7B7B7B] text-[#7B7B7B]"
-                        : "text-[#7B7B7B] hover:text-black"
-                    }
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            {isEditing && (
-              <button
-                type="button"
-                onClick={cancelEdit}
-                className="text-gray-500 font-medium hover:text-red-500 transition-colors cursor-pointer"
-              >
-                Cancel Edit
-              </button>
-            )}
-            <button
-              type="submit"
-              disabled={submitting}
-              className="bg-[#000000] text-white px-8 py-3 rounded-full font-[Exo] font-500 text-md flex items-center gap-2 cursor-pointer transition self-end sm:self-auto disabled:opacity-70"
-            >
-              {submitting && <Loader2 size={16} className="animate-spin" />}
-              {submitting ? "Posting..." : (isEditing ? "Update Review" : "Post Review")}
-              {!submitting && <ChevronRight size={20} />}
-            </button>
-          </div>
-        </div>
-      </form>
-    );
-  };
+    return {
+      averageRating: average,
+      totalRatings: publishedReviews.length,
+      distribution
+    };
+  }, [publishedReviews]);
 
   return (
     <div id="reviews" className="">
-      {/* Review List */}
-      <div className="mb-6 md:mb-12">
-        {reviews?.length === 0 ? (
-          (!userReviewForProduct && !hasSubmittedLocally) && (
-            <div className="text-center">
-              <p className="text-[#949494] font-[oxygen] text-lg">No reviews yet. Be the first to share your experience!</p>
+      {/* Rating Summary Card */}
+      {publishedReviews.length > 0 && (
+        <div className="bg-white border border-[#E8E0DA] rounded-[18px] p-4 md:p-6 max-w-xl mb-8 shadow-sm hover:shadow transition-all duration-300 flex flex-row sm:flex-row gap-8 items-center sm:items-stretch">
+          {/* Summary Box */}
+          <div className="flex flex-col items-center justify-center sm:border-r border-[#E8E0DA] sm:pr-8 sm:min-w-[160px]">
+            <span className="text-3xl md:text-5xl font-bold font-[Oxygen] text-[#1E1512] mb-2">{stats.averageRating}</span>
+            <div className="flex gap-1 mb-2">
+              {(() => {
+                const stars = [];
+                const rating = Number(stats.averageRating);
+                for (let i = 1; i <= 5; i++) {
+                  if (i <= rating) {
+                    stars.push(<Star key={i} size={18} className="fill-[#FBBF24] text-[#FBBF24]" />);
+                  } else if (i - 0.5 <= rating) {
+                    stars.push(
+                      <div key={i} className="relative inline-block">
+                        <Star size={18} className="text-[#E5E7EB] fill-[#E5E7EB]" />
+                        <div className="absolute inset-0 overflow-hidden w-1/2">
+                          <Star size={18} className="fill-[#FBBF24] text-[#FBBF24]" />
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    stars.push(<Star key={i} size={18} className="text-[#E5E7EB] fill-[#E5E7EB]" />);
+                  }
+                }
+                return stars;
+              })()}
             </div>
-          )
+            <span className="text-sm text-[#8C7A70] font-[Oxygen]">{stats.totalRatings} {stats.totalRatings === 1 ? 'rating' : 'ratings'}</span>
+          </div>
+
+          {/* Breakdown Bars */}
+          <div className="flex-1 w-full flex flex-col justify-center gap-2">
+            {[5, 4, 3, 2, 1].map((stars) => {
+              const count = stats.distribution[stars];
+              const pct = stats.totalRatings > 0 ? (count / stats.totalRatings) * 100 : 0;
+              return (
+                <div key={stars} className="flex items-center gap-3 text-sm font-[Oxygen] text-[#5C504A]">
+                  <span className="w-5 text-right font-medium">{stars}★</span>
+                  <div className="flex-1 h-2.5 bg-[#F5F1EE] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#FBBF24] rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <span className="w-8 text-left text-gray-500 text-xs">{count}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Review List */}
+      <div className="flex flex-col gap-6">
+        {isLoadingReviews ? (
+          <div className="text-center py-8">
+            <div className="w-6 h-6 border-2 border-t-transparent border-[#1C2F2F] rounded-full animate-spin mx-auto" />
+          </div>
+        ) : publishedReviews.length === 0 ? (
+          <div className="text-center py-6">
+            <p className="text-[#949494] font-[oxygen] text-lg">
+              No reviews yet. Be the first to share your experience!
+            </p>
+          </div>
         ) : (
-          reviews?.slice(0, visibleCount).map((review, index) => (
+          publishedReviews.slice(0, visibleCount).map((review, index) => (
             <ReviewCard
               key={review.r_id || review.review_id || index}
               review={review}
               displayDate={displayDate}
               currentUser={user}
-              onEdit={handleEdit}
               onDelete={handleDelete}
               onToggleLike={handleToggleLike}
-              isToggling={toggleLikeMutation.isPending && toggleLikeMutation.variables?.r_id === (review.r_id || review.review_id)}
+              isToggling={
+                toggleLikeMutation.isPending &&
+                toggleLikeMutation.variables?.r_id ===
+                (review.r_id || review.review_id)
+              }
             />
           ))
         )}
 
-        {reviews?.length > 3 && (
+        {publishedReviews.length > 3 && (
           <div className="flex justify-center mt-6">
             <button
               onClick={toggleVisible}
@@ -654,35 +442,7 @@ const Review = ({ p_id, productName, onReviewChange }) => {
         )}
       </div>
 
-      {/* Write a Review Section */}
-      {shouldShowReviewSection && (
-        (!isEditing && (hasSubmittedLocally || (userReviewForProduct && userReviewForProduct.is_published !== 1 && userReviewForProduct.is_published !== true))) ? (
-          <div className="my-6">
-            {renderReviewFormArea()}
-          </div>
-        ) : (
-          <div id="review-form-section" className="border border-[#D3D3D3] rounded-[14px] p-4 md:p-8 mb-6">
-            <div className="flex gap-6">
-              <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#D9D9D9] flex items-center justify-center text-[#555] text-sm sm:text-base font-semibold select-none">
-                {getInitials(user?.first_name
-                  ? `${user.first_name}`
-                  : user?.name)}
-              </div>
-              <div className="flex-1">
-                {isEditing && (
-                  <div className="mb-6 flex items-center gap-2 text-[#004534] bg-[#00453410] px-4 py-2 rounded-lg w-fit">
-                    <Pencil size={16} />
-                    <span className="text-sm font-semibold">Editing your review</span>
-                  </div>
-                )}
-                {renderReviewFormArea()}
-              </div>
-            </div>
-          </div>
-        )
-      )}
-
-      {/* Custom Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal */}
       {deletingReviewId && (
         <div className="fixed inset-0 z-[999] bg-[#00000080] backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
           <div className="bg-white border border-[#D3D3D3] rounded-[22px] max-w-sm w-full p-6 sm:p-8 shadow-2xl animate-fadeIn relative">
@@ -703,7 +463,8 @@ const Review = ({ p_id, productName, onReviewChange }) => {
               </h3>
 
               <p className="font-[oxygen] text-[#777] text-sm sm:text-base mb-6 leading-relaxed">
-                Are you sure you want to delete your review? This action cannot be undone.
+                Are you sure you want to delete your review? This action cannot
+                be undone.
               </p>
 
               <div className="flex items-center gap-4 w-full justify-center">
@@ -715,9 +476,10 @@ const Review = ({ p_id, productName, onReviewChange }) => {
                 </button>
                 <button
                   onClick={confirmDelete}
-                  className="flex-1 max-w-[120px] py-3 rounded-full bg-[#1C2F2F] text-white font-semibold font-[oxygen] hover:bg-black transition cursor-pointer text-center text-sm"
+                  disabled={deletingConfirm}
+                  className="flex-1 max-w-[120px] py-3 rounded-full bg-[#1C2F2F] text-white font-semibold font-[oxygen] hover:bg-black transition cursor-pointer text-center text-sm disabled:opacity-70"
                 >
-                  Delete
+                  {deletingConfirm ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </div>

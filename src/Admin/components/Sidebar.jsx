@@ -1,11 +1,13 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useUser } from "../../Context/UserContext";
 import {
   ClipboardList,
   Users,
   Mail,
   X,
   Star,
-  Box,
+  ShoppingBag,
   LayoutDashboard,
   Grid,
   Palette,
@@ -16,12 +18,23 @@ import {
   TicketPercent,
   ListTree,
   Ruler,
+  LogOut,
+
 } from "lucide-react";
 // import logo from "../../assets/logo.svg";
 import logo from "../../assets/logo2.png";
 import { adminInfo } from "../../Variable";
 
 const Sidebar = ({ onClose }) => {
+  const navigate = useNavigate();
+  const { logout } = useUser();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/admin/login");
+  };
+
   const userData = adminInfo();
   const adminName = userData?.first_name;
   const adminLastName = userData?.last_name;
@@ -44,7 +57,7 @@ const Sidebar = ({ onClose }) => {
         { name: "Attributes", path: "/admin/product-attributes", icon: ListTree },
         { name: "Colors", path: "/admin/colors", icon: Palette },
         { name: "Sizes", path: "/admin/sizes", icon: Ruler },
-        { name: "Products", path: "/admin/product", icon: Box },
+        { name: "Products", path: "/admin/product", icon: ShoppingBag },
       ]
     },
     {
@@ -141,16 +154,56 @@ const Sidebar = ({ onClose }) => {
 
       {/* Bottom Footer or User profile shortcut could go here */}
       <div className="p-4 border-t border-white/5 bg-black/20">
-        <div className="flex items-center px-4 py-3 space-x-3 rounded-xl bg-white/5 border border-white/5">
-          <div className="h-8 w-8 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-amber-500/20">
-            {initials}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3 overflow-hidden">
+            <div className="h-8 w-8 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-amber-500/20 flex-shrink-0">
+              {initials}
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-xs font-semibold text-white truncate capitalize">{adminName} {adminLastName}</p>
+              <p className="text-[10px] text-gray-500 truncate">{adminEmail}</p>
+            </div>
           </div>
-          <div className="flex-1 overflow-hidden">
-            <p className="text-xs font-semibold text-white truncate capitalize">{adminName} {adminLastName}</p>
-            <p className="text-[10px] text-gray-500 truncate">{adminEmail}</p>
-          </div>
+          <button
+            onClick={() => setIsLogoutModalOpen(true)}
+            className="text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition cursor-pointer"
+            title="Logout"
+          >
+            <LogOut size={16} />
+          </button>
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {isLogoutModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[999] px-4 font-poppins">
+          <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-gray-100 animate-fadeIn text-left">
+            <h3 className="text-lg font-bold text-gray-900 mb-3">
+              Confirm Logout
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to log out of the admin panel?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsLogoutModalOpen(false)}
+                className="px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 border border-gray-300 rounded-xl transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setIsLogoutModalOpen(false);
+                }}
+                className="px-4 py-2.5 text-sm font-semibold bg-black text-white hover:bg-gray-900 rounded-xl transition cursor-pointer"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
