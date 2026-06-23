@@ -4,12 +4,10 @@ import { useSearchParams, Link } from "react-router-dom";
 import ProductCard from "../Components/ProductCard";
 import axiosInstance from "../Axios/axios";
 import ScrollToTop from "../Components/ScrollToTop";
-import { userInfo } from "../Variable";
-import { getGuestId } from "../utils/guest";
+import { userInfo, createSlug } from "../Variable";
+import { getCategories as getCachedCategories } from "../utils/dataCache";
 
 const SearchResults = () => {
-  ScrollToTop();
-
   const [searchParams] = useSearchParams();
   const query = searchParams.get("query")?.trim() || "";
 
@@ -21,6 +19,23 @@ const SearchResults = () => {
   const [wishlistMap, setWishlistMap] = useState({});
   const [reviewsSummary, setReviewsSummary] = useState({});
 
+  const [firstCategorySlug, setFirstCategorySlug] = useState("");
+
+  useEffect(() => {
+    const fetchFirstCategory = async () => {
+      try {
+        const data = await getCachedCategories(axiosInstance);
+        if (data && data.length > 0) {
+          const firstCat = data[0];
+          const slug = createSlug(firstCat.cate_name);
+          setFirstCategorySlug(slug);
+        }
+      } catch (err) {
+        console.error("Error fetching first category for Shop Now button:", err);
+      }
+    };
+    fetchFirstCategory();
+  }, []);
 
   useEffect(() => {
     if (!query) {
@@ -32,24 +47,22 @@ const SearchResults = () => {
     const fetchSearchResults = async () => {
       setLoading(true);
       try {
-        const capitalizedSearch = query
-          .split(" ")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
-
         const response = await axiosInstance.get("/getallproducts", {
           params: {
-            search: capitalizedSearch,
-            page: currentPage,
-            perPage: 20, // or 12, 24 as you prefer
+            perPage: 1000,
           },
         });
 
         if (response.data.status === 1) {
-          const data = response.data.data;
-          setProducts(data.productData || []);
-          setTotalResults(data.totalCount || 0);
-          setTotalPages(data.totalPages || 1);
+          const allProducts = response.data.data?.productData || [];
+          const queryLower = query.toLowerCase();
+          const filtered = allProducts.filter((product) =>
+            product.name?.toLowerCase().includes(queryLower)
+          );
+
+          setProducts(filtered);
+          setTotalResults(filtered.length);
+          setTotalPages(1);
         } else {
           setProducts([]);
           setTotalResults(0);
@@ -187,7 +200,7 @@ const SearchResults = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Search Results
           </h1>
-          <p className="text-xs text-black bg-white inline-block px-8 py-3 rounded-full shadow capitalize">
+          <p className="text-xs text-black bg-white inline-block px-8 py-3 rounded-full shadow">
             {query}
           </p>
           <p className="mt-4 text-gray-600">
@@ -252,7 +265,7 @@ const SearchResults = () => {
               No products found for "<strong className="capitalize">{query}</strong>"
             </p>
             <Link
-              to="/shop"
+              to={firstCategorySlug ? `/collections/${firstCategorySlug}` : "/collections/lehengas"}
               className="inline-block bg-black text-white px-8 py-4 rounded-full hover:bg-gray-800 transition text-lg"
             >
               Browse All Products

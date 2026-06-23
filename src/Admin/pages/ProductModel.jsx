@@ -169,6 +169,7 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
               pcolor_id: pc.pcolor_id,
               color_name: pc.color?.color_name || "Unknown",
               images: pc.productimages || [],
+              video: pc.video || "",
             });
           }
         });
@@ -272,6 +273,71 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
+    if (!formData.name || !formData.name.trim()) {
+      toast.error("Product Name is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.cate_id) {
+      toast.error("Category is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.sc_id) {
+      toast.error("Collection is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.f_id) {
+      toast.error("Fabric is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.work_id) {
+      toast.error("Work is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.occasion_id) {
+      toast.error("Occasion is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.style_id) {
+      toast.error("Style is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.price) {
+      toast.error("Price is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.original_price) {
+      toast.error("Original Price is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.sku || !formData.sku.trim()) {
+      toast.error("SKU is required!");
+      setIsSubmitting(false);
+      return;
+    }
+    if (formData.colors.some((c) => !c.color_id)) {
+      toast.error("Please select a color");
+      setIsSubmitting(false);
+      return;
+    }
+    for (let i = 0; i < formData.colors.length; i++) {
+      const newImagesCount = formData.colors[i].images?.length || 0;
+      const existingImagesCount = existingMedia[i]?.images?.length || 0;
+      if (newImagesCount + existingImagesCount === 0) {
+        toast.error("Please upload at least one image or video for each color!");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     const colorIds = formData.colors.map((c) => c.color_id).filter(Boolean);
     if (new Set(colorIds).size !== colorIds.length) {
       toast.error("Duplicate colors not allowed!");
@@ -290,7 +356,13 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
     data.append("sizes", JSON.stringify(formData.sizes.map((s) => ({ size_id: s.size_id }))));
 
     formData.colors.forEach((color, i) => {
-      color.images.forEach((file) => data.append(`images_color_${i}`, file));
+      color.images.forEach((file) => {
+        if (file && file.type && file.type.startsWith("video/")) {
+          data.append("video", file);
+        } else {
+          data.append(`images_color_${i}`, file);
+        }
+      });
     });
 
     if (product) data.append("deleted_media", JSON.stringify(deletedMediaIds));
@@ -375,7 +447,7 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
             <p className="text-sm font-medium text-gray-500 animate-pulse">Loading latest product details...</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             <BasicDetailsSection
               formData={formData}
               handleInputChange={handleInputChange}

@@ -226,7 +226,7 @@ const BasicDetailsSection = ({
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Original Price
+          Original Price *
         </label>
         <input
           type="number"
@@ -234,6 +234,7 @@ const BasicDetailsSection = ({
           value={formData.original_price}
           onChange={handleInputChange}
           className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none"
+          required
         />
       </div>
       <div>

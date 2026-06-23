@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-// import Topbar from "./components/Topbar";
+import Topbar from "./components/Topbar";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import { adminInfo } from "../Variable";
@@ -54,7 +54,9 @@ const AdminLayout = () => {
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* <Topbar onMenuClick={() => setSidebarOpen(true)} /> */}
+        <div className="lg:hidden">
+          <Topbar onMenuClick={() => setSidebarOpen(true)} />
+        </div>
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-2 md:p-6">
           <Outlet />
         </main>

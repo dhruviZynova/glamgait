@@ -6,22 +6,6 @@ export function useProductFilters(cateName) {
   return useQuery({
     queryKey: ["productFilters", cateName],
     queryFn: async () => {
-      let categoryId = 2; // Default fallback
-      let categoryDisplayName = "All Products";
-
-      // If we have a category name, fetch the category ID first
-      if (cateName && cateName !== "All Products") {
-        try {
-          const res = await axiosInstance.get(`/getcategorybyname/${cateName}`);
-          if (res?.data?.status === 1 && res?.data?.data) {
-            categoryId = res.data.data.cate_id;
-            categoryDisplayName = res.data.data.cate_name || cateName;
-          }
-        } catch (err) {
-          console.error("Error looking up category ID:", err);
-        }
-      }
-
       // Safe get helper for filter API requests
       const safeGet = async (url) => {
         try {
@@ -33,9 +17,33 @@ export function useProductFilters(cateName) {
         }
       };
 
-      // Fetch all filter options in parallel
+      const categories = await safeGet("/getcategory");
+      let categoryId = 2; // Default fallback
+      let categoryDisplayName = "All Products";
+
+      if (cateName && cateName !== "All Products") {
+        const matched = categories.find(
+          (c) => c.cate_name?.toLowerCase() === cateName.toLowerCase()
+        );
+        if (matched) {
+          categoryId = matched.cate_id;
+          categoryDisplayName = matched.cate_name;
+        } else {
+          // If not found in the list, try the direct api lookup as a fallback
+          try {
+            const res = await axiosInstance.get(`/getcategorybyname/${cateName}`);
+            if (res?.data?.status === 1 && res?.data?.data) {
+              categoryId = res.data.data.cate_id;
+              categoryDisplayName = res.data.data.cate_name || cateName;
+            }
+          } catch (err) {
+            console.error("Error looking up category ID:", err);
+          }
+        }
+      }
+
+      // Fetch the rest of the filters in parallel using categoryId
       const [
-        categories,
         colors,
         subcategories,
         fabrics,
@@ -44,7 +52,6 @@ export function useProductFilters(cateName) {
         styles,
         sizes,
       ] = await Promise.all([
-        safeGet("/getcategory"),
         safeGet("/getcolor"),
         cateName && cateName !== "All Products"
           ? safeGet(`${ApiURL}/getsubcategory/${categoryId}`)

@@ -126,13 +126,3 @@ export function useSignup() {
   });
 }
 
-export function useLogout() {
-  const queryClient = useQueryClient();
-  const { logout } = useUser();
-
-  return () => {
-    logout();
-    queryClient.clear();
-    toast.success("Logged out successfully");
-  };
-}

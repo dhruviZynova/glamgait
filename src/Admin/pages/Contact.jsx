@@ -1,26 +1,25 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   UserIcon,
   EnvelopeIcon,
-  ArrowPathIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ChatBubbleLeftIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import { Trash2, Loader2 } from "lucide-react";
+import { Trash2, Inbox } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
 import { ApiURL } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Contact = () => {
-  const [contacts, setContacts] = useState(null);
+  const [contacts, setContacts] = useState([]); // Stores all fetched contacts
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
   const [expandedMessages, setExpandedMessages] = useState({});
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
@@ -29,27 +28,35 @@ const Contact = () => {
     isDeleting: false,
   });
 
-  const fetchContacts = async (page = 1, limit = itemsPerPage, search = searchTerm) => {
+  // Fetch all contacts (or a large amount) to enable client-side filtering
+  const fetchContacts = async () => {
+    setLoading(true);
     try {
+      // Fetching a larger limit (e.g., 1000) so search works across all data, 
+      // not just the first page.
       const response = await adminAxios.get(`${ApiURL}/getcontacts`, {
-        params: { page, limit, search },
+        params: { page: 1, limit: 1000, search: "" },
       });
 
-      const { contacts, totalPages } = response.data.data || {
-        contacts: [],
-        totalPages: 1,
-      };
-      setContacts(contacts);
-      setTotalPages(totalPages);
+      const { contacts: data } = response.data.data || { contacts: [] };
+      setContacts(data);
     } catch (error) {
       console.error("Error fetching contacts:", error);
       setContacts([]);
+      toast.error("Failed to fetch contacts");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchContacts(currentPage);
-  }, [currentPage, searchTerm]);
+    fetchContacts();
+  }, []);
+
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const handleDelete = (contactId, name) => {
     setDeleteModal({ isOpen: true, contactId, name });
@@ -58,17 +65,37 @@ const Contact = () => {
   const confirmDelete = async () => {
     setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
-      await adminAxios.delete(
-        `${ApiURL}/deletecontact/${deleteModal.contactId}`
-      );
+      await adminAxios.delete(`${ApiURL}/deletecontact/${deleteModal.contactId}`);
       toast.success("Request Deleted...");
-      fetchContacts(currentPage);
+      fetchContacts(); // Refresh the list
     } catch (error) {
       console.error("Error deleting contact:", error);
+      toast.error("Failed to delete contact");
     } finally {
       setDeleteModal({ isOpen: false, contactId: null, name: "", isDeleting: false });
     }
   };
+
+  // Client-side filtering logic
+  const filteredContacts = useMemo(() => {
+    if (!searchTerm) return contacts;
+
+    const lowerTerm = searchTerm.toLowerCase();
+    return contacts.filter(
+      (contact) =>
+        (contact.name && contact.name.toLowerCase().includes(lowerTerm)) ||
+        (contact.email && contact.email.toLowerCase().includes(lowerTerm))
+    );
+  }, [contacts, searchTerm]);
+
+  // Client-side pagination logic
+  const currentContacts = useMemo(() => {
+    const indexOfLastContact = currentPage * itemsPerPage;
+    const indexOfFirstContact = indexOfLastContact - itemsPerPage;
+    return filteredContacts.slice(indexOfFirstContact, indexOfLastContact);
+  }, [filteredContacts, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredContacts.length / itemsPerPage);
 
   // Toggle message expansion
   const toggleExpandMessage = (contactId) => {
@@ -127,20 +154,17 @@ const Contact = () => {
         <div className="relative flex-grow max-w-md">
           <input
             type="text"
-            placeholder="Search contacts..."
+            placeholder="Search by name or email..."
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => setSearchTerm(e.target.value)}
             aria-label="Search contact requests"
           />
           <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
         </div>
       </div>
 
-      {contacts === null ? (
+      {loading ? (
         <div className="glamloader-overlay" aria-label="Loading" role="status">
           <div className="glamloader-logo">
             KUNDRAT
@@ -155,10 +179,16 @@ const Contact = () => {
             <div className="glamloader-ring-dot" />
           </div>
         </div>
-      ) : contacts?.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-gray-500 text-lg" role="status">
-            No contact requests found
+      ) : filteredContacts.length === 0 ? (
+        <div className="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center mb-4 shadow-sm">
+            <Inbox className="w-7 h-7 text-gray-400" />
+          </div>
+          <p className="text-sm font-semibold text-gray-700 mb-1" role="status">
+            {searchTerm ? "No matching contact requests found" : "No contact requests yet"}
+          </p>
+          <p className="text-xs text-gray-400">
+            {searchTerm ? "Try adjusting your search term" : "Any messages sent via the contact form will appear here"}
           </p>
         </div>
       ) : (
@@ -186,7 +216,7 @@ const Contact = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {contacts?.map((contact) => (
+                  {currentContacts.map((contact) => (
                     <tr key={contact.contactId} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -251,9 +281,9 @@ const Contact = () => {
                 </span>{" "}
                 to{" "}
                 <span className="font-medium">
-                  {Math.min(currentPage * itemsPerPage, contacts.length)}
+                  {Math.min(currentPage * itemsPerPage, filteredContacts.length)}
                 </span>{" "}
-                of <span className="font-medium">{contacts.length}</span>{" "}
+                of <span className="font-medium">{filteredContacts.length}</span>{" "}
                 results
               </div>
               <div className="flex space-x-2">

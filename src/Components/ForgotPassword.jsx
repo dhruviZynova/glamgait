@@ -105,7 +105,7 @@ const ForgotPassword = () => {
                     {loading ? (
                       <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     ) : (
-                      "Send Recovery Link"
+                      "Send Otp"
                     )}
                   </span>
                 </button>

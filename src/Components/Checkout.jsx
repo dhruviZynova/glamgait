@@ -701,14 +701,37 @@ const Checkout = () => {
                                     {/* Product List */}
                                     <div className="space-y-8 px-4 md:px-10 py-6">
                                         {cartItems.map((item, index) => (
-                                            <div key={item.cart_id || index} className="flex items-center text-[#767676] font-[Oxygen] text-sm md:text-lg">
+                                            <div key={item.cart_id || index} className="flex items-start text-[#767676] font-[Oxygen] text-sm md:text-lg">
                                                 <div className="w-1/2 flex flex-col">
-                                                    <span className="font-normal">{item.product_name}</span>
+                                                    <span className="font-medium text-[#3D3D3D] leading-tight">{item.product_name}</span>
+
+                                                    {/* --- UPDATED DYNAMIC COLOR SECTION --- */}
+                                                    {(item.color_name || item.size_name) && (
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            {/* Dynamic Color Circle */}
+                                                            {item.color_code && (
+                                                                <div
+                                                                    className="w-4 h-4 rounded-full border border-gray-200 shadow-sm flex-shrink-0"
+                                                                    style={{ backgroundColor: item.color_code }}
+                                                                    title={item.color_name}
+                                                                />
+                                                            )}
+
+                                                            {/* Text Label: Color / Size */}
+                                                            <span className="text-xs text-[#9A8F87] flex items-center gap-1">
+                                                                {item.color_name && <span className="capitalize">{item.color_name}</span>}
+                                                                {(item.color_name && item.size_name) && <span className="text-gray-400">/</span>}
+                                                                {item.size_name && <span className="uppercase">{item.size_name}</span>}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {/* --- END UPDATED SECTION --- */}
+
                                                 </div>
-                                                <span className="w-1/4 text-center">
+                                                <span className="w-1/4 text-center pt-1">
                                                     {item.quantity < 10 ? `0${item.quantity}` : item.quantity}
                                                 </span>
-                                                <span className="w-1/4 text-right">
+                                                <span className="w-1/4 text-right pt-1">
                                                     ₹{(item.price * item.quantity).toFixed(0)}
                                                 </span>
                                             </div>

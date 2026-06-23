@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   Plus,
   Edit,
@@ -6,12 +6,15 @@ import {
   ToggleLeft,
   AlertCircle,
   Search,
+  Trash2,
+  Inbox,
 } from "lucide-react";
 import { ApiURL } from "../../Variable";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { adminAxios } from "../../Axios/axios";
 import ProductModal from "./ProductModel";
+import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 const Product = () => {
   const [products, setProducts] = useState(null);
@@ -23,6 +26,19 @@ const Product = () => {
   const searchTimeoutRef = useRef(null);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 24;
+
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    product: null,
+    isDeleting: false,
+  });
+
+  // Helper to resolve media URLs dynamically
+  const getMediaUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    return `${ApiURL}/assets/Products/${url}`;
+  };
 
   // Debounce logic
   useEffect(() => {
@@ -41,19 +57,22 @@ const Product = () => {
     };
   }, [searchTerm]);
 
-  const fetchProducts = async (page = 1, search = "") => {
+  // Fetch Products
+  const fetchProducts = useCallback(async (page = 1, isSearch = false) => {
     try {
+      // If searching, fetch a large batch to filter client-side
+      const limit = isSearch ? 1000 : itemsPerPage;
+
       const res = await adminAxios.get(`${ApiURL}/getallproducts`, {
         params: {
-          page,
-          perPage: itemsPerPage,
-          search,
+          page: isSearch ? 1 : page,
+          perPage: limit,
+          // No search params sent to backend; we filter in frontend
         }
       });
 
       const { productData, totalCount } = res.data.data || {};
       const enhancedProducts = (productData || []).map((p) => {
-        // Calculate total stock
         const totalStock =
           p.total_stock !== undefined
             ? p.total_stock
@@ -63,18 +82,17 @@ const Product = () => {
             ) || 0;
         const hasStock = totalStock > 0;
         const lowStock = totalStock > 0 && totalStock <= 5;
-
-        // Get first image
-        const firstImage = p.productcolors?.[0]?.productimages?.[0]?.image_url;
+        const firstImage =
+          p.productcolors?.[0]?.productimages?.[0]?.image_url ||
+          p.colors?.[0]?.images?.[0]?.image_url ||
+          p.thumbnail;
 
         return {
           ...p,
           total_stock: totalStock,
           has_stock: hasStock,
           low_stock: lowStock,
-          thumbnail: firstImage
-            ? `${firstImage}`
-            : null,
+          thumbnail: firstImage ? `${firstImage}` : null,
         };
       });
 
@@ -85,11 +103,16 @@ const Product = () => {
       console.error("Error:", error);
       toast.error("Failed to load products");
     }
-  };
+  }, [itemsPerPage]);
 
+  // Trigger fetch when search changes
   useEffect(() => {
-    fetchProducts(1, debouncedSearchTerm);
-  }, [debouncedSearchTerm]);
+    if (debouncedSearchTerm) {
+      fetchProducts(1, true);
+    } else {
+      fetchProducts(1, false);
+    }
+  }, [debouncedSearchTerm, fetchProducts]);
 
   const handleStatusToggle = async (product) => {
     try {
@@ -99,16 +122,35 @@ const Product = () => {
         p_status: newStatus,
       });
       toast.success(`Product ${newStatus === 1 ? "activated" : "deactivated"}`);
-      fetchProducts(currentPage, debouncedSearchTerm);
+      fetchProducts(currentPage, !!debouncedSearchTerm);
     } catch (error) {
       console.error("Error:", error);
       toast.error(error?.message || "Failed to update status");
     }
   };
 
+  const handleDeleteClick = (product) => {
+    setDeleteModal({ isOpen: true, product, isDeleting: false });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteModal.product) return;
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
+    try {
+      await adminAxios.delete(`${ApiURL}/deleteproduct/${deleteModal.product.p_id}`);
+      toast.success("Product deleted successfully");
+      setDeleteModal({ isOpen: false, product: null, isDeleting: false });
+      fetchProducts(currentPage, !!debouncedSearchTerm);
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error(error?.response?.data?.description || "Failed to delete product");
+      setDeleteModal((prev) => ({ ...prev, isDeleting: false }));
+    }
+  };
+
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
-      fetchProducts(page, debouncedSearchTerm);
+      fetchProducts(page, false);
     }
   };
 
@@ -130,6 +172,18 @@ const Product = () => {
       </div>
     );
   }
+
+  // --- FIXED FILTERING LOGIC ---
+  // Use startsWith() instead of includes() to filter only by first letter (Prefix)
+  const displayedProducts = products.filter((product) => {
+    if (!debouncedSearchTerm) return true;
+
+    const searchLower = debouncedSearchTerm.toLowerCase().trim();
+    const nameLower = product.name.toLowerCase().trim();
+
+    // This ensures only products STARTING with the letter appear
+    return nameLower.startsWith(searchLower);
+  });
 
   return (
     <div className="pb-8 min-h-screen bg-gray-50">
@@ -166,161 +220,198 @@ const Product = () => {
 
       {/* Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-        {products.map((product) => (
-          <div
-            key={product.p_id}
-            className="group relative bg-white rounded-2xl overflow-hidden transition-all duration-300 border border-gray-100"
-          >
-            <Link to={`/admin/product/${product.p_id}`} className="block">
-              <div className="relative aspect-square overflow-hidden bg-gray-50">
-                {(() => {
-                  // API returns colors[].images[].image_url as a full URL
-                  const mediaUrl =
-                    product.colors?.[0]?.images?.[0]?.image_url || null;
+        {displayedProducts.length > 0 ? (
+          displayedProducts.map((product) => {
+            const discountPercent = product.original_price > product.price
+              ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
+              : 0;
 
-                  if (!mediaUrl) {
-                    return (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm font-medium bg-gray-100">
-                        No Media
-                      </div>
-                    );
-                  }
+            return (
+              <div
+                key={product.p_id}
+                className="group relative bg-white rounded-2xl overflow-hidden transition-all duration-300 border border-gray-100 flex flex-col"
+              >
+                <Link to={`/admin/product/${product.p_id}`} className="block">
+                  <div className="relative aspect-[1/1] overflow-hidden bg-gray-50">
+                    {(() => {
+                      const mediaUrl = getMediaUrl(product.thumbnail);
 
-                  const isVideo = mediaUrl.match(/\.(mp4|webm|mov|avi)$/i);
+                      if (!mediaUrl) {
+                        return (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm font-medium bg-gray-100">
+                            No Media
+                          </div>
+                        );
+                      }
 
-                  return isVideo ? (
-                    <div className="relative w-full h-full">
-                      <video
-                        src={mediaUrl}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        muted
-                        loop
-                        playsInline
-                      >
-                        <source src={mediaUrl} />
-                      </video>
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <div className="bg-white/80 rounded-full p-3 shadow-lg">
-                          <svg className="w-8 h-8 text-black" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
+                      const isVideo = mediaUrl.match(/\.(mp4|webm|mov|avi)$/i);
+
+                      return isVideo ? (
+                        <div className="relative w-full h-full">
+                          <video
+                            src={mediaUrl}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                            muted
+                            loop
+                            playsInline
+                          >
+                            <source src={mediaUrl} />
+                          </video>
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                            <div className="bg-white/80 rounded-full p-3 shadow-lg">
+                              <svg className="w-8 h-8 text-black" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <img
+                          src={mediaUrl}
+                          alt={product.name}
+                          loading="lazy"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                        />
+                      );
+                    })()}
+
+                    {/* Stock Badge */}
+                    <div className="absolute top-2.5 left-2.5 z-10">
+                      {product.has_stock ? (
+                        product.low_stock ? (
+                          <span className="bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow-sm">
+                            <AlertCircle size={13} /> Low Stock ({product.total_stock})
+                          </span>
+                        ) : null
+                      ) : (
+                        <span className="bg-rose-50 text-rose-700 border border-rose-100 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm">
+                          Out of Stock
+                        </span>
+                      )}
                     </div>
-                  ) : (
-                    <img
-                      src={mediaUrl}
-                      alt={product.name}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  );
-                })()}
 
-                {/* Stock Badge - Top Left */}
-                <div className="absolute top-2 left-2 z-10">
-                  {product.has_stock ? (
-                    product.low_stock ? (
-                      <span className="bg-orange-500 text-white px-2.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-                        <AlertCircle size={13} /> Low Stock ({product.total_stock})
+                    {/* Status Badge */}
+                    {/* <div className="absolute top-2.5 right-2.5 z-10">
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm border ${product.p_status === 1
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                          : "bg-gray-100 text-gray-600 border-gray-200"
+                          }`}
+                      >
+                        {product.p_status === 1 ? "Active" : "Inactive"}
                       </span>
-                    ) : null
-                  ) : (
-                    <span className="bg-red-600 text-white px-2.5 py-1.5 rounded-full text-xs font-bold shadow-lg">
-                      Out of Stock
-                    </span>
-                  )}
-                </div>
+                    </div> */}
+                  </div>
+                </Link>
 
-                {/* Status Badge - Top Right */}
-                <div className="absolute top-2 right-2 z-10">
-                  <span
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-md ${product.p_status === 1
-                      ? "bg-emerald-100 text-emerald-800"
-                      : "bg-gray-200 text-gray-600"
-                      }`}
-                  >
-                    {product.p_status === 1 ? "Active" : "Inactive"}
-                  </span>
+                <div className="p-2 md:p-4 flex-1 flex flex-col justify-between space-y-3">
+                  <div className="space-y-1">
+                    <Link to={`/admin/product/${product.p_id}`} className="block">
+                      <h3 className="font-semibold text-[15px] text-gray-800 line-clamp-1 leading-snug group-hover:text-black transition-colors" title={product.name}>
+                        {product.name}
+                      </h3>
+                    </Link>
+
+                    <div className="flex gap-2 items-center flex-wrap">
+                      <span className="text-base font-bold text-gray-900">
+                        ₹{product.price}
+                      </span>
+                      {product.original_price > product.price && (
+                        <>
+                          <span className="text-xs text-gray-400 line-through">
+                            ₹{product.original_price}
+                          </span>
+                          <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                            {discountPercent}% OFF
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    {product.productcolors?.length > 0 && (
+                      <div className="flex items-center gap-1 flex-wrap pt-1">
+                        {product.productcolors.slice(0, 5).map((c) => (
+                          <div
+                            key={c.pcolor_id}
+                            className="w-4 h-4 rounded-full border border-white shadow-sm ring-1 ring-gray-200"
+                            style={{ backgroundColor: c.color?.color_code || "#ccc" }}
+                            title={c.color?.color_name}
+                          />
+                        ))}
+                        {product.productcolors.length > 5 && (
+                          <span className="text-[11px] text-gray-500 font-medium pl-1">
+                            +{product.productcolors.length - 5}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between md:pt-2 border-t border-gray-100">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setCurrentProduct(product);
+                          setIsModalOpen(true);
+                        }}
+                        className="p-1 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer"
+                        title="Edit Product"
+                      >
+                        <Edit size={18} />
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleDeleteClick(product);
+                        }}
+                        className="p-1.5 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+                        title="Delete Product"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleStatusToggle(product);
+                      }}
+                      className="transition-all cursor-pointer p-0.5 rounded-lg hover:bg-gray-50"
+                      title={product.p_status === 1 ? "Deactivate" : "Activate"}
+                    >
+                      {product.p_status === 1 ? (
+                        <ToggleRight className="w-8 h-8 text-green-600" />
+                      ) : (
+                        <ToggleLeft className="w-8 h-8 text-gray-400" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </Link>
-
-            <div className="p-2 space-y-1">
-              {/* Product Name */}
-              <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 leading-tight">
-                {product.name}
-              </h3>
-
-              {/* Price */}
-              <div className="flex items-end justify-between">
-                <span className="text-md font-bold text-gray-900">
-                  ₹{product.price}
-                </span>
-                {product.original_price > product.price && (
-                  <span className="text-sm text-gray-500 line-through">
-                    ₹{product.original_price}
-                  </span>
-                )}
-              </div>
-
-              {/* Color Dots */}
-              {product.productcolors?.length > 0 && (
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {product.productcolors.slice(0, 6).map((c) => (
-                    <div
-                      key={c.pcolor_id}
-                      className="w-6 h-6 rounded-full border-2 border-white shadow ring-1 ring-gray-300"
-                      style={{ backgroundColor: c.color?.color_code || "#ccc" }}
-                      title={c.color?.color_name}
-                    />
-                  ))}
-                  {product.productcolors.length > 6 && (
-                    <span className="text-xs text-gray-500 font-medium">
-                      +{product.productcolors.length - 6}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex items-center justify-between pt-1 border-t border-gray-100">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    setCurrentProduct(product);
-                    setIsModalOpen(true);
-                  }}
-                  className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
-                  title="Edit Product"
-                >
-                  <Edit size={20} />
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    handleStatusToggle(product);
-                  }}
-                  className="transition-all cursor-pointer"
-                  title={product.p_status === 1 ? "Deactivate" : "Activate"}
-                >
-                  {product.p_status === 1 ? (
-                    <ToggleRight className="w-9 h-9 text-green-600" />
-                  ) : (
-                    <ToggleLeft className="w-9 h-9 text-gray-400" />
-                  )}
-                </button>
-              </div>
+            );
+          })
+        ) : (
+          <div className="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+            <div className="w-16 h-16 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center mb-4 shadow-sm">
+              <Inbox className="w-7 h-7 text-gray-400" />
             </div>
+            <p className="text-sm font-semibold text-gray-700 mb-1">
+              {debouncedSearchTerm ? `No products found starting with "${debouncedSearchTerm}"` : "No products yet"}
+            </p>
+            <p className="text-xs text-gray-400">
+              {debouncedSearchTerm ? "Try adjusting your search query" : "Add your first product above"}
+            </p>
           </div>
-        ))}
+        )}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
+      {/* Pagination - Hidden during search */}
+      {!debouncedSearchTerm && totalPages > 1 && (
         <div className="max-w-7xl mx-auto mt-12 flex justify-center gap-2 flex-wrap">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
@@ -365,10 +456,19 @@ const Product = () => {
         onClose={() => {
           setIsModalOpen(false);
           setCurrentProduct(null);
-          fetchProducts(currentPage, searchTerm);
+          fetchProducts(currentPage, !!debouncedSearchTerm);
         }}
         product={currentProduct}
-        refreshProducts={() => fetchProducts(currentPage, searchTerm)}
+        refreshProducts={() => fetchProducts(currentPage, !!debouncedSearchTerm)}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, product: null, isDeleting: false })}
+        onConfirm={confirmDelete}
+        itemType="product"
+        itemName={deleteModal.product?.name}
+        isDeleting={deleteModal.isDeleting}
       />
     </div>
   );

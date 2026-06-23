@@ -532,6 +532,10 @@ const OrderDetails = () => {
                                   )}
                                   {item.color_name && <span className="text-gray-700 font-bold capitalize">{item.color_name}</span>}
                                 </p>
+                                <p className="text-[#807D7E] font-medium flex items-center gap-1.5">
+                                  Size :
+                                  <span className="text-gray-700 font-bold uppercase">{item.size_name || "Free Size"}</span>
+                                </p>
                                 <p className="text-[#807D7E] font-medium">Qty: <span className="text-gray-700 font-bold">{item.quantity}</span></p>
                                 <p className="text-[#3C4242] text-base sm:text-xl font-bold sm:ml-auto">
                                   ₹{Math.round(item.totalAmount || item.price)}

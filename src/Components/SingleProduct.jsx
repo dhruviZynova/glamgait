@@ -35,6 +35,7 @@ function SingleProduct() {
   const [showSizePopup, setShowSizePopup] = useState(false);
   const [selectedColorImages, setSelectedColorImages] = useState([]);
   const [videoFiles, setVideoFiles] = useState([]);
+  const [colorVideo, setColorVideo] = useState(null);
   const [availableStock, setAvailableStock] = useState(0);
   const [reviewsSummary, setReviewsSummary] = useState({});
   const [activeTab, setActiveTab] = useState("description");
@@ -91,6 +92,12 @@ function SingleProduct() {
             stockMap[`${v.pcolor_id}-${v.psize_id || "nosize"}`] = v.remaining_qty;
           });
 
+          // Build a video lookup from data.colors (color_id -> video URL)
+          const colorVideoMap = {};
+          (data.colors || []).forEach((c) => {
+            if (c.color_id && c.video) colorVideoMap[c.color_id] = c.video;
+          });
+
           const enhancedColors = data.productcolors.map((color) => {
             const sizes = data.productsizes?.length > 0
               ? data.productsizes.map((ps) => {
@@ -103,8 +110,11 @@ function SingleProduct() {
                 remaining_qty: stockMap[`${color.pcolor_id}-nosize`] || 0,
                 in_stock: true,
               }];
+            // Attach video from data.colors via color.color.color_id
+            const videoUrl = colorVideoMap[color.color?.color_id] || color.video || null;
             return {
               ...color,
+              video: videoUrl,
               sizes,
               has_stock: sizes.some((s) => s.in_stock),
               total_available: sizes.reduce((sum, s) => sum + s.remaining_qty, 0),
@@ -162,6 +172,8 @@ function SingleProduct() {
     const vids = images.filter((f) => /\.(mp4|mov|webm)$/i.test(f));
     setSelectedColorImages(imgs);
     setVideoFiles(vids);
+    // color.video is a full URL from the API e.g. https://backend.../assets/Products/xxx.mp4
+    setColorVideo(color.video || null);
 
     const firstSize = color.sizes.find((s) => s.in_stock) || color.sizes[0];
     if (firstSize) {
@@ -206,12 +218,20 @@ function SingleProduct() {
         );
         if (idx !== -1) cartItems[idx].quantity += quantity;
         else cartItems.push({
-          p_id: product.p_id, pcolor_id: selectedColor.pcolor_id,
-          psize_id: selectedSize?.psize_id || null, quantity,
-          product_name: product.name, price: product.price, original_price: product.original_price,
+          p_id: product.p_id,
+          pcolor_id: selectedColor.pcolor_id,
+          psize_id: selectedSize?.psize_id ?? null,
+          quantity,
+          product_name: product.name,
+          price: product.price,
+          original_price: product.original_price,
           image_url: selectedColor.productimages?.[0]?.image_url || "",
           color_name: selectedColor.color.color_name,
-          size_name: selectedSize?.size?.size_name || null, available_stock: availableStock,
+          // ADD THIS LINE:
+          color_code: selectedColor.color.color_code || selectedColor.color_code || "",
+
+          size_name: selectedSize?.size?.size_name || null,
+          available_stock: availableStock,
         });
         localStorage.setItem("localCart", JSON.stringify(cartItems));
         window.dispatchEvent(new Event("cartUpdated"));
@@ -220,7 +240,9 @@ function SingleProduct() {
       }
       const res = await axiosInstance.post(`${ApiURL}/createcart`, {
         u_id: user.u_id, guest_id: null, p_id: product.p_id,
-        pcolor_id: selectedColor.pcolor_id, psize_id: selectedSize?.psize_id || null, quantity,
+        pcolor_id: selectedColor.pcolor_id ?? null, // Fix: ?? to handle ID 0
+        psize_id: selectedSize?.psize_id ?? null, // Fix: ?? to handle ID 0
+        quantity,
       });
       if (res.data.status === 1) {
         toast.success("Added to cart!");
@@ -234,6 +256,9 @@ function SingleProduct() {
   };
 
   const handleBuyNow = async () => {
+    // Safety check: ensure product data is loaded
+    if (!product || !product.p_id) return toast.error("Product data not loaded. Please wait.");
+
     if (!user?.u_id) {
       toast.error("Please login to buy this product");
       navigate("/login", { state: { from: `/product/${slug}` } });
@@ -246,24 +271,35 @@ function SingleProduct() {
     setBuyNowLoading(true);
     try {
       const res = await axiosInstance.post(`${ApiURL}/createcart`, {
-        u_id: user?.u_id || null,
-        guest_id: user?.u_id ? null : getGuestId(),
-        p_id: product.p_id, pcolor_id: selectedColor.pcolor_id,
-        psize_id: product.has_sizes ? selectedSize.psize_id : null, quantity,
+        u_id: user.u_id, // Match handleAddToCart logic
+        guest_id: null, // Match handleAddToCart logic (user is logged in)
+        p_id: product.p_id,
+        pcolor_id: selectedColor.pcolor_id ?? null, // Fix: ?? to handle ID 0
+        psize_id: selectedSize?.psize_id ?? null, // Fix: ?? to handle ID 0
+        quantity,
       });
       if (res.data.status === 1) {
         navigate("/checkout", {
           state: {
             cartItems: [{
-              p_id: product.p_id, product_name: product.name, price: product.price, quantity,
+              p_id: product.p_id,
+              product_name: product.name,
+              price: product.price,
+              quantity,
               image_url: selectedColor.productimages[0]?.image_url,
               color_name: selectedColor.color.color_name,
+              // ADD THIS LINE:
+              color_code: selectedColor.color.color_code,
+
               size_name: product.has_sizes ? selectedSize.size.size_name : "Free Size",
               pcolor_id: selectedColor.pcolor_id,
               psize_id: product.has_sizes ? selectedSize.psize_id : null,
             }],
           },
         });
+      } else {
+        // Handle specific backend error
+        toast.error(res.data.description || "Failed to initiate purchase");
       }
     } catch (err) {
       toast.error(err.message || "Buy Now failed");
@@ -314,7 +350,7 @@ function SingleProduct() {
         let local = JSON.parse(localStorage.getItem("localWishlist") || "[]");
         const payload = {
           p_id: product.p_id, sc_id: product.sc_id,
-          pcolor_id: selectedColor.pcolor_id, psize_id: selectedSize?.psize_id || null,
+          pcolor_id: selectedColor.pcolor_id, psize_id: selectedSize?.psize_id ?? null,
           product_name: product.name, price: product.price, original_price: product.original_price,
           image_url: selectedColor.productimages?.[0]?.image_url || "",
           color_name: selectedColor.color.color_name,
@@ -344,7 +380,7 @@ function SingleProduct() {
       } else {
         const res = await axiosInstance.post(`${ApiURL}/addtowishlist`, {
           u_id: user.u_id, guest_id: null, p_id: product.p_id, sc_id: product.sc_id,
-          pcolor_id: selectedColor.pcolor_id, psize_id: selectedSize?.psize_id || null,
+          pcolor_id: selectedColor.pcolor_id, psize_id: selectedSize?.psize_id ?? null,
         });
         if (res.data.status === 1) {
           toast.success("Added to wishlist");
@@ -380,7 +416,8 @@ function SingleProduct() {
       const width = container.offsetWidth;
       const scrollLeft = container.scrollLeft;
       const index = Math.round(scrollLeft / width);
-      if (index !== mobileIndex && index >= 0 && index < imageFiles.length) {
+      const totalSlides = imageFiles.length + (colorVideo ? 1 : 0);
+      if (index !== mobileIndex && index >= 0 && index < totalSlides) {
         setMobileIndex(index);
       }
     }
@@ -430,8 +467,8 @@ function SingleProduct() {
           <div className="w-full">
             {/* Desktop stacked gallery */}
             <div className="hidden lg:flex md:gap-12 gap-6 w-full">
-              {/* Optional desktop thumbnail rail — sticky, click to scroll */}
-              {imageFiles.length > 1 && (
+              {/* Sticky thumbnail rail */}
+              {(imageFiles.length > 1 || colorVideo) && (
                 <div className="flex sticky top-24 self-start flex-col gap-3 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1 scrollbar-thin">
                   {imageFiles.map((file, i) => (
                     <button
@@ -446,10 +483,36 @@ function SingleProduct() {
                       />
                     </button>
                   ))}
+                  {/* Video thumbnail in rail */}
+                  {colorVideo && (
+                    <button
+                      onClick={() => imageRefs.current[imageFiles.length]?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                      className="flex-shrink-0 w-[64px] h-[80px] rounded-md overflow-hidden border border-[#E8E0DA] hover:border-[#3D2C25] transition-all cursor-pointer relative bg-black"
+                    >
+                      <video
+                        src={colorVideo}
+                        className="w-full h-full object-cover opacity-70"
+                        muted
+                        loop
+                        playsInline
+                        autoPlay
+                        preload="metadata"
+                        onCanPlay={(e) => {
+                          e.target.muted = true;
+                          e.target.play().catch(() => { });
+                        }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center">
+                          <svg className="w-3 h-3 text-[#3D2C25] ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                      </div>
+                    </button>
+                  )}
                 </div>
               )}
 
-              {/* All images stacked vertically */}
+              {/* All images + video stacked vertically */}
               <div className="flex-1 flex flex-col gap-3">
                 {imageFiles.map((file, i) => (
                   <div
@@ -476,6 +539,29 @@ function SingleProduct() {
                     )}
                   </div>
                 ))}
+
+                {/* Color video tile — appended at bottom of stacked gallery */}
+                {colorVideo && (
+                  <div
+                    ref={(el) => (imageRefs.current[imageFiles.length] = el)}
+                    className="relative w-full bg-black rounded-lg overflow-hidden"
+                  >
+                    <video
+                      src={colorVideo}
+                      className="w-full h-auto"
+                      controls
+                      muted
+                      loop
+                      playsInline
+                      autoPlay
+                      style={{ display: "block" }}
+                      onCanPlay={(e) => {
+                        e.target.muted = true;
+                        e.target.play().catch(err => console.log("Desktop autoplay failed:", err));
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -496,6 +582,25 @@ function SingleProduct() {
                       />
                     </div>
                   ))}
+                  {/* Video slide at the end of mobile slider */}
+                  {colorVideo && (
+                    <div className="w-full h-full flex-shrink-0 snap-start snap-always relative bg-black flex items-center justify-center">
+                      <video
+                        src={colorVideo}
+                        className="w-full h-full object-contain"
+                        controls
+                        muted
+                        loop
+                        playsInline
+                        autoPlay
+                        style={{ display: "block" }}
+                        onCanPlay={(e) => {
+                          e.target.muted = true;
+                          e.target.play().catch(err => console.log("Mobile autoplay failed:", err));
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Badges */}
@@ -512,14 +617,15 @@ function SingleProduct() {
               </div>
 
               {/* Horizontal Thumbnails row */}
-              {imageFiles.length > 1 && (
+              {(imageFiles.length > 1 || colorVideo) && (
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mt-3">
                   {imageFiles.map((file, i) => (
                     <button
                       key={i}
                       onClick={() => handleMobileThumbnailClick(i)}
-                      className={`flex-shrink-0 w-14 h-18 overflow-hidden border cursor-pointer transition-all rounded-none ${mobileIndex === i ? "border-black" : "border-gray-200 opacity-60"
+                      className={`flex-shrink-0 w-14 overflow-hidden border cursor-pointer transition-all rounded-none ${mobileIndex === i ? "border-black" : "border-gray-200 opacity-60"
                         }`}
+                      style={{ height: "4.5rem" }}
                     >
                       <img
                         src={`${ApiURL}/assets/Products/${file}`}
@@ -528,6 +634,34 @@ function SingleProduct() {
                       />
                     </button>
                   ))}
+                  {/* Video thumbnail in mobile strip */}
+                  {colorVideo && (
+                    <button
+                      onClick={() => handleMobileThumbnailClick(imageFiles.length)}
+                      className={`flex-shrink-0 w-14 overflow-hidden border cursor-pointer transition-all rounded-none relative bg-black ${mobileIndex === imageFiles.length ? "border-black" : "border-gray-200 opacity-60"
+                        }`}
+                      style={{ height: "4.5rem" }}
+                    >
+                      <video
+                        src={colorVideo}
+                        className="w-full h-full object-cover opacity-70"
+                        muted
+                        loop
+                        playsInline
+                        autoPlay
+                        preload="metadata"
+                        onCanPlay={(e) => {
+                          e.target.muted = true;
+                          e.target.play().catch(() => { });
+                        }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-5 h-5 rounded-full bg-white/80 flex items-center justify-center">
+                          <svg className="w-2.5 h-2.5 text-[#3D2C25] ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                      </div>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -587,7 +721,7 @@ function SingleProduct() {
               {product?.productcolors?.length > 0 && (
                 <div className="pb-2">
                   <p className="text-sm font-medium text-[#1E1512] mb-4">
-                    Color {selectedColor && <span className="text-[#9A8F87]">— {selectedColor.color.color_name}</span>}
+                    Color {selectedColor && <span className="text-[#9A8F87] capitalize">— {selectedColor.color.color_name}</span>}
                   </p>
                   <div className="flex flex-wrap gap-3">
                     {product.productcolors.map((color) => (
@@ -626,7 +760,7 @@ function SingleProduct() {
                         key={size.psize_id}
                         onClick={() => setSelectedSize(size)}
                         disabled={!size.in_stock}
-                        className={`min-w-[46px] h-10 px-3 rounded-lg text-sm font-medium border transition cursor-pointer
+                        className={`min-w-[46px] h-10 px-3 rounded-lg text-sm font-medium border transition uppercase cursor-pointer
                           ${selectedSize?.psize_id === size.psize_id
                             ? "bg-[#1E1512] text-white border-[#1E1512]"
                             : size.in_stock
