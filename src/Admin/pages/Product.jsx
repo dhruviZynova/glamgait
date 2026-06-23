@@ -7,6 +7,7 @@ import {
   AlertCircle,
   Search,
   Trash2,
+  Inbox,
 } from "lucide-react";
 import { ApiURL } from "../../Variable";
 import toast from "react-hot-toast";
@@ -228,10 +229,10 @@ const Product = () => {
             return (
               <div
                 key={product.p_id}
-                className="group relative bg-white rounded-2xl overflow-hidden transition-all duration-300 border border-gray-100 hover:shadow-lg hover:shadow-gray-200/50 hover:-translate-y-1 flex flex-col"
+                className="group relative bg-white rounded-2xl overflow-hidden transition-all duration-300 border border-gray-100 flex flex-col"
               >
                 <Link to={`/admin/product/${product.p_id}`} className="block">
-                  <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
+                  <div className="relative aspect-[1/1] overflow-hidden bg-gray-50">
                     {(() => {
                       const mediaUrl = getMediaUrl(product.thumbnail);
 
@@ -290,7 +291,7 @@ const Product = () => {
                     </div>
 
                     {/* Status Badge */}
-                    <div className="absolute top-2.5 right-2.5 z-10">
+                    {/* <div className="absolute top-2.5 right-2.5 z-10">
                       <span
                         className={`px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm border ${product.p_status === 1
                           ? "bg-emerald-50 text-emerald-700 border-emerald-100"
@@ -299,11 +300,11 @@ const Product = () => {
                       >
                         {product.p_status === 1 ? "Active" : "Inactive"}
                       </span>
-                    </div>
+                    </div> */}
                   </div>
                 </Link>
 
-                <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                <div className="p-2 md:p-4 flex-1 flex flex-col justify-between space-y-3">
                   <div className="space-y-1">
                     <Link to={`/admin/product/${product.p_id}`} className="block">
                       <h3 className="font-semibold text-[15px] text-gray-800 line-clamp-1 leading-snug group-hover:text-black transition-colors" title={product.name}>
@@ -346,7 +347,7 @@ const Product = () => {
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
+                  <div className="flex items-center justify-between md:pt-2 border-t border-gray-100">
                     <div className="flex gap-2">
                       <button
                         onClick={(e) => {
@@ -355,7 +356,7 @@ const Product = () => {
                           setCurrentProduct(product);
                           setIsModalOpen(true);
                         }}
-                        className="p-1.5 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer"
+                        className="p-1 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer"
                         title="Edit Product"
                       >
                         <Edit size={18} />
@@ -395,8 +396,16 @@ const Product = () => {
             );
           })
         ) : (
-          <div className="col-span-full text-center py-10 text-gray-500">
-            No products found starting with "{debouncedSearchTerm}"
+          <div className="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+            <div className="w-16 h-16 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center mb-4 shadow-sm">
+              <Inbox className="w-7 h-7 text-gray-400" />
+            </div>
+            <p className="text-sm font-semibold text-gray-700 mb-1">
+              {debouncedSearchTerm ? `No products found starting with "${debouncedSearchTerm}"` : "No products yet"}
+            </p>
+            <p className="text-xs text-gray-400">
+              {debouncedSearchTerm ? "Try adjusting your search query" : "Add your first product above"}
+            </p>
           </div>
         )}
       </div>

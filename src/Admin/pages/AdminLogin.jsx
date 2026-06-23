@@ -7,10 +7,11 @@ import { FaRegEye, FaRegEyeSlash, FaShoppingBag, FaUsers } from "react-icons/fa"
 import { FiTrendingUp, FiShield } from "react-icons/fi";
 import { useUser } from "../../Context/UserContext";
 import logo from "../../assets/logo1.png";
-import loginMainImg from "../../assets/images/loginmain.jpg";
-import c1Img from "../../assets/c1.jpg";
-import c2Img from "../../assets/c2.jpg";
-import c3Img from "../../assets/c3.jpg";
+import loginimg1 from "../../assets/images/loginimg1.jpg";
+import loginimg2 from "../../assets/images/loginimg2.jpg";
+import loginimg3 from "../../assets/images/loginimg3.jpg";
+import loginimg4 from "../../assets/images/loginimg4.jpg";
+import loginimg5 from "../../assets/images/loginimg5.jpg";
 
 const AdminLogin = () => {
     const navigate = useNavigate();
@@ -22,7 +23,7 @@ const AdminLogin = () => {
 
     // Auto scroll showcase images state
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const showcaseImages = [loginMainImg, c1Img, c2Img, c3Img];
+    const showcaseImages = [loginimg1, loginimg2, loginimg3, loginimg4, loginimg5];
 
     useEffect(() => {
         document.body.classList.add("admin-body");
@@ -123,8 +124,13 @@ const AdminLogin = () => {
                                         key={idx}
                                         src={img}
                                         alt={`Kundrat Collection Showcase ${idx + 1}`}
-                                        className={`absolute inset-0 w-full h-full object-cover object-top rounded-xl grayscale-[5%] hover:grayscale-0 transition-all duration-1000 ease-in-out ${currentImageIndex === idx ? "opacity-100 scale-100 z-10" : "opacity-0 scale-105 z-0"
-                                            }`}
+                                        className={`absolute inset-0 w-full h-full object-cover object-top rounded-xl grayscale-[5%] hover:grayscale-0 transition-all duration-1000 ease-in-out ${
+                                            currentImageIndex === idx
+                                                ? "translate-x-0 z-10 opacity-100"
+                                                : (currentImageIndex - 1 + showcaseImages.length) % showcaseImages.length === idx
+                                                ? "-translate-x-full z-10 opacity-0"
+                                                : "translate-x-full z-0 opacity-0"
+                                        }`}
                                     />
                                 ))}
                             </div>
@@ -134,35 +140,35 @@ const AdminLogin = () => {
 
                         {/* FLOATING GLASS CARDS */}
                         {/* Card 1: Revenue (Top Right) */}
-                        <div className="absolute -top-4 -right-4 lg:-right-8 bg-white/90 backdrop-blur-md border border-white rounded-xl p-3.5 shadow-lg flex items-center gap-3 transform hover:translate-y-[-2px] transition-transform duration-300 z-30">
-                            <div className="p-2 bg-[#C9A96E]/10 rounded-lg">
-                                <FiTrendingUp className="text-[#C9A96E] w-4 h-4" />
+                        <div className="absolute -top-3 right-2 md:-top-4 md:-right-4 lg:-right-8 bg-white/90 backdrop-blur-md border border-white rounded-xl p-2 md:p-3.5 shadow-lg flex items-center gap-2 md:gap-3 transform hover:translate-y-[-2px] transition-transform duration-300 z-30 scale-90 md:scale-100 origin-top-right">
+                            <div className="p-1.5 md:p-2 bg-[#C9A96E]/10 rounded-lg">
+                                <FiTrendingUp className="text-[#C9A96E] w-3.5 h-3.5 md:w-4 md:h-4" />
                             </div>
                             <div>
-                                <p className="text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">Weekly Revenue</p>
-                                <p className="text-sm font-bold text-[#111827]">₹8.42 Lakhs</p>
+                                <p className="text-[9px] md:text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">Weekly Revenue</p>
+                                <p className="text-xs md:text-sm font-bold text-[#111827]">₹8.42 Lakhs</p>
                             </div>
                         </div>
 
                         {/* Card 2: Orders (Bottom Left) */}
-                        <div className="absolute -bottom-4 -left-4 lg:-left-8 bg-white/90 backdrop-blur-md border border-white rounded-xl p-3.5 shadow-lg flex items-center gap-3 transform hover:translate-y-[-2px] transition-transform duration-300 z-30">
-                            <div className="p-2 bg-[#111111]/5 rounded-lg">
-                                <FaShoppingBag className="text-[#111111] w-4 h-4" />
+                        <div className="absolute -bottom-3 left-2 md:-bottom-4 md:-left-4 lg:-left-8 bg-white/90 backdrop-blur-md border border-white rounded-xl p-2 md:p-3.5 shadow-lg flex items-center gap-2 md:gap-3 transform hover:translate-y-[-2px] transition-transform duration-300 z-30 scale-90 md:scale-100 origin-bottom-left">
+                            <div className="p-1.5 md:p-2 bg-[#111111]/5 rounded-lg">
+                                <FaShoppingBag className="text-[#111111] w-3.5 h-3.5 md:w-4 md:h-4" />
                             </div>
                             <div>
-                                <p className="text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">Pending Orders</p>
-                                <p className="text-sm font-bold text-[#111827]">1,248 Items</p>
+                                <p className="text-[9px] md:text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">Pending Orders</p>
+                                <p className="text-xs md:text-sm font-bold text-[#111827]">1,248 Items</p>
                             </div>
                         </div>
 
                         {/* Card 3: Customers (Bottom Right) */}
-                        <div className="absolute -bottom-8 right-6 lg:right-12 bg-white/90 backdrop-blur-md border border-white rounded-xl p-3.5 shadow-lg flex items-center gap-3 transform hover:translate-y-[-2px] transition-transform duration-300 z-30">
-                            <div className="p-2 bg-emerald-500/10 rounded-lg">
-                                <FaUsers className="text-emerald-600 w-4 h-4" />
+                        <div className="absolute -bottom-3 right-2 md:-bottom-8 md:right-6 lg:right-12 bg-white/90 backdrop-blur-md border border-white rounded-xl p-2 md:p-3.5 shadow-lg flex items-center gap-2 md:gap-3 transform hover:translate-y-[-2px] transition-transform duration-300 z-30 scale-90 md:scale-100 origin-bottom-right">
+                            <div className="p-1.5 md:p-2 bg-emerald-500/10 rounded-lg">
+                                <FaUsers className="text-emerald-600 w-3.5 h-3.5 md:w-4 md:h-4" />
                             </div>
                             <div>
-                                <p className="text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">Active Customers</p>
-                                <p className="text-sm font-bold text-[#111827]">12.5k Loyal</p>
+                                <p className="text-[9px] md:text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">Active Customers</p>
+                                <p className="text-xs md:text-sm font-bold text-[#111827]">12.5k Loyal</p>
                             </div>
                         </div>
                     </div>

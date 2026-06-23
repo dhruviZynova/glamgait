@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   RefreshCw,
@@ -23,13 +23,12 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState(null);
   const [mainMedia, setMainMedia] = useState("");
   const [loading, setLoading] = useState(true);
+  const videoRef = useRef(null); // ← for force-play
 
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const response = await adminAxios.get(
-        `${ApiURL}/getproductbyid/${p_id}`
-      );
+      const response = await adminAxios.get(`${ApiURL}/getproductbyid/${p_id}`);
       const productData = response.data.data;
 
       const stockMap = {};
@@ -37,15 +36,18 @@ const ProductDetail = () => {
         stockMap[`${v.pcolor_id}-${v.psize_id}`] = v.remaining_qty;
       });
 
+      // Build a video lookup from productData.colors (color_id -> video URL)
+      const colorVideoMap = {};
+      (productData.colors || []).forEach((c) => {
+        if (c.color_id && c.video) colorVideoMap[c.color_id] = c.video;
+      });
+
       const enhancedColors =
         productData.productcolors?.map((color) => {
           let sizesWithStock = [];
           let colorTotalStock = 0;
 
-          if (
-            productData.productsizes &&
-            productData.productsizes.length > 0
-          ) {
+          if (productData.productsizes && productData.productsizes.length > 0) {
             sizesWithStock = productData.productsizes.map((ps) => {
               const key = `${color.pcolor_id}-${ps.psize_id}`;
               const qty = stockMap[key] || 0;
@@ -72,8 +74,10 @@ const ProductDetail = () => {
               },
             ];
           }
+          const videoUrl = colorVideoMap[color.color?.color_id] || color.video || null;
           return {
             ...color,
+            video: videoUrl,
             sizes: sizesWithStock,
             has_stock: colorTotalStock > 0,
             total_available: colorTotalStock,
@@ -83,10 +87,7 @@ const ProductDetail = () => {
       const enhancedProduct = {
         ...productData,
         productcolors: enhancedColors,
-        total_stock: enhancedColors.reduce(
-          (sum, c) => sum + c.total_available,
-          0
-        ),
+        total_stock: enhancedColors.reduce((sum, c) => sum + c.total_available, 0),
         has_any_stock: enhancedColors.some((c) => c.has_stock),
       };
 
@@ -96,10 +97,7 @@ const ProductDetail = () => {
         setSelectedColor(enhancedColors[0]);
       }
     } catch (error) {
-      showToaster(
-        0,
-        error?.response?.data?.description || "Error fetching product"
-      );
+      showToaster(0, error?.response?.data?.description || "Error fetching product");
       navigate("/admin/product");
     } finally {
       setLoading(false);
@@ -110,24 +108,69 @@ const ProductDetail = () => {
     if (p_id) fetchProduct();
   }, [p_id]);
 
+  // ─── Build media list: color.video FIRST, then productimages ───
+  // Handles both full URLs (http...) and plain filenames
+  const getMediaList = (color) => {
+    const list = [];
+
+    if (color?.video) {
+      const videoUrl = color.video.startsWith("http")
+        ? color.video
+        : `${ApiURL}/assets/Products/${color.video}`;
+
+      list.push({
+        type: "video",
+        url: videoUrl,
+        id: `video-${color.pcolor_id}`,
+      });
+    }
+
+    (color?.productimages || []).forEach((img) => {
+      const imgUrl = img.image_url.startsWith("http")
+        ? img.image_url
+        : `${ApiURL}/assets/Products/${img.image_url}`;
+
+      list.push({
+        type: /\.(mp4|webm|mov|avi)$/i.test(img.image_url) ? "video" : "image",
+        url: imgUrl,
+        id: img.image_id || img.image_url,
+      });
+    });
+
+    return list;
+  };
+
   useEffect(() => {
-    if (selectedColor?.productimages?.length > 0) {
-      setMainMedia(
-        `${ApiURL}/assets/Products/${selectedColor.productimages[0].image_url}`
-      );
+    if (selectedColor) {
+      const list = getMediaList(selectedColor);
+      setMainMedia(list.length > 0 ? list[0].url : null);
     } else {
       setMainMedia(null);
     }
-  }, [selectedColor, ApiURL]);
+  }, [selectedColor]);
+
+  // ─── Force autoplay when mainMedia changes ───
+  const mediaList = getMediaList(selectedColor);
+  const isMainVideo =
+    !!mainMedia && mediaList.find((m) => m.url === mainMedia)?.type === "video";
+
+  useEffect(() => {
+    if (videoRef.current && isMainVideo) {
+      videoRef.current.load();
+      videoRef.current.play().catch(() => {
+        // Autoplay blocked by browser — user must click play manually
+      });
+    }
+  }, [mainMedia, isMainVideo]);
 
   const handleColorChange = (color) => {
     setSelectedColor(color);
-    const firstImage = color.productimages?.[0]?.image_url;
-    setMainMedia(firstImage ? `${ApiURL}/assets/Products/${firstImage}` : "");
+    const list = getMediaList(color);
+    setMainMedia(list.length > 0 ? list[0].url : null);
   };
 
-  const handleThumbnailClick = (imageUrl) => {
-    setMainMedia(`${ApiURL}/assets/Products/${imageUrl}`);
+  const handleThumbnailClick = (url) => {
+    setMainMedia(url);
   };
 
   const [deleteModal, setDeleteModal] = useState({
@@ -146,10 +189,7 @@ const ProductDetail = () => {
       showToaster(1, "Product deleted");
       navigate("/admin/product");
     } catch (error) {
-      showToaster(
-        0,
-        error?.response?.data?.description || "Error deleting product"
-      );
+      showToaster(0, error?.response?.data?.description || "Error deleting product");
       setDeleteModal({ isOpen: false, isDeleting: false });
     }
   };
@@ -157,8 +197,7 @@ const ProductDetail = () => {
   const discountPercent =
     product?.original_price && product?.original_price > product?.price
       ? Math.round(
-        ((product.original_price - product.price) / product.original_price) *
-        100
+        ((product.original_price - product.price) / product.original_price) * 100
       )
       : 0;
 
@@ -171,24 +210,9 @@ const ProductDetail = () => {
         </div>
         <div className="glamloader-ring">
           <svg viewBox="0 0 72 72">
-            <circle
-              className="glamloader-ring-track"
-              cx="36"
-              cy="36"
-              r="32"
-            />
-            <circle
-              className="glamloader-ring-arc glamloader-ring-arc--a2"
-              cx="36"
-              cy="36"
-              r="32"
-            />
-            <circle
-              className="glamloader-ring-arc glamloader-ring-arc--a1"
-              cx="36"
-              cy="36"
-              r="32"
-            />
+            <circle className="glamloader-ring-track" cx="36" cy="36" r="32" />
+            <circle className="glamloader-ring-arc glamloader-ring-arc--a2" cx="36" cy="36" r="32" />
+            <circle className="glamloader-ring-arc glamloader-ring-arc--a1" cx="36" cy="36" r="32" />
           </svg>
           <div className="glamloader-ring-dot" />
         </div>
@@ -220,31 +244,19 @@ const ProductDetail = () => {
       icon: <Package className="w-4 h-4" />,
     },
     product.fabric &&
-    (product.fabric.name ||
-      product.fabric.fabric_name ||
-      product.fabric.f_name) && {
+    (product.fabric.name || product.fabric.fabric_name || product.fabric.f_name) && {
       label: "Fabric",
-      value:
-        product.fabric.name ||
-        product.fabric.fabric_name ||
-        product.fabric.f_name,
+      value: product.fabric.name || product.fabric.fabric_name || product.fabric.f_name,
       icon: <Tag className="w-4 h-4" />,
     },
     product.work &&
-    (product.work.name ||
-      product.work.work_name ||
-      product.work.w_name) && {
+    (product.work.name || product.work.work_name || product.work.w_name) && {
       label: "Work",
-      value:
-        product.work.name ||
-        product.work.work_name ||
-        product.work.w_name,
+      value: product.work.name || product.work.work_name || product.work.w_name,
       icon: <Tag className="w-4 h-4" />,
     },
     product.occasion &&
-    (product.occasion.name ||
-      product.occasion.occasion_name ||
-      product.occasion.o_name) && {
+    (product.occasion.name || product.occasion.occasion_name || product.occasion.o_name) && {
       label: "Occasion",
       value:
         product.occasion.name ||
@@ -253,14 +265,9 @@ const ProductDetail = () => {
       icon: <Tag className="w-4 h-4" />,
     },
     product.style &&
-    (product.style.name ||
-      product.style.style_name ||
-      product.style.s_name) && {
+    (product.style.name || product.style.style_name || product.style.s_name) && {
       label: "Style",
-      value:
-        product.style.name ||
-        product.style.style_name ||
-        product.style.s_name,
+      value: product.style.name || product.style.style_name || product.style.s_name,
       icon: <Tag className="w-4 h-4" />,
     },
     product.weight > 0 && {
@@ -270,8 +277,7 @@ const ProductDetail = () => {
     },
     (product.length > 0 || product.width > 0 || product.height > 0) && {
       label: "Dimensions (L × W × H)",
-      value: `${product.length || 0} × ${product.width || 0} × ${product.height || 0
-        } cm`,
+      value: `${product.length || 0} × ${product.width || 0} × ${product.height || 0} cm`,
       icon: <Package className="w-4 h-4" />,
     },
   ].filter(Boolean);
@@ -284,10 +290,7 @@ const ProductDetail = () => {
           onClick={() => navigate(-1)}
           className="group flex items-center gap-2 text-gray-400 hover:text-gray-800 transition-colors cursor-pointer text-sm font-medium"
         >
-          <ArrowLeft
-            size={16}
-            className="transition-transform group-hover:-translate-x-0.5"
-          />
+          <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-0.5" />
           <span className="uppercase tracking-wider text-xs">Back</span>
         </button>
         <div className="h-4 w-px bg-gray-200" />
@@ -299,34 +302,41 @@ const ProductDetail = () => {
       <div className="flex flex-col lg:flex-row gap-10 xl:gap-14">
         {/* ─── Left: Media Gallery ─── */}
         <div className="flex flex-col-reverse md:flex-row gap-4 lg:gap-5 flex-shrink-0">
+
           {/* Thumbnails Strip */}
-          {selectedColor?.productimages?.length > 0 && (
+          {mediaList.length > 0 && (
             <div
               className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto pb-2 md:pb-0 md:p-1 justify-start w-full md:w-[80px] lg:w-[92px] flex-shrink-0 scroll-smooth"
               style={{ maxHeight: "580px" }}
             >
-              {selectedColor.productimages.map((img, idx) => {
-                const mediaUrl = `${ApiURL}/assets/Products/${img.image_url}`;
-                const isVideo = /\.(mp4|webm|mov|avi)$/i.test(
-                  img.image_url
-                );
-                const isActive = mainMedia === mediaUrl;
+              {mediaList.map((media, idx) => {
+                const isActive = mainMedia === media.url;
+                const isVideo = media.type === "video";
 
                 return (
                   <button
-                    key={img.image_id || idx}
-                    onClick={() => handleThumbnailClick(img.image_url)}
-                    className={`w-[72px] h-[96px] lg:w-[80px] lg:h-[106px] flex-shrink-0 rounded-lg overflow-hidden transition-all duration-200 cursor-pointer relative group ${isActive
-                      ? "ring-1 ring-gray-900 ring-offset-1 shadow-md"
-                      : "ring-1 ring-gray-200 hover:ring-gray-300 hover:shadow-sm"
-                      }`}
+                    key={media.id || idx}
+                    onClick={() => handleThumbnailClick(media.url)}
+                    className={`w-[72px] h-[96px] lg:w-[80px] lg:h-[106px] flex-shrink-0 rounded-lg overflow-hidden transition-all duration-200 cursor-pointer relative group ${
+                      isActive
+                        ? "ring-1 ring-gray-900 ring-offset-1 shadow-md"
+                        : "ring-1 ring-gray-200 hover:ring-gray-300 hover:shadow-sm"
+                    }`}
                   >
                     {isVideo ? (
                       <div className="w-full h-full bg-gray-100 relative">
                         <video
-                          src={mediaUrl}
+                          src={media.url}
                           className="w-full h-full object-cover"
                           muted
+                          loop
+                          playsInline
+                          autoPlay
+                          preload="metadata"
+                          onCanPlay={(e) => {
+                            e.target.muted = true;
+                            e.target.play().catch(() => {});
+                          }}
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/25">
                           <Play className="w-5 h-5 text-white fill-white" />
@@ -334,7 +344,7 @@ const ProductDetail = () => {
                       </div>
                     ) : (
                       <img
-                        src={mediaUrl}
+                        src={media.url}
                         alt=""
                         className="w-full h-full object-cover"
                       />
@@ -344,65 +354,56 @@ const ProductDetail = () => {
               })}
             </div>
           )}
-
+ 
           {/* Main Media — fixed height 580px */}
-          <div className="bg-[#f7f7f8] rounded-xl shadow-lg overflow-hidden flex-shrink-0" style={{ width: "460px", height: "580px" }}>
-            {mainMedia && !mainMedia.includes("undefined") ? (
-              (() => {
-                const isVideo = /\.(mp4|webm|mov|avi)$/i.test(mainMedia);
-                const imageUrl =
-                  selectedColor?.productimages?.[0]?.image_url;
-
-                return isVideo ? (
-                  <video
-                    src={mainMedia}
-                    controls
-                    className="w-full h-full object-cover object-top"
-                    poster={
-                      imageUrl
-                        ? `${ApiURL}/assets/Products/${imageUrl}`
-                        : undefined
-                    }
-                  >
-                    <source src={mainMedia} type="video/mp4" />
-                    <source src={mainMedia} type="video/webm" />
-                    Your browser does not support the video tag.
-                  </video>
-                ) : (
-                  <img
-                    src={mainMedia}
-                    alt={product.name}
-                    className="w-full h-full object-cover object-top"
-                  />
-                );
-              })()
-            ) : (
+          <div
+            className="bg-[#f7f7f8] rounded-xl shadow-lg overflow-hidden flex-shrink-0"
+            style={{ width: "460px", height: "580px" }}
+          >
+            {!mainMedia || mainMedia.includes("undefined") ? (
               <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 gap-3">
                 <Package className="w-12 h-12" />
                 <span className="text-sm font-medium">No Image Available</span>
               </div>
+            ) : isMainVideo ? (
+              <video
+                ref={videoRef}
+                key={mainMedia}
+                src={mainMedia}
+                autoPlay
+                muted
+                loop
+                playsInline
+                controls
+                className="w-full h-full object-cover object-top"
+                onCanPlay={(e) => {
+                  e.target.muted = true;
+                  e.target.play().catch(() => {});
+                }}
+              />
+            ) : (
+              <img
+                src={mainMedia}
+                alt={product.name}
+                className="w-full h-full object-cover object-top"
+              />
             )}
           </div>
         </div>
 
         {/* ─── Right: Product Info ─── */}
         <div className="flex-1 min-w-0 pt-0 lg:pt-1">
-          {/* Product Name */}
           <h1 className="text-[22px] sm:text-2xl font-semibold text-gray-900 leading-snug tracking-tight mb-3">
             {product.name}
           </h1>
 
-          {/* SKU Badge */}
           <div className="mb-5">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-md uppercase tracking-wider">
               SKU
-              <span className="text-gray-900 font-bold">
-                {product.sku || "N/A"}
-              </span>
+              <span className="text-gray-900 font-bold">{product.sku || "N/A"}</span>
             </span>
           </div>
 
-          {/* Price Block */}
           <div className="mb-6 flex items-end gap-3 flex-wrap">
             {product.original_price > product.price && (
               <>
@@ -419,7 +420,6 @@ const ProductDetail = () => {
             </span>
           </div>
 
-          {/* Color Swatches */}
           {product.productcolors.length > 0 && (
             <div className="mb-7">
               <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
@@ -432,11 +432,9 @@ const ProductDetail = () => {
               </div>
               <div className="flex flex-wrap gap-2.5">
                 {product.productcolors.map((color) => {
-                  const isSelected =
-                    selectedColor?.pcolor_id === color.pcolor_id;
+                  const isSelected = selectedColor?.pcolor_id === color.pcolor_id;
                   const outOfStock = !color.has_stock;
-                  const colorCode =
-                    color.color?.color_code || color.color_code || "#ccc";
+                  const colorCode = color.color?.color_code || color.color_code || "#ccc";
 
                   return (
                     <button
@@ -444,13 +442,8 @@ const ProductDetail = () => {
                       onClick={() => handleColorChange(color)}
                       disabled={outOfStock}
                       title={color.color?.color_name}
-                      className={`relative w-9 h-9 rounded-full transition-all duration-200 flex items-center justify-center ${isSelected
-                        ? "ring-1 ring-gray-900 ring-offset-[3px]"
-                        : ""
-                        } ${outOfStock
-                          ? "cursor-not-allowed opacity-40"
-                          : "cursor-pointer"
-                        }`}
+                      className={`relative w-9 h-9 rounded-full transition-all duration-200 flex items-center justify-center ${isSelected ? "ring-1 ring-gray-900 ring-offset-[3px]" : ""
+                        } ${outOfStock ? "cursor-not-allowed opacity-40" : "cursor-pointer"}`}
                       style={{ backgroundColor: colorCode }}
                     >
                       {isSelected && (
@@ -461,11 +454,7 @@ const ProductDetail = () => {
                           stroke="currentColor"
                           strokeWidth={3}
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                       )}
                       {outOfStock && (
@@ -480,7 +469,6 @@ const ProductDetail = () => {
             </div>
           )}
 
-          {/* Action Buttons */}
           <div className="flex gap-3 mb-8">
             <button
               onClick={() => setIsModalOpen(true)}
@@ -501,19 +489,15 @@ const ProductDetail = () => {
             </button>
           </div>
 
-          {/* Divider */}
           <div className="border-t border-gray-200" />
 
-          {/* ─── Tabs ─── */}
           <div className="mt-8">
             <div className="flex gap-0 border-b border-gray-200 overflow-x-auto">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`relative px-0 pb-3.5 text-[11px] font-bold tracking-[0.12em] uppercase transition-colors duration-200 cursor-pointer whitespace-nowrap mr-8 last:mr-0 ${activeTab === tab
-                    ? "text-gray-900"
-                    : "text-gray-400 hover:text-gray-600"
+                  className={`relative px-0 pb-3.5 text-[11px] font-bold tracking-[0.12em] uppercase transition-colors duration-200 cursor-pointer whitespace-nowrap mr-8 last:mr-0 ${activeTab === tab ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
                     }`}
                 >
                   {tab}
@@ -525,7 +509,6 @@ const ProductDetail = () => {
             </div>
 
             <div className="pt-7 pb-2">
-              {/* ── DESCRIPTION TAB ── */}
               {activeTab === "DESCRIPTION" && (
                 <div className="max-w-2xl">
                   <p className="text-[15px] text-gray-600 leading-relaxed whitespace-pre-line">
@@ -534,24 +517,16 @@ const ProductDetail = () => {
                 </div>
               )}
 
-              {/* ── DETAILS TAB ── */}
               {activeTab === "DETAILS" && (
                 <div className="max-w-2xl">
                   <div className="divide-y divide-gray-100">
                     {detailRows.map((row, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center py-3.5 gap-4"
-                      >
-                        <div className="flex items-center gap-2.5 w-[180px] flex-shrink-0">
+                      <div key={idx} className="flex items-center py-3.5 gap-4">
+                        <div className="flex items-center gap-2.5 w-[100px] flex-shrink-0">
                           <span className="text-gray-300">{row.icon}</span>
-                          <span className="text-sm font-semibold text-gray-900">
-                            {row.label}
-                          </span>
+                          <span className="text-sm font-semibold text-gray-900">{row.label}</span>
                         </div>
-                        <span className="text-sm text-gray-500 capitalize">
-                          {row.value}
-                        </span>
+                        <span className="text-sm text-gray-500 capitalize">{row.value}</span>
                       </div>
                     ))}
                     {detailRows.length === 0 && (
@@ -563,7 +538,6 @@ const ProductDetail = () => {
                 </div>
               )}
 
-              {/* ── STOCK MATRIX TAB ── */}
               {activeTab === "STOCK MATRIX" && (
                 <div className="max-w-3xl overflow-x-auto">
                   <div className="border border-gray-200 rounded-xl overflow-hidden">
@@ -582,10 +556,7 @@ const ProductDetail = () => {
                                 <span
                                   className="w-4 h-4 rounded-full inline-block ring-1 ring-gray-200"
                                   style={{
-                                    backgroundColor:
-                                      c.color?.color_code ||
-                                      c.color_code ||
-                                      "#ccc",
+                                    backgroundColor: c.color?.color_code || c.color_code || "#ccc",
                                   }}
                                 />
                                 <span className="normal-case tracking-normal font-semibold text-gray-700 text-xs">
@@ -598,60 +569,42 @@ const ProductDetail = () => {
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {product.productsizes?.length > 0
-                          ? product.productsizes.map((s) => {
-                            return (
-                              <tr
-                                key={s.psize_id}
-                                className="hover:bg-gray-50/60 transition-colors"
-                              >
-                                <td className="p-3.5 text-sm font-semibold text-gray-800 bg-gray-50/50">
-                                  {s.size?.size_name || "N/A"}
-                                </td>
-                                {product.productcolors.map((c) => {
-                                  const variant =
-                                    product.productvariants?.find(
-                                      (v) =>
-                                        v.pcolor_id === c.pcolor_id &&
-                                        v.psize_id === s.psize_id
-                                    );
-                                  const qty = variant?.remaining_qty || 0;
-                                  return (
-                                    <td
-                                      key={c.pcolor_id}
-                                      className="p-3.5 text-center border-l border-gray-100"
-                                    >
-                                      <StockBadge qty={qty} />
-                                    </td>
-                                  );
-                                })}
-                              </tr>
-                            );
-                          })
-                          : (() => {
-                            return (
-                              <tr className="hover:bg-gray-50/60 transition-colors">
-                                <td className="p-3.5 text-sm font-semibold text-gray-800 bg-gray-50/50">
-                                  Free Size
-                                </td>
-                                {product.productcolors.map((c) => {
-                                  const variant =
-                                    product.productvariants?.find(
-                                      (v) => v.pcolor_id === c.pcolor_id
-                                    );
-                                  const qty = variant?.remaining_qty || 0;
-                                  return (
-                                    <td
-                                      key={c.pcolor_id}
-                                      className="p-3.5 text-center border-l border-gray-100"
-                                    >
-                                      <StockBadge qty={qty} />
-                                    </td>
-                                  );
-                                })}
-                              </tr>
-                            );
-                          })()}
-
+                          ? product.productsizes.map((s) => (
+                            <tr key={s.psize_id} className="hover:bg-gray-50/60 transition-colors">
+                              <td className="p-3.5 text-sm font-semibold text-gray-800 bg-gray-50/50">
+                                {s.size?.size_name || "N/A"}
+                              </td>
+                              {product.productcolors.map((c) => {
+                                const variant = product.productvariants?.find(
+                                  (v) => v.pcolor_id === c.pcolor_id && v.psize_id === s.psize_id
+                                );
+                                const qty = variant?.remaining_qty || 0;
+                                return (
+                                  <td key={c.pcolor_id} className="p-3.5 text-center border-l border-gray-100">
+                                    <StockBadge qty={qty} />
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))
+                          : (
+                            <tr className="hover:bg-gray-50/60 transition-colors">
+                              <td className="p-3.5 text-sm font-semibold text-gray-800 bg-gray-50/50">
+                                Free Size
+                              </td>
+                              {product.productcolors.map((c) => {
+                                const variant = product.productvariants?.find(
+                                  (v) => v.pcolor_id === c.pcolor_id
+                                );
+                                const qty = variant?.remaining_qty || 0;
+                                return (
+                                  <td key={c.pcolor_id} className="p-3.5 text-center border-l border-gray-100">
+                                    <StockBadge qty={qty} />
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          )}
                       </tbody>
                     </table>
                   </div>
@@ -684,7 +637,6 @@ const ProductDetail = () => {
   );
 };
 
-/* ─── Reusable Stock Badge ─── */
 function StockBadge({ qty }) {
   if (qty === 0) {
     return (

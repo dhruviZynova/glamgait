@@ -9,6 +9,7 @@ const multipartAPIs = [
   "/updatecategory",
   "/adddynamicimages",
   "/addinstaimage",
+  "/updateinstaimage",
   "/addslider",
   "/updateslider",
 ];

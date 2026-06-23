@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { userInfo, adminInfo } from '../Variable';
 
+import axiosInstance, { adminAxios } from '../Axios/axios';
+
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
@@ -29,12 +31,22 @@ export const UserProvider = ({ children }) => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const logout = () => {
-    sessionStorage.removeItem('GlamGait');
-    sessionStorage.removeItem('GlamGaitAdmin');
-    setUser(null);
-    setAdmin(null);
-    window.dispatchEvent(new Event('storage'));
+  const logout = async () => {
+    try {
+      if (admin) {
+        await adminAxios.post('/userlogout');
+      } else {
+        await axiosInstance.post('/userlogout');
+      }
+    } catch (error) {
+      console.error('Logout API failed, clearing local session anyway:', error);
+    } finally {
+      sessionStorage.removeItem('GlamGait');
+      sessionStorage.removeItem('GlamGaitAdmin');
+      setUser(null);
+      setAdmin(null);
+      window.dispatchEvent(new Event('storage'));
+    }
   };
 
   return (

@@ -35,6 +35,7 @@ function SingleProduct() {
   const [showSizePopup, setShowSizePopup] = useState(false);
   const [selectedColorImages, setSelectedColorImages] = useState([]);
   const [videoFiles, setVideoFiles] = useState([]);
+  const [colorVideo, setColorVideo] = useState(null);
   const [availableStock, setAvailableStock] = useState(0);
   const [reviewsSummary, setReviewsSummary] = useState({});
   const [activeTab, setActiveTab] = useState("description");
@@ -91,6 +92,12 @@ function SingleProduct() {
             stockMap[`${v.pcolor_id}-${v.psize_id || "nosize"}`] = v.remaining_qty;
           });
 
+          // Build a video lookup from data.colors (color_id -> video URL)
+          const colorVideoMap = {};
+          (data.colors || []).forEach((c) => {
+            if (c.color_id && c.video) colorVideoMap[c.color_id] = c.video;
+          });
+
           const enhancedColors = data.productcolors.map((color) => {
             const sizes = data.productsizes?.length > 0
               ? data.productsizes.map((ps) => {
@@ -103,8 +110,11 @@ function SingleProduct() {
                 remaining_qty: stockMap[`${color.pcolor_id}-nosize`] || 0,
                 in_stock: true,
               }];
+            // Attach video from data.colors via color.color.color_id
+            const videoUrl = colorVideoMap[color.color?.color_id] || color.video || null;
             return {
               ...color,
+              video: videoUrl,
               sizes,
               has_stock: sizes.some((s) => s.in_stock),
               total_available: sizes.reduce((sum, s) => sum + s.remaining_qty, 0),
@@ -162,6 +172,8 @@ function SingleProduct() {
     const vids = images.filter((f) => /\.(mp4|mov|webm)$/i.test(f));
     setSelectedColorImages(imgs);
     setVideoFiles(vids);
+    // color.video is a full URL from the API e.g. https://backend.../assets/Products/xxx.mp4
+    setColorVideo(color.video || null);
 
     const firstSize = color.sizes.find((s) => s.in_stock) || color.sizes[0];
     if (firstSize) {
@@ -404,7 +416,8 @@ function SingleProduct() {
       const width = container.offsetWidth;
       const scrollLeft = container.scrollLeft;
       const index = Math.round(scrollLeft / width);
-      if (index !== mobileIndex && index >= 0 && index < imageFiles.length) {
+      const totalSlides = imageFiles.length + (colorVideo ? 1 : 0);
+      if (index !== mobileIndex && index >= 0 && index < totalSlides) {
         setMobileIndex(index);
       }
     }
@@ -454,8 +467,8 @@ function SingleProduct() {
           <div className="w-full">
             {/* Desktop stacked gallery */}
             <div className="hidden lg:flex md:gap-12 gap-6 w-full">
-              {/* Optional desktop thumbnail rail — sticky, click to scroll */}
-              {imageFiles.length > 1 && (
+              {/* Sticky thumbnail rail */}
+              {(imageFiles.length > 1 || colorVideo) && (
                 <div className="flex sticky top-24 self-start flex-col gap-3 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1 scrollbar-thin">
                   {imageFiles.map((file, i) => (
                     <button
@@ -470,10 +483,36 @@ function SingleProduct() {
                       />
                     </button>
                   ))}
+                  {/* Video thumbnail in rail */}
+                  {colorVideo && (
+                    <button
+                      onClick={() => imageRefs.current[imageFiles.length]?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                      className="flex-shrink-0 w-[64px] h-[80px] rounded-md overflow-hidden border border-[#E8E0DA] hover:border-[#3D2C25] transition-all cursor-pointer relative bg-black"
+                    >
+                      <video
+                        src={colorVideo}
+                        className="w-full h-full object-cover opacity-70"
+                        muted
+                        loop
+                        playsInline
+                        autoPlay
+                        preload="metadata"
+                        onCanPlay={(e) => {
+                          e.target.muted = true;
+                          e.target.play().catch(() => { });
+                        }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center">
+                          <svg className="w-3 h-3 text-[#3D2C25] ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                      </div>
+                    </button>
+                  )}
                 </div>
               )}
 
-              {/* All images stacked vertically */}
+              {/* All images + video stacked vertically */}
               <div className="flex-1 flex flex-col gap-3">
                 {imageFiles.map((file, i) => (
                   <div
@@ -500,6 +539,29 @@ function SingleProduct() {
                     )}
                   </div>
                 ))}
+
+                {/* Color video tile — appended at bottom of stacked gallery */}
+                {colorVideo && (
+                  <div
+                    ref={(el) => (imageRefs.current[imageFiles.length] = el)}
+                    className="relative w-full bg-black rounded-lg overflow-hidden"
+                  >
+                    <video
+                      src={colorVideo}
+                      className="w-full h-auto"
+                      controls
+                      muted
+                      loop
+                      playsInline
+                      autoPlay
+                      style={{ display: "block" }}
+                      onCanPlay={(e) => {
+                        e.target.muted = true;
+                        e.target.play().catch(err => console.log("Desktop autoplay failed:", err));
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -520,6 +582,25 @@ function SingleProduct() {
                       />
                     </div>
                   ))}
+                  {/* Video slide at the end of mobile slider */}
+                  {colorVideo && (
+                    <div className="w-full h-full flex-shrink-0 snap-start snap-always relative bg-black flex items-center justify-center">
+                      <video
+                        src={colorVideo}
+                        className="w-full h-full object-contain"
+                        controls
+                        muted
+                        loop
+                        playsInline
+                        autoPlay
+                        style={{ display: "block" }}
+                        onCanPlay={(e) => {
+                          e.target.muted = true;
+                          e.target.play().catch(err => console.log("Mobile autoplay failed:", err));
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Badges */}
@@ -536,14 +617,15 @@ function SingleProduct() {
               </div>
 
               {/* Horizontal Thumbnails row */}
-              {imageFiles.length > 1 && (
+              {(imageFiles.length > 1 || colorVideo) && (
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mt-3">
                   {imageFiles.map((file, i) => (
                     <button
                       key={i}
                       onClick={() => handleMobileThumbnailClick(i)}
-                      className={`flex-shrink-0 w-14 h-18 overflow-hidden border cursor-pointer transition-all rounded-none ${mobileIndex === i ? "border-black" : "border-gray-200 opacity-60"
+                      className={`flex-shrink-0 w-14 overflow-hidden border cursor-pointer transition-all rounded-none ${mobileIndex === i ? "border-black" : "border-gray-200 opacity-60"
                         }`}
+                      style={{ height: "4.5rem" }}
                     >
                       <img
                         src={`${ApiURL}/assets/Products/${file}`}
@@ -552,6 +634,34 @@ function SingleProduct() {
                       />
                     </button>
                   ))}
+                  {/* Video thumbnail in mobile strip */}
+                  {colorVideo && (
+                    <button
+                      onClick={() => handleMobileThumbnailClick(imageFiles.length)}
+                      className={`flex-shrink-0 w-14 overflow-hidden border cursor-pointer transition-all rounded-none relative bg-black ${mobileIndex === imageFiles.length ? "border-black" : "border-gray-200 opacity-60"
+                        }`}
+                      style={{ height: "4.5rem" }}
+                    >
+                      <video
+                        src={colorVideo}
+                        className="w-full h-full object-cover opacity-70"
+                        muted
+                        loop
+                        playsInline
+                        autoPlay
+                        preload="metadata"
+                        onCanPlay={(e) => {
+                          e.target.muted = true;
+                          e.target.play().catch(() => { });
+                        }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-5 h-5 rounded-full bg-white/80 flex items-center justify-center">
+                          <svg className="w-2.5 h-2.5 text-[#3D2C25] ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                      </div>
+                    </button>
+                  )}
                 </div>
               )}
             </div>

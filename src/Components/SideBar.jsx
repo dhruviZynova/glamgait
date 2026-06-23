@@ -27,8 +27,8 @@ const SideBar = ({ onMenuChange = () => { } }) => {
     setIsOpen(false);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/");
   };
 

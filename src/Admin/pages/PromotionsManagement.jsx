@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 // src/pages/admin/PromotionsManagement.jsx
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { ChevronDown, Loader2, Inbox } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable"; // adjust path if needed
 import { adminAxios } from "../../Axios/axios";
 import {
@@ -236,8 +236,16 @@ const PromotionsManagement = () => {
           </div>
         </div>
       ) : (activeTab === "offers" ? offers : coupons).length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No {activeTab} found</p>
+        <div className="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center mb-4 shadow-sm">
+            <Inbox className="w-7 h-7 text-gray-400" />
+          </div>
+          <p className="text-sm font-semibold text-gray-700 mb-1">
+            No {activeTab} found
+          </p>
+          <p className="text-xs text-gray-400">
+            Add your first {activeTab === "offers" ? "offer" : "coupon"} above
+          </p>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">

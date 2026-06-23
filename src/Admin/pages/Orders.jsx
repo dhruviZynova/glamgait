@@ -322,13 +322,15 @@ const AdminOrders = () => {
               </div>
             </div>
           ) : displayOrders.length === 0 ? (
-            <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-gray-200">
-              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FaBoxOpen className="text-gray-300 text-3xl" />
+            <div className="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center mb-4 shadow-sm">
+                <FaBoxOpen className="w-7 h-7 text-gray-400" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900">No orders found</h3>
-              <p className="text-gray-500 mt-1 text-sm">
-                Try adjusting your search filters
+              <p className="text-sm font-semibold text-gray-700 mb-1">
+                {searchTerm || selectedStatus !== "all" ? "No matching orders found" : "No orders yet"}
+              </p>
+              <p className="text-xs text-gray-400">
+                {searchTerm || selectedStatus !== "all" ? "Try adjusting your filters or search query" : "Orders placed by customers will appear here"}
               </p>
             </div>
           ) : (

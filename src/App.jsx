@@ -65,7 +65,7 @@ const ProductDetail = lazy(() => import("./Admin/pages/ProductDetail"));
 const ContactUs = lazy(() => import("./Admin/pages/Contact"));
 const Users = lazy(() => import("./Admin/pages/Users"));
 const Orders = lazy(() => import("./Admin/pages/Orders"));
-const InstagramSection = lazy(() => import("./Admin/pages/InstagramSection"));
+const SocialMedia = lazy(() => import("./Admin/pages/SocialMedia"));
 const Reviews = lazy(() => import("./Admin/pages/Reviews"));
 const Sliders = lazy(() => import("./Admin/pages/Slider"));
 const Announcement = lazy(() => import("./Admin/pages/Announcements"));
@@ -196,7 +196,7 @@ function App() {
                   <Route path="contact" element={<ContactUs />} />
                   <Route path="users" element={<Users />} />
                   <Route path="orders" element={<Orders />} />
-                  <Route path="instagram" element={<InstagramSection />} />
+                  <Route path="socialmedia" element={<SocialMedia />} />
                   <Route path="reviews" element={<Reviews />} />
                   <Route path="sliders" element={<Sliders />} />
                   <Route path="offer-coupon" element={<PromotionsManagement />} />
