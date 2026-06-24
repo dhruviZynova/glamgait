@@ -42,6 +42,8 @@ export function useProductFilters(cateName) {
         }
       }
 
+      const isAllProducts = !cateName || cateName === "All Products";
+
       // Fetch the rest of the filters in parallel using categoryId
       const [
         colors,
@@ -50,18 +52,22 @@ export function useProductFilters(cateName) {
         works,
         occasions,
         styles,
-        sizes,
+        allSizes,
       ] = await Promise.all([
         safeGet("/getcolor"),
-        cateName && cateName !== "All Products"
+        !isAllProducts
           ? safeGet(`${ApiURL}/getsubcategory/${categoryId}`)
           : Promise.resolve([]),
-        safeGet(`${ApiURL}/getfabrics/${categoryId}`),
-        safeGet(`${ApiURL}/getworks/${categoryId}`),
-        safeGet(`${ApiURL}/getoccasions/${categoryId}`),
-        safeGet(`${ApiURL}/getstyles/${categoryId}`),
-        safeGet(`${ApiURL}/getsize/${categoryId}`),
+        isAllProducts ? safeGet("/getfabrics") : safeGet(`${ApiURL}/getfabrics/${categoryId}`),
+        isAllProducts ? safeGet("/getworks") : safeGet(`${ApiURL}/getworks/${categoryId}`),
+        isAllProducts ? safeGet("/getoccasions") : safeGet(`${ApiURL}/getoccasions/${categoryId}`),
+        isAllProducts ? safeGet("/getstyles") : safeGet(`${ApiURL}/getstyles/${categoryId}`),
+        safeGet("/getsize"),
       ]);
+
+      const sizes = isAllProducts
+        ? allSizes
+        : allSizes.filter((s) => String(s.cate_id) === String(categoryId));
 
       return {
         categoryId,

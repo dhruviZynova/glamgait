@@ -1,6 +1,26 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy as reactLazy, Suspense } from "react";
 import { Routes, Route, BrowserRouter, Outlet, useLocation } from "react-router-dom";
 import "./App.css";
+
+const lazy = (importFunc) =>
+  reactLazy(() =>
+    importFunc().catch((err) => {
+      const isDynamicImportFailed =
+        err.message?.includes("Failed to fetch dynamically imported module") ||
+        err.name === "ChunkLoadError" ||
+        /Failed to load module script/.test(err.message);
+      if (isDynamicImportFailed) {
+        const lastReload = window.sessionStorage.getItem("last-chunk-reload");
+        const now = Date.now();
+        if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+          window.sessionStorage.setItem("last-chunk-reload", String(now));
+          window.location.reload();
+          return new Promise(() => {});
+        }
+      }
+      throw err;
+    })
+  );
 import { LoaderProvider } from "./Context/LoaderContext";
 import { CartProvider } from "./Context/CartContext";
 import { UserProvider } from "./Context/UserContext";

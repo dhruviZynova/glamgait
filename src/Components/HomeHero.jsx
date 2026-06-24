@@ -53,7 +53,7 @@ const HomeHero = () => {
       <Swiper
         modules={[Autoplay]}
         autoplay={{ delay: 5000, disableOnInteraction: false }}
-        loop={true}
+        loop={slides.length > 1}
         speed={1000}
         className="w-full h-full"
       >
