@@ -174,7 +174,7 @@ const Profileorder = () => {
                         <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-[#807D7E] font-medium">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5" />
-                            Date: {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                            Date : {new Date(order.createdAt).toLocaleDateString("en-IN", {
                               day: "numeric",
                               month: "long",
                               year: "numeric",
@@ -182,7 +182,7 @@ const Profileorder = () => {
                           </span>
                           <span className="flex items-center gap-1">
                             <Truck className="w-3.5 h-3.5" />
-                            Delivery: {new Date(new Date(order.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", {
+                            Delivery : {new Date(new Date(order.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", {
                               day: "numeric",
                               month: "long",
                               year: "numeric",
@@ -194,11 +194,11 @@ const Profileorder = () => {
 
                     <div className="flex flex-wrap lg:flex-col lg:items-end gap-3 lg:gap-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[#807D7E] font-semibold">Status:</span>
+                        <span className="text-xs text-[#807D7E] font-semibold">Status :</span>
                         {getStatusBadge(order.status)}
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[#807D7E] font-semibold">Payment:</span>
+                        <span className="text-xs text-[#807D7E] font-semibold">Payment :</span>
                         <span className="text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded-lg capitalize">{order.paymentStatus}</span>
                       </div>
                     </div>

@@ -543,7 +543,7 @@ const OrderDetails = () => {
                                   <p className="text-[#807D7E] font-medium">SKU: <span className="text-gray-700 font-bold uppercase">{item.sku}</span></p>
                                 )}
                                 <p className="text-[#807D7E] font-medium flex items-center gap-1.5">
-                                  Color:
+                                  Color :
                                   {item.color_code && (
                                     <span
                                       className="w-3 h-3 rounded-full border border-gray-300"
