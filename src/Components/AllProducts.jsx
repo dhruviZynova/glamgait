@@ -1072,12 +1072,12 @@ const Allproducts = () => {
                               <input
                                 type="number"
                                 min={0}
-                                value={priceRange[0] === 0 ? "" : priceRange[0]}
+                                value={priceRange[0]}
                                 onChange={(e) => {
                                   const val = e.target.value === "" ? 0 : Number(e.target.value);
                                   setPriceRange([val, priceRange[1]]);
                                 }}
-                                className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
+                                className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none transition-colors text-gray-700 font-medium placeholder-gray-400"
                                 placeholder="Min"
                               />
                             </div>
@@ -1086,12 +1086,12 @@ const Allproducts = () => {
                               <input
                                 type="number"
                                 min={0}
-                                value={priceRange[1] === 100000 ? "" : priceRange[1]}
+                                value={priceRange[1]}
                                 onChange={(e) => {
-                                  const val = e.target.value === "" ? 100000 : Number(e.target.value);
+                                  const val = e.target.value === "" ? 0 : Number(e.target.value);
                                   setPriceRange([priceRange[0], val]);
                                 }}
-                                className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
+                                className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none transition-colors text-gray-700 font-medium placeholder-gray-400"
                                 placeholder="Max"
                               />
                             </div>

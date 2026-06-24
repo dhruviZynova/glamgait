@@ -18,11 +18,9 @@ import { ORDER_STATUS, STATUS_LABELS, STATUS_COLORS } from "../../utils/constant
 const AdminOrders = () => {
   const [orders, setOrders] = useState(null);
   const [openDropdownKey, setOpenDropdownKey] = useState(null);
-  const containerRef = useRef(null);
-
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (!event.target.closest(".dropdown-container")) {
         setOpenDropdownKey(null);
       }
     };
@@ -235,7 +233,7 @@ const AdminOrders = () => {
     : 1;
 
   return (
-    <div className="pb-8 min-h-screen bg-gray-50" ref={containerRef}>
+    <div className="pb-8 min-h-screen bg-gray-50">
       <div>
         {/* Header */}
         <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -591,7 +589,7 @@ const AdminOrders = () => {
                                 </button>
                               ) : (
                                 <div className="space-y-3">
-                                  <div className="relative">
+                                  <div className="relative dropdown-container">
                                     <button
                                       type="button"
                                       onClick={() =>
@@ -727,7 +725,7 @@ const AdminOrders = () => {
                                 <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest block mb-2">
                                   Update Status
                                 </span>
-                                <div className="relative">
+                                <div className="relative dropdown-container">
                                   <button
                                     type="button"
                                     onClick={() =>
