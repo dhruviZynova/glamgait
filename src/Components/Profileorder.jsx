@@ -206,7 +206,7 @@ const Profileorder = () => {
                   <div className="h-px bg-gray-50 w-full mb-6"></div>
 
                   {/* Product/Item Preview */}
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 md:gap-6">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 md:gap-6">
                     <div className="flex flex-wrap gap-6 flex-1 w-full">
                       {order.orderItems.map((item) => (
                         <div key={item.orderItemId} className="flex gap-4 w-full sm:w-auto">
@@ -228,10 +228,20 @@ const Profileorder = () => {
                                 )}
                                 {item.color_name && <span className="text-gray-700 font-bold capitalize">{item.color_name}</span>}
                               </p>
-                              <p className="flex items-center gap-1.5">
-                                Size :
-                                <span className="text-gray-700 font-bold capitalize">{item.size_name || "Free Size"}</span>
-                              </p>
+                              {(() => {
+                                const sizeVal = item.size_name || item.size;
+                                return sizeVal &&
+                                  sizeVal.trim() !== "" &&
+                                  sizeVal.toLowerCase() !== "na" &&
+                                  sizeVal.toLowerCase() !== "n/a" &&
+                                  sizeVal.toLowerCase() !== "free size" &&
+                                  sizeVal.toLowerCase() !== "free-size" ? (
+                                    <p className="flex items-center gap-1.5">
+                                      Size :
+                                      <span className="text-gray-700 font-bold capitalize">{sizeVal}</span>
+                                    </p>
+                                  ) : null;
+                              })()}
                               <p>
                                 Qty : <span className="text-gray-700 font-bold">{item.quantity}</span>
                               </p>
