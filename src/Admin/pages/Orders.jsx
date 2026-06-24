@@ -275,8 +275,8 @@ const AdminOrders = () => {
                 key={tab.key}
                 onClick={() => setSelectedStatus(tab.key)}
                 className={`px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-250 cursor-pointer ${isActive
-                    ? "bg-black text-white"
-                    : "bg-white text-gray-600 hover:text-black border border-gray-100 hover:border-gray-200"
+                  ? "bg-black text-white"
+                  : "bg-white text-gray-600 hover:text-black border border-gray-100 hover:border-gray-200"
                   }`}
               >
                 {tab.label}
@@ -344,8 +344,8 @@ const AdminOrders = () => {
                   {/* Card Header/Row */}
                   <div
                     className={`p-6 cursor-pointer transition-colors ${openOrderId === order.orderId
-                        ? "bg-gray-50/50"
-                        : "hover:bg-gray-50/30"
+                      ? "bg-gray-50/50"
+                      : "hover:bg-gray-50/30"
                       }`}
                     onClick={() => toggleOrder(order.orderId)}
                   >
@@ -409,8 +409,8 @@ const AdminOrders = () => {
                         )}
                         <div
                           className={`p-2 rounded-xl transition-all duration-200 ${openOrderId === order.orderId
-                              ? "bg-black text-white rotate-180"
-                              : "bg-gray-100 text-gray-400"
+                            ? "bg-black text-white rotate-180"
+                            : "bg-gray-100 text-gray-400"
                             }`}
                         >
                           <FaChevronDown size={14} />
@@ -455,7 +455,7 @@ const AdminOrders = () => {
                               </p>
                             </div>
                             <div className="pt-2 flex flex-col gap-2">
-                              <div className="flex items-center justify-between text-[11px] font-bold">
+                              <div className="flex items-center justify-between text-[12px] font-bold">
                                 <span className="text-gray-400 uppercase tracking-tighter">
                                   Phone
                                 </span>
@@ -464,7 +464,7 @@ const AdminOrders = () => {
                                 </span>
                               </div>
                               {order.address.email !== "N/A" && (
-                                <div className="flex items-center justify-between text-[11px] font-bold">
+                                <div className="flex items-center justify-between text-[12px] font-bold">
                                   <span className="text-gray-400 uppercase tracking-tighter">
                                     Email
                                   </span>
@@ -517,7 +517,7 @@ const AdminOrders = () => {
                                         SKU: {item.sku}
                                       </span>
                                     )}
-                                    {item.size && (
+                                    {item.size && item.size.trim() !== "" && item.size.toLowerCase() !== "na" && item.size.toLowerCase() !== "n/a" && (
                                       <span className="text-[9px] font-extrabold bg-gray-200 px-1.5 py-0.5 rounded uppercase">
                                         Size: {item.size}
                                       </span>
@@ -528,7 +528,7 @@ const AdminOrders = () => {
                                       </span>
                                     )}
                                   </div>
-                                  <p className="text-[11px] font-bold text-gray-900 mt-1">
+                                  <p className="text-[16px] font-bold text-gray-900 mt-1">
                                     ₹{item.price}
                                   </p>
                                 </div>
@@ -548,7 +548,7 @@ const AdminOrders = () => {
                             </h3>
                           </div>
                           <div className="space-y-4">
-                            <div className="bg-gray-50 p-4 rounded-xl space-y-3 font-bold text-[11px]">
+                            <div className="bg-gray-50 p-4 rounded-xl space-y-3 font-bold text-[12px]">
                               <div className="flex justify-between">
                                 <span className="text-gray-400">SUBTOTAL</span>
                                 <span className="text-gray-800">
@@ -611,9 +611,9 @@ const AdminOrders = () => {
                                       </span>
                                       <FaChevronDown
                                         className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${openDropdownKey ===
-                                            `carrier-${order.orderId}`
-                                            ? "rotate-180 text-[#0f1115]"
-                                            : ""
+                                          `carrier-${order.orderId}`
+                                          ? "rotate-180 text-[#0f1115]"
+                                          : ""
                                           }`}
                                       />
                                     </button>
@@ -628,8 +628,8 @@ const AdminOrders = () => {
                                               setOpenDropdownKey(null);
                                             }}
                                             className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-semibold ${!selectedLogistic
-                                                ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                              ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                                               }`}
                                           >
                                             <span>Select Carrier</span>
@@ -662,8 +662,8 @@ const AdminOrders = () => {
                                                   setOpenDropdownKey(null);
                                                 }}
                                                 className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-bold ${isSelected
-                                                    ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                                                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                                  ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                                                   }`}
                                               >
                                                 <span>
@@ -746,9 +746,9 @@ const AdminOrders = () => {
                                     </span>
                                     <FaChevronDown
                                       className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${openDropdownKey ===
-                                          `status-${order.orderId}`
-                                          ? "rotate-180 text-[#0f1115]"
-                                          : ""
+                                        `status-${order.orderId}`
+                                        ? "rotate-180 text-[#0f1115]"
+                                        : ""
                                         }`}
                                     />
                                   </button>
@@ -772,8 +772,8 @@ const AdminOrders = () => {
                                                   setOpenDropdownKey(null);
                                                 }}
                                                 className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer flex items-center justify-between font-semibold ${isSelected
-                                                    ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
-                                                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                                  ? "bg-[#0f1115]/10 text-[#0f1115] font-semibold"
+                                                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                                                   }`}
                                               >
                                                 <span>
@@ -838,8 +838,8 @@ const AdminOrders = () => {
                 key={i + 1}
                 onClick={() => setCurrentPage(i + 1)}
                 className={`px-5 py-2.5 rounded-2xl font-bold transition-all duration-200 ${currentPage === i + 1
-                    ? "bg-black text-white shadow-lg scale-110"
-                    : "bg-white text-gray-500 hover:text-black border border-gray-100"
+                  ? "bg-black text-white shadow-lg scale-110"
+                  : "bg-white text-gray-500 hover:text-black border border-gray-100"
                   }`}
               >
                 {i + 1}
