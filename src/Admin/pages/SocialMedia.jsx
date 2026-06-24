@@ -196,7 +196,7 @@ const SocialMedia = () => {
             setSuccess("");
             setModalOpen(true);
           }}
-          className="flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer text-sm font-medium"
+          className="w-full md:w-fit flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer text-sm font-medium"
         >
           <Plus size={18} /> Add Media
         </button>

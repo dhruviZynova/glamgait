@@ -151,7 +151,7 @@ const Contact = () => {
     <div className="pb-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-gray-800 text-left">Contact Requests</h1>
-        <div className="relative flex-grow max-w-md">
+        <div className="relative group w-full md:w-96">
           <input
             type="text"
             placeholder="Search by name or email..."

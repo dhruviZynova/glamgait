@@ -264,7 +264,7 @@ const Dashboard = () => {
         </div>
 
         {/* Main Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <StatCard
             title="Total Revenue"
             value={formatRevenue(dashboardCount.totalRevenue)} // Updated
@@ -333,7 +333,7 @@ const Dashboard = () => {
         </div>
 
         {/* Today's Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-2 gap-4 sm:gap-6 mb-8">
           <StatCard
             title="Today's Revenue"
             value={`₹${dashboardCount?.todayRevenue.toLocaleString()}`}

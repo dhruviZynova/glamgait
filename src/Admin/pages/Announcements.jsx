@@ -162,7 +162,7 @@ const Announcement = () => {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-lg shadow overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -177,8 +177,8 @@ const Announcement = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredAnnouncements?.map((item) => (
                 <tr key={item?.ann_id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900 whitespace-normal break-words min-w-[200px]">
                       {item?.text || "—"}
                     </div>
                   </td>

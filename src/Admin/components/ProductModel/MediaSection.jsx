@@ -42,8 +42,8 @@ const MediaSection = ({
 
         return (
           <div key={i} className="bg-white p-4 rounded-lg border mb-4">
-            <div className="flex gap-4 items-center">
-              <div className="relative flex-1">
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              <div className="relative flex-1 w-full md:w-auto">
                 <button
                   type="button"
                   onClick={() => setOpenColorIndex(openColorIndex === i ? null : i)}
@@ -129,7 +129,7 @@ const MediaSection = ({
                   </div>
                 )}
               </div>
-              <label className="cursor-pointer bg-black hover:bg-gray-800 text-white px-4 py-2 rounded">
+              <label className="cursor-pointer w-full md:w-auto bg-black hover:bg-gray-800 text-center text-white px-4 py-2 rounded">
                 Upload Images / Videos
                 <input
                   type="file"

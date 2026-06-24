@@ -670,7 +670,7 @@ const Allproducts = () => {
 
         <div className="w-full py-8 px-2 md:px-8 xl:px-24">
 
-          <div className="flex flex-col lg:flex-row sm:gap-8 gap-2 items-start">
+          <div className="flex flex-col lg:flex-row sm:gap-8 gap-2 items-stretch lg:items-start w-full">
 
             {/* Mobile Filter Button */}
             <button
