@@ -119,7 +119,7 @@ const Wishlist = () => {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 sm:gap-x-6 gap-y-6 sm:gap-y-6 pb-8">
               {wishlistItems.map((item) => {
                 const isOutOfStock = item.stock_qty === 0;
                 const discountPercentage =

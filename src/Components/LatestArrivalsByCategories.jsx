@@ -32,7 +32,7 @@ const EmptyState = ({ message }) => (
 
 // Animated grid skeleton utilizing pre-existing ProductCardSkeleton
 const LatestArrivalsSkeletonGrid = () => (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 sm:gap-x-6 gap-y-6 sm:gap-y-6 pb-8">
         {[0, 1, 2, 3, 4].map((idx) => (
             <ProductCardSkeleton key={idx} />
         ))}
@@ -66,7 +66,7 @@ const LatestArrivalsByCategories = () => {
     const renderedCategories = React.useMemo(() => {
         return products.map((categoryGroup, groupIdx) => (
             <div key={categoryGroup.category?.cate_id || groupIdx}>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 sm:gap-x-6 gap-y-6 sm:gap-y-6 pb-8">
                     {categoryGroup.products?.map((product) => (
                         <ProductCard
                             key={product.p_id}
