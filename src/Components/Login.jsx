@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
+import longlight from "../assets/images/longlight.webp";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import BrandBanner from "./BrandBanner";
@@ -65,7 +66,20 @@ const Login = () => {
 
   return (
     <>
-      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-poppins">
+      <div className="w-full pt-16 md:pt-36 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-poppins relative z-10 overflow-hidden">
+        {/* Hanging Lantern (Top Right) */}
+        <ScrollReveal
+          className="absolute -top-8 sm:-top-12 right-2 sm:right-4 md:right-8 lg:right-12 xl:right-16 z-30 pointer-events-none"
+          animation="fade-down"
+          duration={1200}
+        >
+          <img
+            src={longlight}
+            alt="Hanging Lantern"
+            className="w-22 sm:w-24 md:w-32 lg:w-44 h-auto drop-shadow-lg"
+          />
+        </ScrollReveal>
+
         {/* Login Card */}
         <ScrollReveal
           animation="fade-up"

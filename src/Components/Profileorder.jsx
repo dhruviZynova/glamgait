@@ -206,8 +206,8 @@ const Profileorder = () => {
                   <div className="h-px bg-gray-50 w-full mb-6"></div>
 
                   {/* Product/Item Preview */}
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 md:gap-6">
-                    <div className="flex flex-wrap gap-6 flex-1 w-full">
+                  <div className="flex flex-col justify-between items-start lg:items-end gap-4 md:gap-6">
+                    <div className="flex flex-col gap-6 flex-1 w-full">
                       {order.orderItems.map((item) => (
                         <div key={item.orderItemId} className="flex gap-4 w-full sm:w-auto">
                           <img
@@ -217,7 +217,7 @@ const Profileorder = () => {
                           />
                           <div className="flex flex-col justify-center">
                             <h4 className="font-bold text-[#3C4242] text-base mb-1 line-clamp-1">{item.productName}</h4>
-                            <div className="space-y-0.5 text-xs text-[#807D7E] font-medium">
+                            <div className="space-y-1.5 text-xs text-[#807D7E] font-medium">
                               <p className="flex items-center gap-1.5">
                                 Color :
                                 {item.color_code && (
@@ -228,24 +228,26 @@ const Profileorder = () => {
                                 )}
                                 {item.color_name && <span className="text-gray-700 font-bold capitalize">{item.color_name}</span>}
                               </p>
-                              {(() => {
-                                const sizeVal = item.size_name || item.size;
-                                return sizeVal &&
-                                  sizeVal.trim() !== "" &&
-                                  sizeVal.toLowerCase() !== "na" &&
-                                  sizeVal.toLowerCase() !== "n/a" &&
-                                  sizeVal.toLowerCase() !== "free size" &&
-                                  sizeVal.toLowerCase() !== "free-size" ? (
+                              <div className="flex gap-6">
+                                {(() => {
+                                  const sizeVal = item.size_name || item.size;
+                                  return sizeVal &&
+                                    sizeVal.trim() !== "" &&
+                                    sizeVal.toLowerCase() !== "na" &&
+                                    sizeVal.toLowerCase() !== "n/a" &&
+                                    sizeVal.toLowerCase() !== "free size" &&
+                                    sizeVal.toLowerCase() !== "free-size" ? (
                                     <p className="flex items-center gap-1.5">
                                       Size :
                                       <span className="text-gray-700 font-bold capitalize">{sizeVal}</span>
                                     </p>
                                   ) : null;
-                              })()}
-                              <p>
-                                Qty : <span className="text-gray-700 font-bold">{item.quantity}</span>
-                              </p>
-                              <p>
+                                })()}
+                                <p>
+                                  Qty : <span className="text-gray-700 font-bold">{item.quantity}</span>
+                                </p>
+                              </div>
+                              <p className="text-[14px]">
                                 Total : <span className="text-gray-700 font-bold">₹{Math.round(item.totalAmount)}</span>
                               </p>
                             </div>

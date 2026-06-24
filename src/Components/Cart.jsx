@@ -233,7 +233,17 @@ const Cart = () => {
                                 />
                               )}
                               <span className="capitalize">{item.color_name}</span>
-                              <span className="uppercase"> {item.size_name && ` / ${item.size_name}`} </span>
+                              {(() => {
+                                const sizeVal = item.size_name || item.size;
+                                return sizeVal &&
+                                  sizeVal.trim() !== "" &&
+                                  sizeVal.toLowerCase() !== "na" &&
+                                  sizeVal.toLowerCase() !== "n/a" &&
+                                  sizeVal.toLowerCase() !== "free size" &&
+                                  sizeVal.toLowerCase() !== "free-size" ? (
+                                    <span className="uppercase"> / {sizeVal}</span>
+                                  ) : null;
+                              })()}
                             </div>
                           </div>
                         </div>
@@ -305,7 +315,17 @@ const Cart = () => {
                           />
                         )}
                         <span className="capitalize">{item.color_name}</span>
-                        <span className="uppercase">{item.size_name && ` / ${item.size_name}`}</span>
+                        {(() => {
+                          const sizeVal = item.size_name || item.size;
+                          return sizeVal &&
+                            sizeVal.trim() !== "" &&
+                            sizeVal.toLowerCase() !== "na" &&
+                            sizeVal.toLowerCase() !== "n/a" &&
+                            sizeVal.toLowerCase() !== "free size" &&
+                            sizeVal.toLowerCase() !== "free-size" ? (
+                              <span className="uppercase"> / {sizeVal}</span>
+                            ) : null;
+                        })()}
                       </div>
 
                       <div className="flex items-center justify-between border-t border-gray-100 pt-4">
