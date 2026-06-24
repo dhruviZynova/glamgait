@@ -184,10 +184,10 @@ const PromotionsManagement = () => {
             Promotions Management
           </h1>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex md:justify-end gap-3 w-full">
             <button
               onClick={() => setActiveTab("offers")}
-              className={`px-5 py-2 rounded-lg font-medium transition-colors cursor-pointer ${activeTab === "offers"
+              className={`w-full md:w-fit flex items-center justify-center px-5 py-2 rounded-lg font-medium transition-colors cursor-pointer ${activeTab === "offers"
                 ? "bg-black text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
@@ -197,7 +197,7 @@ const PromotionsManagement = () => {
             </button>
             <button
               onClick={() => setActiveTab("coupons")}
-              className={`px-5 py-2 rounded-lg font-medium transition-colors cursor-pointer ${activeTab === "coupons"
+              className={`w-full md:w-fit flex items-center justify-center px-5 py-2 rounded-lg font-medium transition-colors cursor-pointer ${activeTab === "coupons"
                 ? "bg-black text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
@@ -211,7 +211,7 @@ const PromotionsManagement = () => {
         <div className="flex justify-end">
           <button
             onClick={openAddModal}
-            className="flex items-center justify-center gap-2 bg-black text-white px-5 py-2 rounded-lg hover:bg-gray-900 transition-colors cursor-pointer"
+            className="w-full md:w-fit flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             Add {activeTab === "offers" ? "Offer" : "Coupon"}

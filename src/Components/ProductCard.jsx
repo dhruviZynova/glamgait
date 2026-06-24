@@ -291,6 +291,7 @@ const ProductCard = ({
                   title={color.color_name || color.color?.color_name || ""}
                   style={{
                     backgroundColor: color.color_code || color.color?.color_code || "#ccc",
+                    "--swatch-color": color.color_code || color.color?.color_code || "#ccc",
                   }}
                   onClick={(e) => {
                     e.stopPropagation();

@@ -172,7 +172,7 @@
 
 .swatch.active {
     border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 0 0 2px #fff, 0 0 0 3px #1A1A1A;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--swatch-color, #1A1A1A);
     transform: scale(1.15);
 }
 
