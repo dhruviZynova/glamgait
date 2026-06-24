@@ -151,7 +151,7 @@
 .color-swatches {
     display: flex;
     gap: 10px;
-    margin-top: 6px;
+    margin-top: 10px;
     pointer-events: auto;
 }
 

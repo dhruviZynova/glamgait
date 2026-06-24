@@ -670,12 +670,12 @@ const Allproducts = () => {
 
         <div className="w-full py-8 px-2 md:px-8 xl:px-24">
 
-          <div className="flex flex-col lg:flex-row sm:gap-8 gap-2 items-stretch lg:items-start w-full">
+          <div className="flex flex-col lg:flex-row sm:gap-8 gap-6 items-stretch lg:items-start w-full">
 
             {/* Mobile Filter Button */}
             <button
               onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
-              className="lg:hidden flex items-center justify-end w-full gap-2 sm:mb-4 mb-4 flex-shrink-0"
+              className="lg:hidden flex items-center justify-center w-full border border-gray-300 rounded-lg py-2 px-4 gap-2 flex-shrink-0"
             >
               <SlidersHorizontal className="w-5 h-5" />
               <span className="font-medium">Filters</span>
@@ -1129,8 +1129,8 @@ const Allproducts = () => {
               </h2>
 
 
-              <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <p className="text-sm text-gray-600">
+              <div className="mb-6 flex sm:flex-row justify-between items-start sm:items-center gap-2">
+                <p className="text-sm text-gray-600 font-[Oxygen]">
                   Showing{" "}
                   <span className="font-semibold">
                     {totalProducts === 0 ? 0 : (currentPage - 1) * limit + 1} -{" "}
