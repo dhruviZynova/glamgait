@@ -108,7 +108,7 @@ function SingleProduct() {
                 psize_id: null,
                 size: { size_name: "Free Size" },
                 remaining_qty: stockMap[`${color.pcolor_id}-nosize`] || 0,
-                in_stock: true,
+                in_stock: (stockMap[`${color.pcolor_id}-nosize`] || 0) > 0,
               }];
             // Attach video from data.colors via color.color.color_id
             const videoUrl = colorVideoMap[color.color?.color_id] || color.video || null;
@@ -801,13 +801,22 @@ function SingleProduct() {
                   <button
                     onClick={handleAddToCart}
                     disabled={addToCartLoading || availableStock <= 0}
-                    className="flex-1 h-12 rounded-lg border border-[#1E1512] text-[#1E1512] text-sm font-semibold hover:bg-[#1E1512] hover:text-white transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                    className={`flex-1 h-12 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 transition-all ${availableStock <= 0
+                      ? "bg-[#e4e4e4] text-[#9A8F87] border-[#e4e4e4] cursor-not-allowed"
+                      : "border-[#1E1512] text-[#1E1512] hover:bg-[#1E1512] hover:text-white cursor-pointer"
+                      }`}
                   >
-                    {addToCartLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding...</> : "Add to Cart"}
+                    {availableStock <= 0 ? (
+                      "Out of Stock"
+                    ) : addToCartLoading ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Adding...</>
+                    ) : (
+                      "Add to Cart"
+                    )}
                   </button>
                   <button
                     onClick={toggleWishlist}
-                    className="w-12 h-12 rounded-lg border border-[#E8E0DA] flex items-center justify-center hover:bg-[#F5F1EE] transition-all cursor-pointer flex-shrink-0"
+                    className="w-12 h-12 rounded-lg border border-[#e4e4e4] flex items-center justify-center hover:bg-[#F5F1EE] transition-all cursor-pointer flex-shrink-0"
                   >
                     {wishlistLoading
                       ? <Loader2 className="w-4 h-4 animate-spin text-[#3D2C25]" />
@@ -818,7 +827,10 @@ function SingleProduct() {
                 <button
                   onClick={handleBuyNow}
                   disabled={buyNowLoading || availableStock <= 0}
-                  className="w-full h-12 rounded-lg bg-[#1E1512] text-white text-sm font-semibold hover:bg-[#3D2C25] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                  className={`w-full h-12 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all ${availableStock <= 0
+                    ? "bg-[#e4e4e4] text-[#9A8F87] cursor-not-allowed"
+                    : "bg-[#1E1512] text-white hover:bg-[#3D2D25] cursor-pointer"
+                    }`}
                 >
                   {buyNowLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</> : "Buy Now"}
                 </button>

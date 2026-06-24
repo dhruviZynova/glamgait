@@ -92,7 +92,7 @@ const Footer = () => {
       </div>
 
       {/* Footer Content */}
-      <div className="relative z-10 w-full pt-20 pb-14 md:pb-8 max-w-7xl mx-auto">
+      <div className="relative z-10 w-full pt-20 pb-22 md:pb-8 max-w-7xl mx-auto">
         {/* Top Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 lg:gap-12 w-full border-b border-white/10 pb-8 md:pb-12">
           {/* Brand Section */}
