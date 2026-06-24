@@ -283,7 +283,7 @@ const ProductDetail = () => {
   ].filter(Boolean);
 
   return (
-    <div className="pb-12 px-4 sm:px-6 lg:px-10 mx-auto mt-2 sm:mt-4 lg:mt-6 max-w-[1400px]">
+    <div className="pb-12 mx-auto mt-2 sm:mt-4 lg:mt-6 max-w-[1400px]">
       {/* Header */}
       <div className="mb-8 flex items-center gap-3">
         <button
@@ -306,7 +306,7 @@ const ProductDetail = () => {
           {/* Thumbnails Strip */}
           {mediaList.length > 0 && (
             <div
-              className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto pb-2 md:pb-0 md:p-1 justify-start w-full md:w-[80px] lg:w-[92px] flex-shrink-0 scroll-smooth"
+              className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto p-2 md:pb-0 md:p-1 justify-start w-full md:w-[80px] lg:w-[92px] flex-shrink-0 scroll-smooth"
               style={{ maxHeight: "580px" }}
             >
               {mediaList.map((media, idx) => {
@@ -317,11 +317,10 @@ const ProductDetail = () => {
                   <button
                     key={media.id || idx}
                     onClick={() => handleThumbnailClick(media.url)}
-                    className={`w-[72px] h-[96px] lg:w-[80px] lg:h-[106px] flex-shrink-0 rounded-lg overflow-hidden transition-all duration-200 cursor-pointer relative group ${
-                      isActive
-                        ? "ring-1 ring-gray-900 ring-offset-1 shadow-md"
-                        : "ring-1 ring-gray-200 hover:ring-gray-300 hover:shadow-sm"
-                    }`}
+                    className={`w-[72px] h-[96px] lg:w-[80px] lg:h-[106px] flex-shrink-0 rounded-lg overflow-hidden transition-all duration-200 cursor-pointer relative group ${isActive
+                      ? "ring-1 ring-gray-900 ring-offset-1 shadow-md"
+                      : "ring-1 ring-gray-200 hover:ring-gray-300 hover:shadow-sm"
+                      }`}
                   >
                     {isVideo ? (
                       <div className="w-full h-full bg-gray-100 relative">
@@ -335,7 +334,7 @@ const ProductDetail = () => {
                           preload="metadata"
                           onCanPlay={(e) => {
                             e.target.muted = true;
-                            e.target.play().catch(() => {});
+                            e.target.play().catch(() => { });
                           }}
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/25">
@@ -354,11 +353,10 @@ const ProductDetail = () => {
               })}
             </div>
           )}
- 
-          {/* Main Media — fixed height 580px */}
+
+          {/* Main Media — responsive width/height */}
           <div
-            className="bg-[#f7f7f8] rounded-xl shadow-lg overflow-hidden flex-shrink-0"
-            style={{ width: "460px", height: "580px" }}
+            className="bg-[#f7f7f8] rounded-xl shadow-lg overflow-hidden flex-shrink-0 w-full md:w-[460px] h-[480px] md:h-[580px]"
           >
             {!mainMedia || mainMedia.includes("undefined") ? (
               <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 gap-3">
@@ -378,7 +376,7 @@ const ProductDetail = () => {
                 className="w-full h-full object-cover object-top"
                 onCanPlay={(e) => {
                   e.target.muted = true;
-                  e.target.play().catch(() => {});
+                  e.target.play().catch(() => { });
                 }}
               />
             ) : (

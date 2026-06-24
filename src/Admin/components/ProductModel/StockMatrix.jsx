@@ -126,80 +126,90 @@ const StockMatrix = ({
           </p>
         </div>
       ) : (
-        <div>
-          {/* Headings for Color-Only */}
-          <div className="grid grid-cols-5 gap-4 mb-4 px-4 font-bold text-gray-800">
-            <div className="col-span-1">Color</div>
-            <div className="text-center">Current Stock</div>
-            <div className="text-center">Add Stock</div>
-            <div className="text-center">Remove Stock</div>
-            <div className="text-center">New Total</div>
-          </div>
+        <div className="overflow-x-auto w-full max-w-full">
+          <table className="min-w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border border-gray-300 px-4 py-3 text-left font-bold text-gray-800 text-sm whitespace-nowrap">
+                  Color
+                </th>
+                <th className="border border-gray-300 px-4 py-3 text-center font-bold text-gray-800 text-sm whitespace-nowrap">
+                  Current Stock
+                </th>
+                <th className="border border-gray-300 px-4 py-3 text-center font-bold text-gray-800 text-sm whitespace-nowrap">
+                  Add Stock
+                </th>
+                <th className="border border-gray-300 px-4 py-3 text-center font-bold text-gray-800 text-sm whitespace-nowrap">
+                  Remove Stock
+                </th>
+                <th className="border border-gray-300 px-4 py-3 text-center font-bold text-gray-800 text-sm whitespace-nowrap">
+                  New Total
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {formData.colors
+                .filter((c) => c.color_id)
+                .map((color) => {
+                  const colorName =
+                    colorsList.find((c) => c.color_id == color.color_id)
+                      ?.color_name || "Color";
+                  const currentStock =
+                    originalColorQuantities[color.color_id] || 0;
+                  const adjustment = colorAdjustments[color.color_id] || {
+                    add: 0,
+                    remove: 0,
+                  };
+                  const newTotal =
+                    currentStock + adjustment.add - adjustment.remove;
 
-          {/* Color Rows */}
-          <div className="space-y-4">
-            {formData.colors
-              .filter((c) => c.color_id)
-              .map((color) => {
-                const colorName =
-                  colorsList.find((c) => c.color_id == color.color_id)
-                    ?.color_name || "Color";
-                const currentStock =
-                  originalColorQuantities[color.color_id] || 0;
-                const adjustment = colorAdjustments[color.color_id] || {
-                  add: 0,
-                  remove: 0,
-                };
-                const newTotal =
-                  currentStock + adjustment.add - adjustment.remove;
-
-                return (
-                  <div
-                    key={color.color_id}
-                    className="grid grid-cols-5 gap-4 items-center bg-white p-4 rounded-lg border border-gray-200"
-                  >
-                    <div className="font-medium">{colorName}</div>
-                    <div className="text-center font-bold">
-                      {currentStock}
-                    </div>
-                    <div className="text-center">
-                      <input
-                        type="number"
-                        min="0"
-                        placeholder="Add"
-                        className="w-full max-w-24 px-3 py-2 border rounded text-center"
-                        value={adjustment.add || 0}
-                        onChange={(e) =>
-                          handleColorAddChange(
-                            color.color_id,
-                            e.target.value
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="text-center">
-                      <input
-                        type="number"
-                        min="0"
-                        max={currentStock + adjustment.add}
-                        placeholder="Remove"
-                        className="w-full max-w-24 px-3 py-2 border rounded text-center"
-                        value={adjustment.remove || 0}
-                        onChange={(e) =>
-                          handleColorRemoveChange(
-                            color.color_id,
-                            e.target.value
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="text-center font-bold text-gray-700">
-                      {newTotal}
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
+                  return (
+                    <tr key={color.color_id} className="bg-white">
+                      <td className="border border-gray-300 px-4 py-3 text-left text-sm font-medium whitespace-nowrap capitalize">
+                        {colorName}
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-center text-sm font-bold whitespace-nowrap">
+                        {currentStock}
+                      </td>
+                      <td className="border border-gray-300 p-2 text-center whitespace-nowrap">
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="Add"
+                          className="w-20 px-2 py-1 border rounded text-center text-sm"
+                          value={adjustment.add || 0}
+                          onChange={(e) =>
+                            handleColorAddChange(
+                              color.color_id,
+                              e.target.value
+                            )
+                          }
+                        />
+                      </td>
+                      <td className="border border-gray-300 p-2 text-center whitespace-nowrap">
+                        <input
+                          type="number"
+                          min="0"
+                          max={currentStock + adjustment.add}
+                          placeholder="Remove"
+                          className="w-20 px-2 py-1 border rounded text-center text-sm"
+                          value={adjustment.remove || 0}
+                          onChange={(e) =>
+                            handleColorRemoveChange(
+                              color.color_id,
+                              e.target.value
+                            )
+                          }
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3 text-center text-sm font-bold text-gray-700 whitespace-nowrap">
+                        {newTotal}
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
 
           <p className="text-sm text-gray-700 mt-4">
             Enter amounts to add or remove. Remove cannot exceed current

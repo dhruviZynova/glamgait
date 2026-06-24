@@ -348,7 +348,7 @@ const Reviews = () => {
                 </p>
 
                 {/* Product */}
-                <p className="text-xs text-gray-500 italic mb-3">
+                <p className="text-xs text-gray-500 mb-3">
                   Product: {r.product_name}
                 </p>
 

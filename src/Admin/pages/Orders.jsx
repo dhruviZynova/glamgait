@@ -233,7 +233,7 @@ const AdminOrders = () => {
     : 1;
 
   return (
-    <div className="pb-8 min-h-screen bg-gray-50">
+    <div className="pb-8 min-h-screen bg-gray-50 w-full max-w-full overflow-x-hidden">
       <div>
         {/* Header */}
         <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -259,7 +259,7 @@ const AdminOrders = () => {
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="mb-6 flex gap-2 overflow-x-auto py-2 pl-2 scrollbar-none">
+        <div className="mb-6 flex gap-2 overflow-x-auto py-2 pl-2 scrollbar-none w-full max-w-full">
           {[
             { key: "all", label: "All Orders" },
             ...Object.entries(STATUS_LABELS).map(([key, label]) => ({
@@ -337,22 +337,22 @@ const AdminOrders = () => {
               return (
                 <div
                   key={order.orderId}
-                  className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300"
+                  className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 w-full max-w-full overflow-hidden"
                 >
                   {/* Card Header/Row */}
                   <div
-                    className={`p-6 cursor-pointer transition-colors ${openOrderId === order.orderId
+                    className={`p-4 sm:p-6 cursor-pointer transition-colors ${openOrderId === order.orderId
                       ? "bg-gray-50/50"
                       : "hover:bg-gray-50/30"
                       }`}
                     onClick={() => toggleOrder(order.orderId)}
                   >
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 items-center">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 items-center">
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                           Order ID
                         </span>
-                        <p className="text-base font-bold text-gray-900">
+                        <p className="text-sm sm:text-base font-bold text-gray-900">
                           #{order.orderId}
                         </p>
                       </div>
@@ -372,46 +372,46 @@ const AdminOrders = () => {
                           Grand Total
                         </span>
                         <div className="flex flex-col">
-                          <p className="text-base font-bold text-gray-900">
+                          <p className="text-sm sm:text-base font-bold text-gray-900">
                             ₹{Math.round(order.grandTotal)}
                           </p>
-                          <span className="text-[10px] font-medium text-gray-500">
+                          <span className="text-[10px] font-medium text-gray-500 truncate max-w-[120px] sm:max-w-none block" title={order.paymentStatus}>
                             {order.paymentStatus}
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-start space-y-2">
+                      <div className="flex flex-col items-start space-y-1.5">
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest sm:hidden">
                           Status
                         </span>
                         <span
-                          className={`px-3 py-1 rounded-full text-[11px] font-bold border ${status.color}`}
+                          className={`px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold border ${status.color}`}
                         >
                           {status.label}
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-end gap-3 lg:col-span-1">
+                      <div className="flex items-center justify-end gap-2 sm:gap-3 lg:col-span-1">
                         {order.awb_number && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               printLabel(order.awb_number);
                             }}
-                            className="p-2.5 bg-white border border-gray-200 text-gray-600 hover:text-black hover:border-black rounded-xl shadow-sm transition-all duration-200 hover:scale-105"
+                            className="p-2 bg-white border border-gray-200 text-gray-600 hover:text-black hover:border-black rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 hover:scale-105"
                             title="Download Label"
                           >
-                            <FaDownload size={14} />
+                            <FaDownload size={12} className="sm:w-3.5 sm:h-3.5" />
                           </button>
                         )}
                         <div
-                          className={`p-2 rounded-xl transition-all duration-200 ${openOrderId === order.orderId
+                          className={`p-2 rounded-lg sm:rounded-xl transition-all duration-200 ${openOrderId === order.orderId
                             ? "bg-black text-white rotate-180"
                             : "bg-gray-100 text-gray-400"
                             }`}
                         >
-                          <FaChevronDown size={14} />
+                          <FaChevronDown size={12} className="sm:w-3.5 sm:h-3.5" />
                         </div>
                       </div>
                     </div>
@@ -419,10 +419,10 @@ const AdminOrders = () => {
 
                   {/* Expanded Details */}
                   {openOrderId === order.orderId && (
-                    <div className="px-6 pb-8 bg-gray-50/30 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-300 rounded-b-3xl">
-                      <div className="grid lg:grid-cols-3 gap-6 mt-8">
+                    <div className="px-4 sm:px-6 pb-6 sm:pb-8 bg-gray-50/30 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-300 rounded-b-3xl">
+                      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 mt-8 w-full min-w-0">
                         {/* Shipping Info */}
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md w-full min-w-0">
                           <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-50">
                             <div className="p-2 bg-black text-white rounded-lg">
                               <FaTruck size={16} />
@@ -476,7 +476,7 @@ const AdminOrders = () => {
                         </div>
 
                         {/* Items */}
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md lg:col-span-1">
+                        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md lg:col-span-1 w-full min-w-0">
                           <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-50">
                             <div className="p-2 bg-black text-white rounded-lg">
                               <FaBoxOpen size={16} />
@@ -485,11 +485,11 @@ const AdminOrders = () => {
                               Ordered Items
                             </h3>
                           </div>
-                          <div className="max-h-[300px] overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                          <div className="max-h-[300px] overflow-y-auto space-y-4 pr-2 custom-scrollbar w-full min-w-0">
                             {order.orderItems.map((item) => (
                               <div
                                 key={item.orderItemId}
-                                className="flex gap-4 p-3 bg-gray-50/50 rounded-xl border border-gray-100/50"
+                                className="flex gap-4 p-3 bg-gray-50/50 rounded-xl border border-gray-100/50 w-full min-w-0 overflow-hidden"
                               >
                                 <div className="relative group">
                                   <img
@@ -536,7 +536,7 @@ const AdminOrders = () => {
                         </div>
 
                         {/* Payment & Actions */}
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md w-full min-w-0">
                           <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-50">
                             <div className="p-2 bg-black text-white rounded-lg">
                               <FaRupeeSign size={16} />
