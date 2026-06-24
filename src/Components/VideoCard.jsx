@@ -41,7 +41,7 @@ const VideoCard = ({ product }) => {
 
   return (
     <Link
-      to={`/product/${encodedSlug}`}
+      to={`/product/${product.p_id}`}
       className="relative overflow-hidden cursor-pointer w-full max-w-[300px] mx-auto"
       onClick={handleCardClick}
     >

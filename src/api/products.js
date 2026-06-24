@@ -5,8 +5,8 @@ export const getProducts = async (params = {}) => {
   return res.data;
 };
 
-export const getProductBySlug = async (slug) => {
-  const res = await axiosInstance.get(`/getproductbyname/${slug}`);
+export const getProductBySlug = async (id) => {
+  const res = await axiosInstance.get(`/getproductbyid/${id}`);
   return res.data;
 };
 

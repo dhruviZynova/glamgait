@@ -84,7 +84,7 @@ function SingleProduct() {
     const fetchProduct = async () => {
       setProductLoading(true);
       try {
-        const res = await axiosInstance.get(`${ApiURL}/getproductbyname/${slug}`);
+        const res = await axiosInstance.get(`${ApiURL}/getproductbyid/${slug}`);
         if (res.data.status === 1) {
           const data = res.data.data;
           const stockMap = {};

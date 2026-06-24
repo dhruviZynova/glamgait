@@ -1,7 +1,10 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { RefreshCw, XCircle, AlertTriangle, CheckCircle2, ShieldCheck, Mail, Info, CreditCard } from "lucide-react";
 
 const RefundPolicy = () => {
+  const location = useLocation();
+  const { pathname } = location;
   const [activeSection, setActiveSection] = useState("cancellation");
 
   const sections = [
@@ -22,6 +25,9 @@ const RefundPolicy = () => {
   };
 
   React.useEffect(() => {
+    setActiveSection("cancellation");
+    window.scrollTo({ top: 0, behavior: "instant" });
+
     const observerOptions = {
       root: null,
       rootMargin: "-20% 0px -60% 0px",
@@ -52,8 +58,9 @@ const RefundPolicy = () => {
           observer.unobserve(element);
         }
       });
+      observer.disconnect();
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-[#FDFCFB]">
