@@ -1,7 +1,10 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { XCircle, Clock, CreditCard, ShieldAlert, Mail, Info, CheckCircle2 } from "lucide-react";
 
 const CancellationPolicy = () => {
+  const location = useLocation();
+  const { pathname } = location;
   const [activeSection, setActiveSection] = useState("general");
 
   const sections = [
@@ -21,6 +24,9 @@ const CancellationPolicy = () => {
   };
 
   React.useEffect(() => {
+    setActiveSection("general");
+    window.scrollTo({ top: 0, behavior: "instant" });
+
     const observerOptions = {
       root: null,
       rootMargin: "-20% 0px -60% 0px",
@@ -51,8 +57,9 @@ const CancellationPolicy = () => {
           observer.unobserve(element);
         }
       });
+      observer.disconnect();
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-[#FDFCFB]">

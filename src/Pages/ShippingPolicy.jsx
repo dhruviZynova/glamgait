@@ -1,7 +1,10 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Truck, Package, Clock, ShieldCheck, MapPin, Mail, Info, Globe } from "lucide-react";
 
 const ShippingPolicy = () => {
+  const location = useLocation();
+  const { pathname } = location;
   const [activeSection, setActiveSection] = useState("commitment");
 
   const sections = [
@@ -22,6 +25,9 @@ const ShippingPolicy = () => {
   };
 
   React.useEffect(() => {
+    setActiveSection("commitment");
+    window.scrollTo({ top: 0, behavior: "instant" });
+
     const observerOptions = {
       root: null,
       rootMargin: "-20% 0px -60% 0px",
@@ -52,8 +58,9 @@ const ShippingPolicy = () => {
           observer.unobserve(element);
         }
       });
+      observer.disconnect();
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-[#FDFCFB]">

@@ -13,6 +13,8 @@ import "../style/About.css";
 import ScrollReveal from "./Ui/ScrollReveal";
 import { Helmet } from "@dr.pogodin/react-helmet";
 
+import Counter from "./Ui/Counter";
+
 // Importing assets
 // import leftlight from "../assets/leftlight.png";
 // import rightlight from "../assets/rightlight.png";
@@ -145,11 +147,15 @@ const About = () => {
               <p>Founded</p>
             </ScrollReveal>
             <ScrollReveal className="stat-item" animation="fade-up" duration={800} delay={200}>
-              <h3>50k+</h3>
+              <h3>
+                <Counter target={50} suffix="k+" duration={2000} />
+              </h3>
               <p>Happy Customers</p>
             </ScrollReveal>
             <ScrollReveal className="stat-item" animation="fade-up" duration={800} delay={300}>
-              <h3>25+</h3>
+              <h3>
+                <Counter target={25} suffix="+" duration={2000} />
+              </h3>
               <p>Product Categories</p>
             </ScrollReveal>
             <ScrollReveal className="stat-item" animation="fade-up" duration={800} delay={400}>

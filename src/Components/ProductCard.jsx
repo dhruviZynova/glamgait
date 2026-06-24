@@ -220,7 +220,7 @@ const ProductCard = ({
     }, 0);
   }, [product?.total_stock, product?.productcolors, product?.colors]);
 
-  const productSlug = product.slug || createSlug(product.name) || product.p_id;
+  const productSlug = product.p_id;
 
   return (
     <div
