@@ -816,7 +816,7 @@ function SingleProduct() {
                   </button>
                   <button
                     onClick={toggleWishlist}
-                    className="w-12 h-12 rounded-lg border border-[#e4e4e4] flex items-center justify-center hover:bg-[#F5F1EE] transition-all cursor-pointer flex-shrink-0"
+                    className="w-12 h-12 rounded-lg border border-[#e4e4e4] flex items-center justify-center hover:bg-[#F5F1EE] ransition-all cursor-pointer flex-shrink-0"
                   >
                     {wishlistLoading
                       ? <Loader2 className="w-4 h-4 animate-spin text-[#3D2C25]" />
