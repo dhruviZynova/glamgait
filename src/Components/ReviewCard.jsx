@@ -47,18 +47,9 @@ const ReviewCard = ({ name, review, rating = 5, product, fallbackProductName }) 
               />
             </div>
 
-            {productImgSrc && !imgError ? (
-              <img
-                src={productImgSrc}
-                alt={productName}
-                onError={() => setImgError(true)}
-                className="w-10 h-10 md:w-14 md:h-14 rounded-full object-cover border-4 border-[#D4AF37]/10"
-              />
-            ) : (
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center bg-[#1C2F2F] text-white font-semibold text-lg md:text-2xl border-4 border-[#D4AF37]/10 select-none uppercase font-sans">
-                {name ? name.trim().charAt(0) : "?"}
-              </div>
-            )}
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center bg-[#1C2F2F] text-white font-semibold text-lg md:text-2xl border-4 border-[#D4AF37]/10 select-none uppercase font-sans">
+              {name ? name.trim().charAt(0) : "?"}
+            </div>
           </div>
 
           {/* Name & Review Text */}
@@ -84,7 +75,7 @@ const ReviewCard = ({ name, review, rating = 5, product, fallbackProductName }) 
             </div>
 
             {/* Review Message */}
-            <p className="text-[14px] text-gray-600 leading-relaxed font-sans line-clamp-2 mb-2 italic">
+            <p className="text-[14px] text-gray-600 leading-relaxed font-sans line-clamp-2 mb-2">
               "{review}"
             </p>
 
