@@ -102,6 +102,16 @@ const FilterSkeleton = () => (
 );
 
 
+const DEFAULT_FILTERS = {
+  subcategories: [],
+  fabrics: [],
+  works: [],
+  occasions: [],
+  styles: [],
+  sizes: [],
+  categories: [],
+};
+
 const Allproducts = () => {
   ScrollToTop();
   const [searchTerm, setSearchTerm] = useState("");
@@ -157,15 +167,7 @@ const Allproducts = () => {
 
   const { data: filterData, isLoading: isFiltersLoading } = useProductFilters(cate_name);
 
-  const filters = filterData || {
-    subcategories: [],
-    fabrics: [],
-    works: [],
-    occasions: [],
-    styles: [],
-    sizes: [],
-    categories: [],
-  };
+  const filters = filterData || DEFAULT_FILTERS;
   const allColors = filterData?.colors || [];
   const cateId = filterData?.categoryId || null;
   const categoryDisplayName = filterData?.categoryDisplayName || (cate_name ? cate_name : "All Products");

@@ -44,7 +44,7 @@ const Hero = () => {
               delay: 5000,
               disableOnInteraction: false,
             }}
-            loop={true}
+            loop={sliders.length > 1}
             speed={1000}
             navigation={false}
             pagination={{ clickable: false }}

@@ -246,7 +246,7 @@ const ProductCard = ({
 
           <img
             key={currentColorId || "default"}
-            src={currentImageUrl}
+            src={currentImageUrl || null}
             alt={product.name}
             loading="lazy"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

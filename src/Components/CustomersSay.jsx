@@ -162,7 +162,7 @@ const CustomersSay = () => {
             <Swiper
               slidesPerView={1}
               spaceBetween={0}
-              loop={true}
+              loop={reviews.length > 4}
               autoplay={{
                 delay: 3000,
                 disableOnInteraction: false,
