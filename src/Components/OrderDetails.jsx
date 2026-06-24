@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { ChevronLeft, CheckCircle, X, XCircle, RefreshCcw, Receipt, ArrowLeftRight, Star, Calendar, Loader2, Pencil, Trash2 } from "lucide-react";
+import { ChevronLeft, CheckCircle, X, XCircle, RefreshCcw, FileText, ArrowLeftRight, Star, Calendar, Loader2, Pencil, Trash2 } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { FaBoxOpen } from "react-icons/fa";
 import SideBar from "./SideBar";
@@ -68,6 +68,7 @@ const OrderDetails = () => {
   const [selectedProductForReview, setSelectedProductForReview] = useState(null);
   const [checkingReviews, setCheckingReviews] = useState(false);
   const [existingReviewForModal, setExistingReviewForModal] = useState(null);
+  const [userOrders, setUserOrders] = useState([]);
 
   // ✅ Init from localStorage so badge persists across page refreshes
   const [reviewsStatus, setReviewsStatus] = useState(() => {
@@ -203,6 +204,25 @@ const OrderDetails = () => {
     fetchOrder();
   }, [orderId]);
 
+  // Fetch all orders for this user/guest to check for repeat purchases
+  useEffect(() => {
+    const fetchUserOrders = async () => {
+      try {
+        const params = isLoggedIn ? { u_id } : { guest_id: guestId };
+        const query = new URLSearchParams(params).toString();
+        const res = await axiosInstance.get(`${ApiURL}/getorder?${query}`);
+        if (res.data.status === 1) {
+          setUserOrders(res.data.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user orders:", err);
+      }
+    };
+    if (u_id || guestId) {
+      fetchUserOrders();
+    }
+  }, [u_id, guestId, isLoggedIn]);
+
   // 2. Fetch Tracking Info (when awb_number is available)
   useEffect(() => {
     const fetchTracking = async () => {
@@ -331,7 +351,7 @@ const OrderDetails = () => {
                           Cancel Order
                         </button>
                       )}
-                    {order.status === ORDER_STATUS.DELIVERED && (
+                    {/* {order.status === ORDER_STATUS.DELIVERED && (
                       <button
                         onClick={() => setShowReturnModal(true)}
                         className="flex-1 sm:flex-none bg-white border border-[#063d32]/20 text-[#063d32] px-4 py-2.5 rounded-xl font-semibold hover:bg-emerald-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm text-center"
@@ -339,7 +359,7 @@ const OrderDetails = () => {
                         <RefreshCcw size={16} />
                         Return Order
                       </button>
-                    )}
+                    )} */}
 
                     {order.status === ORDER_STATUS.CANCELLED && (
                       <div className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 rounded-xl font-semibold border border-red-100 text-sm">
@@ -363,7 +383,7 @@ const OrderDetails = () => {
                         }}
                         className="flex-1 sm:flex-none bg-white border border-emerald-200 text-emerald-600 px-4 py-2.5 rounded-xl font-semibold hover:bg-emerald-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm text-center"
                       >
-                        <Receipt size={16} />
+                        <FileText size={16} />
                         Invoice
                       </button>
                     )}
@@ -532,20 +552,20 @@ const OrderDetails = () => {
                                   )}
                                   {item.color_name && <span className="text-gray-700 font-bold capitalize">{item.color_name}</span>}
                                 </p>
-                                 {(() => {
-                                   const sizeVal = item.size_name || item.size;
-                                   return sizeVal &&
-                                     sizeVal.trim() !== "" &&
-                                     sizeVal.toLowerCase() !== "na" &&
-                                     sizeVal.toLowerCase() !== "n/a" &&
-                                     sizeVal.toLowerCase() !== "free size" &&
-                                     sizeVal.toLowerCase() !== "free-size" ? (
-                                       <p className="text-[#807D7E] font-medium flex items-center gap-1.5">
-                                         Size :
-                                         <span className="text-gray-700 font-bold uppercase">{sizeVal}</span>
-                                       </p>
-                                     ) : null;
-                                 })()}
+                                {(() => {
+                                  const sizeVal = item.size_name || item.size;
+                                  return sizeVal &&
+                                    sizeVal.trim() !== "" &&
+                                    sizeVal.toLowerCase() !== "na" &&
+                                    sizeVal.toLowerCase() !== "n/a" &&
+                                    sizeVal.toLowerCase() !== "free size" &&
+                                    sizeVal.toLowerCase() !== "free-size" ? (
+                                    <p className="text-[#807D7E] font-medium flex items-center gap-1.5">
+                                      Size :
+                                      <span className="text-gray-700 font-bold uppercase">{sizeVal}</span>
+                                    </p>
+                                  ) : null;
+                                })()}
                                 <p className="text-[#807D7E] font-medium">Qty: <span className="text-gray-700 font-bold">{item.quantity}</span></p>
                                 <p className="text-[#3C4242] text-base sm:text-xl font-bold sm:ml-auto">
                                   ₹{Math.round(item.totalAmount || item.price)}
@@ -559,7 +579,7 @@ const OrderDetails = () => {
                             const p_id = item.p_id || item.product_id || item.pid || item.id || item.productId;
                             let userReview = reviewsStatus[p_id];
 
-                            // Fallback to localStorage if the state doesn't have it yet but localStorage says it's reviewed
+                            // Fallback to localStorage if state doesn't have it yet
                             if (!userReview) {
                               try {
                                 const stored = JSON.parse(localStorage.getItem("glamgait_reviewed_pids") || "[]");
@@ -569,7 +589,7 @@ const OrderDetails = () => {
                               } catch (_) { }
                             }
 
-                            // ⏳ Show spinner while fetching review status (first load)
+                            // ⏳ Spinner while fetching (first load)
                             if (checkingReviews && userReview === undefined) {
                               return (
                                 <div className="mt-3 flex justify-center sm:justify-start">
@@ -594,102 +614,83 @@ const OrderDetails = () => {
                               };
 
                               const status = getReviewStatus(userReview);
+                              const rating = Number(userReview.rating || 0);
+                              const comment = userReview.message || "";
+                              const imageUrls = userReview.image_url
+                                ? userReview.image_url.split(",").filter(Boolean)
+                                : [];
+                              const getReviewImageUrl = (img) => {
+                                if (!img) return "";
+                                if (img.startsWith("http://") || img.startsWith("https://")) return img;
+                                return `${ApiURL}/assets/UserReviews/${img}`;
+                              };
 
-                              if (status === "pending") {
-                                return (
-                                  <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-poppins">
-                                    <div className="flex items-center gap-2.5 flex-wrap">
-                                      <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider bg-amber-50 border border-amber-100/50 px-2 py-0.5 rounded">Pending Approval</span>
-                                      <span className="text-xs text-gray-400">Your review was added successfully and will be shown after admin approval.</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 shrink-0 self-end sm:self-start">
-                                      <button
-                                        onClick={() => {
-                                          setSelectedProductForReview(item);
-                                          setExistingReviewForModal(userReview);
-                                          setShowReviewModal(true);
-                                        }}
-                                        className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-50 rounded-full border border-gray-200 transition cursor-pointer"
-                                        title="Edit Review"
-                                      >
-                                        <Pencil size={13} />
-                                      </button>
-                                      <button
-                                        onClick={() => handleDeleteReview(userReview.r_id || userReview.review_id, p_id)}
-                                        className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full border border-red-100 transition cursor-pointer"
-                                        title="Delete Review"
-                                      >
-                                        <Trash2 size={13} />
-                                      </button>
-                                    </div>
-                                  </div>
-                                );
-                              }
+                              // Check if the user has purchased this product across multiple orders
+                              const orderedOrdersCount = userOrders.filter(o =>
+                                o.orderItems?.some(item => {
+                                  const itemId = item.p_id || item.product_id || item.pid || item.id || item.productId;
+                                  return Number(itemId) === Number(p_id);
+                                })
+                              ).length;
 
-                              if (status === "rejected") {
-                                return (
-                                  <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-poppins">
-                                    <div className="flex items-center gap-2.5 flex-wrap">
-                                      <span className="text-[10px] font-bold text-red-700 uppercase tracking-wider bg-red-50 border border-red-100/50 px-2 py-0.5 rounded">Review Rejected</span>
-                                      <span className="text-xs text-gray-400">Please edit and resubmit your review</span>
+                              return (
+                                <div className="mt-4 pt-4 border-t border-gray-100 font-poppins">
+                                  {/* ✅ Already-reviewed notice — shown only if purchased in multiple orders */}
+                                  {orderedOrdersCount > 1 && (
+                                    <div className="flex items-start gap-2 bg-blue-50/60 border border-blue-100 rounded-xl px-3 py-2.5 mb-3">
+                                      <CheckCircle size={14} className="text-blue-500 mt-0.5 shrink-0" />
+                                      <p className="text-xs text-blue-700 leading-relaxed font-poppins">
+                                        You have already reviewed this product. If your experience has changed, you can edit your existing review.
+                                      </p>
                                     </div>
-                                    <div className="flex items-center gap-1 shrink-0 self-end sm:self-start">
-                                      <button
-                                        onClick={() => {
-                                          setSelectedProductForReview(item);
-                                          setExistingReviewForModal(userReview);
-                                          setShowReviewModal(true);
-                                        }}
-                                        className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-50 rounded-full border border-gray-200 transition cursor-pointer"
-                                        title="Edit Review"
-                                      >
-                                        <Pencil size={13} />
-                                      </button>
-                                      <button
-                                        onClick={() => handleDeleteReview(userReview.r_id || userReview.review_id, p_id)}
-                                        className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full border border-red-100 transition cursor-pointer"
-                                        title="Delete Review"
-                                      >
-                                        <Trash2 size={13} />
-                                      </button>
-                                    </div>
-                                  </div>
-                                );
-                              }
+                                  )}
 
-                              if (status === "approved") {
-                                const rating = Number(userReview.rating || 0);
-                                const comment = userReview.message || "";
-                                const imageUrls = userReview.image_url
-                                  ? userReview.image_url.split(",").filter(Boolean)
-                                  : [];
-                                const getReviewImageUrl = (img) => {
-                                  if (!img) return "";
-                                  if (img.startsWith("http://") || img.startsWith("https://")) return img;
-                                  return `${ApiURL}/assets/UserReviews/${img}`;
-                                };
-
-                                return (
-                                  <div className="mt-2 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-start justify-between gap-4 font-poppins">
+                                  {/* Status badge row + actions */}
+                                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                                     <div className="flex-1">
-                                      <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
-                                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Your Review</span>
-                                        <div className="flex items-center gap-0.5">
-                                          {[...Array(5)].map((_, i) => (
-                                            <Star
-                                              key={i}
-                                              size={14}
-                                              className={i < rating ? "fill-[#F5A623] text-[#F5A623]" : "text-gray-200"}
-                                            />
-                                          ))}
+                                      {/* Status badge */}
+                                      {status === "pending" && (
+                                        <div className="flex items-center gap-2 flex-wrap mb-2">
+                                          <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider bg-amber-50 border border-amber-100/50 px-2 py-0.5 rounded">Pending Approval</span>
+                                          <span className="text-xs text-gray-400">Your review will be shown after admin approval.</span>
                                         </div>
-                                        <span className="text-xs text-gray-400">({rating}/5)</span>
-                                      </div>
+                                      )}
+                                      {status === "rejected" && (
+                                        <div className="flex items-center gap-2 flex-wrap mb-2">
+                                          <span className="text-[10px] font-bold text-red-700 uppercase tracking-wider bg-red-50 border border-red-100/50 px-2 py-0.5 rounded">Review Rejected</span>
+                                          <span className="text-xs text-gray-400">Please edit and resubmit your review.</span>
+                                        </div>
+                                      )}
+                                      {status === "approved" && (
+                                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Your Review</span>
+                                          <div className="flex items-center gap-0.5">
+                                            {[...Array(5)].map((_, i) => (
+                                              <Star key={i} size={14} className={i < rating ? "fill-[#F5A623] text-[#F5A623]" : "text-gray-200"} />
+                                            ))}
+                                          </div>
+                                          <span className="text-xs text-gray-400">({rating}/5)</span>
+                                        </div>
+                                      )}
+
+                                      {/* Rating stars for pending/rejected too */}
+                                      {status !== "approved" && rating > 0 && (
+                                        <div className="flex items-center gap-0.5 mb-2">
+                                          {[...Array(5)].map((_, i) => (
+                                            <Star key={i} size={13} className={i < rating ? "fill-[#F5A623] text-[#F5A623]" : "text-gray-200"} />
+                                          ))}
+                                          <span className="text-xs text-gray-400 ml-1">({rating}/5)</span>
+                                        </div>
+                                      )}
+
+                                      {/* Review text */}
                                       {comment && (
-                                        <p className="text-md text-gray-600 font-[oxygen] leading-relaxed pl-0.5">
+                                        <p className="text-sm text-gray-600 font-[oxygen] leading-relaxed">
                                           &ldquo;{comment}&rdquo;
                                         </p>
                                       )}
+
+                                      {/* Review images */}
                                       {imageUrls.length > 0 && (
                                         <div className="flex flex-wrap gap-1.5 mt-2">
                                           {imageUrls.map((url, i) => (
@@ -704,17 +705,20 @@ const OrderDetails = () => {
                                         </div>
                                       )}
                                     </div>
-                                    <div className="flex items-center gap-1 shrink-0 self-end sm:self-start">
+
+                                    {/* Edit + Delete buttons */}
+                                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-start">
                                       <button
                                         onClick={() => {
                                           setSelectedProductForReview(item);
                                           setExistingReviewForModal(userReview);
                                           setShowReviewModal(true);
                                         }}
-                                        className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-50 rounded-full border border-gray-200 transition cursor-pointer"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#063d32] border border-[#063d32]/30 bg-white hover:bg-[#063d32] hover:text-white rounded-xl transition-all cursor-pointer font-poppins"
                                         title="Edit Review"
                                       >
-                                        <Pencil size={13} />
+                                        <Pencil size={11} />
+                                        Edit Review
                                       </button>
                                       <button
                                         onClick={() => handleDeleteReview(userReview.r_id || userReview.review_id, p_id)}
@@ -725,12 +729,11 @@ const OrderDetails = () => {
                                       </button>
                                     </div>
                                   </div>
-                                );
-                              }
-                              return null;
+                                </div>
+                              );
                             }
 
-                            // No review yet — show Write Review button
+                            // ✅ No review yet — show Write Review button
                             return (
                               <div className="mt-4 flex justify-center sm:justify-start">
                                 <button

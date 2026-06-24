@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { X, Printer, Download, Receipt, ArrowLeftRight } from "lucide-react";
+import { X, Printer, Download, FileText, ArrowLeftRight } from "lucide-react";
 import { ORDER_STATUS } from "../utils/constants";
 import { ApiURL } from "../Variable";
 import jsPDF from "jspdf";
@@ -169,7 +169,7 @@ const InvoiceModal = ({ isOpen, onClose, order, isCreditNote = false }) => {
               </div>
             ) : (
               <div className="p-1.5 text-[#1C2F2F] rounded-lg">
-                <Receipt size={18} />
+                <FileText size={18} />
               </div>
             )}
             <span className="font-bold text-gray-800 text-sm sm:text-base">

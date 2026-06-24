@@ -4,7 +4,7 @@ import SideBar from "./SideBar";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
-import { Package, RefreshCcw, Receipt, Loader2, Calendar, Truck, Eye } from "lucide-react"; // Removed ArrowLeftRight
+import { Package, RefreshCcw, FileText, Loader2, Calendar, Truck, Eye } from "lucide-react"; // Removed ArrowLeftRight
 import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 import CancelOrderModal from "./CancelOrderModal";
@@ -42,7 +42,8 @@ const Profileorder = () => {
   // Removed canShowCreditNote helper function
 
   const navigate = useNavigate();
-  const tabs = ["Active", "Completed", "Cancelled", "Returned"];
+  const tabs = ["Active", "Completed", "Cancelled" //, "Returned" //
+  ];
   const user = userInfo();
   const u_id = user?.u_id;
   const guestId = getGuestId();
@@ -92,7 +93,7 @@ const Profileorder = () => {
     ].includes(order.status);
     if (activeTab === "Cancelled") return order.status === ORDER_STATUS.CANCELLED;
     if (activeTab === "Completed") return order.status === ORDER_STATUS.DELIVERED;
-    if (activeTab === "Returned") return order.status === ORDER_STATUS.RETURNED;
+    // if (activeTab === "Returned") return order.status === ORDER_STATUS.RETURNED;
     return true;
   });
 
@@ -256,6 +257,8 @@ const Profileorder = () => {
                       ))}
                     </div>
 
+                    <div className="h-px bg-gray-50 w-full"></div>
+
                     {/* Actions */}
                     <div className="flex flex-wrap justify-end gap-2.5 w-full lg:w-auto lg:mt-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-gray-50">
                       {[
@@ -276,7 +279,7 @@ const Profileorder = () => {
                             Cancel Order
                           </button>
                         )}
-                      {order.status === ORDER_STATUS.DELIVERED && (
+                      {/* {order.status === ORDER_STATUS.DELIVERED && (
                         <button
                           onClick={() => {
                             setSelectedOrderId(order.orderId);
@@ -292,7 +295,7 @@ const Profileorder = () => {
                           )}
                           Return Order
                         </button>
-                      )}
+                      )} */}
                       {canShowInvoice(order) && (
                         <button
                           onClick={() => {
@@ -302,7 +305,7 @@ const Profileorder = () => {
                           }}
                           className="w-full sm:w-auto bg-white border border-emerald-200 text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm"
                         >
-                          <Receipt size={14} />
+                          <FileText size={14} />
                           Invoice
                         </button>
                       )}
