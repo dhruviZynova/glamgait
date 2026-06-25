@@ -5,7 +5,7 @@ import { FaChevronRight } from "react-icons/fa";
  */
 export default function SingleProductSkeleton() {
   return (
-    <div className="px-2 py-6 pb-10 md:pb-16 md:px-10 lg:px-20">
+    <div className="px-2 py-6 pb-6 md:pb-16 md:px-10 lg:px-20">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 mb-6 text-xs text-[#9A8F87]">
         <div className="h-4 w-20 rounded bg-gray-200 shimmer" />

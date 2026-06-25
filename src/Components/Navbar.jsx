@@ -501,11 +501,11 @@ const Navbar = () => {
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black/30 z-40"
+            className="fixed inset-0 bg-black/30 z-[1000] backdrop-blur-sm transition-opacity duration-300"
             onClick={() => setIsOpen(false)}
           />
           <div
-            className={`fixed top-0 right-0 h-full w-80 bg-[#f3f0ed] shadow-2xl z-1000 transform transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"
+            className={`fixed top-0 right-0 h-full w-80 bg-[#f3f0ed] shadow-2xl z-[1001] transform transition-transform duration-300 rounded-l-3xl ${isOpen ? "translate-x-0" : "translate-x-full"
               }`}
           >
             <button
@@ -514,7 +514,7 @@ const Navbar = () => {
             >
               <X size={24} />
             </button>
-            <div className="p-6 pt-24 space-y-1 overflow-y-auto h-full">
+            <div className="p-6 pt-24 space-y-1 overflow-y-auto h-full rounded-l-3xl">
               {menuItems.map((item) => (
                 <div
                   key={item.to}

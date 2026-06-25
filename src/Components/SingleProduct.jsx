@@ -447,7 +447,7 @@ function SingleProduct() {
         <meta name="keywords" content={product.meta_keywords} />
       </Helmet>
 
-      <div className="px-2 py-6 pb-10 md:pb-16 md:px-10 lg:px-20">
+      <div className="px-2 py-6 pb-6 md:pb-16 md:px-10 lg:px-20">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-[#9A8F87] mb-6 flex-wrap">
           <Link
@@ -899,49 +899,49 @@ function SingleProduct() {
               <div className="max-w-2xl">
                 <table className="w-full text-sm text-[#5C504A] border-collapse">
                   <tbody>
-                    {product?.category?.cate_name && (
+                    {!!product?.category?.cate_name && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Category</td>
                         <td className="py-3 capitalize">{product.category.cate_name}</td>
                       </tr>
                     )}
-                    {product?.subcategory?.name && (
+                    {!!product?.subcategory?.name && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Collection</td>
                         <td className="py-3 capitalize">{product.subcategory.name}</td>
                       </tr>
                     )}
-                    {product?.fabric?.name && (
+                    {!!product?.fabric?.name && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512] w-1/3">Fabric</td>
                         <td className="py-3">{product.fabric.name}</td>
                       </tr>
                     )}
-                    {product?.work?.name && (
+                    {!!product?.work?.name && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Work</td>
                         <td className="py-3">{product.work.name}</td>
                       </tr>
                     )}
-                    {product?.occasion?.name && (
+                    {!!product?.occasion?.name && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Occasion</td>
                         <td className="py-3">{product.occasion.name}</td>
                       </tr>
                     )}
-                    {product?.style?.name && (
+                    {!!product?.style?.name && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Style</td>
                         <td className="py-3">{product.style.name}</td>
                       </tr>
                     )}
-                    {product?.weight && (
+                    {!!product?.weight && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Weight</td>
                         <td className="py-3">{product.weight} kg</td>
                       </tr>
                     )}
-                    {(product?.length || product?.width || product?.height) && (
+                    {!!(product?.length || product?.width || product?.height) && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Dimensions (L x W x H)</td>
                         <td className="py-3">

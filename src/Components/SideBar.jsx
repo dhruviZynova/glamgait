@@ -47,14 +47,14 @@ const SideBar = ({ onMenuChange = () => { } }) => {
         {/* Mobile Drawer Backdrop */}
         {isOpen && (
           <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] transition-opacity duration-300"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[1000] transition-opacity duration-300"
             onClick={() => setIsOpen(false)}
           />
         )}
 
         {/* Mobile Drawer */}
         <div
-          className={`fixed inset-y-0 right-0 w-72 bg-[#FAF7F2] z-[110] p-6 shadow-2xl transform transition-transform duration-300 ease-in-out font-poppins
+          className={`fixed inset-y-0 right-0 w-80 bg-[#FAF7F2] z-[1001] p-6 shadow-2xl transform transition-transform duration-300 ease-in-out font-poppins rounded-l-3xl
             ${isOpen ? "translate-x-0" : "translate-x-full"}`}
         >
           {/* Mobile Drawer Close Button */}
@@ -65,7 +65,7 @@ const SideBar = ({ onMenuChange = () => { } }) => {
           </div>
 
           {/* Header */}
-          <div className="mb-8 border-b border-gray-300 pb-6">
+          <div className="mb-4 border-b border-gray-300 pb-6">
             <div className="flex items-start gap-3">
               <div className="w-1 h-10 bg-[#063d32] rounded-full shrink-0"></div>
               <div>
@@ -126,7 +126,7 @@ const SideBar = ({ onMenuChange = () => { } }) => {
       {/* Desktop Layout */}
       <div className="hidden md:block h-fit font-poppins sticky top-24 z-40">
         {/* Header */}
-        <div className="mb-8 border-b border-gray-300 pb-6">
+        <div className="mb-4 border-b border-gray-300 pb-6">
           <div className="flex items-start gap-3">
             <div className="w-1 h-10 bg-[#063d32] rounded-full shrink-0"></div>
             <div>
