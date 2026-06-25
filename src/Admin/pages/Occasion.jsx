@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { ChevronDown, Loader2, Inbox } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable";
 import { adminAxios } from "../../Axios/axios";
 import {
@@ -181,11 +181,19 @@ const Occasions = () => {
           </div>
         </div>
       ) : filterOccasions?.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-gray-500 text-lg">No Occasions found</p>
+        <div className="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center mb-4 shadow-sm">
+            <Inbox className="w-7 h-7 text-gray-400" />
+          </div>
+          <p className="text-sm font-semibold text-gray-700 mb-1">
+            {searchTerm ? "No matching occasions found" : "No occasions yet"}
+          </p>
+          <p className="text-xs text-gray-400">
+            {searchTerm ? "Try adjusting your search term" : "Add your first occasion above"}
+          </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-lg shadow overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>

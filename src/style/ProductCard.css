@@ -46,6 +46,7 @@
     from {
         opacity: 0.8;
     }
+
     to {
         opacity: 1;
     }
@@ -96,7 +97,7 @@
 }
 
 .card-info {
-    padding: 0 4px;
+    padding: 0 10px;
 }
 
 .info-header {
@@ -149,8 +150,8 @@
 
 .color-swatches {
     display: flex;
-    gap: 6px;
-    margin-top: 6px;
+    gap: 10px;
+    margin-top: 10px;
     pointer-events: auto;
 }
 
@@ -166,12 +167,12 @@
 }
 
 .swatch:hover {
-    transform: scale(1.25);
     z-index: 2;
 }
 
 .swatch.active {
-    border: 1px solid #1A1A1A;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--swatch-color, #1A1A1A);
     transform: scale(1.15);
 }
 

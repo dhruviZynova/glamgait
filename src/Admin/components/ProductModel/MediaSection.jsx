@@ -42,8 +42,8 @@ const MediaSection = ({
 
         return (
           <div key={i} className="bg-white p-4 rounded-lg border mb-4">
-            <div className="flex gap-4 items-center">
-              <div className="relative flex-1">
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              <div className="relative flex-1 w-full md:w-auto">
                 <button
                   type="button"
                   onClick={() => setOpenColorIndex(openColorIndex === i ? null : i)}
@@ -129,7 +129,7 @@ const MediaSection = ({
                   </div>
                 )}
               </div>
-              <label className="cursor-pointer bg-black hover:bg-gray-800 text-white px-4 py-2 rounded">
+              <label className="cursor-pointer w-full md:w-auto bg-black hover:bg-gray-800 text-center text-white px-4 py-2 rounded">
                 Upload Images / Videos
                 <input
                   type="file"
@@ -169,7 +169,53 @@ const MediaSection = ({
             </div>
 
             <div className="flex gap-3 mt-4 flex-wrap">
-              {/* Existing media */}
+              {/* Existing media video */}
+              {existingMedia[i]?.video && (() => {
+                const videoUrl = existingMedia[i].video.startsWith("http")
+                  ? existingMedia[i].video
+                  : `${ApiURL}/assets/Products/${existingMedia[i].video}`;
+                return (
+                  <div className="relative group">
+                    <div className="relative w-24 h-24">
+                      <video
+                        src={videoUrl}
+                        className="w-24 h-24 object-cover rounded-lg border"
+                        muted
+                        autoPlay
+                        loop
+                        playsInline
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg pointer-events-none">
+                        <svg
+                          className="w-6 h-6 text-white drop-shadow-md"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExistingMedia((prev) => {
+                          const updated = [...prev];
+                          updated[i] = {
+                            ...updated[i],
+                            video: ""
+                          };
+                          return updated;
+                        });
+                      }}
+                      className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition rounded-lg"
+                    >
+                      <Trash2 className="w-6 h-6 text-white" />
+                    </button>
+                  </div>
+                );
+              })()}
+
+              {/* Existing media images */}
               {(existingMedia[i]?.images || []).map((img) => {
                 const mediaUrl = `${ApiURL}/assets/Products/${img.image_url}`;
                 const isVideo = /\.(mp4|webm|mov|avi|quicktime)$/i.test(
@@ -178,11 +224,25 @@ const MediaSection = ({
                 return (
                   <div key={img.image_id} className="relative group">
                     {isVideo ? (
-                      <video
-                        src={mediaUrl}
-                        className="w-24 h-24 object-cover rounded-lg border"
-                        muted
-                      />
+                      <div className="relative w-24 h-24">
+                        <video
+                          src={mediaUrl}
+                          className="w-24 h-24 object-cover rounded-lg border"
+                          muted
+                          autoPlay
+                          loop
+                          playsInline
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg pointer-events-none">
+                          <svg
+                            className="w-6 h-6 text-white drop-shadow-md"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
+                      </div>
                     ) : (
                       <img
                         src={mediaUrl}
@@ -250,29 +310,31 @@ const MediaSection = ({
                         className="relative group cursor-move"
                       >
                         {isVideo ? (
-                          <video
-                            src={URL.createObjectURL(file)}
-                            className="w-24 h-24 object-cover rounded-lg border"
-                            muted
-                          />
+                          <div className="relative w-24 h-24">
+                            <video
+                              src={URL.createObjectURL(file)}
+                              className="w-24 h-24 object-cover rounded-lg border"
+                              muted
+                              autoPlay
+                              loop
+                              playsInline
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg pointer-events-none">
+                              <svg
+                                className="w-6 h-6 text-white drop-shadow-md"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                            </div>
+                          </div>
                         ) : (
                           <img
                             src={URL.createObjectURL(file)}
                             alt={`preview-${idx}`}
                             className="w-24 h-24 object-cover rounded-lg border"
                           />
-                        )}
-
-                        {isVideo && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
-                            <svg
-                              className="w-8 h-8 text-white"
-                              fill="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </div>
                         )}
 
                         <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition rounded-lg">

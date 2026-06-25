@@ -24,9 +24,12 @@ import applepay from "../assets/applepay.png";
 import visa from "../assets/visa.webp";
 import mastercard from "../assets/mastercard.png"
 
+import { getFullImageUrl } from "../Variable";
+
 const Footer = () => {
 
   const [categories, setCategories] = useState([]);
+  const [instaImages, setInstaImages] = useState([]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -40,7 +43,19 @@ const Footer = () => {
       }
     };
 
+    const fetchInstaImages = async () => {
+      try {
+        const res = await axiosInstance.get("/getinstaimages");
+        if (res.data.status === 1) {
+          setInstaImages(res.data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching instagram images:", error);
+      }
+    };
+
     fetchCategories();
+    fetchInstaImages();
   }, []);
 
   return (
@@ -77,7 +92,7 @@ const Footer = () => {
       </div>
 
       {/* Footer Content */}
-      <div className="relative z-10 w-full pt-20 pb-14 md:pb-8 max-w-7xl mx-auto">
+      <div className="relative z-10 w-full pt-20 pb-22 md:pb-8 max-w-7xl mx-auto">
         {/* Top Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 lg:gap-12 w-full border-b border-white/10 pb-8 md:pb-12">
           {/* Brand Section */}
@@ -87,44 +102,41 @@ const Footer = () => {
               Defining modern elegance with timeless design. We craft collections for those who appreciate the finer details.
             </p>
             {/* Social Media Icons */}
-            <div className="flex space-x-3">
-              <a
-                href="https://www.instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-                aria-label="Instagram"
-              >
-                <FaInstagram className="h-4 w-4 text-white" />
-              </a>
-              <a
-                href="https://www.facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-                aria-label="Facebook"
-              >
-                <FaFacebookF className="h-4 w-4 text-white" />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-                aria-label="X / Twitter"
-              >
-                <FaXTwitter className="h-4 w-4 text-white" />
-              </a>
-              <a
-                href="https://pinterest.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-                aria-label="Pinterest"
-              >
-                <FaPinterestP className="h-4 w-4 text-white" />
-              </a>
-            </div>
+            {instaImages && instaImages.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap gap-2">
+                  {instaImages
+                    .filter(item => {
+                      const fileUrl = item?.image_url || "";
+                      return !(
+                        fileUrl.endsWith(".mp4") ||
+                        fileUrl.endsWith(".webm") ||
+                        fileUrl.endsWith(".ogg")
+                      );
+                    })
+                    .slice(0, 4)
+                    .map((img) => (
+                      <a
+                        key={img.insta_id}
+                        href={img.insta_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-6 h-6 rounded overflow-hidden transition-all flex-shrink-0"
+                      >
+                        <img
+                          src={getFullImageUrl(img.image_url, "Instagram")}
+                          alt={`Instagram ${img.insta_id}`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "https://placehold.co/150x150?text=Media";
+                          }}
+                        />
+                      </a>
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Collections Section */}

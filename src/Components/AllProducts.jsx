@@ -101,6 +101,33 @@ const FilterSkeleton = () => (
   </aside>
 );
 
+const DEFAULT_FILTERS = {
+  subcategories: [],
+  fabrics: [],
+  works: [],
+  occasions: [],
+  styles: [],
+  sizes: [],
+  categories: [],
+};
+
+const sanitizePriceInput = (value) => {
+  // Remove any non-numeric characters
+  let cleanValue = value.replace(/[^0-9]/g, "");
+
+  if (cleanValue === "") {
+    return "0";
+  }
+
+  // Trim leading zeros, but allow a single 0 if the value is 0
+  if (cleanValue.length > 1 && cleanValue.startsWith("0")) {
+    cleanValue = cleanValue.replace(/^0+/, "");
+    if (cleanValue === "") {
+      cleanValue = "0";
+    }
+  }
+  return cleanValue;
+};
 
 const Allproducts = () => {
   ScrollToTop();
@@ -157,15 +184,7 @@ const Allproducts = () => {
 
   const { data: filterData, isLoading: isFiltersLoading } = useProductFilters(cate_name);
 
-  const filters = filterData || {
-    subcategories: [],
-    fabrics: [],
-    works: [],
-    occasions: [],
-    styles: [],
-    sizes: [],
-    categories: [],
-  };
+  const filters = filterData || DEFAULT_FILTERS;
   const allColors = filterData?.colors || [];
   const cateId = filterData?.categoryId || null;
   const categoryDisplayName = filterData?.categoryDisplayName || (cate_name ? cate_name : "All Products");
@@ -668,12 +687,12 @@ const Allproducts = () => {
 
         <div className="w-full py-8 px-2 md:px-8 xl:px-24">
 
-          <div className="flex flex-col lg:flex-row sm:gap-8 gap-2 items-start">
+          <div className="flex flex-col lg:flex-row sm:gap-8 gap-6 items-stretch lg:items-start w-full">
 
             {/* Mobile Filter Button */}
             <button
               onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
-              className="lg:hidden flex items-center justify-end w-full gap-2 sm:mb-4 mb-4 flex-shrink-0"
+              className="lg:hidden flex items-center justify-center w-full border border-gray-300 rounded-lg py-2 px-4 gap-2 flex-shrink-0"
             >
               <SlidersHorizontal className="w-5 h-5" />
               <span className="font-medium">Filters</span>
@@ -1070,28 +1089,30 @@ const Allproducts = () => {
                             <div className="relative w-1/2">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
                               <input
-                                type="number"
-                                min={0}
-                                value={priceRange[0] === 0 ? "" : priceRange[0]}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                value={priceRange[0]}
                                 onChange={(e) => {
-                                  const val = e.target.value === "" ? 0 : Number(e.target.value);
-                                  setPriceRange([val, priceRange[1]]);
+                                  const sanitized = sanitizePriceInput(e.target.value);
+                                  setPriceRange([Number(sanitized), priceRange[1]]);
                                 }}
-                                className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
+                                className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none transition-colors text-gray-700 font-medium placeholder-gray-400"
                                 placeholder="Min"
                               />
                             </div>
                             <div className="relative w-1/2">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
                               <input
-                                type="number"
-                                min={0}
-                                value={priceRange[1] === 100000 ? "" : priceRange[1]}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                value={priceRange[1]}
                                 onChange={(e) => {
-                                  const val = e.target.value === "" ? 100000 : Number(e.target.value);
-                                  setPriceRange([priceRange[0], val]);
+                                  const sanitized = sanitizePriceInput(e.target.value);
+                                  setPriceRange([priceRange[0], Number(sanitized)]);
                                 }}
-                                className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-black transition-colors text-gray-700 font-medium placeholder-gray-400"
+                                className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none transition-colors text-gray-700 font-medium placeholder-gray-400"
                                 placeholder="Max"
                               />
                             </div>
@@ -1127,8 +1148,8 @@ const Allproducts = () => {
               </h2>
 
 
-              <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <p className="text-sm text-gray-600">
+              <div className="mb-6 flex sm:flex-row justify-between items-start sm:items-center gap-2">
+                <p className="text-sm text-gray-600 font-[Oxygen]">
                   Showing{" "}
                   <span className="font-semibold">
                     {totalProducts === 0 ? 0 : (currentPage - 1) * limit + 1} -{" "}
@@ -1197,13 +1218,13 @@ const Allproducts = () => {
               </div>
 
               {(productsLoading || isFiltersLoading) && !hasLoadedOnce ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 pb-8">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-6 sm:gap-y-6 pb-8">
                   {Array.from({ length: 8 }).map((_, i) => (
                     <ProductCardSkeleton key={i} />
                   ))}
                 </div>
               ) : products?.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 pb-8">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-6 sm:gap-y-6 pb-8">
                   {products?.map((product) => (
                     <ScrollReveal
                       key={product.p_id}

@@ -47,24 +47,15 @@ const ReviewCard = ({ name, review, rating = 5, product, fallbackProductName }) 
               />
             </div>
 
-            {productImgSrc && !imgError ? (
-              <img
-                src={productImgSrc}
-                alt={productName}
-                onError={() => setImgError(true)}
-                className="w-10 h-10 md:w-14 md:h-14 rounded-full object-cover border-4 border-[#D4AF37]/10"
-              />
-            ) : (
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center bg-[#1C2F2F] text-white font-semibold text-lg md:text-2xl border-4 border-[#D4AF37]/10 select-none uppercase font-sans">
-                {name ? name.trim().charAt(0) : "?"}
-              </div>
-            )}
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center bg-[#1C2F2F] text-white font-semibold text-lg md:text-2xl border-4 border-[#D4AF37]/10 select-none uppercase font-sans">
+              {name ? name.trim().charAt(0) : "?"}
+            </div>
           </div>
 
           {/* Name & Review Text */}
           <div className="flex flex-col items-center text-center w-full px-4">
             {/* Product Name */}
-            <h4 className="text-[12px] font-semibold text-gray-900 mb-1.5 font-sans line-clamp-1 leading-tight">
+            <h4 className="text-[12px] font-semibold text-gray-900 mb-1.5 font-sans line-clamp-1">
               {productName}
             </h4>
 
@@ -84,7 +75,7 @@ const ReviewCard = ({ name, review, rating = 5, product, fallbackProductName }) 
             </div>
 
             {/* Review Message */}
-            <p className="text-[14px] text-gray-600 leading-relaxed font-sans line-clamp-2 mb-2 italic">
+            <p className="text-[#4a5568] leading-relaxed line-clamp-2 mb-2 italic text-sm font-serif">
               "{review}"
             </p>
 

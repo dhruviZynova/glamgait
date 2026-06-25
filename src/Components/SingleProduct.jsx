@@ -35,6 +35,7 @@ function SingleProduct() {
   const [showSizePopup, setShowSizePopup] = useState(false);
   const [selectedColorImages, setSelectedColorImages] = useState([]);
   const [videoFiles, setVideoFiles] = useState([]);
+  const [colorVideo, setColorVideo] = useState(null);
   const [availableStock, setAvailableStock] = useState(0);
   const [reviewsSummary, setReviewsSummary] = useState({});
   const [activeTab, setActiveTab] = useState("description");
@@ -83,12 +84,18 @@ function SingleProduct() {
     const fetchProduct = async () => {
       setProductLoading(true);
       try {
-        const res = await axiosInstance.get(`${ApiURL}/getproductbyname/${slug}`);
+        const res = await axiosInstance.get(`${ApiURL}/getproductbyid/${slug}`);
         if (res.data.status === 1) {
           const data = res.data.data;
           const stockMap = {};
           data.productvariants?.forEach((v) => {
             stockMap[`${v.pcolor_id}-${v.psize_id || "nosize"}`] = v.remaining_qty;
+          });
+
+          // Build a video lookup from data.colors (color_id -> video URL)
+          const colorVideoMap = {};
+          (data.colors || []).forEach((c) => {
+            if (c.color_id && c.video) colorVideoMap[c.color_id] = c.video;
           });
 
           const enhancedColors = data.productcolors.map((color) => {
@@ -101,10 +108,13 @@ function SingleProduct() {
                 psize_id: null,
                 size: { size_name: "Free Size" },
                 remaining_qty: stockMap[`${color.pcolor_id}-nosize`] || 0,
-                in_stock: true,
+                in_stock: (stockMap[`${color.pcolor_id}-nosize`] || 0) > 0,
               }];
+            // Attach video from data.colors via color.color.color_id
+            const videoUrl = colorVideoMap[color.color?.color_id] || color.video || null;
             return {
               ...color,
+              video: videoUrl,
               sizes,
               has_stock: sizes.some((s) => s.in_stock),
               total_available: sizes.reduce((sum, s) => sum + s.remaining_qty, 0),
@@ -162,6 +172,8 @@ function SingleProduct() {
     const vids = images.filter((f) => /\.(mp4|mov|webm)$/i.test(f));
     setSelectedColorImages(imgs);
     setVideoFiles(vids);
+    // color.video is a full URL from the API e.g. https://backend.../assets/Products/xxx.mp4
+    setColorVideo(color.video || null);
 
     const firstSize = color.sizes.find((s) => s.in_stock) || color.sizes[0];
     if (firstSize) {
@@ -404,7 +416,8 @@ function SingleProduct() {
       const width = container.offsetWidth;
       const scrollLeft = container.scrollLeft;
       const index = Math.round(scrollLeft / width);
-      if (index !== mobileIndex && index >= 0 && index < imageFiles.length) {
+      const totalSlides = imageFiles.length + (colorVideo ? 1 : 0);
+      if (index !== mobileIndex && index >= 0 && index < totalSlides) {
         setMobileIndex(index);
       }
     }
@@ -434,7 +447,7 @@ function SingleProduct() {
         <meta name="keywords" content={product.meta_keywords} />
       </Helmet>
 
-      <div className="px-2 py-6 pb-16 md:px-10 lg:px-20">
+      <div className="px-2 py-6 pb-6 md:pb-16 md:px-10 lg:px-20">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-[#9A8F87] mb-6 flex-wrap">
           <Link
@@ -454,8 +467,8 @@ function SingleProduct() {
           <div className="w-full">
             {/* Desktop stacked gallery */}
             <div className="hidden lg:flex md:gap-12 gap-6 w-full">
-              {/* Optional desktop thumbnail rail — sticky, click to scroll */}
-              {imageFiles.length > 1 && (
+              {/* Sticky thumbnail rail */}
+              {(imageFiles.length > 1 || colorVideo) && (
                 <div className="flex sticky top-24 self-start flex-col gap-3 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1 scrollbar-thin">
                   {imageFiles.map((file, i) => (
                     <button
@@ -470,10 +483,36 @@ function SingleProduct() {
                       />
                     </button>
                   ))}
+                  {/* Video thumbnail in rail */}
+                  {colorVideo && (
+                    <button
+                      onClick={() => imageRefs.current[imageFiles.length]?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                      className="flex-shrink-0 w-[64px] h-[80px] rounded-md overflow-hidden border border-[#E8E0DA] hover:border-[#3D2C25] transition-all cursor-pointer relative bg-black"
+                    >
+                      <video
+                        src={colorVideo}
+                        className="w-full h-full object-cover opacity-70"
+                        muted
+                        loop
+                        playsInline
+                        autoPlay
+                        preload="metadata"
+                        onCanPlay={(e) => {
+                          e.target.muted = true;
+                          e.target.play().catch(() => { });
+                        }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center">
+                          <svg className="w-3 h-3 text-[#3D2C25] ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                      </div>
+                    </button>
+                  )}
                 </div>
               )}
 
-              {/* All images stacked vertically */}
+              {/* All images + video stacked vertically */}
               <div className="flex-1 flex flex-col gap-3">
                 {imageFiles.map((file, i) => (
                   <div
@@ -500,6 +539,29 @@ function SingleProduct() {
                     )}
                   </div>
                 ))}
+
+                {/* Color video tile — appended at bottom of stacked gallery */}
+                {colorVideo && (
+                  <div
+                    ref={(el) => (imageRefs.current[imageFiles.length] = el)}
+                    className="relative w-full bg-black rounded-lg overflow-hidden"
+                  >
+                    <video
+                      src={colorVideo}
+                      className="w-full h-auto"
+                      controls
+                      muted
+                      loop
+                      playsInline
+                      autoPlay
+                      style={{ display: "block" }}
+                      onCanPlay={(e) => {
+                        e.target.muted = true;
+                        e.target.play().catch(err => console.log("Desktop autoplay failed:", err));
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -520,6 +582,25 @@ function SingleProduct() {
                       />
                     </div>
                   ))}
+                  {/* Video slide at the end of mobile slider */}
+                  {colorVideo && (
+                    <div className="w-full h-full flex-shrink-0 snap-start snap-always relative bg-black flex items-center justify-center">
+                      <video
+                        src={colorVideo}
+                        className="w-full h-full object-contain"
+                        controls
+                        muted
+                        loop
+                        playsInline
+                        autoPlay
+                        style={{ display: "block" }}
+                        onCanPlay={(e) => {
+                          e.target.muted = true;
+                          e.target.play().catch(err => console.log("Mobile autoplay failed:", err));
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Badges */}
@@ -536,14 +617,15 @@ function SingleProduct() {
               </div>
 
               {/* Horizontal Thumbnails row */}
-              {imageFiles.length > 1 && (
+              {(imageFiles.length > 1 || colorVideo) && (
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mt-3">
                   {imageFiles.map((file, i) => (
                     <button
                       key={i}
                       onClick={() => handleMobileThumbnailClick(i)}
-                      className={`flex-shrink-0 w-14 h-18 overflow-hidden border cursor-pointer transition-all rounded-none ${mobileIndex === i ? "border-black" : "border-gray-200 opacity-60"
+                      className={`flex-shrink-0 w-16 overflow-hidden border cursor-pointer transition-all rounded-none ${mobileIndex === i ? "border-black" : "border-gray-200 opacity-60"
                         }`}
+                      style={{ height: "4.5rem" }}
                     >
                       <img
                         src={`${ApiURL}/assets/Products/${file}`}
@@ -552,6 +634,34 @@ function SingleProduct() {
                       />
                     </button>
                   ))}
+                  {/* Video thumbnail in mobile strip */}
+                  {colorVideo && (
+                    <button
+                      onClick={() => handleMobileThumbnailClick(imageFiles.length)}
+                      className={`flex-shrink-0 w-16 overflow-hidden border cursor-pointer transition-all rounded-none relative bg-black ${mobileIndex === imageFiles.length ? "border-black" : "border-gray-200 opacity-60"
+                        }`}
+                      style={{ height: "4.5rem" }}
+                    >
+                      <video
+                        src={colorVideo}
+                        className="w-full h-full object-cover opacity-70"
+                        muted
+                        loop
+                        playsInline
+                        autoPlay
+                        preload="metadata"
+                        onCanPlay={(e) => {
+                          e.target.muted = true;
+                          e.target.play().catch(() => { });
+                        }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-5 h-5 rounded-full bg-white/80 flex items-center justify-center">
+                          <svg className="w-2.5 h-2.5 text-[#3D2C25] ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                      </div>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -691,13 +801,22 @@ function SingleProduct() {
                   <button
                     onClick={handleAddToCart}
                     disabled={addToCartLoading || availableStock <= 0}
-                    className="flex-1 h-12 rounded-lg border border-[#1E1512] text-[#1E1512] text-sm font-semibold hover:bg-[#1E1512] hover:text-white transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                    className={`flex-1 h-12 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 transition-all ${availableStock <= 0
+                      ? "bg-[#e4e4e4] text-[#9A8F87] border-[#e4e4e4] cursor-not-allowed"
+                      : "border-[#1E1512] text-[#1E1512] hover:bg-[#1E1512] hover:text-white cursor-pointer"
+                      }`}
                   >
-                    {addToCartLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding...</> : "Add to Cart"}
+                    {availableStock <= 0 ? (
+                      "Out of Stock"
+                    ) : addToCartLoading ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Adding...</>
+                    ) : (
+                      "Add to Cart"
+                    )}
                   </button>
                   <button
                     onClick={toggleWishlist}
-                    className="w-12 h-12 rounded-lg border border-[#E8E0DA] flex items-center justify-center hover:bg-[#F5F1EE] transition-all cursor-pointer flex-shrink-0"
+                    className="w-12 h-12 rounded-lg border border-[#e4e4e4] flex items-center justify-center hover:bg-[#F5F1EE] ransition-all cursor-pointer flex-shrink-0"
                   >
                     {wishlistLoading
                       ? <Loader2 className="w-4 h-4 animate-spin text-[#3D2C25]" />
@@ -708,7 +827,10 @@ function SingleProduct() {
                 <button
                   onClick={handleBuyNow}
                   disabled={buyNowLoading || availableStock <= 0}
-                  className="w-full h-12 rounded-lg bg-[#1E1512] text-white text-sm font-semibold hover:bg-[#3D2C25] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                  className={`w-full h-12 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all ${availableStock <= 0
+                    ? "bg-[#e4e4e4] text-[#9A8F87] cursor-not-allowed"
+                    : "bg-[#1E1512] text-white hover:bg-[#3D2D25] cursor-pointer"
+                    }`}
                 >
                   {buyNowLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</> : "Buy Now"}
                 </button>
@@ -757,13 +879,13 @@ function SingleProduct() {
         </div>
 
         {/* Tabs */}
-        <div className="mt-16 pt-10">
+        <div className="mt-6 md:mt-16 pt-10">
           <div className="flex gap-2">
             {["description", "details", "reviews"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative px-4 pb-2 text-sm font-semibold uppercase tracking-widest cursor-pointer ${activeTab === tab ? "text-[#1E1512] border-b-2 border-[#1E1512] " : "text-[#9A8F87] hover:text-[#3D2C25]"
+                className={`relative px-4 pb-2 text-[12px] md:text-[14px] font-semibold uppercase tracking-widest cursor-pointer ${activeTab === tab ? "text-[#1E1512] border-b-2 border-[#1E1512] " : "text-[#9A8F87] hover:text-[#3D2C25]"
                   }`}
               >
                 {tab}
@@ -777,49 +899,49 @@ function SingleProduct() {
               <div className="max-w-2xl">
                 <table className="w-full text-sm text-[#5C504A] border-collapse">
                   <tbody>
-                    {product?.category?.cate_name && (
+                    {!!product?.category?.cate_name && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Category</td>
                         <td className="py-3 capitalize">{product.category.cate_name}</td>
                       </tr>
                     )}
-                    {product?.subcategory?.name && (
+                    {!!product?.subcategory?.name && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Collection</td>
                         <td className="py-3 capitalize">{product.subcategory.name}</td>
                       </tr>
                     )}
-                    {product?.fabric?.name && (
+                    {!!product?.fabric?.name && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512] w-1/3">Fabric</td>
                         <td className="py-3">{product.fabric.name}</td>
                       </tr>
                     )}
-                    {product?.work?.name && (
+                    {!!product?.work?.name && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Work</td>
                         <td className="py-3">{product.work.name}</td>
                       </tr>
                     )}
-                    {product?.occasion?.name && (
+                    {!!product?.occasion?.name && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Occasion</td>
                         <td className="py-3">{product.occasion.name}</td>
                       </tr>
                     )}
-                    {product?.style?.name && (
+                    {!!product?.style?.name && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Style</td>
                         <td className="py-3">{product.style.name}</td>
                       </tr>
                     )}
-                    {product?.weight && (
+                    {!!product?.weight && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Weight</td>
                         <td className="py-3">{product.weight} kg</td>
                       </tr>
                     )}
-                    {(product?.length || product?.width || product?.height) && (
+                    {!!(product?.length || product?.width || product?.height) && (
                       <tr className="border-b border-[#E8E0DA]">
                         <td className="py-3 font-semibold text-[#1E1512]">Dimensions (L x W x H)</td>
                         <td className="py-3">

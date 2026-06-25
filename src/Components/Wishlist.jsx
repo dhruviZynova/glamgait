@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Loader2, Heart } from "lucide-react";
-import { Link } from "react-router-dom";
-import { getFullImageUrl } from "../Variable";
+import { Link, useNavigate } from "react-router-dom";
+import { getFullImageUrl, createSlug } from "../Variable";
 import wishlistempty from "../assets/wishlistempty.png";
 import WishlistSkeleton from "./skeletons/WishlistSkeleton";
 import ScrollReveal from "./Ui/ScrollReveal";
@@ -17,6 +17,7 @@ const dispatchWishlistUpdate = () => {
 };
 
 const Wishlist = () => {
+  const navigate = useNavigate();
   const { data: wishlistItems = [], isLoading: loading } = useWishlist();
   const removeWishlistMutation = useRemoveFromWishlist();
   const addToCartMutation = useAddToCart();
@@ -118,7 +119,7 @@ const Wishlist = () => {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 sm:gap-x-6 gap-y-6 sm:gap-y-6 pb-8">
               {wishlistItems.map((item) => {
                 const isOutOfStock = item.stock_qty === 0;
                 const discountPercentage =
@@ -130,10 +131,13 @@ const Wishlist = () => {
                     )
                     : 0;
 
+                const productSlug = item.p_id;
+
                 return (
                   <div
                     key={item.w_id}
-                    className="arrival-card group flex flex-col justify-between"
+                    onClick={() => navigate(`/product/${productSlug}`)}
+                    className="arrival-card group flex flex-col justify-between cursor-pointer"
                   >
                     {/* Image and Header */}
                     <div>
@@ -144,7 +148,10 @@ const Wishlist = () => {
 
                         {/* Wishlist Remove Heart Button */}
                         <button
-                          onClick={() => handleRemove(item.w_id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemove(item.w_id);
+                          }}
                           disabled={removingIds.has(item.w_id)}
                           className="wishlist-heart-btn"
                           aria-label="Remove from wishlist"
@@ -217,7 +224,10 @@ const Wishlist = () => {
                     {/* Move to Cart action */}
                     <div className="mt-4 px-1 pb-1">
                       <button
-                        onClick={() => handleMoveToCart(item)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMoveToCart(item);
+                        }}
                         disabled={isOutOfStock || movingIds.has(item.w_id)}
                         className={`w-full py-2.5 px-4 text-xs font-semibold rounded-lg tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 border ${isOutOfStock
                           ? "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed"

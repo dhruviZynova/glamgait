@@ -233,7 +233,17 @@ const Cart = () => {
                                 />
                               )}
                               <span className="capitalize">{item.color_name}</span>
-                              <span className="uppercase"> {item.size_name && ` / ${item.size_name}`} </span>
+                              {(() => {
+                                const sizeVal = item.size_name || item.size;
+                                return sizeVal &&
+                                  sizeVal.trim() !== "" &&
+                                  sizeVal.toLowerCase() !== "na" &&
+                                  sizeVal.toLowerCase() !== "n/a" &&
+                                  sizeVal.toLowerCase() !== "free size" &&
+                                  sizeVal.toLowerCase() !== "free-size" ? (
+                                  <span className="uppercase"> / {sizeVal}</span>
+                                ) : null;
+                              })()}
                             </div>
                           </div>
                         </div>
@@ -305,7 +315,17 @@ const Cart = () => {
                           />
                         )}
                         <span className="capitalize">{item.color_name}</span>
-                        <span className="uppercase">{item.size_name && ` / ${item.size_name}`}</span>
+                        {(() => {
+                          const sizeVal = item.size_name || item.size;
+                          return sizeVal &&
+                            sizeVal.trim() !== "" &&
+                            sizeVal.toLowerCase() !== "na" &&
+                            sizeVal.toLowerCase() !== "n/a" &&
+                            sizeVal.toLowerCase() !== "free size" &&
+                            sizeVal.toLowerCase() !== "free-size" ? (
+                            <span className="uppercase"> / {sizeVal}</span>
+                          ) : null;
+                        })()}
                       </div>
 
                       <div className="flex items-center justify-between border-t border-gray-100 pt-4">
@@ -363,7 +383,7 @@ const Cart = () => {
             <h2 className="text-[20px] md:text-[34px] font-700 text-[#3D3D3D] font-[Oxygen] mb-8 md:mb-12">
               You May Also Like
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 sm:gap-x-6 gap-y-6 sm:gap-y-6 pb-8">
               {recommendedProducts.map((product) => (
                 <ProductCard
                   key={product.p_id}

@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
+import longlight from "../assets/images/longlight.webp";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { resetPassword } from "../api/user";
 import toast from "react-hot-toast";
 import BrandBanner from "./BrandBanner";
-import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { FaRegEye, FaRegEyeSlash, FaArrowLeft } from "react-icons/fa";
 import ScrollReveal from "./Ui/ScrollReveal";
 
 const ResetPassword = () => {
@@ -72,13 +73,42 @@ const ResetPassword = () => {
 
   return (
     <>
-      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-poppins">
+      <div className="w-full pt-16 md:pt-36 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-poppins relative z-10 overflow-hidden">
+        {/* Hanging Lantern (Top Right) */}
+        <ScrollReveal
+          className="absolute -top-8 sm:-top-12 right-2 sm:right-4 md:right-8 lg:right-12 xl:right-16 z-30 pointer-events-none"
+          animation="fade-down"
+          duration={1200}
+        >
+          <img
+            src={longlight}
+            alt="Hanging Lantern"
+            className="w-22 sm:w-24 md:w-32 lg:w-44 h-auto drop-shadow-lg"
+          />
+        </ScrollReveal>
+
         {/* Reset Password Card */}
         <ScrollReveal animation="fade-up" duration={800} className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
 
           {/* Left Side: Form */}
-          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white shadow-lg rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
-            <div className="mt-4">
+          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white shadow-lg rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10 relative">
+            <div className="absolute top-6 left-6 lg:left-12 flex items-center gap-3">
+              <button
+                onClick={() => navigate("/login", { state: { from } })}
+                className="flex items-center justify-start gap-1.5 text-xs font-medium text-gray-400 hover:text-[#1A2C2C] transition-all duration-300 cursor-pointer"
+              >
+                <FaArrowLeft className="text-[10px]" />
+                Back to Login
+              </button>
+              <span className="text-gray-300 text-xs">|</span>
+              <button
+                onClick={() => navigate("/")}
+                className="flex items-center justify-start gap-1.5 text-xs font-medium text-gray-400 hover:text-[#1A2C2C] transition-all duration-300 cursor-pointer"
+              >
+                Back to Website
+              </button>
+            </div>
+            <div className="mt-8">
               <h1 className="text-3xl font-bold text-[#1A2C2C] mb-2 font-poppins">Set New Password</h1>
               <p className="text-sm text-gray-500 mb-8">
                 Your new password must be different from previously used passwords.

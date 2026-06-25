@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   Grid,
   Palette,
-  Instagram,
   SlidersHorizontal,
   Grid2X2,
   MegaphoneIcon,
@@ -19,7 +18,7 @@ import {
   ListTree,
   Ruler,
   LogOut,
-
+  Link2
 } from "lucide-react";
 // import logo from "../../assets/logo.svg";
 import logo from "../../assets/logo2.png";
@@ -30,8 +29,8 @@ const Sidebar = ({ onClose }) => {
   const { logout } = useUser();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/admin/login");
   };
 
@@ -70,7 +69,7 @@ const Sidebar = ({ onClose }) => {
     {
       title: "Content & Support",
       items: [
-        { name: "Instagram", path: "/admin/instagram", icon: Instagram },
+        { name: "Social Media", path: "/admin/socialmedia", icon: Link2 },
         { name: "Sliders", path: "/admin/sliders", icon: SlidersHorizontal },
         { name: "Reviews", path: "/admin/reviews", icon: Star },
         { name: "Contact", path: "/admin/contact", icon: Mail },

@@ -1,7 +1,10 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Shield, Lock, Eye, FileText, Database, UserCheck, Bell, Mail } from "lucide-react";
 
 const PrivacyPolicy = () => {
+  const location = useLocation();
+  const { pathname } = location;
   const [activeSection, setActiveSection] = useState("collection");
 
   const sections = [
@@ -23,6 +26,9 @@ const PrivacyPolicy = () => {
   };
 
   React.useEffect(() => {
+    setActiveSection("collection");
+    window.scrollTo({ top: 0, behavior: "instant" });
+
     const observerOptions = {
       root: null,
       rootMargin: "-20% 0px -60% 0px",
@@ -53,8 +59,9 @@ const PrivacyPolicy = () => {
           observer.unobserve(element);
         }
       });
+      observer.disconnect();
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-[#FDFCFB]">

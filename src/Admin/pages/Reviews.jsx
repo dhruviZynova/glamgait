@@ -12,7 +12,7 @@ import { ApiURL, adminInfo } from "../../Variable";
 import toast from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
-import { Loader2 } from "lucide-react";
+import { Loader2, Inbox } from "lucide-react";
 
 const Reviews = () => {
   const adminData = adminInfo();
@@ -269,12 +269,12 @@ const Reviews = () => {
             />
             <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           </div>
-          <button
+          {/* <button
             onClick={() => openModal(false)}
             className="flex items-center justify-center gap-2 bg-black text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" /> Add Review
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -295,8 +295,16 @@ const Reviews = () => {
           </div>
         </div>
       ) : reviews.length === 0 ? (
-        <div className="text-center py-16 text-gray-500 text-lg">
-          {searchTerm ? "No reviews found matching your search." : "No reviews found"}
+        <div className="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center mb-4 shadow-sm">
+            <Inbox className="w-7 h-7 text-gray-400" />
+          </div>
+          <p className="text-sm font-semibold text-gray-700 mb-1">
+            {searchTerm ? "No matching reviews found" : "No reviews yet"}
+          </p>
+          <p className="text-xs text-gray-400">
+            {searchTerm ? "Try adjusting your search term" : "Add your first review above"}
+          </p>
         </div>
       ) : (
         <>
@@ -340,7 +348,7 @@ const Reviews = () => {
                 </p>
 
                 {/* Product */}
-                <p className="text-xs text-gray-500 italic mb-3">
+                <p className="text-xs text-gray-500 mb-3">
                   Product: {r.product_name}
                 </p>
 
@@ -552,42 +560,44 @@ const Reviews = () => {
                           No products available
                         </div>
                       ) : (
-                        products.map((p) => (
-                          <div
-                            key={p.p_id}
-                            onClick={() => {
-                              const img =
-                                p.productcolors?.[0]?.productimages?.[0]
-                                  ?.image_url ||
-                                p.image ||
-                                "";
-                              setForm({
-                                ...form,
-                                product: p.p_id,
-                                productImage: img,
-                              });
-                              setProductDropdownOpen(false);
-                            }}
-                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
-                          >
-                            <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                              {img ? (
-                                <img
-                                  src={`${ApiURL}/assets/Products/${img}`}
-                                  alt=""
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-                                  No img
-                                </div>
-                              )}
+                        products.map((p) => {
+                          const img =
+                            p.productcolors?.[0]?.productimages?.[0]
+                              ?.image_url ||
+                            p.image ||
+                            "";
+                          return (
+                            <div
+                              key={p.p_id}
+                              onClick={() => {
+                                setForm({
+                                  ...form,
+                                  product: p.p_id,
+                                  productImage: img,
+                                });
+                                setProductDropdownOpen(false);
+                              }}
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
+                            >
+                              <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                {img ? (
+                                  <img
+                                    src={`${ApiURL}/assets/Products/${img}`}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                                    No img
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-sm font-medium text-gray-900 truncate">
+                                {p.name}
+                              </span>
                             </div>
-                            <span className="text-sm font-medium text-gray-900 truncate">
-                              {p.name}
-                            </span>
-                          </div>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   )}

@@ -169,6 +169,7 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
               pcolor_id: pc.pcolor_id,
               color_name: pc.color?.color_name || "Unknown",
               images: pc.productimages || [],
+              video: pc.video || "",
             });
           }
         });
@@ -355,7 +356,13 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
     data.append("sizes", JSON.stringify(formData.sizes.map((s) => ({ size_id: s.size_id }))));
 
     formData.colors.forEach((color, i) => {
-      color.images.forEach((file) => data.append(`images_color_${i}`, file));
+      color.images.forEach((file) => {
+        if (file && file.type && file.type.startsWith("video/")) {
+          data.append("video", file);
+        } else {
+          data.append(`images_color_${i}`, file);
+        }
+      });
     });
 
     if (product) data.append("deleted_media", JSON.stringify(deletedMediaIds));

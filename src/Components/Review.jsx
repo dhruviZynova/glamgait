@@ -230,7 +230,7 @@ const ReviewCard = ({
             {isAuthor && onDelete && (
               <button
                 onClick={() => onDelete(review.r_id || review.review_id)}
-                className="p-1.5 rounded-full bg-gray-50 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+                className="p-1.5 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer"
                 title="Delete your review"
               >
                 <Trash2 size={16} />
@@ -375,7 +375,7 @@ const Review = ({ p_id: propPId, productId, onReviewChange }) => {
                 return stars;
               })()}
             </div>
-            <span className="text-sm text-[#8C7A70] font-[Oxygen]">{stats.totalRatings} {stats.totalRatings === 1 ? 'rating' : 'ratings'}</span>
+            <span className="text-sm text-[#8C7A70] font-[Oxygen]">{stats.totalRatings} {stats.totalRatings === 1 ? 'Rating' : 'Ratings'}</span>
           </div>
 
           {/* Breakdown Bars */}

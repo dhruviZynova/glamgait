@@ -220,7 +220,7 @@ const ProductCard = ({
     }, 0);
   }, [product?.total_stock, product?.productcolors, product?.colors]);
 
-  const productSlug = product.slug || createSlug(product.name) || product.p_id;
+  const productSlug = product.p_id;
 
   return (
     <div
@@ -246,7 +246,7 @@ const ProductCard = ({
 
           <img
             key={currentColorId || "default"}
-            src={currentImageUrl}
+            src={currentImageUrl || null}
             alt={product.name}
             loading="lazy"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -291,6 +291,7 @@ const ProductCard = ({
                   title={color.color_name || color.color?.color_name || ""}
                   style={{
                     backgroundColor: color.color_code || color.color?.color_code || "#ccc",
+                    "--swatch-color": color.color_code || color.color?.color_code || "#ccc",
                   }}
                   onClick={(e) => {
                     e.stopPropagation();

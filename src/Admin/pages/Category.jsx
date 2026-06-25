@@ -6,7 +6,7 @@ import {
   PencilSquareIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import { Loader2 } from "lucide-react";
+import { Loader2, Inbox } from "lucide-react";
 import { adminAxios } from "../../Axios/axios";
 import { ApiURL, showToaster, getFullImageUrl } from "../../Variable";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
@@ -208,11 +208,19 @@ const Categories = () => {
           </div>
         </div>
       ) : filteredCategories?.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-gray-500 text-lg">No categories found</p>
+        <div className="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center mb-4 shadow-sm">
+            <Inbox className="w-7 h-7 text-gray-400" />
+          </div>
+          <p className="text-sm font-semibold text-gray-700 mb-1">
+            {searchTerm ? "No matching categories found" : "No categories yet"}
+          </p>
+          <p className="text-xs text-gray-400">
+            {searchTerm ? "Try adjusting your search term" : "Add your first category above"}
+          </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-lg shadow overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>

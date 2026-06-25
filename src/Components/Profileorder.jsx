@@ -4,7 +4,7 @@ import SideBar from "./SideBar";
 import { ApiURL, userInfo } from "../Variable";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
-import { Package, RefreshCcw, Receipt, Loader2, Calendar, Truck, Eye } from "lucide-react"; // Removed ArrowLeftRight
+import { Package, RefreshCcw, FileText, Loader2, Calendar, Truck, Eye } from "lucide-react"; // Removed ArrowLeftRight
 import { getGuestId } from "../utils/guest";
 import BrandBanner from "./BrandBanner";
 import CancelOrderModal from "./CancelOrderModal";
@@ -42,7 +42,8 @@ const Profileorder = () => {
   // Removed canShowCreditNote helper function
 
   const navigate = useNavigate();
-  const tabs = ["Active", "Completed", "Cancelled", "Returned"];
+  const tabs = ["Active", "Completed", "Cancelled" //, "Returned" //
+  ];
   const user = userInfo();
   const u_id = user?.u_id;
   const guestId = getGuestId();
@@ -92,7 +93,7 @@ const Profileorder = () => {
     ].includes(order.status);
     if (activeTab === "Cancelled") return order.status === ORDER_STATUS.CANCELLED;
     if (activeTab === "Completed") return order.status === ORDER_STATUS.DELIVERED;
-    if (activeTab === "Returned") return order.status === ORDER_STATUS.RETURNED;
+    // if (activeTab === "Returned") return order.status === ORDER_STATUS.RETURNED;
     return true;
   });
 
@@ -173,7 +174,7 @@ const Profileorder = () => {
                         <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-[#807D7E] font-medium">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5" />
-                            Date: {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                            Date : {new Date(order.createdAt).toLocaleDateString("en-IN", {
                               day: "numeric",
                               month: "long",
                               year: "numeric",
@@ -181,7 +182,7 @@ const Profileorder = () => {
                           </span>
                           <span className="flex items-center gap-1">
                             <Truck className="w-3.5 h-3.5" />
-                            Delivery: {new Date(new Date(order.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", {
+                            Delivery : {new Date(new Date(order.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", {
                               day: "numeric",
                               month: "long",
                               year: "numeric",
@@ -193,11 +194,11 @@ const Profileorder = () => {
 
                     <div className="flex flex-wrap lg:flex-col lg:items-end gap-3 lg:gap-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[#807D7E] font-semibold">Status:</span>
+                        <span className="text-xs text-[#807D7E] font-semibold">Status :</span>
                         {getStatusBadge(order.status)}
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[#807D7E] font-semibold">Payment:</span>
+                        <span className="text-xs text-[#807D7E] font-semibold">Payment :</span>
                         <span className="text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded-lg capitalize">{order.paymentStatus}</span>
                       </div>
                     </div>
@@ -206,8 +207,8 @@ const Profileorder = () => {
                   <div className="h-px bg-gray-50 w-full mb-6"></div>
 
                   {/* Product/Item Preview */}
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 md:gap-6">
-                    <div className="flex flex-wrap gap-6 flex-1 w-full">
+                  <div className="flex flex-col justify-between items-start lg:items-end gap-4 md:gap-6">
+                    <div className="flex flex-col gap-6 flex-1 w-full">
                       {order.orderItems.map((item) => (
                         <div key={item.orderItemId} className="flex gap-4 w-full sm:w-auto">
                           <img
@@ -217,7 +218,7 @@ const Profileorder = () => {
                           />
                           <div className="flex flex-col justify-center">
                             <h4 className="font-bold text-[#3C4242] text-base mb-1 line-clamp-1">{item.productName}</h4>
-                            <div className="space-y-0.5 text-xs text-[#807D7E] font-medium">
+                            <div className="space-y-1.5 text-xs text-[#807D7E] font-medium">
                               <p className="flex items-center gap-1.5">
                                 Color :
                                 {item.color_code && (
@@ -228,14 +229,26 @@ const Profileorder = () => {
                                 )}
                                 {item.color_name && <span className="text-gray-700 font-bold capitalize">{item.color_name}</span>}
                               </p>
-                              <p className="flex items-center gap-1.5">
-                                Size :
-                                <span className="text-gray-700 font-bold capitalize">{item.size_name || "Free Size"}</span>
-                              </p>
-                              <p>
-                                Qty : <span className="text-gray-700 font-bold">{item.quantity}</span>
-                              </p>
-                              <p>
+                              <div className="flex gap-6">
+                                {(() => {
+                                  const sizeVal = item.size_name || item.size;
+                                  return sizeVal &&
+                                    sizeVal.trim() !== "" &&
+                                    sizeVal.toLowerCase() !== "na" &&
+                                    sizeVal.toLowerCase() !== "n/a" &&
+                                    sizeVal.toLowerCase() !== "free size" &&
+                                    sizeVal.toLowerCase() !== "free-size" ? (
+                                    <p className="flex items-center gap-1.5">
+                                      Size :
+                                      <span className="text-gray-700 font-bold capitalize">{sizeVal}</span>
+                                    </p>
+                                  ) : null;
+                                })()}
+                                <p>
+                                  Qty : <span className="text-gray-700 font-bold">{item.quantity}</span>
+                                </p>
+                              </div>
+                              <p className="text-[14px]">
                                 Total : <span className="text-gray-700 font-bold">₹{Math.round(item.totalAmount)}</span>
                               </p>
                             </div>
@@ -244,8 +257,10 @@ const Profileorder = () => {
                       ))}
                     </div>
 
+                    <div className="h-px bg-gray-50 w-full"></div>
+
                     {/* Actions */}
-                    <div className="flex flex-wrap justify-end gap-2.5 w-full lg:w-auto lg:mt-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-gray-50">
+                    <div className="flex flex-wrap justify-end gap-2.5 w-full lg:w-auto lg:mt-0">
                       {[
                         ORDER_STATUS.PENDING,
                         ORDER_STATUS.ACCEPTED,
@@ -264,7 +279,7 @@ const Profileorder = () => {
                             Cancel Order
                           </button>
                         )}
-                      {order.status === ORDER_STATUS.DELIVERED && (
+                      {/* {order.status === ORDER_STATUS.DELIVERED && (
                         <button
                           onClick={() => {
                             setSelectedOrderId(order.orderId);
@@ -280,7 +295,7 @@ const Profileorder = () => {
                           )}
                           Return Order
                         </button>
-                      )}
+                      )} */}
                       {canShowInvoice(order) && (
                         <button
                           onClick={() => {
@@ -290,7 +305,7 @@ const Profileorder = () => {
                           }}
                           className="w-full sm:w-auto bg-white border border-emerald-200 text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-sm"
                         >
-                          <Receipt size={14} />
+                          <FileText size={14} />
                           Invoice
                         </button>
                       )}

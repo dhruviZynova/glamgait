@@ -1,7 +1,10 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Scale, ShieldAlert, Ban, CreditCard, Globe, Info, Mail, CheckCircle2, AlertTriangle } from "lucide-react";
 
 const TermsofService = () => {
+  const location = useLocation();
+  const { pathname } = location;
   const [activeSection, setActiveSection] = useState("general");
 
   const sections = [
@@ -24,6 +27,9 @@ const TermsofService = () => {
   };
 
   React.useEffect(() => {
+    setActiveSection("general");
+    window.scrollTo({ top: 0, behavior: "instant" });
+
     const observerOptions = {
       root: null,
       rootMargin: "-20% 0px -60% 0px",
@@ -54,8 +60,9 @@ const TermsofService = () => {
           observer.unobserve(element);
         }
       });
+      observer.disconnect();
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-[#FDFCFB]">

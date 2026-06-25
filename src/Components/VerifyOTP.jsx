@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import longlight2 from "../assets/images/longlight2.png";
 import loginbgimg from "../assets/images/loginbgimg.png";
+import longlight from "../assets/images/longlight.webp";
 import { useNavigate, useLocation } from "react-router-dom";
 import { forgotPassword, verifyOTP } from "../api/user";
 import toast from "react-hot-toast";
@@ -101,17 +102,37 @@ const VerifyOTP = () => {
 
   return (
     <>
-      <div className="w-full pt-16 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-poppins">
+      <div className="w-full pt-16 md:pt-36 pb-16 px-4 md:px-12 lg:px-20 flex items-center justify-center font-poppins relative z-10 overflow-hidden">
+        {/* Hanging Lantern (Top Right) */}
+        <ScrollReveal
+          className="absolute -top-8 sm:-top-12 right-2 sm:right-4 md:right-8 lg:right-12 xl:right-16 z-30 pointer-events-none"
+          animation="fade-down"
+          duration={1200}
+        >
+          <img
+            src={longlight}
+            alt="Hanging Lantern"
+            className="w-22 sm:w-24 md:w-32 lg:w-44 h-auto drop-shadow-lg"
+          />
+        </ScrollReveal>
+
         <ScrollReveal animation="fade-up" duration={800} className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
           {/* Left Side: OTP Verification */}
-          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white shadow-lg rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
-            <div className="absolute top-8 left-8 lg:left-14">
+          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white shadow-lg rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10 relative">
+            <div className="absolute top-6 left-6 lg:left-12 flex items-center gap-3">
               <button
                 onClick={() => navigate("/forgot-password")}
-                className="flex items-center justify-start gap-3 pb-4 text-sm font-medium text-gray-400 hover:text-[#1A2C2C] transition-all duration-300 cursor-pointer group"
+                className="flex items-center justify-start gap-1.5 text-xs font-medium text-gray-400 hover:text-[#1A2C2C] transition-all duration-300 cursor-pointer"
               >
                 <FaArrowLeft className="text-[10px]" />
                 Back
+              </button>
+              <span className="text-gray-300 text-xs">|</span>
+              <button
+                onClick={() => navigate("/")}
+                className="flex items-center justify-start gap-1.5 text-xs font-medium text-gray-400 hover:text-[#1A2C2C] transition-all duration-300 cursor-pointer"
+              >
+                Back to Website
               </button>
             </div>
 

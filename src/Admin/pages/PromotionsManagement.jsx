@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 // src/pages/admin/PromotionsManagement.jsx
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { ChevronDown, Loader2, Inbox } from "lucide-react";
 import { ApiURL, showToaster } from "../../Variable"; // adjust path if needed
 import { adminAxios } from "../../Axios/axios";
 import {
@@ -184,10 +184,10 @@ const PromotionsManagement = () => {
             Promotions Management
           </h1>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex md:justify-end gap-3 w-full">
             <button
               onClick={() => setActiveTab("offers")}
-              className={`px-5 py-2 rounded-lg font-medium transition-colors cursor-pointer ${activeTab === "offers"
+              className={`w-full md:w-fit flex items-center justify-center px-5 py-2 rounded-lg font-medium transition-colors cursor-pointer ${activeTab === "offers"
                 ? "bg-black text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
@@ -197,7 +197,7 @@ const PromotionsManagement = () => {
             </button>
             <button
               onClick={() => setActiveTab("coupons")}
-              className={`px-5 py-2 rounded-lg font-medium transition-colors cursor-pointer ${activeTab === "coupons"
+              className={`w-full md:w-fit flex items-center justify-center px-5 py-2 rounded-lg font-medium transition-colors cursor-pointer ${activeTab === "coupons"
                 ? "bg-black text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
@@ -211,7 +211,7 @@ const PromotionsManagement = () => {
         <div className="flex justify-end">
           <button
             onClick={openAddModal}
-            className="flex items-center justify-center gap-2 bg-black text-white px-5 py-2 rounded-lg hover:bg-gray-900 transition-colors cursor-pointer"
+            className="w-full md:w-fit flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap cursor-pointer"
           >
             <PlusIcon className="h-5 w-5" />
             Add {activeTab === "offers" ? "Offer" : "Coupon"}
@@ -236,11 +236,19 @@ const PromotionsManagement = () => {
           </div>
         </div>
       ) : (activeTab === "offers" ? offers : coupons).length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No {activeTab} found</p>
+        <div className="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center mb-4 shadow-sm">
+            <Inbox className="w-7 h-7 text-gray-400" />
+          </div>
+          <p className="text-sm font-semibold text-gray-700 mb-1">
+            No {activeTab} found
+          </p>
+          <p className="text-xs text-gray-400">
+            Add your first {activeTab === "offers" ? "offer" : "coupon"} above
+          </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-lg shadow overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>

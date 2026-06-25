@@ -7,7 +7,7 @@ import {
   ChevronRightIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import { Trash2 } from "lucide-react";
+import { Trash2, Inbox } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { adminAxios } from "../../Axios/axios";
 import { ApiURL } from "../../Variable";
@@ -122,8 +122,16 @@ const Users = () => {
           </div>
         </div>
       ) : users.length === 0 ? (
-        <div className="text-center py-10 text-gray-500 text-lg">
-          No users found
+        <div className="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center mb-4 shadow-sm">
+            <Inbox className="w-7 h-7 text-gray-400" />
+          </div>
+          <p className="text-sm font-semibold text-gray-700 mb-1">
+            {searchTerm ? "No matching users found" : "No users yet"}
+          </p>
+          <p className="text-xs text-gray-400">
+            {searchTerm ? "Try adjusting your search query" : "Registered users will appear here"}
+          </p>
         </div>
       ) : (
         <>
