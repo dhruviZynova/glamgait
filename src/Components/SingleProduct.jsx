@@ -447,7 +447,7 @@ function SingleProduct() {
         <meta name="keywords" content={product.meta_keywords} />
       </Helmet>
 
-      <div className="px-2 py-6 pb-16 md:px-10 lg:px-20">
+      <div className="px-2 py-6 pb-10 md:pb-16 md:px-10 lg:px-20">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-[#9A8F87] mb-6 flex-wrap">
           <Link
@@ -623,7 +623,7 @@ function SingleProduct() {
                     <button
                       key={i}
                       onClick={() => handleMobileThumbnailClick(i)}
-                      className={`flex-shrink-0 w-14 overflow-hidden border cursor-pointer transition-all rounded-none ${mobileIndex === i ? "border-black" : "border-gray-200 opacity-60"
+                      className={`flex-shrink-0 w-16 overflow-hidden border cursor-pointer transition-all rounded-none ${mobileIndex === i ? "border-black" : "border-gray-200 opacity-60"
                         }`}
                       style={{ height: "4.5rem" }}
                     >
@@ -638,7 +638,7 @@ function SingleProduct() {
                   {colorVideo && (
                     <button
                       onClick={() => handleMobileThumbnailClick(imageFiles.length)}
-                      className={`flex-shrink-0 w-14 overflow-hidden border cursor-pointer transition-all rounded-none relative bg-black ${mobileIndex === imageFiles.length ? "border-black" : "border-gray-200 opacity-60"
+                      className={`flex-shrink-0 w-16 overflow-hidden border cursor-pointer transition-all rounded-none relative bg-black ${mobileIndex === imageFiles.length ? "border-black" : "border-gray-200 opacity-60"
                         }`}
                       style={{ height: "4.5rem" }}
                     >
@@ -879,13 +879,13 @@ function SingleProduct() {
         </div>
 
         {/* Tabs */}
-        <div className="mt-16 pt-10">
+        <div className="mt-6 md:mt-16 pt-10">
           <div className="flex gap-2">
             {["description", "details", "reviews"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative px-4 pb-2 text-sm font-semibold uppercase tracking-widest cursor-pointer ${activeTab === tab ? "text-[#1E1512] border-b-2 border-[#1E1512] " : "text-[#9A8F87] hover:text-[#3D2C25]"
+                className={`relative px-4 pb-2 text-[12px] md:text-[14px] font-semibold uppercase tracking-widest cursor-pointer ${activeTab === tab ? "text-[#1E1512] border-b-2 border-[#1E1512] " : "text-[#9A8F87] hover:text-[#3D2C25]"
                   }`}
               >
                 {tab}

@@ -86,7 +86,7 @@ const AdminLogin = () => {
     return (
         <div className="min-h-screen bg-[#F8F7F4] flex flex-col md:flex-row font-sans relative overflow-hidden">
             {/* LEFT SECTION (50% on desktop) - Visual Storytelling & Branding */}
-            <div className="w-full md:w-[50%] bg-gradient-to-br from-[#F8F7F4] via-[#F3F1EC] to-[#EBE7DF] p-8 md:p-12 flex flex-col items-center justify-center relative overflow-hidden border-r border-[#E5E7EB]">
+            <div className="w-full md:w-[50%] bg-gradient-to-br from-[#F8F7F4] via-[#F3F1EC] to-[#EBE7DF] py-12 md:py-0 p-6 md:p-12 lg:p-0 flex flex-col items-center justify-center relative overflow-hidden border-r border-[#E5E7EB]">
                 {/* Decorative Traditional Indian Motif (Subtle SVG Paisley Grid Pattern) */}
                 <div
                     className="absolute inset-0 opacity-[0.03] pointer-events-none"
@@ -124,13 +124,12 @@ const AdminLogin = () => {
                                         key={idx}
                                         src={img}
                                         alt={`Kundrat Collection Showcase ${idx + 1}`}
-                                        className={`absolute inset-0 w-full h-full object-cover object-top rounded-xl grayscale-[5%] hover:grayscale-0 transition-all duration-1000 ease-in-out ${
-                                            currentImageIndex === idx
-                                                ? "translate-x-0 z-10 opacity-100"
-                                                : (currentImageIndex - 1 + showcaseImages.length) % showcaseImages.length === idx
+                                        className={`absolute inset-0 w-full h-full object-cover object-top rounded-xl grayscale-[5%] hover:grayscale-0 transition-all duration-1000 ease-in-out ${currentImageIndex === idx
+                                            ? "translate-x-0 z-10 opacity-100"
+                                            : (currentImageIndex - 1 + showcaseImages.length) % showcaseImages.length === idx
                                                 ? "-translate-x-full z-10 opacity-0"
                                                 : "translate-x-full z-0 opacity-0"
-                                        }`}
+                                            }`}
                                     />
                                 ))}
                             </div>
@@ -182,7 +181,7 @@ const AdminLogin = () => {
             </div>
 
             {/* RIGHT SECTION (50% on desktop) - Clean Modern Login Form */}
-            <div className="w-full md:w-[50%] bg-[#F8F7F4] p-6 md:p-12 lg:p-20 flex items-center justify-center relative">
+            <div className="w-full md:w-[50%] bg-[#F8F7F4] py-12 md:py-0 p-6 md:p-12 lg:p-0 flex items-center justify-center relative">
                 {/* Accent glow on form background */}
                 <div className="absolute top-[-10%] right-[-10%] w-[300px] h-[300px] rounded-full bg-[#C9A96E]/5 blur-[80px] pointer-events-none"></div>
 

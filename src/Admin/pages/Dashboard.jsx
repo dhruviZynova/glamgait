@@ -66,6 +66,7 @@ const Dashboard = () => {
   const [timeframe, setTimeframe] = useState("daily");
   const [userCount, setUserCount] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
   const [dashboardCount, setDashboardCount] = useState({
     totalRevenue: 0,
     totalOrders: 0,
@@ -87,6 +88,15 @@ const Dashboard = () => {
 
   const [orderStatusData, setOrderStatusData] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
+
+  // Handle window resize for responsive charts
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Fetch dashboard data
   const fetchDashboardData = async () => {
@@ -375,8 +385,8 @@ const Dashboard = () => {
                 ))}
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={getCurrentData()}>
+            <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+              <AreaChart data={getCurrentData()} margin={{ top: 10, right: 5, left: isMobile ? -25 : -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey={
@@ -387,8 +397,16 @@ const Dashboard = () => {
                         : "date"
                   }
                   tickFormatter={(value) => formatChartDate(value, timeframe)}
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
                 />
-                <YAxis />
+                <YAxis
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
+                  tickFormatter={(val) => {
+                    if (val >= 100000) return `₹${(val / 100000).toFixed(1)}L`;
+                    if (val >= 1000) return `₹${(val / 1000).toFixed(0)}K`;
+                    return `₹${val}`;
+                  }}
+                />
                 <Tooltip
                   formatter={(value, name) => [
                     name === "revenue" ? `₹${value.toLocaleString()}` : value,
@@ -413,17 +431,19 @@ const Dashboard = () => {
             <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-6">
               Order Status Distribution
             </h2>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={isMobile ? 320 : 300}>
               <PieChart>
                 <Pie
                   data={orderStatusData}
                   cx="50%"
-                  cy="50%"
-                  labelLine={false}
+                  cy="45%"
+                  labelLine={!isMobile}
                   label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`
+                    isMobile 
+                      ? `${(percent * 100).toFixed(0)}%`
+                      : `${name}: ${(percent * 100).toFixed(0)}%`
                   }
-                  outerRadius={80}
+                  outerRadius={isMobile ? 65 : 80}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -432,6 +452,12 @@ const Dashboard = () => {
                   ))}
                 </Pie>
                 <Tooltip />
+                <Legend 
+                  verticalAlign="bottom" 
+                  height={isMobile ? 60 : 36} 
+                  iconType="circle"
+                  wrapperStyle={{ fontSize: isMobile ? "11px" : "12px", paddingTop: "10px" }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -465,8 +491,8 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={getCurrentData()}>
+          <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
+            <BarChart data={getCurrentData()} margin={{ top: 10, right: 5, left: isMobile ? -30 : -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey={
@@ -477,8 +503,11 @@ const Dashboard = () => {
                       : "date"
                 }
                 tickFormatter={(value) => formatChartDate(value, timeframe)}
+                tick={{ fontSize: isMobile ? 10 : 12 }}
               />
-              <YAxis />
+              <YAxis 
+                tick={{ fontSize: isMobile ? 10 : 12 }}
+              />
               <Tooltip
                 formatter={(value, name) => {
                   const labels = {
@@ -492,7 +521,7 @@ const Dashboard = () => {
                   return timeframe === "daily" ? formatted : `Period: ${formatted}`;
                 }}
               />
-              <Legend />
+              <Legend wrapperStyle={{ fontSize: isMobile ? "11px" : "12px" }} />
               <Bar
                 dataKey="eligibleOrders"
                 fill="#10B981"
@@ -559,7 +588,7 @@ const Dashboard = () => {
 
         {/* Recent Orders */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 min-w-0 w-full overflow-hidden">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b border-gray-200 gap-2 sm:gap-0">
+          <div className="flex flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b border-gray-200 gap-2 sm:gap-0">
             <h2 className="text-base sm:text-lg font-semibold text-gray-900">Recent Orders</h2>
             <Link to="/admin/orders">
               <button className="px-0 sm:px-4 py-1 sm:py-2 text-black hover:text-gray-600 underline cursor-pointer text-sm sm:text-base">View All Orders</button>

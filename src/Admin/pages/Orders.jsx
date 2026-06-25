@@ -382,9 +382,9 @@ const AdminOrders = () => {
                       </div>
 
                       <div className="flex flex-col items-start space-y-1.5">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest sm:hidden">
+                        {/* <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest sm:hidden">
                           Status
-                        </span>
+                        </span> */}
                         <span
                           className={`px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold border ${status.color}`}
                         >
@@ -420,7 +420,7 @@ const AdminOrders = () => {
                   {/* Expanded Details */}
                   {openOrderId === order.orderId && (
                     <div className="px-4 sm:px-6 pb-6 sm:pb-8 bg-gray-50/30 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-300 rounded-b-3xl">
-                      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 mt-8 w-full min-w-0">
+                      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 mt-6 w-full min-w-0">
                         {/* Shipping Info */}
                         <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md w-full min-w-0">
                           <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-50">

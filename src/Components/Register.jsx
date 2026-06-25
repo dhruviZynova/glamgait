@@ -6,7 +6,7 @@ import loginbgimg from "../assets/images/loginbgimg.png";
 import longlight from "../assets/images/longlight.webp";
 import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { FaRegEye, FaRegEyeSlash, FaArrowLeft } from "react-icons/fa";
 import BrandBanner from "./BrandBanner";
 import { Loader2 } from "lucide-react";
 import { useSignup } from "../hooks/useAuth";
@@ -85,6 +85,14 @@ const Register = () => {
 
           {/* Left Side: Register Form */}
           <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white shadow-lg rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
+            <div className="mb-4">
+              <button
+                onClick={() => navigate("/")}
+                className="inline-flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1A2C2C] transition-all cursor-pointer"
+              >
+                <FaArrowLeft size={10} /> Back to Website
+              </button>
+            </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[#1A2C2C] mb-2 font-poppins">Create Account</h1>
             <p className="text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8">
               Already Have An Account? <span onClick={() => navigate("/login", { state: { from } })} className="text-[#1A2C2C] font-medium underline cursor-pointer">Log In</span>
