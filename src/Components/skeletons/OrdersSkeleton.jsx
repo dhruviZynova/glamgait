@@ -30,6 +30,8 @@ const OrderRowSkeleton = () => (
       </div>
     </div>
 
+    <div className="h-px bg-gray-100 w-full my-8" />
+
     {/* Action buttons */}
     <div className="flex justify-end gap-3 mt-6">
       <div className="h-9 w-28 rounded-lg bg-gray-200 shimmer" />

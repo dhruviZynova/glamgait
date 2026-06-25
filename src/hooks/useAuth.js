@@ -16,7 +16,16 @@ export function useLogin() {
         throw new Error(res.description || "Invalid email or password");
       }
       
-      const userData = res.data;
+      const rawData = res.data;
+      const userData = Array.isArray(rawData) ? rawData[0] : rawData;
+
+      if (!userData || userData.role !== "user") {
+        if (userData?.role === "admin") {
+          throw new Error("Access denied. Admins cannot log in on the user site.");
+        }
+        throw new Error("Access denied. Only user accounts can log in here.");
+      }
+
       sessionStorage.setItem("GlamGait", JSON.stringify(userData));
       refreshUser();
 

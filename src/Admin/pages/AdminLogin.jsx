@@ -52,9 +52,10 @@ const AdminLogin = () => {
             });
 
             if (response.data.status === 1) {
-                const userData = response.data.data;
+                const rawData = response.data.data;
+                const userData = Array.isArray(rawData) ? rawData[0] : rawData;
 
-                if (userData.role === "admin") {
+                if (userData && userData.role === "admin") {
                     const userSessionData = {
                         name: userData.name || userData.u_name || '',
                         email: userData.email || '',
@@ -70,7 +71,11 @@ const AdminLogin = () => {
                     toast.success("Login Successful");
                     navigate("/admin");
                 } else {
-                    toast.error("Access denied. Admin privileges required.");
+                    if (userData?.role === "user") {
+                        toast.error("Access denied. Users cannot log in on the admin site.");
+                    } else {
+                        toast.error("Access denied. Only admin accounts can log in here.");
+                    }
                 }
             } else {
                 toast.error(response?.data?.description || "Login failed");

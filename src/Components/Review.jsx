@@ -375,7 +375,7 @@ const Review = ({ p_id: propPId, productId, onReviewChange }) => {
                 return stars;
               })()}
             </div>
-            <span className="text-sm text-[#8C7A70] font-[Oxygen]">{stats.totalRatings} {stats.totalRatings === 1 ? 'rating' : 'ratings'}</span>
+            <span className="text-sm text-[#8C7A70] font-[Oxygen]">{stats.totalRatings} {stats.totalRatings === 1 ? 'Rating' : 'Ratings'}</span>
           </div>
 
           {/* Breakdown Bars */}

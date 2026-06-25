@@ -260,7 +260,7 @@ const Profileorder = () => {
                     <div className="h-px bg-gray-50 w-full"></div>
 
                     {/* Actions */}
-                    <div className="flex flex-wrap justify-end gap-2.5 w-full lg:w-auto lg:mt-0 pt-4 lg:pt-0">
+                    <div className="flex flex-wrap justify-end gap-2.5 w-full lg:w-auto lg:mt-0">
                       {[
                         ORDER_STATUS.PENDING,
                         ORDER_STATUS.ACCEPTED,

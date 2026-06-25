@@ -153,7 +153,7 @@ const PersonalInfo = () => {
     <>
       {(
         <div className="min-h-screen">
-          <div className="w-full lg:pt-8 pt-4 px-2 md:px-8 xl:px-24 flex flex-col md:flex-row gap-6 md:gap-14 font-poppins">
+          <div className="w-full lg:pt-8 pt-4 lg:pb-8 pb-4 px-2 md:px-8 xl:px-24 flex flex-col md:flex-row gap-6 md:gap-14 font-poppins">
             {/* Left Sidebar */}
             <div className="md:w-1/3 lg:w-1/4">
               <SideBar />
@@ -175,16 +175,16 @@ const PersonalInfo = () => {
               {dataLoading ? (
                 <ProfileInfoSkeleton />
               ) : (
-                <div>
+                <div className="flex flex-col">
                   {/* Contact Details Card */}
-                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-8 mb-10">
-                    <h2 className="text-xl font-semibold text-[#3C4242] mb-6 flex items-center gap-2">
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-8 mb-6">
+                    <h2 className="text-xl font-semibold text-[#3C4242] mb-4 md:mb-6 flex items-center gap-2">
                       <User className="text-[#063d32] w-5 h-5" />
                       Contact Details
                     </h2>
 
                     {userData || !isLoggedIn ? (
-                      <div className="space-y-6">
+                      <div className="space-y-0 md:space-y-6">
                         {[
                           { label: "Your Name", field: "first_name", icon: User },
                           { label: "Email Address", field: "email", icon: Mail },
@@ -279,7 +279,7 @@ const PersonalInfo = () => {
                   </div>
 
                   {/* Address Section */}
-                  <div className="mt-12">
+                  <div className="mt-6 md:mt-12">
                     <div className="flex justify-between items-center mb-6">
                       <h2 className="text-xl font-semibold text-[#3C4242] flex items-center gap-2">
                         <MapPin className="text-[#063d32] w-5 h-5" />
@@ -305,7 +305,7 @@ const PersonalInfo = () => {
                             className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 hover:border-emerald-800/10 hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
                           >
                             <div>
-                              <div className="flex justify-between items-start mb-4 gap-2">
+                              <div className="flex justify-between items-start mb-2 md:mb-4 gap-2">
                                 <div>
                                   <p className="text-lg font-bold text-[#3C4242] capitalize">
                                     {addr.first_name} {addr.last_name}
@@ -333,12 +333,12 @@ const PersonalInfo = () => {
                                 </div>
                               </div>
 
-                              <p className="text-sm text-[#807D7E] mb-6 leading-relaxed">
+                              <p className="text-sm text-[#807D7E] mb-4 md:mb-6 leading-relaxed">
                                 {addr.address}{addr.apartment ? `, ${addr.apartment}` : ''}{addr.city ? `, ${addr.city}` : ''}{addr.zip_code ? ` - ${addr.zip_code}` : ''}{addr.state ? `, ${addr.state}` : ''}
                               </p>
                             </div>
 
-                            <div className="flex items-center gap-4 border-t border-gray-50 pt-4 mt-auto">
+                            <div className="flex items-center gap-4 border-t border-gray-100 pt-4 mt-auto">
                               <button
                                 className={`text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${addr.add_id.toString().startsWith('dummy')
                                   ? 'text-gray-300 cursor-not-allowed'
