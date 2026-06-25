@@ -72,14 +72,21 @@ const ForgotPassword = () => {
         <ScrollReveal animation="fade-up" duration={800} className="relative z-20 w-full max-w-5xl rounded-xl flex flex-col md:flex-row min-h-auto">
 
           {/* Left Side: Form */}
-          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white shadow-lg rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10">
-            <div className="absolute top-8 left-8 lg:left-14">
+          <div className="w-full bg-white/50 backdrop-blur-sm md:w-1/2 p-6 lg:p-12 flex flex-col justify-center bg-white shadow-lg rounded-t-xl md:rounded-tr-none md:rounded-l-xl z-10 relative">
+            <div className="absolute top-6 left-6 lg:left-12 flex items-center gap-3">
               <button
                 onClick={() => navigate("/login", { state: { from } })}
-                className="flex items-center justify-start gap-3 pb-4 text-sm font-medium text-gray-400 hover:text-[#1A2C2C] transition-all duration-300 cursor-pointer group"
+                className="flex items-center justify-start gap-1.5 text-xs font-medium text-gray-400 hover:text-[#1A2C2C] transition-all duration-300 cursor-pointer"
               >
                 <FaArrowLeft className="text-[10px]" />
-                Back
+                Back to Login
+              </button>
+              <span className="text-gray-300 text-xs">|</span>
+              <button
+                onClick={() => navigate("/")}
+                className="flex items-center justify-start gap-1.5 text-xs font-medium text-gray-400 hover:text-[#1A2C2C] transition-all duration-300 cursor-pointer"
+              >
+                Back to Website
               </button>
             </div>
 
