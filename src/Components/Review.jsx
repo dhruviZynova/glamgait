@@ -230,7 +230,7 @@ const ReviewCard = ({
             {isAuthor && onDelete && (
               <button
                 onClick={() => onDelete(review.r_id || review.review_id)}
-                className="p-1.5 rounded-full bg-gray-50 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+                className="p-1.5 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer"
                 title="Delete your review"
               >
                 <Trash2 size={16} />

@@ -101,7 +101,6 @@ const FilterSkeleton = () => (
   </aside>
 );
 
-
 const DEFAULT_FILTERS = {
   subcategories: [],
   fabrics: [],
@@ -110,6 +109,24 @@ const DEFAULT_FILTERS = {
   styles: [],
   sizes: [],
   categories: [],
+};
+
+const sanitizePriceInput = (value) => {
+  // Remove any non-numeric characters
+  let cleanValue = value.replace(/[^0-9]/g, "");
+
+  if (cleanValue === "") {
+    return "0";
+  }
+
+  // Trim leading zeros, but allow a single 0 if the value is 0
+  if (cleanValue.length > 1 && cleanValue.startsWith("0")) {
+    cleanValue = cleanValue.replace(/^0+/, "");
+    if (cleanValue === "") {
+      cleanValue = "0";
+    }
+  }
+  return cleanValue;
 };
 
 const Allproducts = () => {
@@ -1072,12 +1089,13 @@ const Allproducts = () => {
                             <div className="relative w-1/2">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
                               <input
-                                type="number"
-                                min={0}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
                                 value={priceRange[0]}
                                 onChange={(e) => {
-                                  const val = e.target.value === "" ? 0 : Number(e.target.value);
-                                  setPriceRange([val, priceRange[1]]);
+                                  const sanitized = sanitizePriceInput(e.target.value);
+                                  setPriceRange([Number(sanitized), priceRange[1]]);
                                 }}
                                 className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none transition-colors text-gray-700 font-medium placeholder-gray-400"
                                 placeholder="Min"
@@ -1086,12 +1104,13 @@ const Allproducts = () => {
                             <div className="relative w-1/2">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
                               <input
-                                type="number"
-                                min={0}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
                                 value={priceRange[1]}
                                 onChange={(e) => {
-                                  const val = e.target.value === "" ? 0 : Number(e.target.value);
-                                  setPriceRange([priceRange[0], val]);
+                                  const sanitized = sanitizePriceInput(e.target.value);
+                                  setPriceRange([priceRange[0], Number(sanitized)]);
                                 }}
                                 className="w-full pl-6 pr-2 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none transition-colors text-gray-700 font-medium placeholder-gray-400"
                                 placeholder="Max"

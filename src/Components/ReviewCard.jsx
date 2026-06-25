@@ -55,7 +55,7 @@ const ReviewCard = ({ name, review, rating = 5, product, fallbackProductName }) 
           {/* Name & Review Text */}
           <div className="flex flex-col items-center text-center w-full px-4">
             {/* Product Name */}
-            <h4 className="text-[12px] font-semibold text-gray-900 mb-1.5 font-sans line-clamp-1 leading-tight">
+            <h4 className="text-[12px] font-semibold text-gray-900 mb-1.5 font-sans line-clamp-1">
               {productName}
             </h4>
 
@@ -75,7 +75,7 @@ const ReviewCard = ({ name, review, rating = 5, product, fallbackProductName }) 
             </div>
 
             {/* Review Message */}
-            <p className="text-[14px] text-gray-600 leading-relaxed font-sans line-clamp-2 mb-2">
+            <p className="text-[#4a5568] leading-relaxed line-clamp-2 mb-2 italic text-sm font-serif">
               "{review}"
             </p>
 
