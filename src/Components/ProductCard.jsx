@@ -1,28 +1,28 @@
 import React, { useState } from "react";
 import { Heart } from "lucide-react";
-import { createSlug } from "../Variable";
 import { useUser } from "../Context/UserContext";
 import axiosInstance from "../Axios/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useWishlist } from "../hooks/useWishlist";
 import { useQueryClient } from "@tanstack/react-query";
+import { getFullImageUrl } from "../Variable";
 
 import "../style/ProductCard.css";
 
 const ProductCard = ({
   product,
-  wishlistMap,
   onWishlistChange,
 }) => {
   const navigate = useNavigate();
   const { user } = useUser();
   const [selectedColorId, setSelectedColorId] = useState(null);
 
-  // Support both API shapes:
-  // /productbycategory → product.colors[]   (fields: pcolor_id OR color_id, images[])
+  // Support all API shapes:
+  // /productbycategory → product.color[]       (singular! fields: pcolor_id OR color_id, images[])
   // /getallproducts   → product.productcolors[] (fields: pcolor_id, productimages[])
-  const colorList = product?.colors || product?.productcolors || [];
+  // Legacy fallback   → product.colors[]
+  const colorList = product?.color || product?.colors || product?.productcolors || [];
   const firstColor = colorList[0];
 
   // Get the currently selected color object, defaulting to first color
@@ -41,8 +41,8 @@ const ProductCard = ({
 
   // Check if this product & selected color is in the wishlist
   const isWished = React.useMemo(() => {
-    return wishlistItems.some(item => 
-      String(item.p_id) === String(product.p_id) && 
+    return wishlistItems.some(item =>
+      String(item.p_id) === String(product.p_id) &&
       (
         (item.pcolor_id && currentColorId && String(item.pcolor_id) === String(currentColorId)) ||
         (item.color_name && currentColorName && item.color_name.toLowerCase() === currentColorName.toLowerCase())
@@ -51,8 +51,8 @@ const ProductCard = ({
   }, [wishlistItems, product.p_id, currentColorId, currentColorName]);
 
   const wishlistId = React.useMemo(() => {
-    const found = wishlistItems.find(item => 
-      String(item.p_id) === String(product.p_id) && 
+    const found = wishlistItems.find(item =>
+      String(item.p_id) === String(product.p_id) &&
       (
         (item.pcolor_id && currentColorId && String(item.pcolor_id) === String(currentColorId)) ||
         (item.color_name && currentColorName && item.color_name.toLowerCase() === currentColorName.toLowerCase())
@@ -69,11 +69,14 @@ const ProductCard = ({
   }, [product?.original_price, product?.price]);
 
   // Get image URL from the selected color — do NOT hardcode index [0]; use first available
-  // Both API shapes: images[] (new) or productimages[] (old)
-  const currentImageUrl =
+  // All API shapes: images[] (productbycategory), productimages[] (getallproducts)
+  const rawImageUrl =
     currentColor?.images?.[0]?.image_url ||
     currentColor?.productimages?.[0]?.image_url ||
     "";
+
+  // Build the full URL — image_url from API is a relative filename, needs base URL + folder
+  const currentImageUrl = getFullImageUrl(rawImageUrl, "Products");
 
   const toggleWishlist = async (e) => {
     e.stopPropagation();
@@ -213,12 +216,12 @@ const ProductCard = ({
     if (typeof product.total_stock === "number") {
       return product.total_stock;
     }
-    const list = product.productcolors || product.colors || [];
+    const list = product.color || product.productcolors || product.colors || [];
     return list.reduce((acc, color) => {
       const sizes = color.productsizes || color.sizes || [];
       return acc + sizes.reduce((sAcc, size) => sAcc + (Number(size.remaining_qty) || 0), 0);
     }, 0);
-  }, [product?.total_stock, product?.productcolors, product?.colors]);
+  }, [product?.total_stock, product?.productcolors, product?.colors, product?.color]);
 
   const productSlug = product.p_id;
 

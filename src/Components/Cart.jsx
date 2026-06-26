@@ -217,7 +217,7 @@ const Cart = () => {
                               : <X size={18} className="text-[#3D3D3D]" />}
                           </button>
                           <img
-                            src={`${ApiURL}/assets/Products/${item.image_url}`}
+                            src={item.image_url.startsWith("http") ? item.image_url : `${ApiURL}/assets/Products/${item.image_url}`}
                             alt={item.product_name}
                             className="w-20 h-24 object-cover rounded"
                           />
@@ -299,7 +299,7 @@ const Cart = () => {
                   </button>
                   <div className="flex flex-col items-center gap-4">
                     <img
-                      src={`${ApiURL}/assets/Products/${item.image_url}`}
+                      src={item.image_url.startsWith("http") ? item.image_url : `${ApiURL}/assets/Products/${item.image_url}`}
                       alt={item.product_name}
                       className="w-32 h-40 object-cover rounded-lg"
                     />

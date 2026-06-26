@@ -245,7 +245,7 @@ const MediaSection = ({
                       </div>
                     ) : (
                       <img
-                        src={mediaUrl}
+                        src={img.image_url.startsWith("http") ? img.image_url : mediaUrl}
                         alt="existing"
                         className="w-24 h-24 object-cover rounded-lg border"
                       />

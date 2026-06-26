@@ -159,17 +159,54 @@ const ProductModal = ({ isOpen, onClose, product, refreshProducts }) => {
           pcolorToColorId[pc.pcolor_id] = pc.color_id;
         });
 
+        // Build a video and image lookup from prod.colors (color_id -> video & images)
+        const colorVideoMap = {};
+        const colorImagesMap = {};
+        (prod.colors || []).forEach((c) => {
+          if (c.color_id) {
+            const idStr = String(c.color_id);
+            if (c.video) {
+              colorVideoMap[idStr] = c.video;
+              colorVideoMap[c.color_id] = c.video;
+            }
+            if (c.images) {
+              colorImagesMap[idStr] = c.images;
+              colorImagesMap[c.color_id] = c.images;
+            }
+          }
+          if (c.color_name) {
+            const nameLower = c.color_name.toLowerCase();
+            if (c.video) colorVideoMap[nameLower] = c.video;
+            if (c.images) colorImagesMap[nameLower] = c.images;
+          }
+        });
+
         // Deduplicate existing media rows for display
         const existing = [];
         const seenColorIdsForMedia = new Set();
         prod.productcolors?.forEach((pc) => {
           if (pc.color_id && !seenColorIdsForMedia.has(pc.color_id)) {
             seenColorIdsForMedia.add(pc.color_id);
+
+            const colorIdStr = pc.color?.color_id ? String(pc.color.color_id) : pc.color_id ? String(pc.color_id) : "";
+            const colorNameStr = pc.color?.color_name?.toLowerCase() || pc.color_name?.toLowerCase() || "";
+
+            const videoUrl = colorVideoMap[colorIdStr] || pc.video || "";
+            const rawImages = colorImagesMap[colorIdStr] || 
+                              (colorNameStr ? colorImagesMap[colorNameStr] : []) || 
+                              pc.productimages || 
+                              [];
+            const imagesList = rawImages.map(img => {
+              if (typeof img === "string") return { image_url: img };
+              if (img && img.image_url) return { image_url: img.image_url };
+              return img;
+            });
+
             existing.push({
               pcolor_id: pc.pcolor_id,
               color_name: pc.color?.color_name || "Unknown",
-              images: pc.productimages || [],
-              video: pc.video || "",
+              images: imagesList,
+              video: videoUrl,
             });
           }
         });

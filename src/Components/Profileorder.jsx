@@ -164,7 +164,7 @@ const Profileorder = () => {
               ) : filteredOrders?.map((order) => (
                 <div
                   key={order.orderId}
-                  className="bg-white rounded-2xl p-4 md:p-6 sm:p-8 shadow-sm border border-gray-100 hover:border-emerald-800/10 hover:shadow-md transition-all duration-300"
+                  className="bg-white rounded-2xl p-4 md:p-6 sm:p-8 shadow-sm border border-gray-100 transition-all duration-300"
                 >
                   {/* Header Info */}
                   <div className="flex flex-col lg:flex-row justify-between gap-6 mb-6">
@@ -212,7 +212,7 @@ const Profileorder = () => {
                       {order.orderItems.map((item) => (
                         <div key={item.orderItemId} className="flex gap-4 w-full sm:w-auto">
                           <img
-                            src={`${ApiURL}/assets/Products/${item.imageUrl}`}
+                            src={item.imageUrl.startsWith("http") ? item.imageUrl : `${ApiURL}/assets/Products/${item.imageUrl}`}
                             alt={item.productName}
                             className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover shadow-sm transition-transform duration-300 group-hover:scale-105 border border-gray-50 flex-shrink-0"
                           />
