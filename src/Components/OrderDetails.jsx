@@ -530,7 +530,7 @@ const OrderDetails = () => {
                           {/* Top Row: Image & Details */}
                           <div className="flex flex-row gap-4 sm:gap-6 items-start">
                             <img
-                              src={`${ApiURL}/assets/Products/${item.imageUrl}`}
+                              src={item.imageUrl.startsWith("http") ? item.imageUrl : `${ApiURL}/assets/Products/${item.imageUrl}`}
                               alt={item.productName}
                               className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover shadow-sm transition-transform duration-300 group-hover:scale-105 border border-gray-50 flex-shrink-0"
                             />
@@ -634,7 +634,7 @@ const OrderDetails = () => {
                               ).length;
 
                               return (
-                                <div className="mt-4 pt-4 border-t border-gray-100 font-poppins">
+                                <div className="pt-4 border-t border-gray-100 font-poppins">
                                   {/* ✅ Already-reviewed notice — shown only if purchased in multiple orders */}
                                   {orderedOrdersCount > 1 && (
                                     <div className="flex items-start gap-2 bg-blue-50/60 border border-blue-100 rounded-xl px-3 py-2.5 mb-3">
@@ -708,18 +708,20 @@ const OrderDetails = () => {
 
                                     {/* Edit + Delete buttons */}
                                     <div className="flex items-center gap-2 shrink-0 self-end sm:self-start">
-                                      <button
-                                        onClick={() => {
-                                          setSelectedProductForReview(item);
-                                          setExistingReviewForModal(userReview);
-                                          setShowReviewModal(true);
-                                        }}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#063d32] border border-[#063d32]/30 bg-white hover:bg-[#063d32] hover:text-white rounded-xl transition-all cursor-pointer font-poppins"
-                                        title="Edit Review"
-                                      >
-                                        <Pencil size={11} />
-                                        Edit Review
-                                      </button>
+                                      {status !== "pending" && (
+                                        <button
+                                          onClick={() => {
+                                            setSelectedProductForReview(item);
+                                            setExistingReviewForModal(userReview);
+                                            setShowReviewModal(true);
+                                          }}
+                                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#063d32] border border-[#063d32]/30 bg-white hover:bg-[#063d32] hover:text-white rounded-xl transition-all cursor-pointer font-poppins"
+                                          title="Edit Review"
+                                        >
+                                          <Pencil size={11} />
+                                          Edit Review
+                                        </button>
+                                      )}
                                       <button
                                         onClick={() => handleDeleteReview(userReview.r_id || userReview.review_id, p_id)}
                                         className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full border border-red-100 transition cursor-pointer"
