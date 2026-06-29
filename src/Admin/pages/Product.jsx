@@ -250,7 +250,7 @@ const Product = () => {
                         <div className="relative w-full h-full">
                           <video
                             src={mediaUrl}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             muted
                             loop
                             playsInline
@@ -270,7 +270,7 @@ const Product = () => {
                           src={mediaUrl}
                           alt={product.name}
                           loading="lazy"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                       );
                     })()}

@@ -584,7 +584,7 @@ const SelectAddressPage = () => {
                                 {/* Coupon and Offers Promo Section */}
                                 <div className="border-t pt-4 mt-4 bg-gray-50/50 p-4 rounded-lg">
                                     <h4 className="text-sm font-semibold text-[#1C2F2F] mb-3 font-[Oxygen] uppercase tracking-wider">Promotions & Coupons</h4>
-                                    
+
                                     {/* Coupon Input */}
                                     <div>
                                         {!couponApplied ? (

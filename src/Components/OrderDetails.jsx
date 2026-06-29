@@ -532,7 +532,7 @@ const OrderDetails = () => {
                             <img
                               src={item.imageUrl.startsWith("http") ? item.imageUrl : `${ApiURL}/assets/Products/${item.imageUrl}`}
                               alt={item.productName}
-                              className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover shadow-sm transition-transform duration-300 group-hover:scale-105 border border-gray-50 flex-shrink-0"
+                              className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover object-top shadow-sm transition-transform duration-300 group-hover:scale-105 border border-gray-50 flex-shrink-0"
                             />
                             <div className="flex-1 text-left">
                               <h3 className="font-bold text-[#3C4242] text-sm sm:text-lg mb-1 sm:mb-2 line-clamp-2">
