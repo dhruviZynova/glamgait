@@ -214,7 +214,7 @@ const Profileorder = () => {
                           <img
                             src={item.imageUrl.startsWith("http") ? item.imageUrl : `${ApiURL}/assets/Products/${item.imageUrl}`}
                             alt={item.productName}
-                            className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover shadow-sm transition-transform duration-300 group-hover:scale-105 border border-gray-50 flex-shrink-0"
+                            className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover object-top shadow-sm border border-gray-50 shrink-0"
                           />
                           <div className="flex flex-col justify-center">
                             <h4 className="font-bold text-[#3C4242] text-base mb-1 line-clamp-1">{item.productName}</h4>

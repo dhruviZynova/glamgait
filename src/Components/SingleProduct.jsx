@@ -314,7 +314,7 @@ function SingleProduct() {
               product_name: product.name,
               price: product.price,
               quantity,
-              image_url: selectedColor.productimages[0]?.image_url,
+              image_url: selectedColor.productimages?.[0]?.image_url,
               color_name: selectedColor.color.color_name,
               // ADD THIS LINE:
               color_code: selectedColor.color.color_code,
