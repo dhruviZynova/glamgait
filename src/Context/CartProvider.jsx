@@ -1,16 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../Axios/axios";
 import { userInfo } from "../Variable";
-
-const CartContext = createContext();
-
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart must be used within a CartProvider");
-  }
-  return context;
-};
+import { CartContext } from "./CartContext";
 
 export const CartProvider = ({ children }) => {
   const [cartCount, setCartCount] = useState(0);

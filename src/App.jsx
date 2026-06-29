@@ -22,7 +22,7 @@ const lazy = (importFunc) =>
     })
   );
 import { LoaderProvider } from "./Context/LoaderContext";
-import { CartProvider } from "./Context/CartContext";
+import { CartProvider } from "./Context/CartProvider";
 import { UserProvider } from "./Context/UserContext";
 import GlobalLoader from "./Components/GlobalLoader";
 import Navbar from "./Components/Navbar";
