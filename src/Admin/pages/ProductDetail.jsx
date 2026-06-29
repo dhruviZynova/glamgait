@@ -36,10 +36,26 @@ const ProductDetail = () => {
         stockMap[`${v.pcolor_id}-${v.psize_id}`] = v.remaining_qty;
       });
 
-      // Build a video lookup from productData.colors (color_id -> video URL)
+      // Build a video and image lookup from productData.colors (color_id -> video & images)
       const colorVideoMap = {};
+      const colorImagesMap = {};
       (productData.colors || []).forEach((c) => {
-        if (c.color_id && c.video) colorVideoMap[c.color_id] = c.video;
+        if (c.color_id) {
+          const idStr = String(c.color_id);
+          if (c.video) {
+            colorVideoMap[idStr] = c.video;
+            colorVideoMap[c.color_id] = c.video;
+          }
+          if (c.images) {
+            colorImagesMap[idStr] = c.images;
+            colorImagesMap[c.color_id] = c.images;
+          }
+        }
+        if (c.color_name) {
+          const nameLower = c.color_name.toLowerCase();
+          if (c.video) colorVideoMap[nameLower] = c.video;
+          if (c.images) colorImagesMap[nameLower] = c.images;
+        }
       });
 
       const enhancedColors =
@@ -74,10 +90,24 @@ const ProductDetail = () => {
               },
             ];
           }
-          const videoUrl = colorVideoMap[color.color?.color_id] || color.video || null;
+          const colorIdStr = color.color?.color_id ? String(color.color.color_id) : color.color_id ? String(color.color_id) : "";
+          const colorNameStr = color.color?.color_name?.toLowerCase() || color.color_name?.toLowerCase() || "";
+
+          const videoUrl = colorVideoMap[colorIdStr] || color.video || null;
+          const rawImages = colorImagesMap[colorIdStr] || 
+                            (colorNameStr ? colorImagesMap[colorNameStr] : []) || 
+                            color.productimages || 
+                            [];
+          const imagesList = rawImages.map(img => {
+            if (typeof img === "string") return { image_url: img };
+            if (img && img.image_url) return { image_url: img.image_url };
+            return img;
+          });
+
           return {
             ...color,
             video: videoUrl,
+            productimages: imagesList,
             sizes: sizesWithStock,
             has_stock: colorTotalStock > 0,
             total_available: colorTotalStock,

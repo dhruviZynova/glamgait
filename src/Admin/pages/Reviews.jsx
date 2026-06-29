@@ -170,7 +170,7 @@ const Reviews = () => {
         name: review.reviewer_name || "",
         image: null,
         preview: review.image_url
-          ? `${ApiURL}/assets/UserReviews/${review.image_url}`
+          ? getReviewImageUrl(review.image_url)
           : null,
         productImage: review.product_image || "", // Assuming you might have this field or you can look it up
         customCreatedAt: review.custom_created_at || null,
@@ -239,6 +239,16 @@ const Reviews = () => {
       month: "short",
       day: "numeric",
     });
+
+  const getReviewImageUrl = (imageUrlString) => {
+    if (!imageUrlString) return "";
+    const firstImg = imageUrlString.split(",").filter(Boolean)[0];
+    if (!firstImg) return "";
+    if (firstImg.startsWith("http://") || firstImg.startsWith("https://")) {
+      return firstImg;
+    }
+    return `${ApiURL}/assets/UserReviews/${firstImg}`;
+  };
 
   const getPageNumbers = () => {
     const pages = [];
@@ -315,10 +325,9 @@ const Reviews = () => {
                 key={r.r_id}
                 className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 flex flex-col"
               >
-                {/* Image */}
-                {r.image_url && (
+                {r.image_url && getReviewImageUrl(r.image_url) && (
                   <img
-                    src={`${ApiURL}/assets/UserReviews/${r.image_url}`}
+                    src={getReviewImageUrl(r.image_url)}
                     alt="review"
                     className="w-full h-40 object-cover rounded-lg mb-3"
                   />
@@ -406,9 +415,9 @@ const Reviews = () => {
                 {reviews.map((r) => (
                   <tr key={r.r_id}>
                     <td className="px-6 py-3">
-                      {r.image_url ? (
+                      {r.image_url && getReviewImageUrl(r.image_url) ? (
                         <img
-                          src={`${ApiURL}/assets/UserReviews/${r.image_url}`}
+                          src={getReviewImageUrl(r.image_url)}
                           alt="review"
                           className="w-12 h-12 object-cover rounded-md"
                         />

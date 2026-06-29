@@ -337,13 +337,13 @@ const AdminOrders = () => {
               return (
                 <div
                   key={order.orderId}
-                  className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 w-full max-w-full overflow-hidden"
+                  className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 w-full max-w-full"
                 >
                   {/* Card Header/Row */}
                   <div
-                    className={`p-4 sm:p-6 cursor-pointer transition-colors ${openOrderId === order.orderId
+                    className={`p-4 sm:p-6 cursor-pointer transition-colors rounded-t-3xl ${openOrderId === order.orderId
                       ? "bg-gray-50/50"
-                      : "hover:bg-gray-50/30"
+                      : "hover:bg-gray-50/30 rounded-3xl"
                       }`}
                     onClick={() => toggleOrder(order.orderId)}
                   >
@@ -495,7 +495,7 @@ const AdminOrders = () => {
                                   <img
                                     src={
                                       item.imageUrl
-                                        ? `${ApiURL}/assets/Products/${item.imageUrl}`
+                                        ? (item.imageUrl.startsWith("http") ? item.imageUrl : `${ApiURL}/assets/Products/${item.imageUrl}`)
                                         : "/placeholder.jpg"
                                     }
                                     alt={item.productName}

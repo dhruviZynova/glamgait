@@ -701,7 +701,12 @@ const Checkout = () => {
                                     {/* Product List */}
                                     <div className="space-y-8 px-4 md:px-10 py-6">
                                         {cartItems.map((item, index) => (
-                                            <div key={item.cart_id || index} className="flex items-start text-[#767676] font-[Oxygen] text-sm md:text-lg">
+                                            <div key={item.cart_id || index} className="flex items-start text-[#767676] font-[Oxygen] text-sm md:text-lg gap-4">
+                                                <img
+                                                    src={item.image_url?.startsWith("http") ? item.image_url : `${ApiURL}/assets/Products/${item.image_url}`}
+                                                    alt={item.product_name}
+                                                    className="w-12 h-16 object-cover rounded border flex-shrink-0"
+                                                />
                                                 <div className="w-1/2 flex flex-col">
                                                     <span className="font-medium text-[#3D3D3D] leading-tight">{item.product_name}</span>
 

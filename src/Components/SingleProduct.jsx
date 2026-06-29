@@ -9,7 +9,6 @@ import { ApiURL, createSlug } from "../Variable";
 import { useUser } from "../Context/UserContext";
 import axiosInstance from "../Axios/axios";
 import ReletedProduct from "../Components/ReletedProduct";
-import { getGuestId } from "../utils/guest";
 import toast from "react-hot-toast";
 import Review from "./Review";
 import SingleProductSkeleton from "./skeletons/SingleProductSkeleton";
@@ -92,10 +91,26 @@ function SingleProduct() {
             stockMap[`${v.pcolor_id}-${v.psize_id || "nosize"}`] = v.remaining_qty;
           });
 
-          // Build a video lookup from data.colors (color_id -> video URL)
+          // Build a video and image lookup from data.colors (color_id -> video & images)
           const colorVideoMap = {};
+          const colorImagesMap = {};
           (data.colors || []).forEach((c) => {
-            if (c.color_id && c.video) colorVideoMap[c.color_id] = c.video;
+            if (c.color_id) {
+              const idStr = String(c.color_id);
+              if (c.video) {
+                colorVideoMap[idStr] = c.video;
+                colorVideoMap[c.color_id] = c.video;
+              }
+              if (c.images) {
+                colorImagesMap[idStr] = c.images;
+                colorImagesMap[c.color_id] = c.images;
+              }
+            }
+            if (c.color_name) {
+              const nameLower = c.color_name.toLowerCase();
+              if (c.video) colorVideoMap[nameLower] = c.video;
+              if (c.images) colorImagesMap[nameLower] = c.images;
+            }
           });
 
           const enhancedColors = data.productcolors.map((color) => {
@@ -110,11 +125,24 @@ function SingleProduct() {
                 remaining_qty: stockMap[`${color.pcolor_id}-nosize`] || 0,
                 in_stock: (stockMap[`${color.pcolor_id}-nosize`] || 0) > 0,
               }];
-            // Attach video from data.colors via color.color.color_id
-            const videoUrl = colorVideoMap[color.color?.color_id] || color.video || null;
+            // Attach video and images from data.colors via color_id, color_name matching
+            const colorIdStr = color.color?.color_id ? String(color.color.color_id) : color.color_id ? String(color.color_id) : "";
+            const colorNameStr = color.color?.color_name?.toLowerCase() || color.color_name?.toLowerCase() || "";
+            
+            const videoUrl = colorVideoMap[colorIdStr] || color.video || null;
+            const rawImages = colorImagesMap[colorIdStr] || 
+                              (colorNameStr ? colorImagesMap[colorNameStr] : []) || 
+                              color.productimages || 
+                              [];
+            const imagesList = rawImages.map(img => {
+              if (typeof img === "string") return { image_url: img };
+              if (img && img.image_url) return { image_url: img.image_url };
+              return img;
+            });
             return {
               ...color,
               video: videoUrl,
+              productimages: imagesList,
               sizes,
               has_stock: sizes.some((s) => s.in_stock),
               total_available: sizes.reduce((sum, s) => sum + s.remaining_qty, 0),
@@ -477,7 +505,7 @@ function SingleProduct() {
                       className="flex-shrink-0 w-[64px] h-[80px] rounded-md overflow-hidden border border-[#E8E0DA] hover:border-[#3D2C25] transition-all cursor-pointer"
                     >
                       <img
-                        src={`${ApiURL}/assets/Products/${file}`}
+                        src={file.startsWith("http") ? file : `${ApiURL}/assets/Products/${file}`}
                         alt={`thumb-${i}`}
                         className="w-full h-full object-cover"
                       />
@@ -522,7 +550,7 @@ function SingleProduct() {
                     className="relative w-full bg-[#F5F1EE] rounded-lg overflow-hidden cursor-zoom-in group"
                   >
                     <img
-                      src={`${ApiURL}/assets/Products/${file}`}
+                      src={file.startsWith("http") ? file : `${ApiURL}/assets/Products/${file}`}
                       alt={`${product.name}-${i}`}
                       className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                       loading={i === 0 ? "eager" : "lazy"}
@@ -576,7 +604,7 @@ function SingleProduct() {
                   {imageFiles.map((file, i) => (
                     <div key={i} className="w-full h-full flex-shrink-0 snap-start snap-always relative">
                       <img
-                        src={`${ApiURL}/assets/Products/${file}`}
+                        src={file.startsWith("http") ? file : `${ApiURL}/assets/Products/${file}`}
                         alt={`${product.name}-${i}`}
                         className="w-full h-full object-cover"
                       />
@@ -628,7 +656,7 @@ function SingleProduct() {
                       style={{ height: "4.5rem" }}
                     >
                       <img
-                        src={`${ApiURL}/assets/Products/${file}`}
+                        src={file.startsWith("http") ? file : `${ApiURL}/assets/Products/${file}`}
                         alt={`thumb-${i}`}
                         className="w-full h-full object-cover"
                       />
@@ -974,7 +1002,7 @@ function SingleProduct() {
         {lightboxImage && (
           <ImagePop
             onClose={() => setLightboxImage(null)}
-            image={`${ApiURL}/assets/Products/${lightboxImage}`}
+            image={lightboxImage.startsWith("http") ? lightboxImage : `${ApiURL}/assets/Products/${lightboxImage}`}
           />
         )}
 
