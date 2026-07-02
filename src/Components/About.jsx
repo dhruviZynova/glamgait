@@ -31,7 +31,7 @@ const About = () => {
     {
       icon: <Award className="w-6 h-6" />,
       title: "Premium Fabrics",
-      description: "We source only the finest, breathable fabrics to ensure comfort and elegance in every garment we craft."
+      description: "We handpick only the finest, skin-friendly fabrics soft, breathable, and gracefully flowing so every Niqab, Burqa, and Saree drapes with effortless comfort and timeless elegance."
     },
     {
       icon: <Sparkles className="w-6 h-6" />,
