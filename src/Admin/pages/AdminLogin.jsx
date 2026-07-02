@@ -81,7 +81,8 @@ const AdminLogin = () => {
                 toast.error(response?.data?.description || "Login failed");
             }
         } catch (err) {
-            toast.error("Something went wrong");
+            const errorMessage = err.response?.data?.description || err.response?.data?.message || "Something went wrong";
+            toast.error(errorMessage);
             console.log(err);
         } finally {
             setLoading(false);
