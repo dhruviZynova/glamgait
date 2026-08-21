@@ -254,9 +254,8 @@ function SingleProduct() {
           price: product.price,
           original_price: product.original_price,
           image_url: selectedColor.productimages?.[0]?.image_url || "",
-          color_name: selectedColor.color.color_name,
-          // ADD THIS LINE:
-          color_code: selectedColor.color.color_code || selectedColor.color_code || "",
+          color_name: selectedColor.color?.color_name || selectedColor.color_name || "",
+          color_code: selectedColor.color?.color_code || selectedColor.color_code || "",
 
           size_name: selectedSize?.size?.size_name || null,
           available_stock: availableStock,
@@ -315,9 +314,8 @@ function SingleProduct() {
               price: product.price,
               quantity,
               image_url: selectedColor.productimages[0]?.image_url,
-              color_name: selectedColor.color.color_name,
-              // ADD THIS LINE:
-              color_code: selectedColor.color.color_code,
+              color_name: selectedColor.color?.color_name || selectedColor.color_name || "",
+              color_code: selectedColor.color?.color_code || selectedColor.color_code || "",
 
               size_name: product.has_sizes ? selectedSize.size.size_name : "Free Size",
               pcolor_id: selectedColor.pcolor_id,
@@ -381,7 +379,7 @@ function SingleProduct() {
           pcolor_id: selectedColor.pcolor_id, psize_id: selectedSize?.psize_id ?? null,
           product_name: product.name, price: product.price, original_price: product.original_price,
           image_url: selectedColor.productimages?.[0]?.image_url || "",
-          color_name: selectedColor.color.color_name,
+          color_name: selectedColor.color?.color_name || selectedColor.color_name || "",
           color_code: selectedColor.color?.color_code || selectedColor.color_code || "",
           size_name: selectedSize?.size?.size_name || null, stock_qty: availableStock,
         };
@@ -749,7 +747,7 @@ function SingleProduct() {
               {product?.productcolors?.length > 0 && (
                 <div className="pb-2">
                   <p className="text-sm font-medium text-[#1E1512] mb-4">
-                    Color {selectedColor && <span className="text-[#9A8F87] capitalize">— {selectedColor.color.color_name}</span>}
+                    Color {selectedColor && <span className="text-[#9A8F87] capitalize">— {selectedColor.color?.color_name || selectedColor.color_name || ""}</span>}
                   </p>
                   <div className="flex flex-wrap gap-3">
                     {product.productcolors.map((color) => (

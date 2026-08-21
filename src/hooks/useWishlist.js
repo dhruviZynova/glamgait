@@ -110,25 +110,30 @@ export function useRemoveFromWishlist() {
   const isLoggedIn = !!user?.u_id;
 
   return useMutation({
-    mutationFn: async (w_id) => {
+    mutationFn: async (payload) => {
+      const w_id = typeof payload === "object" && payload !== null ? payload.w_id : payload;
+      const silent = typeof payload === "object" && payload !== null ? payload.silent : false;
+
       if (isLoggedIn) {
         const res = await removeFromWishlist(w_id);
         if (res.status !== 1) throw new Error(res.description || "Failed to remove from wishlist");
-        return { action: "removed", description: "Removed from wishlist" };
+        return { action: "removed", description: "Removed from wishlist", silent };
       } else {
         let localWishlist = JSON.parse(localStorage.getItem("localWishlist") || "[]");
-        const index = parseInt(w_id.split("-")[1]);
+        const index = parseInt(String(w_id).split("-")[1]);
         if (!isNaN(index) && localWishlist[index] !== undefined) {
           localWishlist.splice(index, 1);
           localStorage.setItem("localWishlist", JSON.stringify(localWishlist));
           window.dispatchEvent(new Event("wishlistUpdated"));
-          return { action: "removed", description: "Removed from wishlist" };
+          return { action: "removed", description: "Removed from wishlist", silent };
         }
         throw new Error("Item not found in guest wishlist");
       }
     },
     onSuccess: (data) => {
-      toast.success(data.description);
+      if (!data.silent) {
+        toast.success(data.description);
+      }
       queryClient.invalidateQueries({ queryKey: ["wishlist"] });
     },
     onError: (err) => {

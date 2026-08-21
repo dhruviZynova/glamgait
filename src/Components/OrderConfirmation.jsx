@@ -422,7 +422,7 @@ const OrderConfirmation = () => {
                   <div key={item.orderItemId || index} className="py-4 flex gap-4 items-center">
                     <div className="w-16 h-16 bg-[#F3F0ED] rounded-xl overflow-hidden flex-shrink-0 border border-[#E7DCD2]/40">
                       <img
-                        src={`${ApiURL}/assets/Products/${item.imageUrl || item.image_url}`}
+                        src={(item.imageUrl || item.image_url || "").startsWith("http") ? (item.imageUrl || item.image_url) : `${ApiURL}/assets/Products/${item.imageUrl || item.image_url || ""}`}
                         alt={item.productName}
                         className="w-full h-full object-cover"
                         onError={(e) => {

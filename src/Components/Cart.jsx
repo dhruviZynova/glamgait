@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { X, Plus, Minus, Loader2 } from "lucide-react";
+import { X, Trash2, Plus, Minus, Loader2 } from "lucide-react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import cartempty from "../assets/cartempty.png";
 import axiosInstance from "../Axios/axios";
@@ -200,6 +200,7 @@ const Cart = () => {
                     <th className="py-4 px-6 text-center font-medium text-lg text-[#000000] font-[Oxygen] font-400 font-[18px]">Price</th>
                     <th className="py-4 px-6 text-center font-medium text-lg text-[#000000] font-[Oxygen] font-400 font-[18px]">Quantity</th>
                     <th className="py-4 px-6 text-right font-medium text-lg text-[#000000] font-[Oxygen] font-400 font-[18px]">Total</th>
+                    <th className="py-4 px-4 text-center w-12"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -207,32 +208,43 @@ const Cart = () => {
                     <tr key={item.cart_id} className={`group ${index !== 0 ? 'border-t border-gray-200' : ''}`}>
                       <td className="py-8 px-6">
                         <div className="flex items-center gap-6">
-                          <button
-                            onClick={() => handleRemove(item.cart_id)}
-                            disabled={removingIds.has(item.cart_id)}
-                            className="transition-colors cursor-pointer disabled:opacity-50"
-                          >
-                            {removingIds.has(item.cart_id)
-                              ? <Loader2 size={16} className="animate-spin text-[#3D3D3D]" />
-                              : <X size={18} className="text-[#3D3D3D]" />}
-                          </button>
                           <img
                             src={item.image_url.startsWith("http") ? item.image_url : `${ApiURL}/assets/Products/${item.image_url}`}
                             alt={item.product_name}
-                            className="w-20 h-24 object-cover rounded"
+                            className="w-20 h-24 object-cover rounded-lg shadow-xs"
                           />
-                          <div className="flex flex-col">
-                            <span className="font-medium text-[#3D3D3D] font-[Oxygen] font-400 font-[18px]">{item.product_name}</span>
-                            {/* Added Color Swatch here */}
-                            <div className="flex items-center gap-2 text-sm text-[#949494] font-[Oxygen] font-400 font-[16px]">
-                              {item.color_code && (
-                                <span
-                                  className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
-                                  style={{ backgroundColor: item.color_code }}
-                                  title={item.color_name}
-                                />
+                          <div className="flex flex-col gap-1.5">
+                            <Link
+                              to={`/product/${item.p_id}`}
+                              className="font-serif font-medium text-base text-[#1C2F2F] hover:text-[#8B1A1A] transition-colors capitalize leading-snug"
+                            >
+                              {item.product_name}
+                            </Link>
+
+                            <div className="flex flex-wrap items-center gap-2 text-xs font-sans mt-0.5">
+                              {/* SKU Badge */}
+                              {item.sku && String(item.sku).trim() !== "" && (
+                                <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50/80 border border-amber-200/80 text-xs">
+                                  <span className="text-amber-700/70 font-normal">SKU:</span>
+                                  <span className="font-semibold text-amber-900 uppercase">{item.sku}</span>
+                                </div>
                               )}
-                              <span className="capitalize">{item.color_name}</span>
+
+                              {/* Color Badge */}
+                              {item.color_name && (
+                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100/80 border border-gray-200/80 text-gray-700">
+                                  {item.color_code && (
+                                    <span
+                                      className="w-3 h-3 rounded-full border border-black/15 flex-shrink-0 shadow-xs"
+                                      style={{ backgroundColor: item.color_code }}
+                                      title={item.color_name}
+                                    />
+                                  )}
+                                  <span className="capitalize font-medium text-xs text-gray-700">{item.color_name}</span>
+                                </div>
+                              )}
+
+                              {/* Size Badge */}
                               {(() => {
                                 const sizeVal = item.size_name || item.size;
                                 return sizeVal &&
@@ -241,7 +253,10 @@ const Cart = () => {
                                   sizeVal.toLowerCase() !== "n/a" &&
                                   sizeVal.toLowerCase() !== "free size" &&
                                   sizeVal.toLowerCase() !== "free-size" ? (
-                                  <span className="uppercase"> / {sizeVal}</span>
+                                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#1C2F2F]/5 border border-[#1C2F2F]/15 text-xs">
+                                    <span className="text-gray-500 font-normal">Size:</span>
+                                    <span className="font-semibold text-[#1C2F2F] uppercase">{sizeVal}</span>
+                                  </div>
                                 ) : null;
                               })()}
                             </div>
@@ -281,6 +296,19 @@ const Cart = () => {
                           ₹{(item.price * item.quantity).toFixed(0)}
                         </span>
                       </td>
+                      <td className="py-8 px-4 text-center">
+                        <button
+                          onClick={() => handleRemove(item.cart_id)}
+                          disabled={removingIds.has(item.cart_id)}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all cursor-pointer disabled:opacity-50"
+                          title="Remove item"
+                          aria-label="Remove item"
+                        >
+                          {removingIds.has(item.cart_id)
+                            ? <Loader2 size={16} className="animate-spin text-red-500" />
+                            : <Trash2 size={18} />}
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -290,12 +318,16 @@ const Cart = () => {
             {/* Mobile Card View */}
             <div className="md:hidden space-y-4">
               {cartItems.map((item) => (
-                <div key={item.cart_id} className="bg-white p-4 rounded-xl relative">
+                <div key={item.cart_id} className="bg-white p-4 rounded-xl relative border border-gray-100 shadow-xs">
                   <button
                     onClick={() => handleRemove(item.cart_id)}
-                    className="absolute top-4 left-4 text-[#000000]"
+                    disabled={removingIds.has(item.cart_id)}
+                    className="absolute top-3 right-3 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors cursor-pointer disabled:opacity-50"
+                    aria-label="Remove item"
                   >
-                    <X size={18} />
+                    {removingIds.has(item.cart_id)
+                      ? <Loader2 size={16} className="animate-spin text-red-500" />
+                      : <Trash2 size={17} />}
                   </button>
                   <div className="flex flex-col items-center gap-4">
                     <img
@@ -304,17 +336,37 @@ const Cart = () => {
                       className="w-32 h-40 object-cover rounded-lg"
                     />
                     <div className="text-start w-full">
-                      <span className="font-medium text-[#3D3D3D] font-[Oxygen] font-400 font-[20px]">{item.product_name}</span>
-                      {/* Added Color Swatch here */}
-                      <div className="flex items-center justify-start gap-2 text-gray-400 text-sm mb-4">
-                        {item.color_code && (
-                          <span
-                            className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
-                            style={{ backgroundColor: item.color_code }}
-                            title={item.color_name}
-                          />
+                      <Link
+                        to={`/product/${item.p_id}`}
+                        className="font-serif font-medium text-base text-[#1C2F2F] hover:text-[#8B1A1A] transition-colors capitalize leading-snug block mb-2"
+                      >
+                        {item.product_name}
+                      </Link>
+
+                      <div className="flex flex-wrap items-center gap-2 text-xs font-sans mb-4">
+                        {/* SKU Badge */}
+                        {item.sku && String(item.sku).trim() !== "" && (
+                          <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50/80 border border-amber-200/80 text-xs">
+                            <span className="text-amber-700/70 font-normal">SKU:</span>
+                            <span className="font-semibold text-amber-900 uppercase">{item.sku}</span>
+                          </div>
                         )}
-                        <span className="capitalize">{item.color_name}</span>
+
+                        {/* Color Badge */}
+                        {item.color_name && (
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100/80 border border-gray-200/80 text-gray-700">
+                            {item.color_code && (
+                              <span
+                                className="w-3 h-3 rounded-full border border-black/15 flex-shrink-0 shadow-xs"
+                                style={{ backgroundColor: item.color_code }}
+                                title={item.color_name}
+                              />
+                            )}
+                            <span className="capitalize font-medium text-xs text-gray-700">{item.color_name}</span>
+                          </div>
+                        )}
+
+                        {/* Size Badge */}
                         {(() => {
                           const sizeVal = item.size_name || item.size;
                           return sizeVal &&
@@ -323,7 +375,10 @@ const Cart = () => {
                             sizeVal.toLowerCase() !== "n/a" &&
                             sizeVal.toLowerCase() !== "free size" &&
                             sizeVal.toLowerCase() !== "free-size" ? (
-                            <span className="uppercase"> / {sizeVal}</span>
+                            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#1C2F2F]/5 border border-[#1C2F2F]/15 text-xs">
+                              <span className="text-gray-500 font-normal">Size:</span>
+                              <span className="font-semibold text-[#1C2F2F] uppercase">{sizeVal}</span>
+                            </div>
                           ) : null;
                         })()}
                       </div>
@@ -378,23 +433,30 @@ const Cart = () => {
         </div>
 
         {/* You May Also Like Section */}
-        {recommendedProducts.length > 0 && (
-          <ScrollReveal animation="fade-up" duration={800} className="mt-16 md:mt-20">
-            <h2 className="text-[20px] md:text-[34px] font-700 text-[#3D3D3D] font-[Oxygen] mb-8 md:mb-12">
-              You May Also Like
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 sm:gap-x-6 gap-y-6 sm:gap-y-6 pb-8">
-              {recommendedProducts.map((product) => (
-                <ProductCard
-                  key={product.p_id}
-                  product={product}
-                  wishlistMap={wishlistMap}
-                  onWishlistChange={fetchWishlist}
-                />
-              ))}
-            </div>
-          </ScrollReveal>
-        )}
+        {(() => {
+          const filtered = recommendedProducts.filter(
+            (product) => !cartItems.some((item) => String(item.p_id) === String(product.p_id))
+          );
+          if (filtered.length === 0) return null;
+
+          return (
+            <ScrollReveal animation="fade-up" duration={800} className="mt-16 md:mt-20">
+              <h2 className="text-[20px] md:text-[34px] font-700 text-[#3D3D3D] font-[Oxygen] mb-8 md:mb-12">
+                You May Also Like
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 sm:gap-x-6 gap-y-6 sm:gap-y-6 pb-8">
+                {filtered.map((product) => (
+                  <ProductCard
+                    key={product.p_id}
+                    product={product}
+                    wishlistMap={wishlistMap}
+                    onWishlistChange={fetchWishlist}
+                  />
+                ))}
+              </div>
+            </ScrollReveal>
+          );
+        })()}
       </div>
       <BrandBanner />
     </>

@@ -6,7 +6,7 @@ export const COURIER_URL = import.meta.env.VITE_COURIER_URL;
 
 
 export const razorpayKEY = import.meta.env.VITE_RAZORPAY_KEY;
-export const SecretKey = import.meta.env.VITE_APP_SECRET_KEY;
+// NOTE: Secret keys must NEVER be in frontend code. Move all signing/verification to backend.
 
 export const userInfo = () => {
   try {
@@ -78,9 +78,9 @@ export const orderInfo = () => {
 
 export const showToaster = (status, description) => {
   if (status === 1) {
-    toast.success(description, { autoClose: 5000 });
+    toast.success(description, { duration: 5000 });
   } else {
-    toast.error(description, { autoClose: 5000 });
+    toast.error(description, { duration: 5000 });
   }
 };
 

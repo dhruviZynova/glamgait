@@ -28,6 +28,7 @@ const SectionPlaceholder = ({ height = "h-40" }) => (
 
 const HomePage = () => {
   const [firstCategorySlug, setFirstCategorySlug] = useState("");
+  const [firstCategoryName, setFirstCategoryName] = useState("");
 
   useEffect(() => {
     const fetchFirstCategory = async () => {
@@ -37,6 +38,7 @@ const HomePage = () => {
           const firstCat = data[0];
           const slug = createSlug(firstCat.cate_name);
           setFirstCategorySlug(slug);
+          setFirstCategoryName(firstCat.cate_name);
         }
       } catch (err) {
         console.error("Error fetching first category for Shop Now button:", err);
@@ -80,8 +82,8 @@ const HomePage = () => {
             duration={1000}
           >
             <div className="flex flex-col items-start">
-              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-[#2C2A29] leading-tight font-serif" style={{ fontFamily: "var(--font-playfair), Playfair Display, serif", fontWeight: 500 }}>
-                Designer <br /> Kurtis
+              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-[#2C2A29] leading-tight font-serif capitalize" style={{ fontFamily: "var(--font-playfair), Playfair Display, serif", fontWeight: 500 }}>
+                {firstCategoryName ? `Designer ${firstCategoryName}s` : "Designer Collections"}
               </h2>
 
               {/* Decorative Divider */}
@@ -94,11 +96,11 @@ const HomePage = () => {
               </div>
 
               <p className="text-sm sm:text-base md:text-lg text-[#2C2A29]/80 mb-6 md:mb-8 max-w-sm font-medium leading-relaxed">
-                Effortless style meets everyday comfort. Explore our collection of designer kurtis.
+                Effortless style meets everyday comfort. Explore our collection of designer ethnic wear.
               </p>
 
               <Link
-                to={firstCategorySlug ? `/collections/${firstCategorySlug}` : "/collections/lehengas"}
+                to={firstCategorySlug ? `/collections/${firstCategorySlug}` : "/collections/All Products"}
                 className="w-fit px-8 py-3 bg-[#233B23] text-white text-sm font-medium tracking-widest uppercase hover:bg-[#1C2F2F] transition-all duration-300 rounded-lg"
               >
                 Shop Now

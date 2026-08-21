@@ -16,7 +16,7 @@ export const updateCartQty = async (payload) => {
   return res.data;
 };
 
-export const removeFromCart = async (cart_id) => {
-  const res = await axiosInstance.post("/removecart", { cart_id });
+export const removeFromCart = async (cart_id, u_id = null) => {
+  const res = await axiosInstance.post("/removecart", { cart_id, u_id });
   return res.data;
 };

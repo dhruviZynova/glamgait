@@ -126,7 +126,9 @@ const ClientLayout = () => {
   return (
     <>
       {!hideHeaderFooter && <Navbar />}
-      <Outlet />
+      <div className={!hideHeaderFooter ? "pb-16 lg:pb-0" : ""}>
+        <Outlet />
+      </div>
       {!hideHeaderFooter && <Footer />}
       {!hideHeaderFooter && <WhatsAppIcon />}
       {!hideHeaderFooter && <BackToTop />}
@@ -140,20 +142,24 @@ function App() {
       <LoaderProvider>
         <CartProvider>
           <Toaster
-            position="top-right"
+            position="bottom-right"
             containerStyle={{
+              bottom: 24,
+              right: 24,
               zIndex: 99999,
             }}
             toastOptions={{
-              duration: 2000, // Slightly increased for better UX
+              duration: 1800,
               style: {
-                color: "#1f2937",
-                padding: "16px 20px",
-                borderRadius: "12px",
-                boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-                fontSize: "14px",
+                background: "#1C2F2F",
+                color: "#FFFFFF",
+                padding: "12px 20px",
+                borderRadius: "10px",
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.25)",
+                fontSize: "13px",
                 fontWeight: 500,
-                maxWidth: "300px",
+                maxWidth: "320px",
+                cursor: "pointer",
               },
             }}
           />
@@ -170,7 +176,6 @@ function App() {
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/collections/:cate_name" element={<AllProductPage />} />
                   <Route path="/collections/:cate_name/:filterValue" element={<AllProductPage />} />
-                  <Route path="/collections/:filterValue" element={<AllProductPage />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />

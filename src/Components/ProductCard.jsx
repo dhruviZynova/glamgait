@@ -233,7 +233,9 @@ const ProductCard = ({
     >
       <div className="arrival-card group">
         <div className="card-image-wrapper relative group overflow-hidden">
-          <span className="off-badge">{discountPercentage > 0 ? `${discountPercentage}% OFF` : ""}</span>
+          {discountPercentage > 0 && (
+            <span className="off-badge">{discountPercentage}% OFF</span>
+          )}
 
           {/* Wishlist Heart */}
           <button

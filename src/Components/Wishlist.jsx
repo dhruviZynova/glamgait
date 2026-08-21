@@ -76,8 +76,8 @@ const Wishlist = () => {
           // Dispatch cart update so cart count in Navbar refreshes
           window.dispatchEvent(new Event("cartUpdated"));
 
-          // Remove from wishlist after moving to cart
-          removeWishlistMutation.mutate(item.w_id, {
+          // Remove from wishlist silently after moving to cart
+          removeWishlistMutation.mutate({ w_id: item.w_id, silent: true }, {
             onSuccess: () => {
               // Dispatch so wishlist count in Navbar refreshes
               dispatchWishlistUpdate();

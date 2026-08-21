@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, Heart, ShoppingCart, CircleUser, X, AlignRight, Plus, Minus, ChevronDown } from "lucide-react";
+import { Search, Heart, ShoppingCart, CircleUser, X, AlignRight, Plus, Minus, ChevronDown, ChevronRight } from "lucide-react";
 import { FaUserCircle, FaUser } from "react-icons/fa";
 import logo from "../assets/logo1.png";
 import axiosInstance from "../Axios/axios";
@@ -23,15 +23,23 @@ const Navbar = () => {
   const [categories, setCategories] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [currentAnnouncement, setCurrentAnnouncement] = useState(0);
-  const [megaMenuData, setMegaMenuData] = useState({});
-  const [hoveredCategory, setHoveredCategory] = useState(null);
-  const [showMegaMenu, setShowMegaMenu] = useState(false);
-  const [mobileExpanded, setMobileExpanded] = useState({});
-  const [megaMenuCache, setMegaMenuCache] = useState({});
+
   const [showAuthChoice, setShowAuthChoice] = useState(false);
   const [activeCategorySlug, setActiveCategorySlug] = useState(
     sessionStorage.getItem("activeCategorySlug") || ""
   );
+  const [subcategories, setSubcategories] = useState([]);
+  const [activeHoveredCategory, setActiveHoveredCategory] = useState(null);
+  const [showCollectionsDropdown, setShowCollectionsDropdown] = useState(false);
+  const [mobileCollectionsExpanded, setMobileCollectionsExpanded] = useState(false);
+  const [mobileCategoryExpanded, setMobileCategoryExpanded] = useState({});
+
+  const toggleMobileCategory = (cate_id) => {
+    setMobileCategoryExpanded((prev) => ({
+      ...prev,
+      [cate_id]: !prev[cate_id],
+    }));
+  };
 
   useEffect(() => {
     const handleCategoryChange = () => {
@@ -46,8 +54,8 @@ const Navbar = () => {
       sessionStorage.removeItem("activeCategorySlug");
       setActiveCategorySlug("");
     }
-    setShowMegaMenu(false);
-    setHoveredCategory(null);
+    setShowCollectionsDropdown(false);
+    setActiveHoveredCategory(null);
   }, [location.pathname]);
 
   const isAccountActive =
@@ -115,52 +123,31 @@ const Navbar = () => {
     }
   }, []);
 
-  const fetchCategoryFilters = useCallback(async (cate_id) => {
-    if (!cate_id) return;
-    if (megaMenuCache[cate_id]) {
-      setMegaMenuData(megaMenuCache[cate_id]);
-      return;
-    }
+  const getSubcategories = useCallback(async () => {
     try {
-      const skip = { skipLoader: true };
-      // Helper for safe fetching
-      const safeGet = async (url) => {
-        try {
-          const res = await axiosInstance.get(`${ApiURL}${url}`, skip);
-          return res?.data?.data || [];
-        } catch (err) {
-          console.warn(`Filter fetch skipped for ${url}:`, err.message);
-          return [];
-        }
-      };
-
-      const [styleData, subData, fabricData, workData, occData] = await Promise.all([
-        safeGet(`/getstyles/${cate_id}`),
-        safeGet(`/getsubcategory/${cate_id}`),
-        safeGet(`/getfabrics/${cate_id}`),
-        safeGet(`/getworks/${cate_id}`),
-        safeGet(`/getoccasions/${cate_id}`),
-      ]);
-
-      const data = {
-        Style: styleData,
-        Collection: subData,
-        Fabric: fabricData,
-        Work: workData,
-        Occasion: occData,
-      };
-
-      setMegaMenuCache((prev) => ({ ...prev, [cate_id]: data }));
-      setMegaMenuData(data);
-    } catch (error) {
-      console.error("Error fetching filters:", error);
+      const res = await axiosInstance.get("/getsubcategory");
+      if (res?.data?.status === 1) {
+        setSubcategories(res.data.data);
+      }
+    } catch (err) {
+      console.error("Error fetching subcategories:", err);
     }
   }, []);
 
   useEffect(() => {
+    if (showCollectionsDropdown && categories.length > 0 && !activeHoveredCategory) {
+      setActiveHoveredCategory(categories[0].cate_id);
+    }
+  }, [showCollectionsDropdown, categories, activeHoveredCategory]);
+
+  useEffect(() => {
     getCategories();
     getAnnouncements();
+    getSubcategories();
   }, []);
+
+
+
 
   useEffect(() => {
     if (!announcements.length) return;
@@ -234,37 +221,7 @@ const Navbar = () => {
     }
   };
 
-  const toggleMobileSection = (cate_id, section) => {
-    setMobileExpanded((prev) => ({
-      ...prev,
-      [cate_id]: prev[cate_id] === section ? null : section,
-    }));
-  };
 
-  // Menu items with cate_slug
-  const menuItems = [
-    { to: "/", label: "Home" },
-    ...categories.map((cat) => {
-      const cate_slug = createSlug(cat.cate_name);
-      return {
-        to: `/collections/${cate_slug}`,
-        label: cat.cate_name,
-        cate_id: cat.cate_id,
-        cate_slug,
-      };
-    }),
-    { to: "/about", label: "About" },
-    { to: "/contact", label: "Contact Us" },
-  ];
-
-  // Label mapping for display
-  const labelMap = {
-    Collection: "Collections",
-    Fabric: "Fabric",
-    Work: "Work",
-    Occasion: "Occasion",
-    Style: "Styles",
-  };
 
   return (
     <>
@@ -285,48 +242,69 @@ const Navbar = () => {
           {/* Desktop Menu */}
           <div
             className="hidden lg:flex items-center space-x-8 mr-6"
-            onMouseLeave={(e) => {
-              const related = e.relatedTarget;
-              if (related && related.closest(".mega-menu-container")) {
-                return;
-              }
-              setShowMegaMenu(false);
-              setHoveredCategory(null);
+            onMouseLeave={() => {
+              setShowCollectionsDropdown(false);
+              setActiveHoveredCategory(null);
             }}
           >
-            {menuItems.map((item) => (
-              <div
-                key={item.to}
-                className="relative"
-                onMouseEnter={() => {
-                  if (item.cate_id) {
-                    setHoveredCategory(item);
-                    if (megaMenuCache[item.cate_id]) {
-                      setMegaMenuData(megaMenuCache[item.cate_id]);
-                      setShowMegaMenu(true);
-                    } else {
-                      fetchCategoryFilters(item.cate_id);
-                      setShowMegaMenu(true);
-                    }
-                  } else {
-                    setShowMegaMenu(false);
-                    setHoveredCategory(null);
-                  }
-                }}
-              >
-                <Link
-                  to={item.to}
-                  className={`text-[16px] capitalize transition-all duration-300 ${(location.pathname.startsWith("/collections") && item.cate_slug && location.pathname.includes(item.cate_slug)) ||
-                    (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug) ||
-                    (location.pathname === item.to)
+            {/* Home Link */}
+            <div className="relative py-2">
+              <Link
+                to="/"
+                className={`text-[16px] capitalize transition-all duration-300 ${
+                  location.pathname === "/"
                     ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
                     : "text-[#767676] font-medium hover:text-[#1C2F2F]"
-                    }`}
-                >
-                  {item.label}
-                </Link>
-              </div>
-            ))}
+                }`}
+              >
+                Home
+              </Link>
+            </div>
+
+            {/* Collections Link with Dropdown */}
+            <div
+              className="relative py-2"
+              onMouseEnter={() => setShowCollectionsDropdown(true)}
+            >
+              <Link
+                to="/collections/All Products"
+                className={`text-[16px] capitalize transition-all duration-300 flex items-center gap-1 ${
+                  location.pathname.startsWith("/collections")
+                    ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
+                    : "text-[#767676] font-medium hover:text-[#1C2F2F]"
+                }`}
+              >
+                Collections
+                <ChevronDown size={14} className={`transition-transform duration-200 ${showCollectionsDropdown ? "rotate-180" : ""}`} />
+              </Link>            </div>
+
+            {/* About Link */}
+            <div className="relative py-2">
+              <Link
+                to="/about"
+                className={`text-[16px] capitalize transition-all duration-300 ${
+                  location.pathname === "/about"
+                    ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
+                    : "text-[#767676] font-medium hover:text-[#1C2F2F]"
+                }`}
+              >
+                About
+              </Link>
+            </div>
+
+            {/* Contact Us Link */}
+            <div className="relative py-2">
+              <Link
+                to="/contact"
+                className={`text-[16px] capitalize transition-all duration-300 ${
+                  location.pathname === "/contact"
+                    ? "text-[#1C2F2F] font-semibold border-b-2 border-[#1C2F2F] pb-1"
+                    : "text-[#767676] font-medium hover:text-[#1C2F2F]"
+                }`}
+              >
+                Contact Us
+              </Link>
+            </div>
           </div>
 
           {/* Icons */}
@@ -380,7 +358,12 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Menu Toggle */}
-            <button className="lg:hidden" onClick={toggleMenu}>
+            <button
+              className="lg:hidden p-2 text-gray-700 hover:text-black"
+              onClick={toggleMenu}
+              aria-label="Toggle navigation menu"
+              aria-expanded={isOpen}
+            >
               {isOpen ? <X size={24} /> : <AlignRight size={24} />}
             </button>
 
@@ -428,51 +411,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mega Menu – Desktop */}
-        {showMegaMenu && hoveredCategory?.cate_id && Object.values(megaMenuData).some(items => items && items.length > 0) && (
-          <div
-            className="mega-menu-container max-w-5xl mx-auto absolute inset-x-0 top-full bg-[#f3f0ed] shadow-xl border-t"
-            onMouseEnter={() => setShowMegaMenu(true)}
-            onMouseLeave={() => {
-              setShowMegaMenu(false);
-              setHoveredCategory(null);
-            }}
-          >
-            <div className="px-4 py-8">
-              <div className="flex justify-evenly gap-12">
-                {Object.keys(megaMenuData).map((key) => {
-                  const items = megaMenuData[key];
-                  if (!items || items.length === 0) return null;
-                  const label = labelMap[key] || key;
-                  return (
-                    <div key={key}>
-                      <h3 className="font-bold text-[16px] uppercase tracking-widest text-gray-900 mb-4">
-                        {label}
-                      </h3>
-                      <ul className="space-y-2">
-                        {items.map((item, i) => {
-                          const itemSlug = createSlug(item.name);
-                          const linkTo = `/collections/${hoveredCategory.cate_slug}/${itemSlug}`;
-                          return (
-                            <li key={i}>
-                              <Link
-                                to={linkTo}
-                                className="block text-sm text-gray-600 hover:text-black transition"
-                                onClick={() => setShowMegaMenu(false)}
-                              >
-                                {item.name}
-                              </Link>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
+
         {/* Search Bar */}
         {isMobileSearchOpen && (
           <div
@@ -496,6 +435,114 @@ const Navbar = () => {
             </form>
           </div>
         )}
+        {/* Collections Dropdown Menu */}
+        {showCollectionsDropdown && (
+          <div
+            className="absolute inset-x-0 top-full bg-white shadow-[0_8px_30px_rgba(0,0,0,0.12)] border-t border-gray-100 z-50"
+            onMouseEnter={() => setShowCollectionsDropdown(true)}
+            onMouseLeave={() => {
+              setShowCollectionsDropdown(false);
+              setActiveHoveredCategory(null);
+            }}
+          >
+            <div className="max-w-6xl mx-auto px-8 py-6">
+              {/* Top Header */}
+              <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-100">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">
+                  Shop by Category
+                </h3>
+                <Link
+                  to="/collections/All Products"
+                  className="text-xs font-semibold text-[#1C2F2F] uppercase tracking-wider hover:text-[#8B1A1A] transition-colors duration-200 flex items-center gap-1"
+                  onClick={() => {
+                    setShowCollectionsDropdown(false);
+                    setActiveHoveredCategory(null);
+                  }}
+                >
+                  View All Collections
+                  <ChevronRight size={12} />
+                </Link>
+              </div>
+
+              {/* Category Cards Grid */}
+              {categories.length === 0 ? (
+                <div className="py-8 text-center text-sm text-gray-400 italic">
+                  Loading collections...
+                </div>
+              ) : (
+                <div className="grid grid-cols-4 gap-5">
+                {categories.map((cat) => {
+                  const cate_slug = createSlug(cat.cate_name);
+                  const catSubcats = subcategories.filter((sc) => sc.cate_id === cat.cate_id);
+
+                  return (
+                    <div
+                      key={cat.cate_id}
+                      className="group"
+                      onMouseEnter={() => setActiveHoveredCategory(cat.cate_id)}
+                    >
+                      {/* Category Image Card */}
+                      <Link
+                        to={`/collections/${cate_slug}`}
+                        className="block relative overflow-hidden rounded-xl aspect-[4/3] mb-3"
+                        onClick={() => {
+                          setShowCollectionsDropdown(false);
+                          setActiveHoveredCategory(null);
+                        }}
+                      >
+                        <img
+                          src={cat.cate_image || cat.category_image || cat.categoryImage || cat.image}
+                          alt={cat.cate_name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                          <h4 className="text-white font-bold text-sm capitalize tracking-wide">
+                            {cat.cate_name}
+                          </h4>
+                          <span className="text-white/70 text-[10px] uppercase tracking-widest">
+                            {catSubcats.length} {catSubcats.length === 1 ? "type" : "types"}
+                          </span>
+                        </div>
+                      </Link>
+
+                      {/* Subcategory Links */}
+                      <div className="space-y-1.5">
+                        <Link
+                          to={`/collections/${cate_slug}`}
+                          className="block text-xs font-semibold text-[#1C2F2F] hover:text-[#8B1A1A] transition-colors capitalize"
+                          onClick={() => {
+                            setShowCollectionsDropdown(false);
+                            setActiveHoveredCategory(null);
+                          }}
+                        >
+                          Shop All {cat.cate_name} →
+                        </Link>
+                        {catSubcats.map((sub) => {
+                          const subSlug = createSlug(sub.name);
+                          return (
+                            <Link
+                              key={sub.sc_id}
+                              to={`/collections/${cate_slug}/${subSlug}`}
+                              className="block text-xs text-gray-500 hover:text-[#1C2F2F] hover:pl-1 transition-all duration-200 capitalize"
+                              onClick={() => {
+                                setShowCollectionsDropdown(false);
+                                setActiveHoveredCategory(null);
+                              }}
+                            >
+                              {sub.name}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       {isOpen && (
@@ -515,119 +562,135 @@ const Navbar = () => {
               <X size={24} />
             </button>
             <div className="p-6 pt-24 space-y-1 overflow-y-auto h-full rounded-l-3xl">
-              {menuItems.map((item) => (
-                <div
-                  key={item.to}
-                  className="border-b border-gray-200 last:border-0"
+              {/* Home */}
+              <div className="border-b border-gray-200">
+                <Link
+                  to="/"
+                  onClick={() => setIsOpen(false)}
+                  className={`block py-4 font-medium transition-colors ${
+                    location.pathname === "/"
+                      ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
+                      : "text-gray-900"
+                  }`}
                 >
-                  {item.cate_id ? (
-                    <div className="flex flex-col">
-                      <div className="flex justify-between items-center">
-                        <Link
-                          to={item.to}
-                          onClick={() => setIsOpen(false)}
-                          className={`flex-grow py-4 capitalize transition-colors ${location.pathname === item.to ||
-                            (item.cate_slug && location.pathname.includes(item.cate_slug)) ||
-                            (location.pathname.startsWith("/product") && item.cate_slug && activeCategorySlug === item.cate_slug)
-                            ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
-                            : "text-gray-900 font-medium"
-                            }`}
-                        >
-                          {item.label}
-                        </Link>
-                        {megaMenuCache[item.cate_id] && Object.values(megaMenuCache[item.cate_id]).some(items => items && items.length > 0) && (
-                          <button
-                            onClick={() => {
-                              if (mobileExpanded[item.cate_id]) {
-                                setMobileExpanded((prev) => ({
-                                  ...prev,
-                                  [item.cate_id]: null,
-                                }));
-                              } else {
-                                setMobileExpanded((prev) => ({
-                                  ...prev,
-                                  [item.cate_id]: "all",
-                                }));
-                                fetchCategoryFilters(item.cate_id);
-                              }
-                            }}
-                            className="p-4 text-gray-500 hover:text-[#1C2F2F]"
-                          >
-                            {mobileExpanded[item.cate_id] ? (
-                              <Minus size={18} />
-                            ) : (
-                              <Plus size={18} />
-                            )}
-                          </button>
-                        )}
-                      </div>
-                      {mobileExpanded[item.cate_id] && (
-                        <div className="pb-4 space-y-4">
-                          <Link
-                            to={item.to}
-                            onClick={() => setIsOpen(false)}
-                            className="block pl-4 text-sm font-bold text-gray-700 hover:text-[#1C2F2F]"
-                          >
-                            All <span className="capitalize">{item.label}</span>
-                          </Link>
-                          {megaMenuCache[item.cate_id] && Object.keys(megaMenuCache[item.cate_id]).map((key) => {
-                            const data = megaMenuCache[item.cate_id][key];
-                            if (!data?.length) return null;
-                            const label = labelMap[key] || key;
-                            return (
-                              <div key={key}>
-                                <button
-                                  onClick={() =>
-                                    toggleMobileSection(item.cate_id, key)
-                                  }
-                                  className="w-full flex justify-between items-center py-2 pl-4 text-sm font-medium text-gray-700"
-                                >
-                                  <span className="capitalize">{label}</span>
-                                  {mobileExpanded[item.cate_id] === key ? (
-                                    <Minus size={16} />
-                                  ) : (
-                                    <Plus size={16} />
-                                  )}
-                                </button>
-                                {mobileExpanded[item.cate_id] === key && (
-                                  <ul className="pl-8 space-y-1">
-                                    {data.map((it, i) => {
-                                      const productSlug = it.slug || createSlug(it.name) || it.p_id;
-                                      const linkTo = `/collections/${item.cate_slug}/${productSlug}`;
-                                      return (
-                                        <li key={i}>
-                                          <Link
-                                            to={linkTo}
-                                            onClick={() => setIsOpen(false)}
-                                            className="block text-sm text-gray-600 hover:text-black"
-                                          >
-                                            <span className="capitalize">{it.name}</span>
-                                          </Link>
-                                        </li>
-                                      );
-                                    })}
-                                  </ul>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <Link
-                      to={item.to}
-                      onClick={() => setIsOpen(false)}
-                      className={`block py-4 capitalize transition-colors ${location.pathname === item.to
-                        ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4"
-                        : "text-gray-900 font-medium"
-                        }`}
-                    >
-                      {item.label}
-                    </Link>
-                  )}
+                  Home
+                </Link>
+              </div>
+
+              {/* Collections Collapsible */}
+              <div className="border-b border-gray-200">
+                <div className="flex justify-between items-center py-4">
+                  <Link
+                    to="/collections/All Products"
+                    onClick={() => setIsOpen(false)}
+                    className={`font-medium transition-colors flex-grow ${
+                      location.pathname.startsWith("/collections")
+                        ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
+                        : "text-gray-900"
+                    }`}
+                  >
+                    Collections
+                  </Link>
+                  <button
+                    onClick={() => setMobileCollectionsExpanded(!mobileCollectionsExpanded)}
+                    className="p-2 text-gray-500 hover:text-[#1C2F2F]"
+                  >
+                    <ChevronDown
+                      size={18}
+                      className={`transition-transform duration-200 ${mobileCollectionsExpanded ? "rotate-180" : ""}`}
+                    />
+                  </button>
                 </div>
-              ))}
+
+                {/* Categories Level (Expanded) */}
+                {mobileCollectionsExpanded && (
+                  <div className="pl-4 pb-3 space-y-2">
+                    {categories.map((cat) => {
+                      const cate_slug = createSlug(cat.cate_name);
+                      const catSubcats = subcategories.filter((sc) => sc.cate_id === cat.cate_id);
+                      const isCatExpanded = !!mobileCategoryExpanded[cat.cate_id];
+
+                      return (
+                        <div key={cat.cate_id} className="border-l border-gray-200 pl-3">
+                          <div className="flex justify-between items-center py-1">
+                            <Link
+                              to={`/collections/${cate_slug}`}
+                              onClick={() => setIsOpen(false)}
+                              className="text-sm font-medium text-gray-800 capitalize hover:text-[#1C2F2F]"
+                            >
+                              {cat.cate_name}
+                            </Link>
+                            {catSubcats.length > 0 && (
+                              <button
+                                onClick={() => toggleMobileCategory(cat.cate_id)}
+                                className="p-1.5 text-gray-400 hover:text-[#1C2F2F]"
+                              >
+                                {isCatExpanded ? <Minus size={14} /> : <Plus size={14} />}
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Subcategories Level */}
+                          {isCatExpanded && catSubcats.length > 0 && (
+                            <div className="pl-4 py-1 space-y-1.5">
+                              <Link
+                                to={`/collections/${cate_slug}`}
+                                onClick={() => setIsOpen(false)}
+                                className="block text-xs font-semibold text-[#1C2F2F] hover:underline"
+                              >
+                                Shop All {cat.cate_name}
+                              </Link>
+                              {catSubcats.map((sub) => {
+                                const subSlug = createSlug(sub.name);
+                                return (
+                                  <Link
+                                    key={sub.sc_id}
+                                    to={`/collections/${cate_slug}/${subSlug}`}
+                                    onClick={() => setIsOpen(false)}
+                                    className="block text-xs text-gray-500 hover:text-black capitalize"
+                                  >
+                                    {sub.name}
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* About */}
+              <div className="border-b border-gray-200">
+                <Link
+                  to="/about"
+                  onClick={() => setIsOpen(false)}
+                  className={`block py-4 font-medium transition-colors ${
+                    location.pathname === "/about"
+                      ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
+                      : "text-gray-900"
+                  }`}
+                >
+                  About
+                </Link>
+              </div>
+
+              {/* Contact Us */}
+              <div className="border-b border-gray-200">
+                <Link
+                  to="/contact"
+                  onClick={() => setIsOpen(false)}
+                  className={`block py-4 font-medium transition-colors ${
+                    location.pathname === "/contact"
+                      ? "text-[#1C2F2F] font-bold border-l-4 border-[#1C2F2F] pl-3 -ml-4 bg-[#ede9e6]"
+                      : "text-gray-900"
+                  }`}
+                >
+                  Contact Us
+                </Link>
+              </div>
             </div>
           </div>
         </>

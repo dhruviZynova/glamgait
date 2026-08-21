@@ -24,7 +24,9 @@ import applepay from "../assets/applepay.png";
 import visa from "../assets/visa.webp";
 import mastercard from "../assets/mastercard.png"
 
-import { getFullImageUrl } from "../Variable";
+import { getFullImageUrl, createSlug } from "../Variable";
+import { getCategories as getCachedCategories } from "../utils/dataCache";
+import toast from "react-hot-toast";
 
 const Footer = () => {
 
@@ -34,10 +36,8 @@ const Footer = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axiosInstance.get("/getcategory");
-        if (res.data.status === 1) {
-          setCategories(res.data.data || []);
-        }
+        const data = await getCachedCategories(axiosInstance);
+        setCategories(data || []);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
@@ -148,8 +148,8 @@ const Footer = () => {
               {categories.map((category) => (
                 <li key={category.cate_id}>
                   <Link
-                    to={`/collections/${category.cate_name}`}
-                    className="hover:text-white transition-colors"
+                    to={`/collections/${createSlug(category.cate_name)}`}
+                    className="hover:text-white transition-colors capitalize"
                   >
                     {category.cate_name}
                   </Link>
@@ -220,10 +220,18 @@ const Footer = () => {
             <p className="text-sm text-[#CCCCCC] leading-relaxed max-w-md">
               Sign up for early access to new drops, styling tips, and exclusive members-only offers.
             </p>
-            <form onSubmit={(e) => e.preventDefault()} className="mt-6 max-w-md">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const email = e.target.elements.email?.value;
+              if (email) {
+                toast.success("Thank you for subscribing!");
+                e.target.reset();
+              }
+            }} className="mt-6 max-w-md">
               <div className="relative flex items-center border-b border-white/50 py-2 focus-within:border-white transition-colors">
                 <input
                   type="email"
+                  name="email"
                   placeholder="Your email address"
                   className="appearance-none bg-transparent border-none w-full text-white mr-3 py-1 px-2 leading-tight focus:outline-none placeholder:text-white/50 text-sm"
                   aria-label="Email address"
@@ -280,7 +288,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-8 text-sm text-[#CCCCCC]">
           {/* Copyright */}
           <div>
-            © 2025 Kundrat. All rights reserved.
+            © {new Date().getFullYear()} Kundrat. All rights reserved.
           </div>
 
 

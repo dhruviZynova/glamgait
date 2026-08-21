@@ -710,13 +710,18 @@ const Checkout = () => {
                                                 <div className="w-1/2 flex flex-col">
                                                     <span className="font-medium text-[#3D3D3D] leading-tight">{item.product_name}</span>
 
-                                                    {/* --- UPDATED DYNAMIC COLOR SECTION --- */}
-                                                    {(item.color_name || item.size_name) && (
-                                                        <div className="flex items-center gap-2 mt-2">
+                                                    {/* --- UPDATED DYNAMIC COLOR & SKU SECTION --- */}
+                                                    {(item.color_name || item.size_name || item.sku) && (
+                                                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                                            {item.sku && String(item.sku).trim() !== "" && (
+                                                                <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200/80 text-[10px] font-semibold uppercase">
+                                                                    SKU: {item.sku}
+                                                                </span>
+                                                            )}
                                                             {/* Dynamic Color Circle */}
                                                             {item.color_code && (
                                                                 <div
-                                                                    className="w-4 h-4 rounded-full border border-gray-200 shadow-sm flex-shrink-0"
+                                                                    className="w-3.5 h-3.5 rounded-full border border-gray-200 shadow-xs flex-shrink-0"
                                                                     style={{ backgroundColor: item.color_code }}
                                                                     title={item.color_name}
                                                                 />

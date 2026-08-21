@@ -24,9 +24,14 @@ const ErrorFallback = ({ message, onRetry }) => (
 
 // Premium stylized Empty state
 const EmptyState = ({ message }) => (
-    <div className="flex flex-col items-center justify-center p-8 py-14 border border-[#F3F0ED] rounded-2xl max-w-lg mx-auto my-4 text-center">
-        <h3 className="text-gray-900 font-serif text-lg font-bold mb-2">Products Not Found</h3>
-        <p className="text-gray-600 font-sans text-sm max-w-xs leading-relaxed">{message || "No latest arrivals found. Please check back later."}</p>
+    <div className="flex flex-col items-center justify-center p-8 py-14 bg-[#FAF8F5] border border-[#EBE5DF] rounded-2xl max-w-md mx-auto my-6 text-center shadow-sm">
+        <div className="w-12 h-12 bg-[#1C2F2F]/10 text-[#1C2F2F] rounded-full flex items-center justify-center mb-4">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+        </div>
+        <h3 className="text-[#1C2F2F] font-serif text-xl font-medium mb-2 tracking-wide">New Collection Arriving Soon</h3>
+        <p className="text-gray-500 text-xs max-w-xs leading-relaxed font-sans">{message || "We are currently curating our latest designer arrivals. Please check back shortly!"}</p>
     </div>
 );
 

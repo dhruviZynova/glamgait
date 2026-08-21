@@ -68,6 +68,7 @@ export function useAddToCart() {
             psize_id: selectedSize?.psize_id || null,
             quantity,
             product_name: product.name,
+            sku: product.sku || null,
             price: product.price,
             original_price: product.original_price,
             image_url: selectedColor.productimages?.[0]?.image_url || "",
@@ -101,7 +102,7 @@ export function useUpdateCartQty() {
   return useMutation({
     mutationFn: async ({ cart_id, quantity }) => {
       if (isLoggedIn) {
-        const res = await updateCartQty({ cart_id, quantity });
+        const res = await updateCartQty({ cart_id, quantity, u_id: user.u_id });
         if (res.status !== 1) {
           throw new Error(res.description || "Failed to update quantity");
         }
@@ -120,6 +121,7 @@ export function useUpdateCartQty() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
+      window.dispatchEvent(new Event("cartUpdated"));
     },
     onError: (err) => {
       toast.error(err.message || "Failed to update quantity");
@@ -135,7 +137,7 @@ export function useRemoveFromCart() {
   return useMutation({
     mutationFn: async (cart_id) => {
       if (isLoggedIn) {
-        const res = await removeFromCart(cart_id);
+        const res = await removeFromCart(cart_id, user.u_id);
         if (res.status !== 1) {
           throw new Error(res.description || "Failed to remove item");
         }

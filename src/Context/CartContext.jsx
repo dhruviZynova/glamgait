@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import axiosInstance from "../Axios/axios";
-import { userInfo } from "../Variable";
+import { useUser } from "./UserContext";
 
 const CartContext = createContext();
 
@@ -18,8 +18,7 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [wishlistItems, setWishlistItems] = useState([]);
 
-  const userRaw = userInfo();
-  const user = React.useMemo(() => userRaw, [JSON.stringify(userRaw)]);
+  const { user } = useUser();
   const u_id = user?.u_id;
 
   const fetchCart = useCallback(async () => {
@@ -27,14 +26,16 @@ export const CartProvider = ({ children }) => {
       if (!u_id) {
         const localCart = JSON.parse(localStorage.getItem("localCart") || "[]");
         setCartItems(localCart);
-        setCartCount(localCart.length);
+        const totalQty = localCart.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
+        setCartCount(totalQty);
         return;
       }
       const res = await axiosInstance.get(`/getcart?u_id=${u_id}`, { skipLoader: true });
       if (res?.data?.status === 1) {
         const items = res.data.data || [];
         setCartItems(items);
-        setCartCount(items.length);
+        const totalQty = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
+        setCartCount(totalQty);
 
         // Sync to localStorage for persistence across logout
         const mappedItems = items.map(item => ({
@@ -43,6 +44,7 @@ export const CartProvider = ({ children }) => {
           psize_id: item.psize_id || null,
           quantity: Number(item.quantity || 1),
           product_name: item.product_name || item.product?.name,
+          sku: item.sku || item.product?.sku || null,
           price: Number(item.price),
           original_price: Number(item.original_price || item.price),
           image_url: item.image_url || (item.color?.productimages?.[0]?.image_url),
